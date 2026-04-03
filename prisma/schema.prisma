@@ -1,0 +1,271 @@
+// ClearCME - Prisma Schema
+// Database: PostgreSQL (Railway - connection string in .env)
+// Auth: NextAuth.js with @auth/prisma-adapter
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── NextAuth required tables ─────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core: Users (Physicians) ─────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Physician profile
+  licenseType   LicenseType?
+  specialty     String?
+  npi           String?       @unique // National Provider Identifier
+
+  // Relations
+  accounts        Account[]
+  sessions        Session[]
+  licenses        PhysicianLicense[]
+  certificates    Certificate[]
+  complianceStatus ComplianceStatus[]
+  subscription    Subscription?
+
+  @@index([email])
+}
+
+enum LicenseType {
+  MD
+  DO
+  PA
+  NP
+  OTHER
+}
+
+// State medical licenses (a physician can hold multiple)
+model PhysicianLicense {
+  id            String   @id @default(cuid())
+  userId        String
+  state         String   // 2-letter state code, e.g. "NV"
+  licenseNumber String?
+  licenseType   LicenseType
+  issueDate     DateTime?
+  renewalDate   DateTime?  // Next renewal deadline
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, state, licenseType])
+  @@index([userId])
+  @@index([state])
+}
+
+// ─── CME Certificates ─────────────────────────────────────────────────────────
+
+model Certificate {
+  id          String    @id @default(cuid())
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // File storage (placeholder — will use S3/Vercel Blob)
+  fileName    String
+  fileUrl     String?   // Populated after upload to storage
+  fileSize    Int?      // bytes
+  mimeType    String?   // application/pdf, image/jpeg, image/png
+
+  // AI-extracted data
+  extractedAt       DateTime?
+  extractionStatus  ExtractionStatus @default(PENDING)
+  extractionError   String?
+
+  // Extracted fields
+  title           String?
+  provider        String?  // e.g. "ACEP", "AMA", "Medscape"
+  activityDate    DateTime?
+  creditHours     Float?
+  creditType      CreditType?
+  accreditation   String?  // e.g. "AMA PRA Category 1", "AAFP Prescribed"
+  topics          String[] // e.g. ["opioid prescribing", "pain management"]
+  specialTopics   SpecialTopic[] // mapped special/mandatory topic flags
+
+  // Manual override support
+  manuallyVerified Boolean @default(false)
+  notes            String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([activityDate])
+}
+
+enum ExtractionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  MANUAL
+}
+
+enum CreditType {
+  AMA_PRA_1       // AMA PRA Category 1
+  AMA_PRA_2       // AMA PRA Category 2
+  AAFP_PRESCRIBED
+  AAFP_ELECTIVE
+  AOA_1_A         // AOA Category 1-A
+  AOA_1_B         // AOA Category 1-B
+  AOA_2_A         // AOA Category 2-A
+  AOA_2_B         // AOA Category 2-B
+  OTHER
+}
+
+enum SpecialTopic {
+  OPIOID_PRESCRIBING
+  PAIN_MANAGEMENT
+  IMPLICIT_BIAS
+  END_OF_LIFE_CARE
+  DOMESTIC_VIOLENCE
+  CHILD_ABUSE
+  ELDER_ABUSE
+  HUMAN_TRAFFICKING
+  INFECTION_CONTROL
+  PATIENT_SAFETY
+  ETHICS
+  CULTURAL_COMPETENCY
+  SUBSTANCE_USE
+  SUICIDE_PREVENTION
+  OTHER_MANDATORY
+}
+
+// ─── Compliance Rules (State Requirements) ────────────────────────────────────
+
+model ComplianceRule {
+  id            String      @id @default(cuid())
+  state         String      // 2-letter state code
+  licenseType   LicenseType
+  renewalCycle  Int         // months, e.g. 24 = 2 years
+  totalHours    Float       // total CME hours required per cycle
+  updatedAt     DateTime    @updatedAt
+  sourceUrl     String?     // link to official state medical board source
+  notes         String?
+
+  // Mandatory topic requirements
+  mandatoryRequirements MandatoryRequirement[]
+
+  @@unique([state, licenseType])
+  @@index([state])
+}
+
+model MandatoryRequirement {
+  id               String       @id @default(cuid())
+  complianceRuleId String
+  topic            SpecialTopic
+  hoursRequired    Float
+  description      String?      // e.g. "3 hours opioid prescribing for first renewal"
+  firstRenewalOnly Boolean      @default(false)
+  notes            String?
+
+  complianceRule ComplianceRule @relation(fields: [complianceRuleId], references: [id], onDelete: Cascade)
+
+  @@index([complianceRuleId])
+}
+
+// ─── Compliance Status (Computed per User per License) ────────────────────────
+
+model ComplianceStatus {
+  id               String   @id @default(cuid())
+  userId           String
+  licenseState     String
+  licenseType      LicenseType
+  cycleStart       DateTime
+  cycleEnd         DateTime // = renewal date
+  computedAt       DateTime @default(now())
+
+  // Totals
+  totalHoursEarned Float    @default(0)
+  totalHoursNeeded Float    @default(0)
+  isCompliant      Boolean  @default(false)
+  gapHours         Float    @default(0)  // totalHoursNeeded - totalHoursEarned (0 if compliant)
+
+  // Mandatory topic gaps (JSON for flexibility)
+  mandatoryGaps    Json?    // { topic: string, earned: number, needed: number }[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, licenseState, licenseType, cycleStart])
+  @@index([userId])
+  @@index([licenseState])
+}
+
+// ─── Subscriptions ────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  tier               SubscriptionTier   @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId   String?            // Placeholder — Stripe not yet configured
+  stripePriceId      String?
+  stripeSubId        String?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}

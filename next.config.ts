@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Needed to bundle Prisma correctly on Vercel Edge
+  serverExternalPackages: ["@prisma/client"],
 };
 
 export default nextConfig;
