@@ -1,0 +1,59 @@
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const licenses = await prisma.physicianLicense.findMany({
+    where: { userId: session.user.id },
+    orderBy: { renewalDate: "asc" },
+  });
+  return NextResponse.json(licenses);
+}
+
+export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { state, licenseType, licenseNumber, renewalDate } = body;
+
+  if (!state || !licenseType || !renewalDate) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const license = await prisma.physicianLicense.create({
+    data: {
+      userId: session.user.id,
+      state,
+      licenseType,
+      licenseNumber: licenseNumber || null,
+      renewalDate: new Date(renewalDate),
+      isActive: true,
+    },
+  });
+
+  return NextResponse.json(license, { status: 201 });
+}
+
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  await prisma.physicianLicense.deleteMany({
+    where: { id, userId: session.user.id },
+  });
+
+  return NextResponse.json({ success: true });
+}
