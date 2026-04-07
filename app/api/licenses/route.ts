@@ -27,8 +27,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const license = await prisma.physicianLicense.create({
-    data: {
+  const license = await prisma.physicianLicense.upsert({
+    where: {
+      userId_state_licenseType: {
+        userId: session.user.id,
+        state,
+        licenseType,
+      },
+    },
+    update: {
+      licenseNumber: licenseNumber || null,
+      renewalDate: new Date(renewalDate),
+      isActive: true,
+    },
+    create: {
       userId: session.user.id,
       state,
       licenseType,
