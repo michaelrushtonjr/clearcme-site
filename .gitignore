@@ -16,3 +16,4 @@
 npm-debug.log*
 
 /app/generated/prisma
+.vercel
