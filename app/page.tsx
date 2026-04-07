@@ -2,21 +2,94 @@
 
 import { useState } from "react";
 
-export default function Home() {
+function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark"; source: string }) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    // Placeholder — wire to API route / email service later
-    await new Promise((r) => setTimeout(r, 800));
-    setSubmitted(true);
-    setLoading(false);
+    setError("");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to join");
+      }
+      setSubmitted(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  if (submitted) {
+    return (
+      <div
+        className={`flex items-center justify-center gap-3 font-medium px-6 py-4 rounded-xl max-w-md mx-auto ${
+          variant === "dark" ? "text-white" : "bg-green-50 text-green-700"
+        }`}
+      >
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clipRule="evenodd"
+          />
+        </svg>
+        You&apos;re on the list. We&apos;ll be in touch.
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+      >
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          required
+          className={`flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 ${
+            variant === "dark"
+              ? "border-blue-400 bg-blue-500 text-white placeholder:text-blue-200 focus:ring-white"
+              : "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-blue-500 focus:border-transparent"
+          }`}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className={`px-6 py-3 font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm whitespace-nowrap ${
+            variant === "dark"
+              ? "bg-white text-blue-600 hover:bg-blue-50"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          {loading ? "Joining..." : "Join the waitlist"}
+        </button>
+      </form>
+      {error && (
+        <p className={`text-xs mt-2 ${variant === "dark" ? "text-red-300" : "text-red-500"}`}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* Nav */}
@@ -49,45 +122,13 @@ export default function Home() {
 
         <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
           ClearCME tracks your credits, maps state requirements, and tells you
-          exactly what's missing — before your renewal deadline.
+          exactly what&apos;s missing — before your renewal deadline.
           No spreadsheets. No guessing.
         </p>
 
         {/* Waitlist form */}
         <div id="waitlist">
-          {!submitted ? (
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm whitespace-nowrap"
-              >
-                {loading ? "Joining..." : "Join the waitlist"}
-              </button>
-            </form>
-          ) : (
-            <div className="flex items-center justify-center gap-3 bg-green-50 text-green-700 font-medium px-6 py-4 rounded-xl max-w-md mx-auto">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              You&apos;re on the list. We&apos;ll be in touch.
-            </div>
-          )}
+          <WaitlistForm source="hero" />
           <p className="text-xs text-slate-400 mt-3">
             Free to join. No credit card required.
           </p>
@@ -129,19 +170,15 @@ export default function Home() {
                 className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
               >
                 <div className="text-3xl mb-4">{item.icon}</div>
-                <h3 className="font-semibold text-slate-900 mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-slate-500 text-sm leading-relaxed">
-                  {item.body}
-                </p>
+                <h3 className="font-semibold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{item.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Social proof placeholder */}
+      {/* Social proof */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h2 className="text-3xl font-bold text-slate-900 mb-4">
           Built by a physician, for physicians.
@@ -156,39 +193,11 @@ export default function Home() {
       {/* Second CTA */}
       <section className="bg-blue-600 py-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Get early access.
-          </h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Get early access.</h2>
           <p className="text-blue-100 mb-8">
-            Be first to know when ClearCME launches. Free tier available at
-            launch.
+            Be first to know when ClearCME launches. Free tier available at launch.
           </p>
-          {!submitted ? (
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="flex-1 px-4 py-3 rounded-xl border border-blue-400 bg-blue-500 text-white placeholder:text-blue-200 focus:outline-none focus:ring-2 focus:ring-white text-sm"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors disabled:opacity-60 text-sm whitespace-nowrap"
-              >
-                {loading ? "Joining..." : "Join the waitlist"}
-              </button>
-            </form>
-          ) : (
-            <div className="text-white font-medium">
-              ✓ You&apos;re on the list. We&apos;ll be in touch.
-            </div>
-          )}
+          <WaitlistForm variant="dark" source="cta" />
         </div>
       </section>
 

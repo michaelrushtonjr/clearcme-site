@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import DashboardNav from "@/components/DashboardNav";
+import DashboardSidebar from "@/components/DashboardSidebar";
 
 export const metadata = {
   title: "Dashboard — ClearCME",
@@ -19,10 +19,13 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardNav user={session.user} />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {children}
-      </main>
+      <DashboardSidebar user={session.user} />
+      {/* Desktop: offset for sidebar; mobile: full width below top bar */}
+      <div className="lg:pl-64">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

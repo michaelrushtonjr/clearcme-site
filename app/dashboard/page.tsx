@@ -1,32 +1,81 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import CreditSummaryCard from "@/components/dashboard/CreditSummaryCard";
-import GapAlerts from "@/components/dashboard/GapAlerts";
-import CertificateList from "@/components/dashboard/CertificateList";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  // Fetch data in parallel
-  const [certificates, complianceStatuses, licenses] = await Promise.all([
+  const [certificates, licenses] = await Promise.all([
     prisma.certificate.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.complianceStatus.findMany({
-      where: { userId },
-      orderBy: { cycleEnd: "asc" },
     }),
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
+      orderBy: { renewalDate: "asc" },
     }),
   ]);
 
-  const totalHours = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+  const completedCerts = certificates.filter((c) => c.extractionStatus === "COMPLETED");
+  const totalHours = completedCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+
+  // Compute compliance for all licenses
+  const complianceData = await Promise.all(
+    licenses.map(async (license) => {
+      const rule = await prisma.complianceRule.findUnique({
+        where: {
+          state_licenseType: { state: license.state, licenseType: license.licenseType },
+        },
+        include: { mandatoryRequirements: true },
+      });
+      if (!rule) return null;
+
+      const cycleEnd = license.renewalDate ?? new Date();
+      const cycleStart = new Date(cycleEnd);
+      cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
+
+      const cycleCerts = completedCerts.filter((cert) => {
+        if (!cert.activityDate) return false;
+        return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
+      });
+
+      const hoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+      const hoursNeeded = Math.max(0, rule.totalHours - hoursEarned);
+
+      const mandatoryMet = rule.mandatoryRequirements.filter((req) => {
+        const earned = cycleCerts
+          .filter((c) => c.specialTopics.includes(req.topic))
+          .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+        return earned >= req.hoursRequired;
+      }).length;
+
+      const daysUntilRenewal = license.renewalDate
+        ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        : null;
+
+      return {
+        license,
+        rule,
+        hoursEarned,
+        hoursNeeded,
+        mandatoryMet,
+        mandatoryTotal: rule.mandatoryRequirements.length,
+        daysUntilRenewal,
+        isCompliant: hoursNeeded === 0,
+      };
+    })
+  );
+
+  const validCompliance = complianceData.filter(Boolean) as NonNullable<(typeof complianceData)[number]>[];
+  const nextRenewal = validCompliance.sort((a, b) => (a.daysUntilRenewal ?? 9999) - (b.daysUntilRenewal ?? 9999))[0];
+
+  const totalMandatoryMet = validCompliance.reduce((sum, d) => sum + d.mandatoryMet, 0);
+  const totalMandatoryRequired = validCompliance.reduce((sum, d) => sum + d.mandatoryTotal, 0);
+  const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.hoursNeeded, 0);
+
   const hasLicenses = licenses.length > 0;
+  const recentCerts = certificates.slice(0, 5);
 
   return (
     <div className="space-y-8">
@@ -58,52 +107,139 @@ export default async function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard
-          label="Total CME Hours"
-          value={totalHours.toFixed(1)}
-          unit="hrs"
-          color="blue"
-        />
-        <StatCard
-          label="Certificates"
-          value={String(certificates.length)}
-          unit="uploaded"
-          color="slate"
-        />
-        <StatCard
-          label="Active Licenses"
-          value={String(licenses.length)}
-          unit="states"
-          color="slate"
-        />
-        <StatCard
-          label="Compliance Status"
-          value={complianceStatuses.every((s) => s.isCompliant) && complianceStatuses.length > 0 ? "✓" : complianceStatuses.length === 0 ? "—" : "⚠"}
-          unit={complianceStatuses.length > 0 ? (complianceStatuses.every((s) => s.isCompliant) ? "all good" : "gaps found") : "not computed"}
-          color={complianceStatuses.every((s) => s.isCompliant) && complianceStatuses.length > 0 ? "green" : "amber"}
-        />
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
+          <p className="text-2xl font-bold text-blue-700">{totalHours.toFixed(1)}</p>
+          <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Still Needed</p>
+          {validCompliance.length > 0 ? (
+            <>
+              <p className={`text-2xl font-bold ${totalHoursStillNeeded === 0 ? "text-green-600" : "text-amber-600"}`}>
+                {totalHoursStillNeeded.toFixed(1)}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {totalHoursStillNeeded === 0 ? "all clear ✓" : "to complete"}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-slate-300">—</p>
+              <p className="text-xs text-slate-400 mt-0.5">add a license</p>
+            </>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
+          {nextRenewal?.daysUntilRenewal != null ? (
+            <>
+              <p className={`text-2xl font-bold ${
+                nextRenewal.daysUntilRenewal <= 90
+                  ? "text-red-600"
+                  : nextRenewal.daysUntilRenewal <= 180
+                  ? "text-amber-600"
+                  : "text-slate-700"
+              }`}>
+                {nextRenewal.daysUntilRenewal}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">{nextRenewal.license.state} {nextRenewal.license.licenseType}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-slate-300">—</p>
+              <p className="text-xs text-slate-400 mt-0.5">no renewal set</p>
+            </>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
+          {totalMandatoryRequired > 0 ? (
+            <>
+              <p className={`text-2xl font-bold ${
+                totalMandatoryMet === totalMandatoryRequired ? "text-green-600" : "text-amber-600"
+              }`}>
+                {totalMandatoryMet}/{totalMandatoryRequired}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">complete</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-slate-300">—</p>
+              <p className="text-xs text-slate-400 mt-0.5">no requirements</p>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Compliance summary cards */}
-      {complianceStatuses.length > 0 && (
+      {/* License compliance summary */}
+      {validCompliance.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
-            Compliance by State
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
+            <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              View full map →
+            </Link>
+          </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            {complianceStatuses.map((status) => (
-              <CreditSummaryCard key={status.id} status={status} />
+            {validCompliance.map((data) => (
+              <div key={data.license.id} className="bg-white rounded-2xl border border-slate-200 p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      {data.license.state} — {data.license.licenseType}
+                    </p>
+                    {data.daysUntilRenewal != null && (
+                      <p className={`text-xs mt-0.5 font-medium ${
+                        data.daysUntilRenewal <= 90
+                          ? "text-red-600"
+                          : data.daysUntilRenewal <= 180
+                          ? "text-amber-600"
+                          : "text-slate-400"
+                      }`}>
+                        {data.daysUntilRenewal <= 0
+                          ? "Renewal overdue"
+                          : `${data.daysUntilRenewal} days to renewal`}
+                      </p>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    data.isCompliant
+                      ? "bg-green-100 text-green-700"
+                      : "bg-amber-100 text-amber-700"
+                  }`}>
+                    {data.isCompliant ? "✓ Compliant" : "⚠ Gaps"}
+                  </span>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span>Hours</span>
+                    <span>{data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs</span>
+                  </div>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${data.isCompliant ? "bg-green-500" : "bg-blue-500"}`}
+                      style={{ width: `${Math.min(100, (data.hoursEarned / data.rule.totalHours) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {data.mandatoryTotal > 0 && (
+                  <p className="text-xs text-slate-500 mt-2">
+                    Mandatory topics: {data.mandatoryMet}/{data.mandatoryTotal} complete
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Gap alerts */}
-      {complianceStatuses.some((s) => !s.isCompliant) && (
-        <GapAlerts statuses={complianceStatuses.filter((s) => !s.isCompliant)} />
-      )}
-
-      {/* Certificate list */}
+      {/* Recent certificates */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
@@ -114,41 +250,67 @@ export default async function DashboardPage() {
             + Upload certificate
           </Link>
         </div>
-        <CertificateList certificates={certificates} />
+
+        {recentCerts.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+            <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <p className="text-slate-500 text-sm mb-4">No certificates yet.</p>
+            <Link
+              href="/dashboard/upload"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Upload your first →
+            </Link>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="divide-y divide-slate-100">
+              {recentCerts.map((cert) => (
+                <div key={cert.id} className="px-5 py-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 text-sm truncate">
+                      {cert.title ?? cert.fileName}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {cert.provider ?? "Unknown provider"}
+                      {cert.activityDate && (
+                        <> · {new Date(cert.activityDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {cert.extractionStatus === "COMPLETED" && cert.creditHours != null && (
+                      <span className="text-sm font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
+                        {cert.creditHours.toFixed(1)} hrs
+                      </span>
+                    )}
+                    {cert.extractionStatus === "PENDING" && (
+                      <span className="text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg">Pending</span>
+                    )}
+                    {cert.extractionStatus === "FAILED" && (
+                      <span className="text-xs text-red-600 bg-red-50 px-2.5 py-1 rounded-lg">Failed</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {certificates.length > 5 && (
+              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
+                <Link
+                  href="/dashboard/compliance"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View all {certificates.length} certificates →
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </section>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  unit,
-  color,
-}: {
-  label: string;
-  value: string;
-  unit: string;
-  color: "blue" | "slate" | "green" | "amber";
-}) {
-  const colorMap = {
-    blue: "bg-blue-50 text-blue-700",
-    slate: "bg-slate-100 text-slate-700",
-    green: "bg-green-50 text-green-700",
-    amber: "bg-amber-50 text-amber-700",
-  };
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5">
-      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-        {label}
-      </p>
-      <div className="flex items-end gap-1.5">
-        <span className={`text-2xl font-bold ${colorMap[color].split(" ")[1]}`}>
-          {value}
-        </span>
-        <span className="text-xs text-slate-400 mb-0.5">{unit}</span>
-      </div>
     </div>
   );
 }

@@ -239,6 +239,15 @@ model ComplianceStatus {
   @@index([licenseState])
 }
 
+// ─── Waitlist ─────────────────────────────────────────────────────────────────
+
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  source    String?  // e.g. "hero", "cta"
+}
+
 // ─── Subscriptions ────────────────────────────────────────────────────────────
 
 model Subscription {
