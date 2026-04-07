@@ -2,9 +2,16 @@
 // Covers all 50 states + DC for MD license type
 // Run: DATABASE_URL=... node prisma/seed.js
 
-const { PrismaClient } = require('../src/generated/prisma');
+const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error('DATABASE_URL environment variable is required');
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 function rule(state, renewalCycleYears, totalHours, mandatories = [], opts = {}) {
