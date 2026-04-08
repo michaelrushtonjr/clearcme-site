@@ -21,9 +21,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    state: "NV",
-    licenseType: "DO",
-    specialty: "Emergency Medicine",
+    state: "",
+    licenseType: "",
+    specialty: "",
     licenseNumber: "",
     renewalDate: "",
   });
@@ -69,8 +69,10 @@ export default function ProfilePage() {
           <select
             value={form.state}
             onChange={(e) => setForm({ ...form, state: e.target.value })}
+            required
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
+            <option value="" disabled>Select your state</option>
             {US_STATES.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -110,6 +112,7 @@ export default function ProfilePage() {
             onChange={(e) => setForm({ ...form, specialty: e.target.value })}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
+            <option value="" disabled>Select your specialty</option>
             {SPECIALTIES.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}

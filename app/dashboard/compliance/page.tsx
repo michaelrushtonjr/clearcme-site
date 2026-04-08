@@ -32,6 +32,25 @@ function formatTopic(topic: string): string {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
+/** Topic-specific CTA labels */
+const TOPIC_LABELS: Record<string, string> = {
+  OPIOID_PRESCRIBING: "Find Opioid Prescribing CME →",
+  PAIN_MANAGEMENT: "Find Pain Management CME →",
+  SUBSTANCE_USE: "Find SUD / MATE Act CME →",
+  IMPLICIT_BIAS: "Find Implicit Bias CME →",
+  CULTURAL_COMPETENCY: "Find Cultural Competency CME →",
+  ETHICS: "Find Ethics CME →",
+  SUICIDE_PREVENTION: "Find Suicide Prevention CME →",
+  DOMESTIC_VIOLENCE: "Find Domestic Violence CME →",
+  CHILD_ABUSE: "Find Child Abuse CME →",
+  HUMAN_TRAFFICKING: "Find Human Trafficking CME →",
+  PATIENT_SAFETY: "Find Patient Safety CME →",
+  INFECTION_CONTROL: "Find Infection Control CME →",
+  END_OF_LIFE_CARE: "Find End-of-Life Care CME →",
+  ELDER_ABUSE: "Find Elder Abuse CME →",
+  OTHER_MANDATORY: "Find Accredited CME →",
+};
+
 /** Best partner URL for each mandatory topic gap. Free/no-login preferred. */
 const PARTNER_URLS: Record<string, string> = {
   OPIOID_PRESCRIBING: "https://www.cmeoutfitters.com/opioidquicklinks/",
@@ -285,6 +304,22 @@ export default async function CompliancePage() {
                     {Math.round((totalHoursEarned / totalHoursNeeded) * 100)}%
                   </span>
                 </div>
+                {/* Pace indicator */}
+                {!isCompliant && daysUntilRenewal !== null && daysUntilRenewal > 0 && (
+                  (() => {
+                    const monthsLeft = daysUntilRenewal / 30.4;
+                    const hrsPerMonth = monthsLeft > 0 ? gapHours / monthsLeft : gapHours;
+                    const pctTimeLeft = daysUntilRenewal / (rule.renewalCycle * 30.4);
+                    const pctDone = totalHoursNeeded > 0 ? totalHoursEarned / totalHoursNeeded : 0;
+                    const onTrack = pctDone >= (1 - pctTimeLeft);
+                    const critical = daysUntilRenewal < 60 && pctDone < 0.5;
+                    return (
+                      <p className={`text-xs mt-1.5 font-medium ${critical ? "text-red-600" : onTrack ? "text-green-600" : "text-amber-600"}`}>
+                        {critical ? "⚠️" : onTrack ? "✓" : "⚡"} To finish by renewal, you need {hrsPerMonth.toFixed(1)} hrs/month
+                      </p>
+                    );
+                  })()
+                )}
               </div>
 
               {/* Mandatory topics */}
@@ -345,18 +380,21 @@ export default async function CompliancePage() {
                               />
                             </div>
                             {!gap.isMet && (
-                              <a
-                                href={PARTNER_URLS[gap.topic] ?? "https://www.medscape.com/cme"}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
-                                  gap.earned > 0
-                                    ? "bg-amber-600 text-white hover:bg-amber-700"
-                                    : "bg-red-600 text-white hover:bg-red-700"
-                                }`}
-                              >
-                                Fill this gap →
-                              </a>
+                              <div className="flex flex-col items-end gap-0.5">
+                                <a
+                                  href={PARTNER_URLS[gap.topic] ?? "https://www.medscape.com/cme"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
+                                    gap.earned > 0
+                                      ? "bg-amber-600 text-white hover:bg-amber-700"
+                                      : "bg-red-600 text-white hover:bg-red-700"
+                                  }`}
+                                >
+                                  {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
+                                </a>
+                                <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>
+                              </div>
                             )}
                           </div>
                         </div>

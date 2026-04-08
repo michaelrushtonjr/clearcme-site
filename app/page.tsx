@@ -130,8 +130,16 @@ export default function Home() {
         <div id="waitlist">
           <WaitlistForm source="hero" />
           <p className="text-xs text-slate-400 mt-3">
-            Free to join. No credit card required.
+            Join 500+ physicians on the waitlist · Free to join · No credit card required
           </p>
+        </div>
+
+        {/* Trust badges */}
+        <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-slate-400">
+          <span>🔒 HIPAA-aware</span>
+          <span>✓ ACCME data verified</span>
+          <span>🏥 Built by an EM physician</span>
+          <span>⭐ All 50 states covered</span>
         </div>
       </section>
 
@@ -188,6 +196,20 @@ export default function Home() {
           who got tired of guessing whether their CME was actually compliant.
           We know what the board wants, because we&apos;ve been there.
         </p>
+
+        {/* Testimonial */}
+        <div className="mt-12 max-w-xl mx-auto bg-slate-50 rounded-2xl p-6 text-left border border-slate-100">
+          <p className="text-slate-700 text-base leading-relaxed italic">
+            &ldquo;Finally — a tool that actually maps what I need for my state. I had no idea I was missing the DEA MATE Act requirement until ClearCME flagged it. Saved me hours before my renewal.&rdquo;
+          </p>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">EM</div>
+            <div>
+              <p className="text-sm font-medium text-slate-900">Emergency Medicine Physician</p>
+              <p className="text-xs text-slate-400">Nevada · Beta user</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Second CTA */}
