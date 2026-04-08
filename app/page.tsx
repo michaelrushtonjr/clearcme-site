@@ -130,7 +130,7 @@ export default function Home() {
         <div id="waitlist">
           <WaitlistForm source="hero" />
           <p className="text-xs text-slate-400 mt-3">
-            Join 500+ physicians on the waitlist · Free to join · No credit card required
+            Free to join · No credit card required · Growing community of physicians
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export default function Home() {
           <span>🔒 HIPAA-aware</span>
           <span>✓ ACCME data verified</span>
           <span>🏥 Built by an EM physician</span>
-          <span>⭐ All 50 states covered</span>
+          <span>⭐ All 50 states + DC</span>
         </div>
       </section>
 

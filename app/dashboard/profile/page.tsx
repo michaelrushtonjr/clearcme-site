@@ -30,6 +30,9 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.state) { setError("Please select a state."); return; }
+    if (!form.licenseType) { setError("Please select MD or DO."); return; }
+    if (!form.renewalDate) { setError("Please enter your renewal date."); return; }
     setLoading(true);
     setError("");
     try {
