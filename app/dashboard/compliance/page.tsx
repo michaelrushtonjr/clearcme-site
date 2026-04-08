@@ -32,6 +32,16 @@ function formatTopic(topic: string): string {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
+/** Best partner URL for each mandatory topic gap. Free/no-login preferred. */
+const PARTNER_URLS: Record<string, string> = {
+  OPIOID_PRESCRIBING: "https://www.cmeoutfitters.com/opioidquicklinks/",
+  IMPLICIT_BIAS: "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
+  ETHICS: "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
+  INFECTION_CONTROL: "https://home.hippoed.com/abxstewardship",
+  PATIENT_SAFETY: "https://www.acep.org/acepanytime/",
+  SUICIDE_PREVENTION: "https://bootcamp.pri-med.com/en/mental-health",
+};
+
 function RenewalCountdown({ days }: { days: number | null }) {
   if (days === null) return null;
   const isUrgent = days <= 90;
@@ -336,13 +346,14 @@ export default async function CompliancePage() {
                             </div>
                             {!gap.isMet && (
                               <a
-                                href="#"
+                                href={PARTNER_URLS[gap.topic] ?? "https://www.medscape.com/cme"}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
                                   gap.earned > 0
                                     ? "bg-amber-600 text-white hover:bg-amber-700"
                                     : "bg-red-600 text-white hover:bg-red-700"
                                 }`}
-                                title="Partner courses coming soon"
                               >
                                 Fill this gap →
                               </a>
