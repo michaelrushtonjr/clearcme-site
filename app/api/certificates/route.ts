@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
         {
           certificate: updated,
           warning: "Certificate uploaded but AI extraction failed. Manual review required.",
+          extractionError: extractionResult.error ?? "Unknown error",
         },
         { status: 201 }
       );
@@ -194,7 +195,7 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
     }
 
     const response = await client.messages.create({
-      model: "claude-opus-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       messages: [
         {
