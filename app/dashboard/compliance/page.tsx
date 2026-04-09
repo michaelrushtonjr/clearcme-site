@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import CertificateList from "@/components/CertificateList";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -439,64 +440,13 @@ export default async function CompliancePage() {
           </Link>
         </div>
 
-        {certificates.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-            <p className="text-slate-500 text-sm">No certificates uploaded yet.</p>
-            <Link
-              href="/dashboard/upload"
-              className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              Upload your first →
-            </Link>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="divide-y divide-slate-100">
-              {certificates.map((cert) => (
-                <div key={cert.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-900 text-sm truncate">
-                        {cert.title ?? cert.fileName}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {cert.provider ?? "Unknown provider"}
-                        {cert.activityDate && (
-                          <>
-                            {" · "}
-                            {new Date(cert.activityDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </>
-                        )}
-                      </p>
-                      {cert.specialTopics.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {cert.specialTopics.map((t) => (
-                            <span key={t} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                              {formatTopic(t)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    {cert.creditHours != null && (
-                      <span className="flex-shrink-0 text-sm font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
-                        {cert.creditHours.toFixed(1)} hrs
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">Total hours</span>
-              <span className="text-sm font-bold text-blue-700">
-                {totalHoursAllCerts.toFixed(1)} hrs
-              </span>
-            </div>
+        <CertificateList certs={certificates} totalCount={certificates.length} />
+        {certificates.length > 0 && (
+          <div className="px-5 py-4 bg-slate-50 border border-slate-200 rounded-b-2xl -mt-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Total hours</span>
+            <span className="text-sm font-bold text-blue-700">
+              {totalHoursAllCerts.toFixed(1)} hrs
+            </span>
           </div>
         )}
       </section>
