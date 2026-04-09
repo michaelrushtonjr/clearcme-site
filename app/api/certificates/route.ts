@@ -3,6 +3,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 
+// Extend Vercel function timeout for AI processing
+export const maxDuration = 60;
+
 // GET /api/certificates — list user's certificates
 export async function GET() {
   const session = await auth();
@@ -191,7 +194,7 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
     }
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-opus-4-5",
       max_tokens: 1024,
       messages: [
         {
