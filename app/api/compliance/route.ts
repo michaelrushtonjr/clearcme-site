@@ -57,7 +57,7 @@ export async function GET() {
     cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
 
     // Filter certificates within cycle window
-    const cycleCerts = certificates.filter((cert) => {
+    const cycleCerts = certificates.filter((cert: typeof certificates[number]) => {
       if (!cert.activityDate) return false;
       return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
     });
