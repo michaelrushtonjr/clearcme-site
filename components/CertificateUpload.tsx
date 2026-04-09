@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ExtractedCredit {
   title: string;
@@ -100,7 +101,6 @@ export default function CertificateUpload() {
 
       setUploadedCerts(results);
       setUploadState("done");
-      router.refresh();
     },
     [router]
   );
@@ -186,18 +186,26 @@ export default function CertificateUpload() {
       {/* Results */}
       {uploadState === "done" && uploadedCerts.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h3 className="font-semibold text-slate-900">
               {uploadedCerts.length === 1
                 ? "1 certificate processed"
                 : `${uploadedCerts.length} certificates processed`}
             </h3>
-            <button
-              onClick={reset}
-              className="text-sm font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Upload another
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={reset}
+                className="text-sm font-semibold px-3 py-1.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Upload Another Certificate
+              </button>
+              <Link
+                href="/dashboard"
+                className="text-sm font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Dashboard →
+              </Link>
+            </div>
           </div>
 
           {uploadedCerts.map((cert) => (
