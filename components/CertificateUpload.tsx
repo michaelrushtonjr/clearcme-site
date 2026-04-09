@@ -18,6 +18,7 @@ interface UploadedCert {
   id: string;
   fileName: string;
   extracted: ExtractedCredit | null;
+  extractionFailed?: boolean;
   error?: string;
 }
 
@@ -72,6 +73,7 @@ export default function CertificateUpload() {
             accreditation: cert.accreditation ?? "",
           }
         : null,
+      extractionFailed: cert.extractionStatus === "FAILED",
     };
   };
 
@@ -192,9 +194,9 @@ export default function CertificateUpload() {
             </h3>
             <button
               onClick={reset}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="text-sm font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Upload more
+              Upload another
             </button>
           </div>
 
@@ -210,6 +212,8 @@ export default function CertificateUpload() {
                   </div>
                   <p className="text-sm text-red-700">{cert.error}</p>
                 </div>
+              ) : cert.extractionFailed ? (
+                <ExtractionFailedCard cert={cert} />
               ) : cert.extracted ? (
                 <ExtractedCreditCard cert={cert} />
               ) : (
@@ -223,6 +227,129 @@ export default function CertificateUpload() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
+  const [fields, setFields] = useState({
+    title: "",
+    provider: "",
+    date: "",
+    creditHours: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const res = await fetch(`/api/certificates/${cert.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: fields.title || undefined,
+          provider: fields.provider || undefined,
+          activityDate: fields.date || undefined,
+          creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setSaveError(err.error ?? "Save failed");
+      } else {
+        setSaved(true);
+      }
+    } catch {
+      setSaveError("Network error — please try again");
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
+      <div className="px-5 py-3 flex items-center gap-2 border-b border-amber-100 bg-amber-100/60">
+        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span className="text-sm font-medium text-amber-900">Couldn&apos;t read this certificate automatically</span>
+        <span className="ml-auto text-xs text-amber-700 truncate max-w-[150px]">{cert.fileName}</span>
+      </div>
+
+      <div className="p-5 space-y-4">
+        <p className="text-sm text-amber-800">
+          We couldn&apos;t automatically read this certificate. You can edit the details manually below.
+        </p>
+
+        {saved ? (
+          <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Details saved successfully.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Course Title</label>
+              <input
+                type="text"
+                value={fields.title}
+                onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. Advanced Cardiac Life Support"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Provider / Accreditor</label>
+              <input
+                type="text"
+                value={fields.provider}
+                onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
+                placeholder="e.g. American Heart Association"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Completion Date</label>
+                <input
+                  type="date"
+                  value={fields.date}
+                  onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Credit Hours</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={fields.creditHours}
+                  onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
+                  placeholder="e.g. 2.5"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+            </div>
+
+            {saveError && (
+              <p className="text-xs text-red-600">{saveError}</p>
+            )}
+
+            <button
+              onClick={handleSave}
+              disabled={saving || (!fields.title && !fields.provider && !fields.date && !fields.creditHours)}
+              className="w-full py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? "Saving…" : "Save Details"}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
