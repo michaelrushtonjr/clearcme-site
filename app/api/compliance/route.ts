@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { Certificate, MandatoryRequirement } from "@prisma/client";
 
 // GET /api/compliance — compute and return compliance status for the current user
 export async function GET() {
@@ -57,21 +58,23 @@ export async function GET() {
     cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
 
     // Filter certificates within cycle window
-    const cycleCerts = certificates.filter((cert: typeof certificates[number]) => {
+    const cycleCerts = certificates.filter((cert: Certificate) => {
       if (!cert.activityDate) return false;
       return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
     });
 
-    const totalHoursEarned = cycleCerts.reduce((sum: number, c: typeof certificates[number]) => sum + (c.creditHours ?? 0), 0);
+    const totalHoursEarned = cycleCerts.reduce(
+      (sum: number, c: Certificate) => sum + (c.creditHours ?? 0),
+      0
+    );
     const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
     const isCompliant = gapHours === 0;
 
     // Check mandatory topics
-    const mandatoryGaps = rule.mandatoryRequirements.map((req) => {
-      type CertType = typeof certificates[number];
+    const mandatoryGaps = rule.mandatoryRequirements.map((req: MandatoryRequirement) => {
       const earnedForTopic = cycleCerts
-        .filter((c: CertType) => c.specialTopics.includes(req.topic))
-        .reduce((sum: number, c: CertType) => sum + (c.creditHours ?? 0), 0);
+        .filter((c: Certificate) => c.specialTopics.includes(req.topic))
+        .reduce((sum: number, c: Certificate) => sum + (c.creditHours ?? 0), 0);
 
       return {
         topic: req.topic,
