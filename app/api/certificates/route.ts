@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import Anthropic from "@anthropic-ai/sdk";
 
 // GET /api/certificates — list user's certificates
 export async function GET() {
@@ -66,26 +67,47 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Stub: AI extraction (replace with real AI call later)
-    const extracted = await stubExtractCertificate(file);
+    // AI extraction using Claude vision
+    const extractionResult = await extractCertificateWithClaude(file);
 
-    // Update with extracted data
-    const updated = await prisma.certificate.update({
-      where: { id: certificate.id },
-      data: {
-        extractedAt: new Date(),
-        extractionStatus: "COMPLETED",
-        title: extracted.title,
-        provider: extracted.provider,
-        activityDate: extracted.date ? new Date(extracted.date) : null,
-        creditHours: extracted.creditHours,
-        creditType: extracted.creditType as never,
-        accreditation: extracted.accreditation,
-        topics: extracted.topics,
-      },
-    });
+    if (extractionResult.success && extractionResult.data) {
+      const extracted = extractionResult.data;
 
-    return NextResponse.json({ certificate: updated }, { status: 201 });
+      // Update with extracted data
+      const updated = await prisma.certificate.update({
+        where: { id: certificate.id },
+        data: {
+          extractedAt: new Date(),
+          extractionStatus: "COMPLETED",
+          title: extracted.title,
+          provider: extracted.provider,
+          activityDate: extracted.date ? new Date(extracted.date) : null,
+          creditHours: extracted.creditHours,
+          creditType: extracted.creditType as never,
+          accreditation: extracted.accreditation,
+          topics: extracted.topics,
+        },
+      });
+
+      return NextResponse.json({ certificate: updated }, { status: 201 });
+    } else {
+      // Extraction failed — store certificate but mark for manual review
+      const updated = await prisma.certificate.update({
+        where: { id: certificate.id },
+        data: {
+          extractedAt: new Date(),
+          extractionStatus: "FAILED",
+        },
+      });
+
+      return NextResponse.json(
+        {
+          certificate: updated,
+          warning: "Certificate uploaded but AI extraction failed. Manual review required.",
+        },
+        { status: 201 }
+      );
+    }
   } catch (error) {
     console.error("Certificate upload error:", error);
     return NextResponse.json(
@@ -95,32 +117,118 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── Stub: AI Certificate Extraction ──────────────────────────────────────────
-// Replace this with real AI (OpenAI vision / Claude) when ready.
-// Returns structured credit data from a certificate file.
+// ─── AI Certificate Extraction via Claude Vision ───────────────────────────────
 
 interface ExtractedCredit {
-  title: string;
-  provider: string;
-  date: string;
-  creditHours: number;
-  creditType: string;
+  title: string | null;
+  provider: string | null;
+  date: string | null;
+  creditHours: number | null;
+  creditType: string | null;
   topics: string[];
-  accreditation: string;
+  accreditation: string | null;
 }
 
-async function stubExtractCertificate(_file: File): Promise<ExtractedCredit> {
-  // Simulate processing delay
-  await new Promise((r) => setTimeout(r, 500));
+interface ExtractionResult {
+  success: boolean;
+  data?: ExtractedCredit;
+  error?: string;
+}
 
-  // Return mock data — real AI extraction replaces this
-  return {
-    title: "Emergency Medicine Core Content Review",
-    provider: "American College of Emergency Physicians (ACEP)",
-    date: new Date().toISOString().split("T")[0],
-    creditHours: 4.0,
-    creditType: "AMA_PRA_1",
-    topics: ["emergency medicine", "clinical decision making"],
-    accreditation: "AMA PRA Category 1 Credit™",
-  };
+const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Return ONLY valid JSON with this structure:
+{
+  "title": "exact course/activity title",
+  "provider": "name of providing organization",
+  "date": "YYYY-MM-DD completion date",
+  "creditHours": 0.0,
+  "creditType": "AMA_PRA_1 | AOA_1A | AAFP | ANCC | OTHER",
+  "topics": ["list", "of", "topics"],
+  "accreditation": "full accreditation statement"
+}
+If a field cannot be determined, use null. Do not include any text outside the JSON.`;
+
+async function extractCertificateWithClaude(file: File): Promise<ExtractionResult> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error("ANTHROPIC_API_KEY not configured");
+    return { success: false, error: "ANTHROPIC_API_KEY not configured" };
+  }
+
+  try {
+    const client = new Anthropic({ apiKey });
+
+    // Convert file to base64
+    const arrayBuffer = await file.arrayBuffer();
+    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+    const isPdf = file.type === "application/pdf";
+
+    // Build the content block depending on file type
+    type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let contentBlock: any;
+
+    if (isPdf) {
+      contentBlock = {
+        type: "document",
+        source: {
+          type: "base64",
+          media_type: "application/pdf",
+          data: base64Data,
+        },
+      };
+    } else {
+      const imageMediaType = file.type as ImageMediaType;
+      contentBlock = {
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: imageMediaType,
+          data: base64Data,
+        },
+      };
+    }
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      messages: [
+        {
+          role: "user",
+          content: [
+            contentBlock,
+            {
+              type: "text",
+              text: EXTRACTION_PROMPT,
+            },
+          ],
+        },
+      ],
+    });
+
+    // Parse Claude's response
+    const responseText = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => (block as { type: "text"; text: string }).text)
+      .join("");
+
+    // Strip markdown code fences if present
+    const cleaned = responseText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+
+    const parsed = JSON.parse(cleaned) as ExtractedCredit;
+
+    // Ensure topics is always an array
+    if (!Array.isArray(parsed.topics)) {
+      parsed.topics = [];
+    }
+
+    return { success: true, data: parsed };
+  } catch (error) {
+    console.error("Claude extraction error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown extraction error",
+    };
+  }
 }
