@@ -151,10 +151,10 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
 If a field cannot be determined, use null. Do not include any text outside the JSON.`;
 
 async function extractCertificateWithClaude(file: File): Promise<ExtractionResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_CME;
+  const apiKey = process.env.ANTHROPIC_CME;
   if (!apiKey) {
-    console.error("Anthropic API key not configured");
-    return { success: false, error: "Anthropic API key not configured" };
+    console.error("ANTHROPIC_CME not configured");
+    return { success: false, error: "ANTHROPIC_CME not configured" };
   }
 
   try {
