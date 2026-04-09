@@ -54,12 +54,16 @@ const TOPIC_LABELS: Record<string, string> = {
 /** Best partner URL for each mandatory topic gap. Free/no-login preferred. */
 const PARTNER_URLS: Record<string, string> = {
   OPIOID_PRESCRIBING: "https://www.cmeoutfitters.com/opioidquicklinks/",
+  SUBSTANCE_USE: "https://home.hippoed.com/oud-decoded",
   IMPLICIT_BIAS: "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
   ETHICS: "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
   INFECTION_CONTROL: "https://home.hippoed.com/abxstewardship",
   PATIENT_SAFETY: "https://www.acep.org/acepanytime/",
   SUICIDE_PREVENTION: "https://bootcamp.pri-med.com/en/mental-health",
 };
+
+/** Topics sourced from Hippo Education — show badge */
+const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "INFECTION_CONTROL"]);
 
 function RenewalCountdown({ days }: { days: number | null }) {
   if (days === null) return null;
@@ -393,7 +397,13 @@ export default async function CompliancePage() {
                                 >
                                   {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
                                 </a>
-                                <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>
+                                {HIPPO_TOPICS.has(gap.topic) ? (
+                                  <span className="inline-flex items-center gap-1 text-xs text-purple-700 font-medium">
+                                    <span>🦛</span> via Hippo Education
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>
+                                )}
                               </div>
                             )}
                           </div>
