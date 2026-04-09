@@ -62,15 +62,16 @@ export async function GET() {
       return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
     });
 
-    const totalHoursEarned = cycleCerts.reduce((sum: number, c) => sum + (c.creditHours ?? 0), 0);
+    const totalHoursEarned = cycleCerts.reduce((sum: number, c: typeof certificates[number]) => sum + (c.creditHours ?? 0), 0);
     const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
     const isCompliant = gapHours === 0;
 
     // Check mandatory topics
     const mandatoryGaps = rule.mandatoryRequirements.map((req) => {
+      type CertType = typeof certificates[number];
       const earnedForTopic = cycleCerts
-        .filter((c) => c.specialTopics.includes(req.topic))
-        .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+        .filter((c: CertType) => c.specialTopics.includes(req.topic))
+        .reduce((sum: number, c: CertType) => sum + (c.creditHours ?? 0), 0);
 
       return {
         topic: req.topic,
