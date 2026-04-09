@@ -62,7 +62,7 @@ export async function GET() {
       return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
     });
 
-    const totalHoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+    const totalHoursEarned = cycleCerts.reduce((sum: number, c) => sum + (c.creditHours ?? 0), 0);
     const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
     const isCompliant = gapHours === 0;
 
