@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 
+// Email magic link is only available when RESEND_API_KEY is configured.
+// On production without the key, we show Google-only sign-in.
+const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
@@ -63,39 +67,43 @@ export default function LoginPage() {
                 Continue with Google
               </button>
 
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200" />
-                </div>
-                <div className="relative flex justify-center text-xs text-slate-400">
-                  <span className="bg-white px-3">or continue with email</span>
-                </div>
-              </div>
+              {EMAIL_ENABLED && (
+                <>
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200" />
+                    </div>
+                    <div className="relative flex justify-center text-xs text-slate-400">
+                      <span className="bg-white px-3">or continue with email</span>
+                    </div>
+                  </div>
 
-              {/* Email Magic Link */}
-              <form onSubmit={handleEmailSignIn} className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading || !email}
-                  className="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
-                >
-                  {loading ? "Sending link..." : "Send magic link"}
-                </button>
-              </form>
+                  {/* Email Magic Link */}
+                  <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Email address
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={loading || !email}
+                      className="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
+                    >
+                      {loading ? "Sending link..." : "Send magic link"}
+                    </button>
+                  </form>
+                </>
+              )}
             </>
           )}
         </div>
