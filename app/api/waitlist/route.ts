@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, source } = body;
+    const { email, source, state } = body;
 
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "Valid email required" }, { status: 400 });
@@ -12,8 +12,15 @@ export async function POST(req: Request) {
 
     const entry = await prisma.waitlist.upsert({
       where: { email },
-      update: { source: source ?? null },
-      create: { email, source: source ?? null },
+      update: {
+        source: source ?? undefined,
+        state: state ?? undefined,
+      },
+      create: {
+        email,
+        source: source ?? null,
+        state: state ?? null,
+      },
     });
 
     return NextResponse.json({ success: true, id: entry.id }, { status: 201 });

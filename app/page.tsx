@@ -2,13 +2,28 @@
 
 import { useState } from "react";
 
+const US_STATES = [
+  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
+  "Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa",
+  "Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan",
+  "Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire",
+  "New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio",
+  "Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota",
+  "Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia",
+  "Wisconsin","Wyoming","District of Columbia",
+];
+
+type WaitlistStep = "email" | "state" | "done";
+
 function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark"; source: string }) {
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [state, setState] = useState("");
+  const [step, setStep] = useState<WaitlistStep>("email");
+  const [waitlistId, setWaitlistId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
@@ -23,7 +38,9 @@ function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark
         const data = await res.json();
         throw new Error(data.error ?? "Failed to join");
       }
-      setSubmitted(true);
+      const data = await res.json();
+      setWaitlistId(data.id);
+      setStep("state");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -31,21 +48,88 @@ function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark
     }
   };
 
-  if (submitted) {
+  const handleStateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!state) {
+      setStep("done");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source, state }),
+      });
+    } catch {
+      // Non-critical — just proceed
+    } finally {
+      setLoading(false);
+      setStep("done");
+    }
+  };
+
+  if (step === "done") {
     return (
-      <div
-        className={`flex items-center justify-center gap-3 font-medium px-6 py-4 rounded-xl max-w-md mx-auto ${
-          variant === "dark" ? "text-white" : "bg-green-50 text-green-700"
-        }`}
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clipRule="evenodd"
-          />
-        </svg>
-        You&apos;re on the list. We&apos;ll be in touch.
+      <div className={`max-w-md mx-auto text-center px-6 py-5 rounded-2xl ${variant === "dark" ? "bg-white/10" : "bg-green-50 border border-green-200"}`}>
+        <div className="flex items-center justify-center gap-2 font-semibold mb-2 text-base ${variant === 'dark' ? 'text-white' : 'text-green-700'}">
+          <svg className={`w-5 h-5 ${variant === "dark" ? "text-green-300" : "text-green-600"}`} fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <span className={variant === "dark" ? "text-white" : "text-green-800"}>You&apos;re on the list!</span>
+        </div>
+        <p className={`text-sm ${variant === "dark" ? "text-blue-100" : "text-green-700"}`}>
+          {state
+            ? `Thanks! We'll notify you when ${state} requirements are fully verified.`
+            : "We'll be in touch when ClearCME launches."}
+        </p>
+      </div>
+    );
+  }
+
+  if (step === "state") {
+    return (
+      <div className="max-w-md mx-auto space-y-3">
+        <div className={`flex items-center gap-2 text-sm font-medium ${variant === "dark" ? "text-green-300" : "text-green-700"}`}>
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          You&apos;re on the list! One more thing…
+        </div>
+        <p className={`text-sm ${variant === "dark" ? "text-blue-100" : "text-slate-600"}`}>
+          What state do you practice in? We&apos;ll let you know when your state&apos;s requirements are fully verified.
+        </p>
+        <form onSubmit={handleStateSubmit} className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className={`flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 ${
+              variant === "dark"
+                ? "border-blue-400 bg-blue-500 text-white focus:ring-white"
+                : "border-slate-200 text-slate-900 focus:ring-blue-500 focus:border-transparent bg-white"
+            }`}
+          >
+            <option value="">Select your state…</option>
+            {US_STATES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`px-6 py-3 font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm whitespace-nowrap ${
+              variant === "dark"
+                ? "bg-white text-blue-600 hover:bg-blue-50"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {loading ? "Saving…" : state ? "Save" : "Skip →"}
+          </button>
+        </form>
+        {error && (
+          <p className={`text-xs ${variant === "dark" ? "text-red-300" : "text-red-500"}`}>{error}</p>
+        )}
       </div>
     );
   }
@@ -53,7 +137,7 @@ function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark
   return (
     <div>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleEmailSubmit}
         className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
       >
         <input
@@ -134,8 +218,20 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Urgency framing — renewal season */}
+        <div className="mt-4 mb-2">
+          <p className="text-xs text-slate-400 text-center">
+            🗓 Renewal season is coming —{" "}
+            <span className="text-slate-500">Nevada physicians renew July 1</span>
+            {" · "}
+            <span className="text-slate-500">California physicians renew every 2 years</span>
+            {" · "}
+            <span className="text-slate-500">New York physicians renew every 3 years</span>
+          </p>
+        </div>
+
         {/* Trust badges */}
-        <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-slate-400">
+        <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
           <span>🔒 HIPAA-aware</span>
           <span>✓ ACCME data verified</span>
           <span>🏥 Built by an EM physician</span>

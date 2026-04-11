@@ -253,6 +253,7 @@ model Waitlist {
   email     String   @unique
   createdAt DateTime @default(now())
   source    String?  // e.g. "hero", "cta"
+  state     String?  // US state where physician practices
 }
 
 // ─── Subscriptions ────────────────────────────────────────────────────────────
