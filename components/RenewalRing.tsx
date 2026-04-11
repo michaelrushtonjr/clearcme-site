@@ -21,12 +21,13 @@ export default function RenewalRing({
   const pctInt = Math.round(pct * 100);
 
   const critical = daysUntilRenewal != null && daysUntilRenewal < 90;
+  // Use effectiveHoursNeeded to determine color — if mandatory topics are unmet, never show green
   const ringColor =
-    isCompliant || pct > 0.75
-      ? "#22c55e" // green
-      : critical || pct < 0.5
-      ? "#ef4444" // red
-      : "#f59e0b"; // amber
+    isCompliant
+      ? "#22c55e" // green — only when truly compliant (hours + all mandatories met)
+      : critical || effectiveHoursNeeded > totalHours * 0.5
+      ? "#ef4444" // red — critical or more than half still needed
+      : "#f59e0b"; // amber — some progress but not compliant
 
   const size = 80;
   const strokeWidth = 8;

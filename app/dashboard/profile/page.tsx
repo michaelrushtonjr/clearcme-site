@@ -26,6 +26,8 @@ export default function ProfilePage() {
     specialty: "",
     licenseNumber: "",
     renewalDate: "",
+    hasDeaRegistration: "" as "" | "yes" | "no",
+    deaRegistrationDate: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,6 +136,45 @@ export default function ProfilePage() {
             placeholder="e.g. MD12345"
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        {/* DEA Registration */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            DEA Registration
+          </label>
+          <div className="flex gap-3">
+            {[{ val: "yes", label: "Yes, I have an active DEA registration" }, { val: "no", label: "No DEA registration" }].map(({ val, label }) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => setForm({ ...form, hasDeaRegistration: val as "yes" | "no" })}
+                className={`flex-1 py-2 px-3 rounded-lg border text-xs font-medium transition-colors text-left ${
+                  form.hasDeaRegistration === val
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-slate-200 text-slate-700 hover:border-blue-300"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {form.hasDeaRegistration === "yes" && (
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                When did you first register with DEA? <span className="text-slate-400">(approximate)</span>
+              </label>
+              <input
+                type="date"
+                value={form.deaRegistrationDate}
+                onChange={(e) => setForm({ ...form, deaRegistrationDate: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Helps us determine if the DEA MATE Act 8-hr requirement applies to you.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Renewal Date */}

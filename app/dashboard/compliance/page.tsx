@@ -54,7 +54,7 @@ const TOPIC_LABELS: Record<string, string> = {
 
 /** Best partner URL for each mandatory topic gap. Free/no-login preferred. */
 const PARTNER_URLS: Record<string, string> = {
-  OPIOID_PRESCRIBING: "https://www.cmeoutfitters.com/opioidquicklinks/",
+  OPIOID_PRESCRIBING: "https://home.hippoed.com/oud-decoded",
   SUBSTANCE_USE: "https://home.hippoed.com/oud-decoded",
   IMPLICIT_BIAS: "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
   ETHICS: "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
@@ -64,7 +64,7 @@ const PARTNER_URLS: Record<string, string> = {
 };
 
 /** Topics sourced from Hippo Education — show badge */
-const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "INFECTION_CONTROL"]);
+const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "OPIOID_PRESCRIBING", "INFECTION_CONTROL"]);
 
 function RenewalCountdown({ days }: { days: number | null }) {
   if (days === null) return null;
