@@ -186,27 +186,27 @@ export default function CertificateUpload() {
       {/* Results */}
       {uploadState === "done" && uploadedCerts.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 className="font-semibold text-slate-900">
-              {uploadedCerts.length === 1
-                ? "1 certificate processed"
-                : `${uploadedCerts.length} certificates processed`}
-            </h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={reset}
-                className="text-sm font-semibold px-3 py-1.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                Upload Another Certificate
-              </button>
-              <Link
-                href="/dashboard"
-                className="text-sm font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Go to Dashboard →
-              </Link>
+          {uploadedCerts.length > 1 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="font-semibold text-slate-900">
+                {`${uploadedCerts.length} certificates processed`}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={reset}
+                  className="text-sm font-semibold px-3 py-1.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Upload Another Certificate
+                </button>
+                <Link
+                  href="/dashboard/compliance"
+                  className="text-sm font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  View My Compliance →
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
 
           {uploadedCerts.map((cert) => (
             <div key={cert.id}>
@@ -223,7 +223,7 @@ export default function CertificateUpload() {
               ) : cert.extractionFailed ? (
                 <ExtractionFailedCard cert={cert} />
               ) : cert.extracted ? (
-                <ExtractedCreditCard cert={cert} />
+                <ExtractedCreditCard cert={cert} onReset={reset} />
               ) : (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
                   <p className="text-sm text-amber-800">
@@ -362,7 +362,7 @@ function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
   );
 }
 
-function ExtractedCreditCard({ cert }: { cert: UploadedCert }) {
+function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: () => void }) {
   const ex = cert.extracted!;
 
   const CREDIT_LABELS: Record<string, string> = {
@@ -374,63 +374,109 @@ function ExtractedCreditCard({ cert }: { cert: UploadedCert }) {
     OTHER: "Other",
   };
 
+  const creditLabel = CREDIT_LABELS[ex.creditType] ?? ex.creditType;
+
+  const TOPIC_FORMAT: Record<string, string> = {
+    OPIOID_PRESCRIBING: "Opioid Prescribing",
+    PAIN_MANAGEMENT: "Pain Management",
+    IMPLICIT_BIAS: "Implicit Bias",
+    END_OF_LIFE_CARE: "End-of-Life Care",
+    DOMESTIC_VIOLENCE: "Domestic Violence",
+    CHILD_ABUSE: "Child Abuse",
+    ELDER_ABUSE: "Elder Abuse",
+    HUMAN_TRAFFICKING: "Human Trafficking",
+    INFECTION_CONTROL: "Infection Control",
+    PATIENT_SAFETY: "Patient Safety",
+    ETHICS: "Ethics",
+    CULTURAL_COMPETENCY: "Cultural Competency",
+    SUBSTANCE_USE: "Substance Use / MATE Act",
+    SUICIDE_PREVENTION: "Suicide Prevention",
+    OTHER_MANDATORY: "Mandatory Topic",
+  };
+
   return (
-    <div className="bg-white border border-green-200 rounded-2xl overflow-hidden">
-      {/* Success header */}
-      <div className="bg-green-50 px-5 py-3 flex items-center gap-2 border-b border-green-100">
-        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-        </svg>
-        <span className="text-sm font-medium text-green-800">Credits extracted</span>
-        <span className="ml-auto text-xs text-green-600 truncate max-w-[150px]">{cert.fileName}</span>
+    <div className="bg-white border-2 border-green-300 rounded-3xl overflow-hidden shadow-lg">
+      {/* Hero header */}
+      <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 py-8 text-center">
+        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-1">✓ Certificate Processed</h2>
+        <p className="text-green-100 text-sm">AI successfully extracted your CME credit</p>
       </div>
 
-      {/* Extracted data */}
-      <div className="p-5 space-y-4">
-        <div>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Activity</p>
-          <p className="font-semibold text-slate-900">{ex.title}</p>
-          <p className="text-sm text-slate-500">{ex.provider}</p>
+      {/* Receipt body */}
+      <div className="px-6 py-6 space-y-5">
+        {/* Course title — large and prominent */}
+        <div className="text-center border-b border-slate-100 pb-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Course</p>
+          <p className="text-xl font-bold text-slate-900 leading-snug">{ex.title}</p>
+          <p className="text-base text-slate-500 mt-1">{ex.provider}</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Date</p>
-            <p className="text-sm text-slate-900">{ex.date}</p>
+        {/* Key stats row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-slate-50 rounded-2xl p-4 text-center">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Completed</p>
+            <p className="text-base font-semibold text-slate-800">{ex.date}</p>
           </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Hours</p>
-            <p className="text-sm font-bold text-blue-700">{ex.creditHours.toFixed(1)} hrs</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Type</p>
-            <p className="text-sm text-slate-900">{CREDIT_LABELS[ex.creditType] ?? ex.creditType}</p>
+          <div className="bg-blue-50 rounded-2xl p-4 text-center">
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Credits Earned</p>
+            <p className="text-3xl font-black text-blue-700 leading-none">{ex.creditHours.toFixed(1)}</p>
+            <p className="text-xs text-blue-500 mt-1 font-medium">{creditLabel} Credits</p>
           </div>
         </div>
 
-        {ex.accreditation && (
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Accreditation</p>
-            <p className="text-sm text-slate-900">{ex.accreditation}</p>
-          </div>
-        )}
-
+        {/* Mandatory topics */}
         {ex.topics.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Topics</p>
-            <div className="flex flex-wrap gap-1.5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics Detected</p>
+            <div className="flex flex-wrap gap-2">
               {ex.topics.map((t) => (
-                <span key={t} className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
-                  {t}
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full"
+                >
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                  {TOPIC_FORMAT[t] ?? t.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
                 </span>
               ))}
             </div>
           </div>
         )}
 
-        <p className="text-xs text-slate-400 pt-1 border-t border-slate-100">
+        {/* Confirmation message */}
+        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+          <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <p className="text-sm text-green-800 font-medium">
+            This certificate has been added to your compliance record.
+          </p>
+        </div>
+
+        {/* AI disclaimer */}
+        <p className="text-xs text-slate-400 text-center">
           ⚠ AI-extracted — verify accuracy before relying on this for compliance.
         </p>
+
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-1">
+          <button
+            onClick={onReset}
+            className="flex-1 py-3 px-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm"
+          >
+            Upload Another
+          </button>
+          <Link
+            href="/dashboard/compliance"
+            className="flex-1 py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm text-center"
+          >
+            View My Compliance →
+          </Link>
+        </div>
       </div>
     </div>
   );
