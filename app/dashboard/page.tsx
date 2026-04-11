@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import CertificateList from "@/components/CertificateList";
+import HoursNeededTile from "@/components/HoursNeededTile";
+import RenewalRing from "@/components/RenewalRing";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -47,13 +49,17 @@ export default async function DashboardPage() {
 
       const hoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
       const hoursNeeded = Math.max(0, rule.totalHours - hoursEarned);
-      const gapHours = hoursNeeded;
 
       const mandatoryResults = rule.mandatoryRequirements.map((req) => {
         const earned = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
           .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-        return { earned, needed: req.hoursRequired, isMet: earned >= req.hoursRequired };
+        return {
+          topic: req.topic,
+          earned,
+          needed: req.hoursRequired,
+          isMet: earned >= req.hoursRequired,
+        };
       });
 
       const mandatoryMet = mandatoryResults.filter((r) => r.isMet).length;
@@ -68,16 +74,24 @@ export default async function DashboardPage() {
         ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         : null;
 
+      // Breakdown data for the popover
+      const mandatoryTopics = mandatoryResults
+        .filter((r) => !r.isMet)
+        .map((r) => ({
+          topic: r.topic,
+          hoursNeeded: Math.max(0, r.needed - r.earned),
+        }));
+
       return {
         license,
         rule,
         hoursEarned,
         hoursNeeded,
-        gapHours,
         mandatoryMet,
         mandatoryTotal: rule.mandatoryRequirements.length,
         mandatoryPendingCount,
         mandatoryGapHours,
+        mandatoryTopics,
         effectiveHoursNeeded,
         daysUntilRenewal,
         isCompliant,
@@ -91,7 +105,16 @@ export default async function DashboardPage() {
   const totalMandatoryMet = validCompliance.reduce((sum, d) => sum + d.mandatoryMet, 0);
   const totalMandatoryRequired = validCompliance.reduce((sum, d) => sum + d.mandatoryTotal, 0);
   const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.effectiveHoursNeeded, 0);
-  const totalMandatoryPending = validCompliance.reduce((sum, d) => sum + d.mandatoryPendingCount, 0);
+
+  // Build license breakdowns for the popover
+  const licenseBreakdowns = validCompliance.map((d) => ({
+    state: d.license.state,
+    licenseType: d.license.licenseType,
+    generalHoursNeeded: d.hoursNeeded,
+    mandatoryGapHours: d.mandatoryGapHours,
+    mandatoryPendingCount: d.mandatoryPendingCount,
+    mandatoryTopics: d.mandatoryTopics,
+  }));
 
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
@@ -138,7 +161,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-sm"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-sm min-h-[44px]"
           >
             Add License →
           </Link>
@@ -146,9 +169,12 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Stats row — only show when there's meaningful data */}
+          {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
+            <Link
+              href="/dashboard/compliance"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+            >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
               {hasCertificates ? (
                 <>
@@ -163,26 +189,17 @@ export default async function DashboardPage() {
               )}
             </Link>
 
-            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Still Needed</p>
-              {validCompliance.length > 0 ? (
-                <>
-                  <p className={`text-2xl font-bold ${totalHoursStillNeeded === 0 ? "text-green-600" : "text-amber-600"}`}>
-                    {totalHoursStillNeeded.toFixed(1)}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {totalHoursStillNeeded === 0 ? "all clear ✓" : "to complete"}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-slate-300">—</p>
-                  <p className="text-xs text-slate-400 mt-0.5">add a license</p>
-                </>
-              )}
-            </Link>
+            {/* Clickable Hours Still Needed tile with popover breakdown */}
+            <HoursNeededTile
+              totalHoursStillNeeded={totalHoursStillNeeded}
+              hasData={validCompliance.length > 0}
+              licenses={licenseBreakdowns}
+            />
 
-            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
+            <Link
+              href="/dashboard/compliance"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+            >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
               {nextRenewal?.daysUntilRenewal != null ? (
                 <>
@@ -207,7 +224,10 @@ export default async function DashboardPage() {
               )}
             </Link>
 
-            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
+            <Link
+              href="/dashboard/compliance"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+            >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
               {totalMandatoryRequired > 0 ? (
                 <>
@@ -229,7 +249,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {/* License compliance summary with pace indicator */}
+          {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-4">
@@ -241,63 +261,72 @@ export default async function DashboardPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
-                  const hrsPerMonth = monthsLeft != null && monthsLeft > 0 ? data.effectiveHoursNeeded / monthsLeft : null;
-                  const pctTimeLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / (data.rule.renewalCycle * 30.4) : null;
-                  const pctDone = data.rule.totalHours > 0 ? data.hoursEarned / data.rule.totalHours : 0;
-                  const onTrack = pctTimeLeft != null ? pctDone >= (1 - pctTimeLeft) : true;
-                  const critical = data.daysUntilRenewal != null && data.daysUntilRenewal < 60 && pctDone < 0.5;
+                  const hrsPerMonth =
+                    monthsLeft != null && monthsLeft > 0
+                      ? data.effectiveHoursNeeded / monthsLeft
+                      : null;
 
                   return (
-                    <Link key={data.license.id} href="/dashboard/compliance" className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
+                    <Link
+                      key={data.license.id}
+                      href="/dashboard/compliance"
+                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+                    >
+                      {/* Card header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 min-w-0 pr-3">
                           <p className="font-semibold text-slate-900">
                             {data.license.state} — {data.license.licenseType}
                           </p>
                           {data.daysUntilRenewal != null && (
-                            <p className={`text-xs mt-0.5 font-medium ${
-                              data.daysUntilRenewal <= 90
-                                ? "text-red-600"
-                                : data.daysUntilRenewal <= 180
-                                ? "text-amber-600"
-                                : "text-slate-400"
-                            }`}>
+                            <p
+                              className={`text-xs mt-0.5 font-medium ${
+                                data.daysUntilRenewal <= 90
+                                  ? "text-red-600"
+                                  : data.daysUntilRenewal <= 180
+                                  ? "text-amber-600"
+                                  : "text-slate-400"
+                              }`}
+                            >
                               {data.daysUntilRenewal <= 0
                                 ? "Renewal overdue"
                                 : `${data.daysUntilRenewal} days to renewal`}
                             </p>
                           )}
+                          <span
+                            className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
+                              data.isCompliant
+                                ? "bg-green-100 text-green-700"
+                                : "bg-amber-100 text-amber-700"
+                            }`}
+                          >
+                            {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
+                          </span>
                         </div>
-                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                          data.isCompliant
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
-                        </span>
+
+                        {/* Renewal Ring */}
+                        <RenewalRing
+                          hoursEarned={data.hoursEarned}
+                          totalHours={data.rule.totalHours}
+                          daysUntilRenewal={data.daysUntilRenewal}
+                          effectiveHoursNeeded={data.effectiveHoursNeeded}
+                          isCompliant={data.isCompliant}
+                          hrsPerMonth={hrsPerMonth}
+                        />
                       </div>
 
-                      <div>
-                        <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                          <span>Hours</span>
-                          <span>{data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs</span>
-                        </div>
-                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${data.isCompliant ? "bg-green-500" : "bg-blue-500"}`}
-                            style={{ width: `${Math.min(100, (data.hoursEarned / data.rule.totalHours) * 100)}%` }}
-                          />
-                        </div>
-                        {/* Pace indicator */}
-                        {!data.isCompliant && hrsPerMonth != null && data.daysUntilRenewal != null && data.daysUntilRenewal > 0 && (
-                          <p className={`text-xs mt-1.5 font-medium ${critical ? "text-red-600" : onTrack ? "text-green-600" : "text-amber-600"}`}>
-                            {critical ? "⚠️" : onTrack ? "✓" : "⚡"} {hrsPerMonth.toFixed(1)} hrs/month needed
-                          </p>
-                        )}
-                      </div>
+                      {/* Hours sub-line */}
+                      <p className="text-xs text-slate-500">
+                        {data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs earned
+                      </p>
 
+                      {/* Mandatory topics status */}
                       {data.mandatoryTotal > 0 && (
-                        <p className={`text-xs mt-2 font-medium ${data.mandatoryPendingCount > 0 ? "text-amber-600" : "text-green-600"}`}>
+                        <p
+                          className={`text-xs mt-1.5 font-medium ${
+                            data.mandatoryPendingCount > 0 ? "text-amber-600" : "text-green-600"
+                          }`}
+                        >
                           {data.mandatoryPendingCount > 0
                             ? `⚠️ ${data.mandatoryPendingCount} mandatory topic${data.mandatoryPendingCount === 1 ? "" : "s"} pending`
                             : "✅ All mandatory topics complete"}
@@ -316,7 +345,7 @@ export default async function DashboardPage() {
               <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
               <Link
                 href="/dashboard/upload"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors min-h-[44px] inline-flex items-center"
               >
                 + Upload certificate
               </Link>
