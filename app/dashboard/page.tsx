@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import CertificateList from "@/components/CertificateList";
@@ -23,6 +24,11 @@ export default async function DashboardPage() {
       orderBy: { renewalDate: "asc" },
     }),
   ]);
+
+  // Quick setup intercept: redirect first-time users with no licenses
+  if (licenses.length === 0 && certificates.length === 0) {
+    redirect("/dashboard/setup");
+  }
 
   const completedCerts = certificates.filter((c) => c.extractionStatus === "COMPLETED");
   const totalHours = completedCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
