@@ -146,7 +146,7 @@ export default async function CompliancePage() {
       });
 
       const totalHoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-      const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
+      const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
 
       // Pre-compute mandatory gaps to determine true compliance
       const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
@@ -163,7 +163,9 @@ export default async function CompliancePage() {
         };
       });
       const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet);
-      const isCompliant = gapHours === 0 && allMandatoryMet;
+      const mandatoryHoursGap = mandatoryGapsPreview.reduce((sum, g) => sum + g.gap, 0);
+      const effectiveGapHours = Math.max(generalGapHours, mandatoryHoursGap);
+      const isCompliant = generalGapHours === 0 && allMandatoryMet;
 
       const mandatoryGaps: MandatoryGap[] = mandatoryGapsPreview;
 
@@ -172,7 +174,7 @@ export default async function CompliancePage() {
         rule,
         totalHoursEarned,
         totalHoursNeeded: rule.totalHours,
-        gapHours,
+        gapHours: effectiveGapHours,
         isCompliant,
         mandatoryGaps,
         daysUntilRenewal: daysUntil(license.renewalDate),
@@ -189,7 +191,7 @@ export default async function CompliancePage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Compliance Map</h1>
         <p className="text-slate-500 mt-1 text-sm">
-          Live gap analysis for your state licenses
+          Live status of your state license compliance
         </p>
       </div>
 
