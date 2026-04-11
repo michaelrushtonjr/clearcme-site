@@ -21,11 +21,29 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { state, licenseType, licenseNumber, renewalDate } = body;
+  const {
+    state,
+    licenseType,
+    licenseNumber,
+    renewalDate,
+    deaNumber,
+    deaRegisteredAt,
+    deaExpiresAt,
+    mateActRequired,
+    mateActCompleted,
+  } = body;
 
   if (!state || !licenseType || !renewalDate) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  // Build optional DEA fields
+  const deaFields: Record<string, unknown> = {};
+  if (deaNumber !== undefined) deaFields.deaNumber = deaNumber || null;
+  if (deaRegisteredAt) deaFields.deaRegisteredAt = new Date(deaRegisteredAt);
+  if (deaExpiresAt) deaFields.deaExpiresAt = new Date(deaExpiresAt);
+  if (typeof mateActRequired === "boolean") deaFields.mateActRequired = mateActRequired;
+  if (typeof mateActCompleted === "boolean") deaFields.mateActCompleted = mateActCompleted;
 
   const license = await prisma.physicianLicense.upsert({
     where: {
@@ -39,6 +57,7 @@ export async function POST(req: Request) {
       licenseNumber: licenseNumber || null,
       renewalDate: new Date(renewalDate),
       isActive: true,
+      ...deaFields,
     },
     create: {
       userId: session.user.id,
@@ -47,6 +66,7 @@ export async function POST(req: Request) {
       licenseNumber: licenseNumber || null,
       renewalDate: new Date(renewalDate),
       isActive: true,
+      ...deaFields,
     },
   });
 
