@@ -282,6 +282,156 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Demo Mode — See it in action */}
+      <section className="py-20 bg-white">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">See it in action</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">
+              Here&apos;s what your compliance map looks like — live data, instant clarity.
+            </p>
+          </div>
+
+          <div className="relative bg-white rounded-2xl border-2 border-blue-100 shadow-lg overflow-hidden">
+            {/* Demo banner */}
+            <div className="bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center justify-between">
+              <span className="text-xs font-semibold text-blue-700 tracking-wide uppercase">
+                Demo — based on Nevada EM physician requirements
+              </span>
+              <span className="text-xs text-blue-500">DO · Emergency Medicine · NV</span>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              {/* Top stats row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: "Hours Earned", value: "34.0", sub: "this cycle", color: "text-blue-700" },
+                  { label: "Hours Needed", value: "6.0", sub: "to complete", color: "text-amber-600" },
+                  { label: "Days to Renewal", value: "267", sub: "NV DO", color: "text-slate-700" },
+                  { label: "Mandatory Topics", value: "4/5", sub: "complete", color: "text-amber-600" },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-slate-50 rounded-2xl border border-slate-200 p-4"
+                  >
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+                      {stat.label}
+                    </p>
+                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{stat.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Compliance card with ring */}
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 mb-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="font-semibold text-slate-900">Nevada — DO</p>
+                    <p className="text-xs text-slate-400 mt-0.5">267 days to renewal</p>
+                    <span className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+                      ⚠ Incomplete
+                    </span>
+                  </div>
+                  {/* Static ring SVG — 85% (34/40 hrs) */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative" style={{ width: 80, height: 80 }}>
+                      <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90" aria-label="85% of CME hours complete">
+                        <circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="36"
+                          fill="none"
+                          stroke="#f59e0b"
+                          strokeWidth="8"
+                          strokeDasharray={`${2 * Math.PI * 36}`}
+                          strokeDashoffset={`${2 * Math.PI * 36 * (1 - 0.85)}`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-xs font-bold text-slate-800 leading-none">6</span>
+                        <span className="text-[9px] text-slate-400 leading-none mt-0.5">hrs left</span>
+                      </div>
+                    </div>
+                    <p className="text-xs font-medium text-amber-600 text-center">⚡ 0.7 hrs/month needed</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">34.0 / 40 hrs earned</p>
+                <p className="text-xs mt-1.5 font-medium text-amber-600">⚠️ 1 mandatory topic pending</p>
+              </div>
+
+              {/* Requirements list */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Requirements</h3>
+                {[
+                  { topic: "Opioid Prescribing", hrs: "2 hrs", status: "complete", met: true },
+                  { topic: "Implicit Bias", hrs: "2 hrs", status: "complete", met: true },
+                  { topic: "Ethics", hrs: "1 hr", status: "complete", met: true },
+                  { topic: "End of Life Care", hrs: "1 hr", status: "complete", met: true },
+                  { topic: "DEA MATE Act", hrs: "8 hrs", status: "not completed", met: false, alert: true },
+                ].map((req) => (
+                  <div
+                    key={req.topic}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${
+                      req.alert
+                        ? "bg-amber-50 border-amber-200"
+                        : "bg-slate-50 border-slate-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {req.alert ? (
+                        <span className="text-amber-500">⚠️</span>
+                      ) : (
+                        <span className="text-green-500">✅</span>
+                      )}
+                      <span className={req.alert ? "font-medium text-amber-900" : "text-slate-700"}>
+                        {req.topic}
+                        {req.alert && (
+                          <span className="ml-1 text-xs text-amber-600">— not yet completed</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">{req.hrs}</span>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          req.met
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {req.met ? "Met" : "Gap"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary line */}
+              <p className="mt-5 text-center text-sm text-slate-500">
+                <span className="font-semibold text-slate-700">Nevada DO: </span>
+                40 hrs total · 5 mandatory topics · 267 days to renewal
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-8">
+            <a
+              href="/login"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-base shadow-sm"
+            >
+              See YOUR compliance map → Sign in with Google
+            </a>
+            <p className="text-xs text-slate-400 mt-3">
+              Free · Takes under 2 minutes · No certificate upload needed to get started
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Social proof */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h2 className="text-3xl font-bold text-slate-900 mb-4">
