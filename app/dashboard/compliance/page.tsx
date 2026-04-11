@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import CertificateList from "@/components/CertificateList";
+import UrgencyCard from "@/components/dashboard/UrgencyCard";
+import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -185,15 +187,96 @@ export default async function CompliancePage() {
 
   const totalHoursAllCerts = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
+  // Build urgency items — gaps with deadlines, sorted by urgency score (gap × closeness)
+  const urgencyItems: {
+    topic: string;
+    gapHours: number;
+    daysUntilDeadline: number;
+    deadlineLabel: string;
+    licenseState: string;
+    ctaUrl: string;
+    ctaLabel: string;
+  }[] = [];
+
+  for (const d of complianceData) {
+    if (!d.rule || d.daysUntilRenewal === null) continue;
+    const days = d.daysUntilRenewal;
+    const deadline = d.license.renewalDate
+      ? new Date(d.license.renewalDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : "unknown";
+
+    // Add per-topic mandatory gaps
+    for (const gap of d.mandatoryGaps) {
+      if (!gap.isMet) {
+        urgencyItems.push({
+          topic: gap.topic,
+          gapHours: gap.gap,
+          daysUntilDeadline: days,
+          deadlineLabel: deadline,
+          licenseState: d.license.state,
+          ctaUrl: "",
+          ctaLabel: "",
+        });
+      }
+    }
+    // Also add general hours gap if present
+    if (d.gapHours > 0 && d.mandatoryGaps.every((g) => g.isMet)) {
+      urgencyItems.push({
+        topic: "GENERAL_CME",
+        gapHours: d.gapHours,
+        daysUntilDeadline: days,
+        deadlineLabel: deadline,
+        licenseState: d.license.state,
+        ctaUrl: "https://www.medscape.com/cme",
+        ctaLabel: "Find CME →",
+      });
+    }
+  }
+
+  // Sort: smaller days-left × larger gap = more urgent
+  urgencyItems.sort((a, b) => {
+    const scoreA = (1 / (a.daysUntilDeadline + 1)) * a.gapHours;
+    const scoreB = (1 / (b.daysUntilDeadline + 1)) * b.gapHours;
+    return scoreB - scoreA;
+  });
+
+  // Build export data for client component
+  const exportData = {
+    licenses: complianceData.map((d) => ({
+      state: d.license.state,
+      licenseType: d.license.licenseType,
+      renewalDate: d.license.renewalDate?.toISOString() ?? null,
+      totalHoursEarned: d.totalHoursEarned,
+      totalHoursNeeded: d.totalHoursNeeded,
+      gapHours: d.gapHours,
+      isCompliant: d.isCompliant,
+      mandatoryGaps: d.mandatoryGaps,
+    })),
+    certificates: certificates.map((c) => ({
+      title: c.title ?? c.fileName,
+      provider: c.provider ?? "",
+      activityDate: c.activityDate?.toISOString() ?? null,
+      creditHours: c.creditHours ?? 0,
+      creditType: c.creditType ?? "OTHER",
+    })),
+    totalHoursAllCerts,
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Compliance Map</h1>
-        <p className="text-slate-500 mt-1 text-sm">
-          Live status of your state license compliance
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Compliance Map</h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            Live status of your state license compliance
+          </p>
+        </div>
+        <ComplianceExportButton exportData={exportData} />
       </div>
+
+      {/* Urgency card — sticky top alert */}
+      {urgencyItems.length > 0 && <UrgencyCard items={urgencyItems} />}
 
       {/* No licenses */}
       {licenses.length === 0 && (
