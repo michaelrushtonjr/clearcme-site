@@ -49,12 +49,20 @@ export default async function DashboardPage() {
       const hoursNeeded = Math.max(0, rule.totalHours - hoursEarned);
       const gapHours = hoursNeeded;
 
-      const mandatoryMet = rule.mandatoryRequirements.filter((req) => {
+      const mandatoryResults = rule.mandatoryRequirements.map((req) => {
         const earned = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
           .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-        return earned >= req.hoursRequired;
-      }).length;
+        return { earned, needed: req.hoursRequired, isMet: earned >= req.hoursRequired };
+      });
+
+      const mandatoryMet = mandatoryResults.filter((r) => r.isMet).length;
+      const mandatoryGapHours = mandatoryResults
+        .filter((r) => !r.isMet)
+        .reduce((sum, r) => sum + Math.max(0, r.needed - r.earned), 0);
+      const mandatoryPendingCount = rule.mandatoryRequirements.length - mandatoryMet;
+      const effectiveHoursNeeded = Math.max(hoursNeeded, mandatoryGapHours);
+      const isCompliant = hoursNeeded === 0 && mandatoryMet === rule.mandatoryRequirements.length;
 
       const daysUntilRenewal = license.renewalDate
         ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -68,8 +76,11 @@ export default async function DashboardPage() {
         gapHours,
         mandatoryMet,
         mandatoryTotal: rule.mandatoryRequirements.length,
+        mandatoryPendingCount,
+        mandatoryGapHours,
+        effectiveHoursNeeded,
         daysUntilRenewal,
-        isCompliant: hoursNeeded === 0,
+        isCompliant,
       };
     })
   );
@@ -79,7 +90,8 @@ export default async function DashboardPage() {
 
   const totalMandatoryMet = validCompliance.reduce((sum, d) => sum + d.mandatoryMet, 0);
   const totalMandatoryRequired = validCompliance.reduce((sum, d) => sum + d.mandatoryTotal, 0);
-  const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.hoursNeeded, 0);
+  const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.effectiveHoursNeeded, 0);
+  const totalMandatoryPending = validCompliance.reduce((sum, d) => sum + d.mandatoryPendingCount, 0);
 
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
@@ -136,7 +148,7 @@ export default async function DashboardPage() {
         <>
           {/* Stats row — only show when there's meaningful data */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
               {hasCertificates ? (
                 <>
@@ -149,9 +161,9 @@ export default async function DashboardPage() {
                   <p className="text-xs text-slate-400 mt-0.5">upload a certificate</p>
                 </>
               )}
-            </div>
+            </Link>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Still Needed</p>
               {validCompliance.length > 0 ? (
                 <>
@@ -168,9 +180,9 @@ export default async function DashboardPage() {
                   <p className="text-xs text-slate-400 mt-0.5">add a license</p>
                 </>
               )}
-            </div>
+            </Link>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
               {nextRenewal?.daysUntilRenewal != null ? (
                 <>
@@ -193,9 +205,9 @@ export default async function DashboardPage() {
                   </p>
                 </>
               )}
-            </div>
+            </Link>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+            <Link href="/dashboard/compliance" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
               {totalMandatoryRequired > 0 ? (
                 <>
@@ -214,7 +226,7 @@ export default async function DashboardPage() {
                   </p>
                 </>
               )}
-            </div>
+            </Link>
           </div>
 
           {/* License compliance summary with pace indicator */}
@@ -229,14 +241,14 @@ export default async function DashboardPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
-                  const hrsPerMonth = monthsLeft != null && monthsLeft > 0 ? data.gapHours / monthsLeft : null;
+                  const hrsPerMonth = monthsLeft != null && monthsLeft > 0 ? data.effectiveHoursNeeded / monthsLeft : null;
                   const pctTimeLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / (data.rule.renewalCycle * 30.4) : null;
                   const pctDone = data.rule.totalHours > 0 ? data.hoursEarned / data.rule.totalHours : 0;
                   const onTrack = pctTimeLeft != null ? pctDone >= (1 - pctTimeLeft) : true;
                   const critical = data.daysUntilRenewal != null && data.daysUntilRenewal < 60 && pctDone < 0.5;
 
                   return (
-                    <div key={data.license.id} className="bg-white rounded-2xl border border-slate-200 p-5">
+                    <Link key={data.license.id} href="/dashboard/compliance" className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <p className="font-semibold text-slate-900">
@@ -261,7 +273,7 @@ export default async function DashboardPage() {
                             ? "bg-green-100 text-green-700"
                             : "bg-amber-100 text-amber-700"
                         }`}>
-                          {data.isCompliant ? "✓ Compliant" : "⚠ Gaps"}
+                          {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
                         </span>
                       </div>
 
@@ -285,11 +297,13 @@ export default async function DashboardPage() {
                       </div>
 
                       {data.mandatoryTotal > 0 && (
-                        <p className="text-xs text-slate-500 mt-2">
-                          Mandatory topics: {data.mandatoryMet}/{data.mandatoryTotal} complete
+                        <p className={`text-xs mt-2 font-medium ${data.mandatoryPendingCount > 0 ? "text-amber-600" : "text-green-600"}`}>
+                          {data.mandatoryPendingCount > 0
+                            ? `⚠️ ${data.mandatoryPendingCount} mandatory topic${data.mandatoryPendingCount === 1 ? "" : "s"} pending`
+                            : "✅ All mandatory topics complete"}
                         </p>
                       )}
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

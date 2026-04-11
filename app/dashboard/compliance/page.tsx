@@ -147,9 +147,9 @@ export default async function CompliancePage() {
 
       const totalHoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
       const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
-      const isCompliant = gapHours === 0;
 
-      const mandatoryGaps: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
+      // Pre-compute mandatory gaps to determine true compliance
+      const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
         const earnedForTopic = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
           .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
@@ -162,6 +162,10 @@ export default async function CompliancePage() {
           isMet: earnedForTopic >= req.hoursRequired,
         };
       });
+      const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet);
+      const isCompliant = gapHours === 0 && allMandatoryMet;
+
+      const mandatoryGaps: MandatoryGap[] = mandatoryGapsPreview;
 
       return {
         license,
@@ -235,7 +239,7 @@ export default async function CompliancePage() {
             ) : complianceData.filter((d) => d.rule).every((d) => d.isCompliant) ? (
               <p className="text-2xl font-bold text-green-600">✓ Good</p>
             ) : (
-              <p className="text-2xl font-bold text-amber-600">⚠ Gaps</p>
+              <p className="text-2xl font-bold text-amber-600">⚠ Incomplete</p>
             )}
           </div>
         </div>
@@ -260,7 +264,7 @@ export default async function CompliancePage() {
                       : "bg-amber-100 text-amber-700"
                   }`}
                 >
-                  {!rule ? "Rules pending" : isCompliant ? "✓ Compliant" : "⚠ Gaps found"}
+                  {!rule ? "Rules pending" : isCompliant ? "✓ Compliant" : "⚠ Requirements Pending"}
                 </span>
               </div>
               {license.renewalDate && (
