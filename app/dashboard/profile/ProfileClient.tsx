@@ -43,6 +43,14 @@ function computeMateActRequired(registrationDateStr: string | null): boolean | n
   return d < MATE_ACT_CUTOFF;
 }
 
+interface AdditionalLicense {
+  id: string;
+  state: string;
+  licenseType: string;
+  renewalDate: string;
+  expanded: boolean;
+}
+
 interface ProfileClientProps {
   userName: string | null;
 }
@@ -51,6 +59,24 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Additional licenses
+  const [additionalLicenses, setAdditionalLicenses] = useState<AdditionalLicense[]>([]);
+
+  function addAdditionalLicense() {
+    setAdditionalLicenses((prev) => [
+      ...prev,
+      { id: Math.random().toString(36).slice(2), state: "", licenseType: "", renewalDate: "", expanded: true },
+    ]);
+  }
+
+  function removeAdditionalLicense(id: string) {
+    setAdditionalLicenses((prev) => prev.filter((l) => l.id !== id));
+  }
+
+  function updateAdditionalLicense(id: string, update: Partial<AdditionalLicense>) {
+    setAdditionalLicenses((prev) => prev.map((l) => (l.id === id ? { ...l, ...update } : l)));
+  }
   const [form, setForm] = useState({
     state: "",
     licenseType: "",
@@ -171,6 +197,22 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         const data = await res.json();
         throw new Error(data.error || "Failed to save license");
       }
+
+      // POST additional licenses
+      for (const lic of additionalLicenses) {
+        if (!lic.state || !lic.licenseType || !lic.renewalDate) continue;
+        await fetch("/api/licenses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            state: lic.state,
+            licenseType: lic.licenseType,
+            specialty: form.specialty,
+            renewalDate: lic.renewalDate,
+          }),
+        });
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
@@ -538,6 +580,100 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
           </p>
         </div>
 
+        {/* Additional state licenses */}
+        {additionalLicenses.length > 0 && (
+          <div className="space-y-4 pt-2">
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-sm font-semibold text-slate-700 mb-3">Additional State Licenses</p>
+              {additionalLicenses.map((lic, idx) => (
+                <div key={lic.id} className="border border-slate-200 rounded-xl overflow-hidden mb-3">
+                  {/* Collapsible header */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-50 cursor-pointer" onClick={() => updateAdditionalLicense(lic.id, { expanded: !lic.expanded })}>
+                    <p className="text-sm font-medium text-slate-700">
+                      {lic.state && lic.licenseType
+                        ? `${lic.state} — ${lic.licenseType}`
+                        : `License ${idx + 2}`}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); removeAdditionalLicense(lic.id); }}
+                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                        aria-label="Remove"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <svg
+                        className={`w-4 h-4 text-slate-400 transition-transform ${lic.expanded ? "rotate-180" : ""}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {lic.expanded && (
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">State</label>
+                        <select
+                          value={lic.state}
+                          onChange={(e) => updateAdditionalLicense(lic.id, { state: e.target.value })}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="" disabled>Select state…</option>
+                          {US_STATES.filter((s) => s !== form.state).map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">License Type</label>
+                        <div className="flex gap-2">
+                          {["MD", "DO"].map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => updateAdditionalLicense(lic.id, { licenseType: type })}
+                              className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
+                                lic.licenseType === type
+                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  : "border-slate-200 text-slate-700 hover:border-blue-300"
+                              }`}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Renewal Date</label>
+                        <input
+                          type="date"
+                          value={lic.renewalDate}
+                          onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add another state license button */}
+        <button
+          type="button"
+          onClick={addAdditionalLicense}
+          className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
+        >
+          + Add another state license
+        </button>
+
         {error && (
           <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
             {error}
@@ -557,7 +693,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             disabled={loading}
             className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60"
           >
-            {loading ? "Saving..." : "Add License"}
+            {loading ? "Saving..." : additionalLicenses.length > 0 ? `Add ${additionalLicenses.length + 1} Licenses` : "Add License"}
           </button>
         </div>
       </form>

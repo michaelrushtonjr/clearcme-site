@@ -11,12 +11,15 @@ interface Cert {
   activityDate: Date | null;
   creditHours: number | null;
   extractionStatus: string;
+  creditType?: string | null;
 }
 
 interface Props {
   certs: Cert[];
   totalCount: number;
   showViewAll?: boolean;
+  /** Map of certId → state codes where the cert counts */
+  sharedCredits?: Record<string, string[]>;
 }
 
 function StatusBadge({ status, creditHours }: { status: string; creditHours: number | null }) {
@@ -42,7 +45,7 @@ function StatusBadge({ status, creditHours }: { status: string; creditHours: num
   );
 }
 
-export default function CertificateList({ certs, totalCount, showViewAll = false }: Props) {
+export default function CertificateList({ certs, totalCount, showViewAll = false, sharedCredits }: Props) {
   if (certs.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
@@ -77,6 +80,14 @@ export default function CertificateList({ certs, totalCount, showViewAll = false
                   <> · {new Date(cert.activityDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
                 )}
               </p>
+              {sharedCredits?.[cert.id] && sharedCredits[cert.id].length >= 2 && (
+                <span className="inline-flex items-center gap-1 mt-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Counts for: {sharedCredits[cert.id].join(", ")}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <StatusBadge status={cert.extractionStatus} creditHours={cert.creditHours} />

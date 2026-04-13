@@ -189,6 +189,17 @@ export default async function CompliancePage() {
 
   const totalHoursAllCerts = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
+  // Shared credit detection: AMA_PRA_1 certs count toward all license states
+  const licenseStates = licenses.map((l) => l.state);
+  const sharedCredits: Record<string, string[]> = {};
+  if (licenseStates.length >= 2) {
+    for (const cert of certificates) {
+      if (cert.creditType === "AMA_PRA_1") {
+        sharedCredits[cert.id] = licenseStates;
+      }
+    }
+  }
+
   // Build "Your Next Action" card props — pick the most urgent license with a rule
   // Priority: soonest renewal with a gap; fallback to first license with a rule
   const nextActionProps: NextActionCardProps | null = (() => {
@@ -520,7 +531,7 @@ export default async function CompliancePage() {
           </Link>
         </div>
 
-        <CertificateList certs={certificates} totalCount={certificates.length} />
+        <CertificateList certs={certificates} totalCount={certificates.length} sharedCredits={sharedCredits} />
         {certificates.length > 0 && (
           <div className="px-5 py-4 bg-slate-50 border border-slate-200 rounded-b-2xl -mt-2 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">Total hours</span>
