@@ -161,6 +161,18 @@ export default async function DashboardPage() {
     : 0;
   const recentCerts = certificates.slice(0, 5);
 
+  // Shared credit detection: AMA_PRA_1 certs that cover multiple active license states
+  const licenseStates = licenses.map((l) => l.state);
+  const sharedCredits: Record<string, string[]> = {};
+  if (licenseStates.length >= 2) {
+    for (const cert of certificates) {
+      if (cert.creditType === "AMA_PRA_1") {
+        // AMA PRA Category 1 is accepted by all states — mark all license states
+        sharedCredits[cert.id] = licenseStates;
+      }
+    }
+  }
+
   // Onboarding steps: 1=account(always done), 2=license, 3=certificate
   const onboardingSteps = [
     { label: "Create your account", done: true },
@@ -300,12 +312,27 @@ export default async function DashboardPage() {
           {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
+                  {licenses.length >= 2 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+                      </svg>
+                      Multi-state
+                    </span>
+                  )}
+                </div>
                 <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   View full map →
                 </Link>
               </div>
+              {licenses.length >= 2 && (
+                <p className="text-xs text-slate-500 mb-4">
+                  Requirements shown per state — some mandatory topics may satisfy multiple states.
+                </p>
+              )}
               <div className="grid sm:grid-cols-2 gap-4">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
@@ -413,6 +440,7 @@ export default async function DashboardPage() {
               certs={recentCerts}
               totalCount={certificates.length}
               showViewAll
+              sharedCredits={sharedCredits}
             />
           </section>
         </>
