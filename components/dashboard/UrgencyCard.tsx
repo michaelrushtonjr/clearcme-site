@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface MandatoryGapSummary {
   topic: string;
   gap: number;
@@ -16,18 +18,29 @@ export interface NextActionCardProps {
   licenseState: string;
 }
 
-// ── Partner URLs ─────────────────────────────────────────────────────────────
-const PARTNER_URLS: Record<string, string> = {
-  OPIOID_PRESCRIBING: "https://home.hippoed.com/oud-decoded",
-  SUBSTANCE_USE: "https://home.hippoed.com/oud-decoded",
-  IMPLICIT_BIAS:
-    "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
-  ETHICS:
-    "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
-  INFECTION_CONTROL: "https://home.hippoed.com/abxstewardship",
-  PATIENT_SAFETY: "https://www.acep.org/acepanytime/",
-  SUICIDE_PREVENTION: "https://bootcamp.pri-med.com/en/mental-health",
-};
+// ── Internal course discovery routes ─────────────────────────────────────────
+/** Topics that have a /courses/[slug] page — route internally */
+const INTERNAL_COURSE_TOPICS = new Set([
+  "SUBSTANCE_USE",
+  "OPIOID_PRESCRIBING",
+  "ETHICS",
+  "IMPLICIT_BIAS",
+  "PATIENT_SAFETY",
+  "SUICIDE_PREVENTION",
+  "DOMESTIC_VIOLENCE",
+  "HUMAN_TRAFFICKING",
+]);
+
+function courseUrl(topic: string): string {
+  if (INTERNAL_COURSE_TOPICS.has(topic)) {
+    return `/courses/${topic.toLowerCase().replace(/_/g, "-")}`;
+  }
+  // Fallback for topics without a discovery page yet
+  const PARTNER_FALLBACK: Record<string, string> = {
+    INFECTION_CONTROL: "https://home.hippoed.com/abxstewardship",
+  };
+  return PARTNER_FALLBACK[topic] ?? DEFAULT_CME_URL;
+}
 
 const DEFAULT_CME_URL = "https://www.medscape.com/cme";
 
@@ -141,8 +154,11 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       ? topicLabel(highestGapMandatory.topic)
       : "general CME";
     const ctaUrl = highestGapMandatory
-      ? (PARTNER_URLS[highestGapMandatory.topic] ?? DEFAULT_CME_URL)
+      ? courseUrl(highestGapMandatory.topic)
       : DEFAULT_CME_URL;
+    const ctaExternal = highestGapMandatory
+      ? !INTERNAL_COURSE_TOPICS.has(highestGapMandatory.topic)
+      : true;
     return {
       theme: "red",
       icon: "⚠️",
@@ -150,7 +166,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       explanation: `Your ${renewalDateLabel} renewal is approaching. Focus on your highest-priority gap first to avoid a compliance violation.`,
       ctaLabel: `Find ${topicName} CME →`,
       ctaUrl,
-      ctaExternal: true,
+      ctaExternal,
     };
   }
 
@@ -167,7 +183,8 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
   if (oneTimeUnmet.length > 0) {
     const req = oneTimeUnmet[0];
     const label = topicLabel(req.topic);
-    const ctaUrl = PARTNER_URLS[req.topic] ?? DEFAULT_CME_URL;
+    const ctaUrl = courseUrl(req.topic);
+    const ctaExternal = !INTERNAL_COURSE_TOPICS.has(req.topic);
     return {
       theme: "amber",
       icon: "📋",
@@ -175,7 +192,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       explanation: `This is a mandatory one-time requirement for your ${props.licenseState} license. You only have to do it once — best to knock it out now.`,
       ctaLabel: `Find ${label} CME →`,
       ctaUrl,
-      ctaExternal: true,
+      ctaExternal,
     };
   }
 
@@ -197,7 +214,8 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
   // ── 3. General hours gap with unmet mandatory topics, plenty of time ──────
   if (generalGapHours > 0 && highestGapMandatory) {
     const label = topicLabel(highestGapMandatory.topic);
-    const ctaUrl = PARTNER_URLS[highestGapMandatory.topic] ?? DEFAULT_CME_URL;
+    const ctaUrl = courseUrl(highestGapMandatory.topic);
+    const ctaExternal = !INTERNAL_COURSE_TOPICS.has(highestGapMandatory.topic);
     const daysLabel =
       daysUntilRenewal !== null ? `before ${renewalDateLabel}` : "";
     return {
@@ -207,7 +225,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       explanation: `You still have time ${daysLabel}. Prioritise ${label} to chip away at your biggest mandatory gap.`,
       ctaLabel: `Find ${label} CME →`,
       ctaUrl,
-      ctaExternal: true,
+      ctaExternal,
     };
   }
 
@@ -261,12 +279,12 @@ export default function UrgencyCard(props: NextActionCardProps) {
               {rec.ctaLabel}
             </a>
           ) : (
-            <a
+            <Link
               href={rec.ctaUrl}
               className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${t.cta}`}
             >
               {rec.ctaLabel}
-            </a>
+            </Link>
           )}
         </div>
       </div>

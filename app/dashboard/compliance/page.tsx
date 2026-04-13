@@ -7,6 +7,7 @@ import Link from "next/link";
 import CertificateList from "@/components/CertificateList";
 import UrgencyCard, { NextActionCardProps } from "@/components/dashboard/UrgencyCard";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
+import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import { keyToSlug } from "@/lib/courses";
 
 export const metadata = {
@@ -261,7 +262,10 @@ export default async function CompliancePage() {
             Live status of your state license compliance
           </p>
         </div>
-        <ComplianceExportButton exportData={exportData} />
+        <div className="flex flex-wrap gap-2">
+          <ComplianceExportButton exportData={exportData} />
+          <AuditExportButton />
+        </div>
       </div>
 
       {/* Your Next Action card */}
@@ -464,10 +468,8 @@ export default async function CompliancePage() {
                             </div>
                             {!gap.isMet && (
                               <div className="flex flex-col items-end gap-0.5">
-                                <a
-                                  href={PARTNER_URLS[gap.topic] ?? "https://www.medscape.com/cme"}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <Link
+                                  href={`/courses/${keyToSlug(gap.topic)}`}
                                   className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
                                     gap.earned > 0
                                       ? "bg-amber-600 text-white hover:bg-amber-700"
@@ -475,7 +477,7 @@ export default async function CompliancePage() {
                                   }`}
                                 >
                                   {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
-                                </a>
+                                </Link>
                                 {HIPPO_TOPICS.has(gap.topic) ? (
                                   <span className="inline-flex items-center gap-1 text-xs text-purple-700 font-medium">
                                     <span>🦛</span> via Hippo Education
