@@ -186,6 +186,7 @@ export default function Home() {
         <div className="flex items-center gap-6">
           <a href="/pricing" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">Pricing</a>
           <a href="/mate-act" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">DEA MATE Act</a>
+          <a href="/methodology" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">Methodology</a>
           <a
             href="#waitlist"
             className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"

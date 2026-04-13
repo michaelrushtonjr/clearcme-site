@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: "Does ClearCME track MOC?",
-    a: "No. ClearCME tracks state CME requirements for medical licensure. ABIM/ABFM/ABEM Maintenance of Certification (MOC) is a separate program not currently tracked.",
+    a: "Not yet. ClearCME currently tracks state CME requirements for medical licensure. ABIM/ABFM/ABEM Maintenance of Certification (MOC) is a separate program with its own requirements — and it's on our roadmap. We plan to add MOC tracking in a future release. If MOC support is important to you, let us know at hello@clearcme.ai.",
   },
   {
     q: "Is my data secure?",
