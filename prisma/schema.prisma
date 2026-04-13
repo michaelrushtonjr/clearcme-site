@@ -124,9 +124,10 @@ model Certificate {
   mimeType    String?   // application/pdf, image/jpeg, image/png
 
   // AI-extracted data
-  extractedAt       DateTime?
-  extractionStatus  ExtractionStatus @default(PENDING)
-  extractionError   String?
+  extractedAt           DateTime?
+  extractionStatus      ExtractionStatus @default(PENDING)
+  extractionError       String?
+  extractionConfidence  Float?           // 0.0–1.0; null = not computed; <0.7 = NEEDS_REVIEW
 
   // Extracted fields
   title           String?
@@ -154,6 +155,7 @@ enum ExtractionStatus {
   COMPLETED
   FAILED
   MANUAL
+  NEEDS_REVIEW
 }
 
 enum CreditType {

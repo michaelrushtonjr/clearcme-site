@@ -76,12 +76,18 @@ export async function POST(req: NextRequest) {
     if (extractionResult.success && extractionResult.data) {
       const extracted = extractionResult.data;
 
+      // Determine confidence: low if critical field (creditHours) is null
+      const isLowConfidence = extracted.creditHours === null;
+      const confidence = isLowConfidence ? 0.5 : 1.0;
+      const status = isLowConfidence ? "NEEDS_REVIEW" : "COMPLETED";
+
       // Update with extracted data
       const updated = await prisma.certificate.update({
         where: { id: certificate.id },
         data: {
           extractedAt: new Date(),
-          extractionStatus: "COMPLETED",
+          extractionStatus: status,
+          extractionConfidence: confidence,
           title: extracted.title,
           provider: extracted.provider,
           activityDate: extracted.date ? new Date(extracted.date) : null,
@@ -92,14 +98,52 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      if (isLowConfidence) {
+        return NextResponse.json(
+          {
+            certificate: updated,
+            warning: "Some fields could not be extracted with confidence. Please review and confirm.",
+          },
+          { status: 201 }
+        );
+      }
+
       return NextResponse.json({ certificate: updated }, { status: 201 });
     } else {
-      // Extraction failed — store certificate but mark for manual review
+      // Check if partial data was extracted despite parse failure
+      const hasPartialData = extractionResult.partialData !== undefined;
+
+      if (hasPartialData && extractionResult.partialData) {
+        const partial = extractionResult.partialData;
+        const updated = await prisma.certificate.update({
+          where: { id: certificate.id },
+          data: {
+            extractedAt: new Date(),
+            extractionStatus: "NEEDS_REVIEW",
+            extractionConfidence: 0.3,
+            title: partial.title,
+            provider: partial.provider,
+            activityDate: partial.date ? new Date(partial.date) : null,
+            creditHours: partial.creditHours,
+          },
+        });
+
+        return NextResponse.json(
+          {
+            certificate: updated,
+            warning: "Some fields could not be extracted with confidence. Please review and confirm.",
+          },
+          { status: 201 }
+        );
+      }
+
+      // Full extraction failed — store certificate but mark for manual review
       const updated = await prisma.certificate.update({
         where: { id: certificate.id },
         data: {
           extractedAt: new Date(),
           extractionStatus: "FAILED",
+          extractionConfidence: 0.0,
         },
       });
 
@@ -136,6 +180,7 @@ interface ExtractedCredit {
 interface ExtractionResult {
   success: boolean;
   data?: ExtractedCredit;
+  partialData?: Partial<ExtractedCredit>;
   error?: string;
 }
 
@@ -220,7 +265,32 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
     // Strip markdown code fences if present
     const cleaned = responseText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
 
-    const parsed = JSON.parse(cleaned) as ExtractedCredit;
+    let parsed: ExtractedCredit;
+    try {
+      parsed = JSON.parse(cleaned) as ExtractedCredit;
+    } catch (jsonError) {
+      // JSON parse failed — try to recover partial data via regex
+      console.warn("JSON parse failed, attempting partial extraction:", jsonError);
+      const partial: Partial<ExtractedCredit> = {};
+
+      const titleMatch = cleaned.match(/"title"\s*:\s*"([^"]+)"/);
+      if (titleMatch) partial.title = titleMatch[1];
+
+      const providerMatch = cleaned.match(/"provider"\s*:\s*"([^"]+)"/);
+      if (providerMatch) partial.provider = providerMatch[1];
+
+      const dateMatch = cleaned.match(/"date"\s*:\s*"([^"]+)"/);
+      if (dateMatch) partial.date = dateMatch[1];
+
+      const hoursMatch = cleaned.match(/"creditHours"\s*:\s*([\d.]+)/);
+      if (hoursMatch) partial.creditHours = parseFloat(hoursMatch[1]);
+
+      if (Object.keys(partial).length > 0) {
+        return { success: false, partialData: partial, error: "JSON parse failed but partial data recovered" };
+      }
+
+      return { success: false, error: "JSON parse failed, no partial data recoverable" };
+    }
 
     // Ensure topics is always an array
     if (!Array.isArray(parsed.topics)) {
