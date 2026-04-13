@@ -416,15 +416,16 @@ export async function GET(req: NextRequest) {
 
   // ── Generate ZIP ─────────────────────────────────────────────────────────────
 
-  const zipBuffer = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+  const zipArrayBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
+  const zipBlob = new Blob([zipArrayBuffer], { type: "application/zip" });
 
   const zipFileName = `${rootFolder}.zip`;
-  return new NextResponse(zipBuffer.buffer as ArrayBuffer, {
+  return new NextResponse(zipBlob, {
     status: 200,
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${zipFileName}"`,
-      "Content-Length": zipBuffer.length.toString(),
+      "Content-Length": zipArrayBuffer.byteLength.toString(),
     },
   });
 }

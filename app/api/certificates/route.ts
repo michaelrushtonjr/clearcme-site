@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
+import { put } from "@vercel/blob";
 
 // Extend Vercel function timeout for AI processing
 export const maxDuration = 60;
@@ -54,9 +55,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: Upload file to Vercel Blob / S3
-    // const { url } = await put(file.name, file, { access: 'public' });
-    const fileUrl: string | null = null; // placeholder
+    // Upload file to Vercel Blob (gracefully skip if token not configured)
+    let fileUrl: string | null = null;
+    try {
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        const blob = await put(file.name, file, { access: "public" });
+        fileUrl = blob.url;
+      }
+    } catch (blobErr) {
+      console.warn("Vercel Blob upload skipped:", blobErr);
+    }
 
     // Create certificate record
     const certificate = await prisma.certificate.create({
