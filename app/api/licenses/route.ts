@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     deaExpiresAt,
     mateActRequired,
     mateActCompleted,
+    npiNumber,
   } = body;
 
   if (!state || !licenseType || !renewalDate) {
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
   if (typeof mateActRequired === "boolean") deaFields.mateActRequired = mateActRequired;
   if (typeof mateActCompleted === "boolean") deaFields.mateActCompleted = mateActCompleted;
 
+  const npiFields: Record<string, unknown> = {};
+  if (npiNumber !== undefined) npiFields.npiNumber = npiNumber || null;
+
   const license = await prisma.physicianLicense.upsert({
     where: {
       userId_state_licenseType: {
@@ -58,6 +62,7 @@ export async function POST(req: Request) {
       renewalDate: new Date(renewalDate),
       isActive: true,
       ...deaFields,
+      ...npiFields,
     },
     create: {
       userId: session.user.id,
@@ -67,6 +72,7 @@ export async function POST(req: Request) {
       renewalDate: new Date(renewalDate),
       isActive: true,
       ...deaFields,
+      ...npiFields,
     },
   });
 

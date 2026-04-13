@@ -9,10 +9,24 @@ import OnboardingChecklist from "@/components/OnboardingChecklist";
 import CertificateList from "@/components/CertificateList";
 import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
+import ReturnBanner from "@/components/dashboard/ReturnBanner";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+
+  // Capture lastLoginAt before updating it
+  const userRecord = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { lastLoginAt: true },
+  });
+  const previousLoginAt = userRecord?.lastLoginAt ?? null;
+
+  // Update lastLoginAt for next session
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lastLoginAt: new Date() },
+  });
 
   const [certificates, licenses] = await Promise.all([
     prisma.certificate.findMany({
@@ -125,6 +139,26 @@ export default async function DashboardPage() {
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
   const isNewUser = !hasLicenses && !hasCertificates;
+
+  // Return banner data
+  const newCertsCount = previousLoginAt
+    ? certificates.filter((c) => c.createdAt > previousLoginAt).length
+    : 0;
+
+  // Next soonest renewal info for banner
+  const nextRenewalForBanner = nextRenewal?.daysUntilRenewal != null
+    ? { state: nextRenewal.license.state, daysAway: nextRenewal.daysUntilRenewal }
+    : null;
+
+  // Count new compliance rules since last login
+  const newRequirementsCount = previousLoginAt
+    ? await prisma.complianceRule.count({
+        where: {
+          state: { in: licenses.map((l) => l.state) },
+          updatedAt: { gt: previousLoginAt },
+        },
+      })
+    : 0;
   const recentCerts = certificates.slice(0, 5);
 
   // Onboarding steps: 1=account(always done), 2=license, 3=certificate
@@ -147,6 +181,14 @@ export default async function DashboardPage() {
           Your CME compliance dashboard
         </p>
       </div>
+
+      {/* Return banner — only shown to returning users after 24hrs */}
+      <ReturnBanner
+        lastLoginAt={previousLoginAt?.toISOString() ?? null}
+        newCertsCount={newCertsCount}
+        renewalInfo={nextRenewalForBanner}
+        newRequirementsCount={newRequirementsCount}
+      />
 
       {/* Onboarding checklist — client component with dismiss */}
       {!onboardingComplete && (
@@ -281,9 +323,19 @@ export default async function DashboardPage() {
                       {/* Card header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1 min-w-0 pr-3">
-                          <p className="font-semibold text-slate-900">
-                            {data.license.state} — {data.license.licenseType}
-                          </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-slate-900">
+                              {data.license.state} — {data.license.licenseType}
+                            </p>
+                            {data.license.npiNumber && (
+                              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                </svg>
+                                NPI Verified
+                              </span>
+                            )}
+                          </div>
                           {data.daysUntilRenewal != null && (
                             <p
                               className={`text-xs mt-0.5 font-medium ${

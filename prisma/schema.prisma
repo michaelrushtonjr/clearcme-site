@@ -57,6 +57,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
 
   // Physician profile
   licenseType   LicenseType?
@@ -101,6 +102,9 @@ model PhysicianLicense {
   deaExpiresAt     DateTime?  // expiration date
   mateActRequired  Boolean?   // computed: deaRegisteredAt < June 27 2023 = needed at next renewal
   mateActCompleted Boolean?   // physician self-attests completion
+
+  // NPPES verification
+  npiNumber        String?    // NPI from NPPES verification
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

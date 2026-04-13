@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NpiVerifier from "@/components/NpiVerifier";
 
 const US_STATES: { code: string; name: string }[] = [
   { code: "AL", name: "Alabama" },
@@ -74,14 +75,6 @@ const SPECIALTIES = [
   "Other",
 ];
 
-interface AdditionalLicense {
-  id: string;
-  state: string;
-  licenseType: string;
-  renewalDate: string;
-  unsureDate: boolean;
-}
-
 function estimateRenewalDate(stateCode: string): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() + 2);
@@ -95,60 +88,51 @@ function estimateRenewalDate(stateCode: string): string {
   return d.toISOString().split("T")[0];
 }
 
-export default function SetupPage() {
+interface PhysicianMatch {
+  npi: string;
+  name: string;
+  credential: string;
+  state: string;
+  specialty: string;
+  city: string;
+}
+
+interface SetupClientProps {
+  userName: string | null;
+}
+
+export default function SetupClient({ userName }: SetupClientProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Primary license state
+  // Form state
   const [state, setState] = useState("");
   const [licenseType, setLicenseType] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [renewalDate, setRenewalDate] = useState("");
   const [unsureDate, setUnsureDate] = useState(false);
 
-  // Step 4: multi-state
-  const [isMultiState, setIsMultiState] = useState<boolean | null>(null);
-  const [additionalLicenses, setAdditionalLicenses] = useState<AdditionalLicense[]>([]);
+  // NPI verification state
+  const [verifiedNpi, setVerifiedNpi] = useState<string | null>(null);
+  const [verifiedMatch, setVerifiedMatch] = useState<PhysicianMatch | null>(null);
+
+  // Parse first/last name from Google session name
+  const nameParts = (userName ?? "").trim().split(/\s+/);
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ");
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
   const canSubmitStep3 = unsureDate || !!renewalDate;
-
-  const selectedStateName = US_STATES.find((s) => s.code === state)?.name ?? state;
-
-  function addAdditionalLicense() {
-    if (additionalLicenses.length >= 4) return; // max 5 total (1 primary + 4 additional)
-    setAdditionalLicenses((prev) => [
-      ...prev,
-      {
-        id: Math.random().toString(36).slice(2),
-        state: "",
-        licenseType: "",
-        renewalDate: "",
-        unsureDate: false,
-      },
-    ]);
-  }
-
-  function removeAdditionalLicense(id: string) {
-    setAdditionalLicenses((prev) => prev.filter((l) => l.id !== id));
-  }
-
-  function updateAdditionalLicense(id: string, update: Partial<AdditionalLicense>) {
-    setAdditionalLicenses((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, ...update } : l))
-    );
-  }
 
   async function handleSubmit() {
     const finalRenewalDate = unsureDate ? estimateRenewalDate(state) : renewalDate;
     setLoading(true);
     setError("");
     try {
-      // POST primary license
-      const primaryRes = await fetch("/api/licenses", {
+      const res = await fetch("/api/licenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -156,35 +140,13 @@ export default function SetupPage() {
           licenseType,
           specialty: specialty || undefined,
           renewalDate: finalRenewalDate,
+          npiNumber: verifiedNpi || null,
         }),
       });
-      if (!primaryRes.ok) {
-        const data = await primaryRes.json();
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error ?? "Failed to create license");
       }
-
-      // POST additional licenses in sequence
-      for (const lic of additionalLicenses) {
-        if (!lic.state || !lic.licenseType) continue;
-        const licRenewalDate = lic.unsureDate
-          ? estimateRenewalDate(lic.state)
-          : lic.renewalDate || estimateRenewalDate(lic.state);
-        const res = await fetch("/api/licenses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            state: lic.state,
-            licenseType: lic.licenseType,
-            specialty: specialty || undefined,
-            renewalDate: licRenewalDate,
-          }),
-        });
-        if (!res.ok) {
-          // Non-fatal: continue even if additional license fails (e.g. duplicate)
-          console.warn(`Failed to create license for ${lic.state}`);
-        }
-      }
-
       router.push("/dashboard?onboarded=1");
       router.refresh();
     } catch (err: unknown) {
@@ -193,14 +155,14 @@ export default function SetupPage() {
     }
   }
 
-  const totalSteps = 4;
+  const selectedStateName = US_STATES.find((s) => s.code === state)?.name ?? state;
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3, 4].map((n) => (
+          {[1, 2, 3].map((n) => (
             <div
               key={n}
               className={`rounded-full transition-all ${
@@ -219,7 +181,7 @@ export default function SetupPage() {
           {step === 1 && (
             <div>
               <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                Step 1 of {totalSteps}
+                Step 1 of 3
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 What state do you practice in?
@@ -242,7 +204,7 @@ export default function SetupPage() {
                 ))}
               </select>
               <p className="text-xs text-slate-400 mt-3">
-                Primary state only — you&apos;ll add more licenses in a moment.
+                Primary state only — you can add more licenses later.
               </p>
               <button
                 onClick={() => setStep(2)}
@@ -254,11 +216,11 @@ export default function SetupPage() {
             </div>
           )}
 
-          {/* Step 2: License type + specialty */}
+          {/* Step 2: License type + specialty + NPI verification */}
           {step === 2 && (
             <div>
               <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                Step 2 of {totalSteps}
+                Step 2 of 3
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 What&apos;s your license type and specialty?
@@ -277,7 +239,12 @@ export default function SetupPage() {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => setLicenseType(type)}
+                      onClick={() => {
+                        setLicenseType(type);
+                        // Clear NPI if changing type
+                        setVerifiedNpi(null);
+                        setVerifiedMatch(null);
+                      }}
                       className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors ${
                         licenseType === type
                           ? "bg-blue-600 border-blue-600 text-white"
@@ -291,7 +258,7 @@ export default function SetupPage() {
               </div>
 
               {/* Specialty */}
-              <div className="mb-2">
+              <div className="mb-5">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Specialty{" "}
                   <span className="text-slate-400 font-normal">(optional)</span>
@@ -309,6 +276,32 @@ export default function SetupPage() {
                   ))}
                 </select>
               </div>
+
+              {/* NPI Verification */}
+              {licenseType && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    NPPES Verification{" "}
+                    <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <NpiVerifier
+                    firstName={firstName}
+                    lastName={lastName}
+                    state={state}
+                    licenseType={licenseType}
+                    verifiedNpi={verifiedNpi}
+                    verifiedMatch={verifiedMatch}
+                    onVerified={(npi, match) => {
+                      setVerifiedNpi(npi);
+                      setVerifiedMatch(match);
+                    }}
+                    onCleared={() => {
+                      setVerifiedNpi(null);
+                      setVerifiedMatch(null);
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3 mt-6">
                 <button
@@ -332,7 +325,7 @@ export default function SetupPage() {
           {step === 3 && (
             <div>
               <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                Step 3 of {totalSteps}
+                Step 3 of 3
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 When is your next license renewal?
@@ -384,175 +377,6 @@ export default function SetupPage() {
                 </p>
               )}
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setStep(2)}
-                  className="px-5 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  ← Back
-                </button>
-                <button
-                  onClick={() => setStep(4)}
-                  disabled={!canSubmitStep3}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                >
-                  Continue →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Multi-state */}
-          {step === 4 && (
-            <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-                Step 4 of {totalSteps}
-              </p>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                Are you licensed in more than one state?
-              </h1>
-              <p className="text-sm text-slate-500 mb-6">
-                Many physicians hold licenses in multiple states. We&apos;ll track compliance for each one.
-              </p>
-
-              {/* Yes / No choice */}
-              {isMultiState === null && (
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setIsMultiState(true); addAdditionalLicense(); }}
-                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsMultiState(false)}
-                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                  >
-                    No
-                  </button>
-                </div>
-              )}
-
-              {/* Multi-state license cards */}
-              {isMultiState === true && (
-                <div className="space-y-4">
-                  {/* Primary license chip */}
-                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                    <span className="text-sm font-medium text-blue-900">
-                      {selectedStateName} — {licenseType}
-                    </span>
-                    <span className="text-xs text-blue-500">(primary)</span>
-                  </div>
-
-                  {/* Additional license cards */}
-                  {additionalLicenses.map((lic, idx) => (
-                    <div key={lic.id} className="border border-slate-200 rounded-xl p-4 space-y-3 relative">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          License {idx + 2}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => removeAdditionalLicense(lic.id)}
-                          className="text-slate-400 hover:text-red-500 transition-colors"
-                          aria-label="Remove license"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-
-                      {/* State */}
-                      <select
-                        value={lic.state}
-                        onChange={(e) => updateAdditionalLicense(lic.id, { state: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      >
-                        <option value="" disabled>Select state…</option>
-                        {US_STATES.filter((s) => s.code !== state).map((s) => (
-                          <option key={s.code} value={s.code}>{s.name}</option>
-                        ))}
-                      </select>
-
-                      {/* License Type */}
-                      <div className="flex gap-2">
-                        {["MD", "DO"].map((type) => (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => updateAdditionalLicense(lic.id, { licenseType: type })}
-                            className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
-                              lic.licenseType === type
-                                ? "bg-blue-600 border-blue-600 text-white"
-                                : "border-slate-200 text-slate-700 hover:border-blue-300"
-                            }`}
-                          >
-                            {type}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Renewal date */}
-                      {!lic.unsureDate && (
-                        <input
-                          type="date"
-                          value={lic.renewalDate}
-                          onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => updateAdditionalLicense(lic.id, { unsureDate: !lic.unsureDate, renewalDate: "" })}
-                        className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border w-full transition-colors ${
-                          lic.unsureDate
-                            ? "border-blue-300 bg-blue-50 text-blue-700"
-                            : "border-slate-200 text-slate-400 hover:border-slate-300"
-                        }`}
-                      >
-                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${lic.unsureDate ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
-                          {lic.unsureDate && (
-                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </span>
-                        Estimate renewal date
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Add another state button */}
-                  {additionalLicenses.length < 4 && (
-                    <button
-                      type="button"
-                      onClick={addAdditionalLicense}
-                      className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
-                    >
-                      + Add another state
-                    </button>
-                  )}
-
-                  {additionalLicenses.length >= 4 && (
-                    <p className="text-xs text-slate-400 text-center">
-                      Maximum of 5 licenses during setup — add more later in Profile.
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* No = skip, just proceed */}
-              {isMultiState === false && (
-                <div className="bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-600">
-                  Got it — we&apos;ll track compliance for{" "}
-                  <strong>{selectedStateName}</strong> only. You can add more licenses anytime from your Profile.
-                </div>
-              )}
-
               {error && (
                 <div className="mt-4 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">
                   {error}
@@ -561,14 +385,14 @@ export default function SetupPage() {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => { setStep(3); setIsMultiState(null); setAdditionalLicenses([]); }}
+                  onClick={() => setStep(2)}
                   className="px-5 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={loading || isMultiState === null}
+                  disabled={!canSubmitStep3 || loading}
                   className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 >
                   {loading ? "Setting up…" : "See my compliance map →"}
