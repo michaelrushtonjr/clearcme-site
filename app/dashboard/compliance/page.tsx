@@ -5,8 +5,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import CertificateList from "@/components/CertificateList";
-import UrgencyCard from "@/components/dashboard/UrgencyCard";
+import UrgencyCard, { NextActionCardProps } from "@/components/dashboard/UrgencyCard";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
+import { keyToSlug } from "@/lib/courses";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -187,58 +188,46 @@ export default async function CompliancePage() {
 
   const totalHoursAllCerts = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
-  // Build urgency items — gaps with deadlines, sorted by urgency score (gap × closeness)
-  const urgencyItems: {
-    topic: string;
-    gapHours: number;
-    daysUntilDeadline: number;
-    deadlineLabel: string;
-    licenseState: string;
-    ctaUrl: string;
-    ctaLabel: string;
-  }[] = [];
+  // Build "Your Next Action" card props — pick the most urgent license with a rule
+  // Priority: soonest renewal with a gap; fallback to first license with a rule
+  const nextActionProps: NextActionCardProps | null = (() => {
+    // Find the most actionable license: soonest renewal that has a rule
+    const withRules = complianceData.filter((d) => d.rule !== null);
+    if (withRules.length === 0) return null;
 
-  for (const d of complianceData) {
-    if (!d.rule || d.daysUntilRenewal === null) continue;
-    const days = d.daysUntilRenewal;
-    const deadline = d.license.renewalDate
-      ? new Date(d.license.renewalDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-      : "unknown";
+    // Sort by days until renewal ascending (nulls last), then pick first
+    const sorted = [...withRules].sort((a, b) => {
+      if (a.daysUntilRenewal === null) return 1;
+      if (b.daysUntilRenewal === null) return -1;
+      return a.daysUntilRenewal - b.daysUntilRenewal;
+    });
 
-    // Add per-topic mandatory gaps
-    for (const gap of d.mandatoryGaps) {
-      if (!gap.isMet) {
-        urgencyItems.push({
-          topic: gap.topic,
-          gapHours: gap.gap,
-          daysUntilDeadline: days,
-          deadlineLabel: deadline,
-          licenseState: d.license.state,
-          ctaUrl: "",
-          ctaLabel: "",
-        });
-      }
-    }
-    // Also add general hours gap if present
-    if (d.gapHours > 0 && d.mandatoryGaps.every((g) => g.isMet)) {
-      urgencyItems.push({
-        topic: "GENERAL_CME",
-        gapHours: d.gapHours,
-        daysUntilDeadline: days,
-        deadlineLabel: deadline,
-        licenseState: d.license.state,
-        ctaUrl: "https://www.medscape.com/cme",
-        ctaLabel: "Find CME →",
-      });
-    }
-  }
+    const d = sorted[0];
+    const renewalDateLabel = d.license.renewalDate
+      ? new Date(d.license.renewalDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "your renewal date";
 
-  // Sort: smaller days-left × larger gap = more urgent
-  urgencyItems.sort((a, b) => {
-    const scoreA = (1 / (a.daysUntilDeadline + 1)) * a.gapHours;
-    const scoreB = (1 / (b.daysUntilDeadline + 1)) * b.gapHours;
-    return scoreB - scoreA;
-  });
+    return {
+      daysUntilRenewal: d.daysUntilRenewal,
+      renewalDateLabel,
+      generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
+      mandatoryGaps: d.mandatoryGaps.map((g) => ({
+        topic: g.topic,
+        gap: g.gap,
+        isMet: g.isMet,
+        // firstRenewalOnly is surfaced via the rule's mandatoryRequirements
+        isOneTime:
+          d.rule?.mandatoryRequirements.find((r) => r.topic === g.topic)
+            ?.firstRenewalOnly ?? false,
+      })),
+      isFullyCompliant: d.isCompliant,
+      licenseState: d.license.state,
+    };
+  })();
 
   // Build export data for client component
   const exportData = {
@@ -275,8 +264,8 @@ export default async function CompliancePage() {
         <ComplianceExportButton exportData={exportData} />
       </div>
 
-      {/* Urgency card — sticky top alert */}
-      {urgencyItems.length > 0 && <UrgencyCard items={urgencyItems} />}
+      {/* Your Next Action card */}
+      {nextActionProps && <UrgencyCard {...nextActionProps} />}
 
       {/* No licenses */}
       {licenses.length === 0 && (
