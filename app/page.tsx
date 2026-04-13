@@ -183,12 +183,16 @@ export default function Home() {
             Clear<span className="text-blue-600">CME</span>
           </span>
         </div>
-        <a
-          href="#waitlist"
-          className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          Get early access →
-        </a>
+        <div className="flex items-center gap-6">
+          <a href="/pricing" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">Pricing</a>
+          <a href="/mate-act" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">DEA MATE Act</a>
+          <a
+            href="#waitlist"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            Get early access →
+          </a>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -471,11 +475,18 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-100 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-bold text-slate-900 tracking-tight">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
+          <span className="font-bold text-slate-900 tracking-tight text-base">
             Clear<span className="text-blue-600">CME</span>
           </span>
-          <p className="text-xs text-slate-400">
+          <div className="flex flex-wrap justify-center gap-5">
+            <a href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</a>
+            <a href="/mate-act" className="hover:text-slate-700 transition-colors">DEA MATE Act</a>
+            <a href="/methodology" className="hover:text-slate-700 transition-colors">Methodology</a>
+            <a href="/privacy" className="hover:text-slate-700 transition-colors">Privacy</a>
+            <a href="/terms" className="hover:text-slate-700 transition-colors">Terms</a>
+          </div>
+          <p className="text-xs">
             © {new Date().getFullYear()} ClearCME. All rights reserved.
           </p>
         </div>
