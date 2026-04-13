@@ -110,7 +110,7 @@ export default function MethodologyPage() {
             ))}
           </ul>
           <p className="text-sm text-slate-500 mt-4 leading-relaxed">
-            We do <strong>not</strong> rely on third-party CME aggregator sites, commercial databases, or
+            We do <strong>not</strong>{" "}rely on third-party CME aggregator sites, commercial databases, or
             crowd-sourced information. If we can&apos;t verify a requirement against a primary source,
             we flag it explicitly.
           </p>
