@@ -199,7 +199,7 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8">
           <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-          Built for emergency medicine physicians — and every specialty
+          All 50 states · MD and DO · Every specialty
         </div>
 
         <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 leading-tight tracking-tight mb-6">
@@ -238,7 +238,7 @@ export default function Home() {
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
           <span>🔒 HIPAA-aware</span>
           <span>✓ ACCME data verified</span>
-          <span>🏥 Built by an EM physician</span>
+          <span>🏥 Built by a physician</span>
           <span>⭐ All 50 states + DC</span>
         </div>
       </section>
@@ -442,7 +442,7 @@ export default function Home() {
           Built by a physician, for physicians.
         </h2>
         <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-          ClearCME was built by a board-certified emergency medicine physician
+          ClearCME was built by a board-certified physician
           who got tired of guessing whether their CME was actually compliant.
           We know what the board wants, because we&apos;ve been there.
         </p>
