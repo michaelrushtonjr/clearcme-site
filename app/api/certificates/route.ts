@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getMobileUserId } from "@/lib/mobile-auth";
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 
@@ -8,14 +9,18 @@ import { put } from "@vercel/blob";
 export const maxDuration = 60;
 
 // GET /api/certificates — list user's certificates
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function GET(req: NextRequest) {
+  // Support both NextAuth session (web) and mobile JWT
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const certificates = await prisma.certificate.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -24,8 +29,12 @@ export async function GET() {
 
 // POST /api/certificates — upload + parse a certificate
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  // Support both NextAuth session (web) and mobile JWT
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -69,7 +78,7 @@ export async function POST(req: NextRequest) {
     // Create certificate record
     const certificate = await prisma.certificate.create({
       data: {
-        userId: session.user.id,
+        userId: userId,
         fileName: file.name,
         fileUrl,
         fileSize: file.size,

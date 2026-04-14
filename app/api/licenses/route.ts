@@ -1,22 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getMobileUserId } from "@/lib/mobile-auth";
 
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function GET(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const licenses = await prisma.physicianLicense.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { renewalDate: "asc" },
   });
   return NextResponse.json(licenses);
 }
 
-export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function POST(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -52,7 +59,7 @@ export async function POST(req: Request) {
   const license = await prisma.physicianLicense.upsert({
     where: {
       userId_state_licenseType: {
-        userId: session.user.id,
+        userId: userId,
         state,
         licenseType,
       },
@@ -65,7 +72,7 @@ export async function POST(req: Request) {
       ...npiFields,
     },
     create: {
-      userId: session.user.id,
+      userId: userId,
       state,
       licenseType,
       licenseNumber: licenseNumber || null,
@@ -79,9 +86,12 @@ export async function POST(req: Request) {
   return NextResponse.json(license, { status: 201 });
 }
 
-export async function DELETE(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function DELETE(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -90,7 +100,7 @@ export async function DELETE(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   await prisma.physicianLicense.deleteMany({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
   });
 
   return NextResponse.json({ success: true });

@@ -64,6 +64,10 @@ model User {
   specialty     String?
   npi           String?       @unique // National Provider Identifier
 
+  // Mobile push notifications
+  pushToken     String?
+  pushPlatform  String?       // 'ios' | 'android'
+
   // Relations
   accounts        Account[]
   sessions        Session[]
