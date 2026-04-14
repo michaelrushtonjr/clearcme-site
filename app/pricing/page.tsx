@@ -9,6 +9,10 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
     a: "We verify all state requirements against primary board sources. Every entry shows a 'last verified' date. Our QA process cross-references official state medical board websites, administrative codes, and regulations — not third-party aggregators.",
   },
   {
+    q: "I'm licensed in two states. Do I need Pro?",
+    a: "No — Essential covers up to 2 states, which is the most common scenario for physicians with dual licensure (e.g., Nevada + California, or a neighboring-state compact). Pro is designed for physicians tracking 3 or more states, or practices managing compliance across a group. If you're a two-state physician, Essential is all you need.",
+  },
+  {
     q: "What if my state's requirements change?",
     a: "We monitor requirements continuously and update within 30 days of any confirmed change.",
   },
@@ -63,6 +67,7 @@ export default function PricingPage() {
       ctaStyle: "border border-blue-600 text-blue-600 hover:bg-blue-50",
       features: [
         "Everything in Free",
+        "Multi-state tracking (up to 2 states)",
         "AI certificate extraction",
         "Full gap analysis",
         "Deadline alerts",
@@ -80,7 +85,7 @@ export default function PricingPage() {
       ctaStyle: "bg-blue-600 text-white hover:bg-blue-700",
       features: [
         "Everything in Essential",
-        "Multi-state dashboard",
+        "Multi-state tracking (unlimited states)",
         "Side-by-side state comparison",
         "Priority alerts",
         "Shareable compliance summary",
