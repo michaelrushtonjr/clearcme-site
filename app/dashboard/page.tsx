@@ -9,6 +9,7 @@ import OnboardingChecklist from "@/components/OnboardingChecklist";
 import CertificateList from "@/components/CertificateList";
 import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
+import GapCard from "@/components/dashboard/GapCard";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -129,6 +130,31 @@ export default async function DashboardPage() {
 
   const onboardingComplete = hasLicenses && hasCertificates && validCompliance.length > 0;
 
+  // Build top 3 compliance gaps for the attention card (ordered by urgency)
+  const allGaps: { label: string; detail: string; href: string; urgency: number }[] = [];
+  for (const d of validCompliance) {
+    // General hour gaps
+    if (d.hoursNeeded > 0) {
+      allGaps.push({
+        label: `${d.license.state} ${d.license.licenseType}: ${d.hoursNeeded.toFixed(1)} hrs still needed`,
+        detail: d.daysUntilRenewal != null ? `${d.daysUntilRenewal} days to renewal` : "No renewal date set",
+        href: "/dashboard/compliance",
+        urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal : 0,
+      });
+    }
+    // Mandatory topic gaps
+    for (const t of d.mandatoryTopics) {
+      allGaps.push({
+        label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())} — ${t.hoursNeeded.toFixed(1)} hrs short`,
+        detail: "Mandatory topic requirement",
+        href: "/dashboard/compliance",
+        urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
+      });
+    }
+  }
+  allGaps.sort((a, b) => b.urgency - a.urgency);
+  const topGaps = allGaps.slice(0, 3);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -191,6 +217,14 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <>
+          {/* Persistent gap summary card — above the fold */}
+          {topGaps.length > 0 && (
+            <GapCard
+              gaps={topGaps}
+              renewalDays={nextRenewal?.daysUntilRenewal ?? null}
+            />
+          )}
+
           {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link
