@@ -127,14 +127,7 @@ export default async function DashboardPage() {
   const isNewUser = !hasLicenses && !hasCertificates;
   const recentCerts = certificates.slice(0, 5);
 
-  // Onboarding steps: 1=account(always done), 2=license, 3=certificate
-  const onboardingSteps = [
-    { label: "Create your account", done: true },
-    { label: "Add your first license", done: hasLicenses },
-    { label: "Upload a certificate", done: hasCertificates },
-  ];
-  const stepsCompleted = onboardingSteps.filter((s) => s.done).length;
-  const onboardingComplete = stepsCompleted === 3;
+  const onboardingComplete = hasLicenses && hasCertificates && validCompliance.length > 0;
 
   return (
     <div className="space-y-8">
@@ -148,10 +141,12 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Onboarding checklist — client component with dismiss */}
-      {!onboardingComplete && (
-        <OnboardingChecklist steps={onboardingSteps} stepsCompleted={stepsCompleted} />
-      )}
+      {/* Onboarding checklist — 4-step activation */}
+      <OnboardingChecklist
+        hasLicense={hasLicenses}
+        hasCertificate={hasCertificates}
+        hasComplianceData={validCompliance.length > 0}
+      />
 
       {/* Empty state for brand-new users: prominent CTA, no empty stat tiles */}
       {isNewUser ? (
