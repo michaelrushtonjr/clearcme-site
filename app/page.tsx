@@ -2,174 +2,238 @@
 
 import { useState } from "react";
 
-const US_STATES = [
-  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
-  "Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa",
-  "Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan",
-  "Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire",
-  "New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio",
-  "Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota",
-  "Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia",
-  "Wisconsin","Wyoming","District of Columbia",
-];
+type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
 
-type WaitlistStep = "email" | "state" | "done";
+const DEMO_STATES: Record<DemoState, {
+  label: string;
+  licenseType: string;
+  totalHours: number;
+  daysToRenewal: number;
+  requirements: { topic: string; hrs: string; note?: string; met: boolean }[];
+}> = {
+  NV: {
+    label: "Nevada",
+    licenseType: "DO · Emergency Medicine",
+    totalHours: 40,
+    daysToRenewal: 267,
+    requirements: [
+      { topic: "Ethics", hrs: "1 hr", met: true },
+      { topic: "Opioid Prescribing", hrs: "2 hrs", met: true },
+      { topic: "Pain Management", hrs: "1 hr", met: false },
+    ],
+  },
+  CA: {
+    label: "California",
+    licenseType: "MD · Internal Medicine",
+    totalHours: 50,
+    daysToRenewal: 314,
+    requirements: [
+      { topic: "Pain Management & End-of-Life", hrs: "12 hrs", met: false },
+      { topic: "Implicit Bias", hrs: "4 hrs", met: false },
+    ],
+  },
+  TX: {
+    label: "Texas",
+    licenseType: "MD · Family Medicine",
+    totalHours: 48,
+    daysToRenewal: 189,
+    requirements: [
+      { topic: "Human Trafficking", hrs: "1 hr", met: true },
+      { topic: "Ethics", hrs: "2 hrs", met: true },
+      { topic: "Opioid Prescribing", hrs: "varies", note: "first 2 renewals", met: false },
+    ],
+  },
+  FL: {
+    label: "Florida",
+    licenseType: "DO · Internal Medicine",
+    totalHours: 40,
+    daysToRenewal: 92,
+    requirements: [
+      { topic: "Medical Errors", hrs: "2 hrs", met: true },
+      { topic: "Domestic Violence", hrs: "2 hrs", note: "every 6 yrs", met: false },
+      { topic: "Controlled Substances", hrs: "2 hrs", met: false },
+    ],
+  },
+  NY: {
+    label: "New York",
+    licenseType: "MD · Emergency Medicine",
+    totalHours: 36,
+    daysToRenewal: 441,
+    requirements: [
+      { topic: "Child Abuse", hrs: "2 hrs", note: "one-time", met: true },
+      { topic: "Infection Control", hrs: "varies", note: "every 4 yrs", met: true },
+      { topic: "Opioid Prescribing", hrs: "3 hrs", note: "one-time", met: false },
+    ],
+  },
+};
 
-function WaitlistForm({ variant = "light", source }: { variant?: "light" | "dark"; source: string }) {
-  const [email, setEmail] = useState("");
-  const [state, setState] = useState("");
-  const [step, setStep] = useState<WaitlistStep>("email");
-  const [waitlistId, setWaitlistId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error ?? "Failed to join");
-      }
-      const data = await res.json();
-      setWaitlistId(data.id);
-      setStep("state");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!state) {
-      setStep("done");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source, state }),
-      });
-    } catch {
-      // Non-critical — just proceed
-    } finally {
-      setLoading(false);
-      setStep("done");
-    }
-  };
-
-  if (step === "done") {
-    return (
-      <div className={`max-w-md mx-auto text-center px-6 py-5 rounded-2xl ${variant === "dark" ? "bg-white/10" : "bg-green-50 border border-green-200"}`}>
-        <div className="flex items-center justify-center gap-2 font-semibold mb-2 text-base ${variant === 'dark' ? 'text-white' : 'text-green-700'}">
-          <svg className={`w-5 h-5 ${variant === "dark" ? "text-green-300" : "text-green-600"}`} fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          <span className={variant === "dark" ? "text-white" : "text-green-800"}>You&apos;re on the list!</span>
-        </div>
-        <p className={`text-sm ${variant === "dark" ? "text-blue-100" : "text-green-700"}`}>
-          {state
-            ? `Thanks! We'll notify you when ${state} requirements are fully verified.`
-            : "We'll be in touch when ClearCME launches."}
-        </p>
-      </div>
-    );
-  }
-
-  if (step === "state") {
-    return (
-      <div className="max-w-md mx-auto space-y-3">
-        <div className={`flex items-center gap-2 text-sm font-medium ${variant === "dark" ? "text-green-300" : "text-green-700"}`}>
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          You&apos;re on the list! One more thing…
-        </div>
-        <p className={`text-sm ${variant === "dark" ? "text-blue-100" : "text-slate-600"}`}>
-          What state do you practice in? We&apos;ll let you know when your state&apos;s requirements are fully verified.
-        </p>
-        <form onSubmit={handleStateSubmit} className="flex flex-col sm:flex-row gap-3">
-          <select
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            className={`flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 ${
-              variant === "dark"
-                ? "border-blue-400 bg-blue-500 text-white focus:ring-white"
-                : "border-slate-200 text-slate-900 focus:ring-blue-500 focus:border-transparent bg-white"
-            }`}
-          >
-            <option value="">Select your state…</option>
-            {US_STATES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-6 py-3 font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm whitespace-nowrap ${
-              variant === "dark"
-                ? "bg-white text-blue-600 hover:bg-blue-50"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Saving…" : state ? "Save" : "Skip →"}
-          </button>
-        </form>
-        {error && (
-          <p className={`text-xs ${variant === "dark" ? "text-red-300" : "text-red-500"}`}>{error}</p>
-        )}
-      </div>
-    );
-  }
+function DemoSection() {
+  const [activeState, setActiveState] = useState<DemoState>("NV");
+  const demo = DEMO_STATES[activeState];
+  const metCount = demo.requirements.filter((r) => r.met).length;
+  const totalCount = demo.requirements.length;
+  const hoursEarned = Math.round(demo.totalHours * 0.85);
+  const hoursLeft = demo.totalHours - hoursEarned;
+  const ringPercent = hoursEarned / demo.totalHours;
 
   return (
-    <div>
-      <form
-        onSubmit={handleEmailSubmit}
-        className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-      >
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
-          required
-          className={`flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 ${
-            variant === "dark"
-              ? "border-blue-400 bg-blue-500 text-white placeholder:text-blue-200 focus:ring-white"
-              : "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-blue-500 focus:border-transparent"
-          }`}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className={`px-6 py-3 font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm whitespace-nowrap ${
-            variant === "dark"
-              ? "bg-white text-blue-600 hover:bg-blue-50"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "Joining..." : "Join the waitlist"}
-        </button>
-      </form>
-      {error && (
-        <p className={`text-xs mt-2 ${variant === "dark" ? "text-red-300" : "text-red-500"}`}>
-          {error}
-        </p>
-      )}
-    </div>
+    <section className="py-20 bg-white">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-slate-900 mb-3">See it in action</h2>
+          <p className="text-slate-500 max-w-xl mx-auto">
+            Here&apos;s what your compliance map looks like — live data, instant clarity.
+          </p>
+        </div>
+
+        {/* State switcher pills */}
+        <div className="flex justify-center gap-2 mb-6 flex-wrap">
+          {(["NV", "CA", "TX", "FL", "NY"] as DemoState[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setActiveState(s)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all border ${
+                activeState === s
+                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative bg-white rounded-2xl border-2 border-blue-100 shadow-lg overflow-hidden">
+          {/* Demo banner */}
+          <div className="bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-blue-700 tracking-wide uppercase">
+              Demo — based on {demo.label} physician requirements
+            </span>
+            <span className="text-xs text-blue-500">{demo.licenseType} · {activeState}</span>
+          </div>
+
+          <div className="p-6 sm:p-8">
+            {/* Top stats row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              {[
+                { label: "Hours Earned", value: `${hoursEarned}.0`, sub: "this cycle", color: "text-blue-700" },
+                { label: "Hours Needed", value: `${hoursLeft}.0`, sub: "to complete", color: "text-amber-600" },
+                { label: "Days to Renewal", value: `${demo.daysToRenewal}`, sub: `${activeState} ${demo.licenseType.split("·")[0].trim()}`, color: "text-slate-700" },
+                { label: "Mandatory Topics", value: `${metCount}/${totalCount}`, sub: "complete", color: metCount === totalCount ? "text-green-600" : "text-amber-600" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-slate-50 rounded-2xl border border-slate-200 p-4"
+                >
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+                    {stat.label}
+                  </p>
+                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{stat.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Compliance card with ring */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 mb-5">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="font-semibold text-slate-900">{demo.label} — {demo.licenseType.split("·")[0].trim()}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{demo.daysToRenewal} days to renewal</p>
+                  <span className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${metCount === totalCount ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                    {metCount === totalCount ? "✓ Compliant" : "⚠ Incomplete"}
+                  </span>
+                </div>
+                {/* Ring SVG */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative" style={{ width: 80, height: 80 }}>
+                    <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90" aria-label={`${Math.round(ringPercent * 100)}% of CME hours complete`}>
+                      <circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="36"
+                        fill="none"
+                        stroke={metCount === totalCount ? "#22c55e" : "#f59e0b"}
+                        strokeWidth="8"
+                        strokeDasharray={`${2 * Math.PI * 36}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - ringPercent)}`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xs font-bold text-slate-800 leading-none">{hoursLeft}</span>
+                      <span className="text-[9px] text-slate-400 leading-none mt-0.5">hrs left</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">{hoursEarned}.0 / {demo.totalHours} hrs earned</p>
+              {metCount < totalCount && (
+                <p className="text-xs mt-1.5 font-medium text-amber-600">⚠️ {totalCount - metCount} mandatory topic{totalCount - metCount !== 1 ? "s" : ""} pending</p>
+              )}
+            </div>
+
+            {/* Requirements list */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Requirements</h3>
+              {demo.requirements.map((req) => (
+                <div
+                  key={req.topic}
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${
+                    !req.met ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {!req.met ? (
+                      <span className="text-amber-500">⚠️</span>
+                    ) : (
+                      <span className="text-green-500">✅</span>
+                    )}
+                    <span className={!req.met ? "font-medium text-amber-900" : "text-slate-700"}>
+                      {req.topic}
+                      {req.note && <span className="ml-1 text-xs text-slate-400">({req.note})</span>}
+                      {!req.met && (
+                        <span className="ml-1 text-xs text-amber-600">— not yet completed</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">{req.hrs}</span>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        req.met ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {req.met ? "Met" : "Gap"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Summary line */}
+            <p className="mt-5 text-center text-sm text-slate-500">
+              <span className="font-semibold text-slate-700">{demo.label}: </span>
+              {demo.totalHours} hrs total · {totalCount} mandatory topics · {demo.daysToRenewal} days to renewal
+            </p>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-8">
+          <a
+            href="/login"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-base shadow-sm"
+          >
+            See YOUR compliance map → Sign in with Google
+          </a>
+          <p className="text-xs text-slate-400 mt-3">
+            Free · Takes under 2 minutes · No certificate upload needed to get started
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -188,10 +252,10 @@ export default function Home() {
           <a href="/mate-act" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">DEA MATE Act</a>
           <a href="/methodology" className="text-sm text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">Methodology</a>
           <a
-            href="#waitlist"
+            href="/login"
             className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
           >
-            Get early access →
+            Create Free Account →
           </a>
         </div>
       </nav>
@@ -215,13 +279,18 @@ export default function Home() {
           No spreadsheets. No guessing.
         </p>
 
-        {/* Waitlist form */}
-        <div id="waitlist">
-          <WaitlistForm source="hero" />
-          <p className="text-xs text-slate-400 mt-3">
-            Free to join · No credit card required · Growing community of physicians
-          </p>
+        {/* Hero CTA */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <a
+            href="/login"
+            className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-base shadow-sm whitespace-nowrap"
+          >
+            Create Free Account →
+          </a>
         </div>
+        <p className="text-xs text-slate-400 mt-3">
+          Free · No credit card required · Growing community of physicians
+        </p>
 
         {/* Urgency framing — renewal season */}
         <div className="mt-4 mb-2">
@@ -237,7 +306,9 @@ export default function Home() {
 
         {/* Trust badges */}
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
-          <span>🔒 HIPAA-aware</span>
+          <span title="CME certificates are professional credentials, not Protected Health Information.">
+            🔒 Secure &amp; Private (Non-PHI)
+          </span>
           <span>✓ ACCME data verified</span>
           <span>🏥 Built by a physician</span>
           <span>⭐ All 50 states + DC</span>
@@ -287,155 +358,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Demo Mode — See it in action */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">See it in action</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">
-              Here&apos;s what your compliance map looks like — live data, instant clarity.
-            </p>
-          </div>
-
-          <div className="relative bg-white rounded-2xl border-2 border-blue-100 shadow-lg overflow-hidden">
-            {/* Demo banner */}
-            <div className="bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center justify-between">
-              <span className="text-xs font-semibold text-blue-700 tracking-wide uppercase">
-                Demo — based on Nevada EM physician requirements
-              </span>
-              <span className="text-xs text-blue-500">DO · Emergency Medicine · NV</span>
-            </div>
-
-            <div className="p-6 sm:p-8">
-              {/* Top stats row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                {[
-                  { label: "Hours Earned", value: "34.0", sub: "this cycle", color: "text-blue-700" },
-                  { label: "Hours Needed", value: "6.0", sub: "to complete", color: "text-amber-600" },
-                  { label: "Days to Renewal", value: "267", sub: "NV DO", color: "text-slate-700" },
-                  { label: "Mandatory Topics", value: "4/5", sub: "complete", color: "text-amber-600" },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="bg-slate-50 rounded-2xl border border-slate-200 p-4"
-                  >
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-                      {stat.label}
-                    </p>
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{stat.sub}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Compliance card with ring */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 mb-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="font-semibold text-slate-900">Nevada — DO</p>
-                    <p className="text-xs text-slate-400 mt-0.5">267 days to renewal</p>
-                    <span className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-                      ⚠ Incomplete
-                    </span>
-                  </div>
-                  {/* Static ring SVG — 85% (34/40 hrs) */}
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="relative" style={{ width: 80, height: 80 }}>
-                      <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90" aria-label="85% of CME hours complete">
-                        <circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="36"
-                          fill="none"
-                          stroke="#f59e0b"
-                          strokeWidth="8"
-                          strokeDasharray={`${2 * Math.PI * 36}`}
-                          strokeDashoffset={`${2 * Math.PI * 36 * (1 - 0.85)}`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xs font-bold text-slate-800 leading-none">6</span>
-                        <span className="text-[9px] text-slate-400 leading-none mt-0.5">hrs left</span>
-                      </div>
-                    </div>
-                    <p className="text-xs font-medium text-amber-600 text-center">⚡ 0.7 hrs/month needed</p>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500">34.0 / 40 hrs earned</p>
-                <p className="text-xs mt-1.5 font-medium text-amber-600">⚠️ 1 mandatory topic pending</p>
-              </div>
-
-              {/* Requirements list */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Requirements</h3>
-                {[
-                  { topic: "Opioid Prescribing", hrs: "2 hrs", status: "complete", met: true },
-                  { topic: "Implicit Bias", hrs: "2 hrs", status: "complete", met: true },
-                  { topic: "Ethics", hrs: "1 hr", status: "complete", met: true },
-                  { topic: "End of Life Care", hrs: "1 hr", status: "complete", met: true },
-                  { topic: "DEA MATE Act", hrs: "8 hrs", status: "not completed", met: false, alert: true },
-                ].map((req) => (
-                  <div
-                    key={req.topic}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${
-                      req.alert
-                        ? "bg-amber-50 border-amber-200"
-                        : "bg-slate-50 border-slate-200"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {req.alert ? (
-                        <span className="text-amber-500">⚠️</span>
-                      ) : (
-                        <span className="text-green-500">✅</span>
-                      )}
-                      <span className={req.alert ? "font-medium text-amber-900" : "text-slate-700"}>
-                        {req.topic}
-                        {req.alert && (
-                          <span className="ml-1 text-xs text-amber-600">— not yet completed</span>
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">{req.hrs}</span>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          req.met
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {req.met ? "Met" : "Gap"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Summary line */}
-              <p className="mt-5 text-center text-sm text-slate-500">
-                <span className="font-semibold text-slate-700">Nevada DO: </span>
-                40 hrs total · 5 mandatory topics · 267 days to renewal
-              </p>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-8">
-            <a
-              href="/login"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-base shadow-sm"
-            >
-              See YOUR compliance map → Sign in with Google
-            </a>
-            <p className="text-xs text-slate-400 mt-3">
-              Free · Takes under 2 minutes · No certificate upload needed to get started
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Demo Section with State Switcher */}
+      <DemoSection />
 
       {/* Social proof */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
@@ -466,11 +390,16 @@ export default function Home() {
       {/* Second CTA */}
       <section className="bg-blue-600 py-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Get early access.</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Start tracking your CME today.</h2>
           <p className="text-blue-100 mb-8">
-            Be first to know when ClearCME launches. Free tier available at launch.
+            Free tier available. No credit card required.
           </p>
-          <WaitlistForm variant="dark" source="cta" />
+          <a
+            href="/login"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors text-base shadow-sm"
+          >
+            Create Free Account →
+          </a>
         </div>
       </section>
 

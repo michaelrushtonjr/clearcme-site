@@ -323,6 +323,12 @@ export default async function DashboardPage() {
                       Multi-state
                     </span>
                   )}
+                  <span
+                    title="ClearCME compliance data is verified against primary state board sources by our automated QA system."
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-semibold cursor-default select-none"
+                  >
+                    ✓ Verified by Vera™
+                  </span>
                 </div>
                 <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   View full map →

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const faqs = [
+const faqs: { q: string; a: string; mocCta?: boolean }[] = [
   {
     q: "Is ClearCME data accurate?",
     a: "We verify all state requirements against primary board sources. Every entry shows a 'last verified' date. Our QA process cross-references official state medical board websites, administrative codes, and regulations — not third-party aggregators.",
@@ -15,10 +15,11 @@ const faqs = [
   {
     q: "Does ClearCME track MOC?",
     a: "Not yet. ClearCME currently tracks state CME requirements for medical licensure. ABIM/ABFM/ABEM Maintenance of Certification (MOC) is a separate program with its own requirements — and it's on our roadmap. We plan to add MOC tracking in a future release. If MOC support is important to you, let us know at hello@clearcme.ai.",
+    mocCta: true,
   },
   {
     q: "Is my data secure?",
-    a: "Yes. We are HIPAA-aware. CME certificates are not PHI. Your data is encrypted in transit and at rest.",
+    a: "Yes. ClearCME is Secure & Private (Non-PHI). CME certificates are professional credentials, not Protected Health Information. Your data is encrypted in transit and at rest.",
   },
   {
     q: "What states are covered?",
@@ -240,6 +241,17 @@ export default function PricingPage() {
               {openFaq === i && (
                 <div className="px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
                   {faq.a}
+                  {faq.mocCta && (
+                    <p className="mt-3">
+                      Want early access when MOC tracking launches?{" "}
+                      <a
+                        href="mailto:moc@clearcme.ai"
+                        className="text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Join the MOC early access list →
+                      </a>
+                    </p>
+                  )}
                 </div>
               )}
             </div>
