@@ -22,3 +22,7 @@ body {
   color: var(--foreground);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+.font-playfair {
+  font-family: var(--font-playfair-display), "Playfair Display", Georgia, serif;
+}

@@ -136,8 +136,7 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
         <h1
-          className="text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
-          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+          className="font-playfair text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
         >
           Know exactly where you stand —<br />
           <span className="text-[#0F766E]">for less than your renewal application fee.</span>

@@ -69,7 +69,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
               href={item.href}
               className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 pathname === item.href
-                  ? "bg-blue-50 text-blue-700"
+                  ? "bg-teal-50 text-[#0F766E]"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >

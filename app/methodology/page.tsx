@@ -76,8 +76,7 @@ export default function MethodologyPage() {
           Data Quality
         </div>
         <h1
-          className="text-4xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
-          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+          className="font-playfair text-4xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
         >
           How ClearCME verifies state CME requirements
         </h1>

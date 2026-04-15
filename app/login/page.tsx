@@ -25,13 +25,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{backgroundColor: '#FAFAF7'}}>
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
           <a href="/" className="inline-block">
-            <span className="text-3xl font-bold text-slate-900 tracking-tight">
-              Clear<span className="text-blue-600">CME</span>
+            <span className="text-3xl font-bold tracking-tight" style={{color: '#1E293B'}}>
+              Clear<span style={{color: '#0F766E'}}>CME</span>
             </span>
           </a>
           <p className="mt-2 text-sm text-slate-500">Sign in to your account</p>
@@ -40,12 +40,12 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           {emailSent ? (
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#F0FDFA'}}>
+                <svg className="w-6 h-6" style={{color: '#0F766E'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-2">Check your email</h2>
+              <h2 className="text-lg font-semibold mb-2" style={{color: '#1E293B'}}>Check your email</h2>
               <p className="text-sm text-slate-500">
                 We sent a magic link to <strong>{email}</strong>.
                 Click the link to sign in.
@@ -91,13 +91,15 @@ export default function LoginPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-colors text-sm"
+                        style={{'--tw-ring-color': '#0F766E'} as React.CSSProperties}
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading || !email}
-                      className="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm"
+                      className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm"
+                      style={{backgroundColor: '#0F766E'}}
                     >
                       {loading ? "Sending link..." : "Send magic link"}
                     </button>
@@ -110,9 +112,9 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-slate-400 mt-6">
           By signing in, you agree to our{" "}
-          <a href="/terms" className="text-blue-600 hover:underline">Terms</a>
+          <a href="/terms" className="hover:underline" style={{color: '#0F766E'}}>Terms</a>
           {" "}and{" "}
-          <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
+          <a href="/privacy" className="hover:underline" style={{color: '#0F766E'}}>Privacy Policy</a>
         </p>
       </div>
     </div>

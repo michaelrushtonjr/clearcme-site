@@ -80,7 +80,7 @@ function DemoSection() {
     <section className="py-20 bg-white">
       <div className="max-w-5xl mx-auto px-6">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-[#1E293B] mb-3" style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}>See it in action</h2>
+          <h2 className="font-playfair text-3xl font-bold text-[#1E293B] mb-3">See it in action</h2>
           <p className="text-slate-500 max-w-xl mx-auto">
             Here&apos;s what your compliance map looks like — live data, instant clarity.
           </p>
@@ -273,12 +273,11 @@ export default function Home() {
         </div>
 
         <h1
-          className="text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
-          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+          className="font-playfair text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
         >
           Know exactly what CME
           <br />
-          you <em className="text-[#0F766E] not-italic font-bold italic">actually</em> need.
+          you <em className="text-[#0F766E] italic font-bold">actually</em> need.
         </h1>
 
         <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -327,8 +326,7 @@ export default function Home() {
       <section className="bg-slate-50 py-20">
         <div className="max-w-5xl mx-auto px-6">
           <h2
-            className="text-3xl font-bold text-[#1E293B] text-center mb-4"
-            style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+            className="font-playfair text-3xl font-bold text-[#1E293B] text-center mb-4"
           >
             CME compliance is a mess.
           </h2>
@@ -389,8 +387,7 @@ export default function Home() {
       {/* Social proof */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h2
-          className="text-3xl font-bold text-[#1E293B] mb-4"
-          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+          className="font-playfair text-3xl font-bold text-[#1E293B] mb-4"
         >
           Built by a physician, for physicians.
         </h2>
@@ -419,8 +416,7 @@ export default function Home() {
       <section className="bg-[#0F766E] py-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
-            className="text-3xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+            className="font-playfair text-3xl font-bold text-white mb-4"
           >
             Start tracking your CME today.
           </h2>

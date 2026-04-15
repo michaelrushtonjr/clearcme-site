@@ -64,7 +64,6 @@ export default function ReturnBanner({
     year: "numeric",
   });
 
-  // Determine urgency level
   let level: "blue" | "amber" | "red";
   let heading: string;
 
@@ -83,10 +82,11 @@ export default function ReturnBanner({
     blue: {
       bg: "bg-teal-50",
       border: "border-teal-200",
-      headingColor: "text-teal-900",
-      bodyColor: "text-teal-800",
-      dismissColor: "text-teal-500 hover:text-teal-700",
-      bulletColor: "text-teal-700",
+      headingColor: "text-[#1E293B]",
+      bodyColor: "text-[#0F766E]",
+      dismissColor: "text-teal-500 hover:text-[#0F766E]",
+      bulletColor: "text-[#0F766E]",
+      iconColor: "text-[#0F766E]",
     },
     amber: {
       bg: "bg-amber-50",
@@ -95,6 +95,7 @@ export default function ReturnBanner({
       bodyColor: "text-amber-800",
       dismissColor: "text-amber-500 hover:text-amber-700",
       bulletColor: "text-amber-600",
+      iconColor: "text-amber-500",
     },
     red: {
       bg: "bg-red-50",
@@ -103,6 +104,7 @@ export default function ReturnBanner({
       bodyColor: "text-red-800",
       dismissColor: "text-red-400 hover:text-red-600",
       bulletColor: "text-red-600",
+      iconColor: "text-red-500",
     },
   };
 
@@ -148,17 +150,17 @@ export default function ReturnBanner({
       <div className="flex items-start gap-3 pr-6">
         <div className="shrink-0 mt-0.5">
           {level === "blue" && (
-            <svg className="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`w-5 h-5 ${colors.iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )}
           {level === "amber" && (
-            <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`w-5 h-5 ${colors.iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
           )}
           {level === "red" && (
-            <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`w-5 h-5 ${colors.iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
           )}

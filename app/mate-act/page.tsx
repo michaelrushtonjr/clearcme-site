@@ -143,8 +143,7 @@ export default function MateActPage() {
           DEA Requirement · Effective June 27, 2023
         </div>
         <h1
-          className="text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
-          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+          className="font-playfair text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
         >
           Are you DEA-registered?<br />
           <span className="text-red-600">You may owe the DEA an 8-hour training.</span>
