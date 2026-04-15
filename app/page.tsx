@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import UrgencyBanner from "@/components/UrgencyBanner";
 
 type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
 
@@ -241,9 +242,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#FAFAF7]">
       {/* Urgency banner */}
-      <div className="bg-[#7C2D12] text-white text-xs text-center py-2 px-4 font-medium">
-        ⚠ Renewal season is here — Don&apos;t find out you&apos;re short on credits at the last minute.
-      </div>
+      <UrgencyBanner />
 
       {/* Nav */}
       <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto bg-[#FAFAF7]">
