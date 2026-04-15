@@ -3,14 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 
 const MESSAGES = [
-  "⚠ NV MDs renew July 1 — are your 40 hours complete?",
-  "⚠ DOs renew December 31 — check your AOA Category 1 hours",
-  "⚠ FL physicians renew Jan 31 — medical errors CME required every cycle",
-  "⚠ TX physicians renew Aug 31 — CE Broker tracking required since Sept 2025",
-  "⚠ CA physicians renew Jan 31 odd years — 12hrs pain management required",
-  "⚠ NY registration renews every 2 years — don't miss your mandatory trainings",
-  "⚠ IL physicians renew Jan 31 — opioid requirement dropped to 1hr in 2025",
-  "⚠ PA physicians renew Dec 31 even years — 100hrs required, 20 must be Cat 1",
+  "⚠ NV MDs renew July 1 — are your 40 Cat 1 hours complete?",
+  "⚠ TX MDs & DOs renew Aug 31 — CE Broker tracking required",
+  "⚠ AL MDs renew Sept 30 — 25 Cat 1 hours required annually",
+  "⚠ WA MDs & DOs renew Oct 1 — 200 hours due every 4 years",
+  "⚠ NE MDs & DOs renew Oct 1 even years — 50 Cat 1 hours required",
+  "⚠ KS MDs renew Aug 1 — DOs renew Oct 31 — verify your cycle",
 ];
 
 const STORAGE_KEY = "urgency_dismissed";
@@ -51,7 +49,7 @@ export default function UrgencyBanner() {
         // fade in
         setOpacity(1);
       }, 300);
-    }, 4000);
+    }, 6000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

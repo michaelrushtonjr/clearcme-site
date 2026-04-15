@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import UrgencyBanner from "@/components/UrgencyBanner";
+import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
 
 type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
 
@@ -320,6 +321,9 @@ export default function Home() {
           <span>⭐ All 50 states + DC</span>
         </div>
       </section>
+
+      {/* Renewal Season Info Strip */}
+      <RenewalSeasonStrip />
 
       {/* Problem / Value props */}
       <section className="bg-slate-50 py-20">
