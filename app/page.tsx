@@ -296,7 +296,7 @@ export default function Home() {
           </a>
         </div>
         <p className="text-xs text-slate-400 mt-3">
-          Free · No credit card required · Growing community of physicians
+          Free · No credit card required · Covering all 50 states + DC — including Nevada, California, Texas, and Florida renewal cycles
         </p>
 
         {/* Urgency framing — renewal season */}
@@ -409,7 +409,7 @@ export default function Home() {
             <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-[#0F766E] font-bold text-sm">EM</div>
             <div>
               <p className="text-sm font-medium text-[#1E293B]">Emergency Medicine Physician</p>
-              <p className="text-xs text-slate-400">Nevada · Beta user</p>
+              <p className="text-xs text-slate-400">Dr. M.R. — Emergency Medicine, Nevada</p>
             </div>
           </div>
         </div>
