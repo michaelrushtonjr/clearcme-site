@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 
 // Extend Vercel function timeout for AI processing
@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // AI extraction using GPT-4o Vision
-    const extractionResult = await extractCertificateWithGPT4o(file);
+    // AI extraction using Claude vision
+    const extractionResult = await extractCertificateWithClaude(file);
 
     if (extractionResult.success && extractionResult.data) {
       const extracted = extractionResult.data;
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── AI Certificate Extraction via GPT-4o Vision ───────────────────────────────
+// ─── AI Certificate Extraction via Claude Vision ───────────────────────────────
 
 interface ExtractedCredit {
   title: string | null;
@@ -213,15 +213,15 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
 }
 If a field cannot be determined, use null. Do not include any text outside the JSON.`;
 
-async function extractCertificateWithGPT4o(file: File): Promise<ExtractionResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+async function extractCertificateWithClaude(file: File): Promise<ExtractionResult> {
+  const apiKey = process.env.ANTHROPIC_CME;
   if (!apiKey) {
-    console.error("OPENAI_API_KEY not configured");
-    return { success: false, error: "OPENAI_API_KEY not configured" };
+    console.error("ANTHROPIC_CME not configured");
+    return { success: false, error: "ANTHROPIC_CME not configured" };
   }
 
   try {
-    const client = new OpenAI({ apiKey });
+    const client = new Anthropic({ apiKey });
 
     // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
@@ -229,53 +229,55 @@ async function extractCertificateWithGPT4o(file: File): Promise<ExtractionResult
 
     const isPdf = file.type === "application/pdf";
 
-    // GPT-4o Vision supports images natively; PDFs are not supported as vision input.
-    // For PDFs, pass as a text/data URL so the model can at least attempt extraction.
-    const dataUrl = isPdf
-      ? `data:application/pdf;base64,${base64Data}`
-      : `data:${file.type};base64,${base64Data}`;
+    // Build the content block depending on file type
+    type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let userContent: any[];
+    let contentBlock: any;
 
     if (isPdf) {
-      // GPT-4o cannot render PDFs as images — send as file_data content block
-      // (file upload API) or fall back to a text note for the model.
-      // For now, embed as a base64 data URL in a text block so the model
-      // knows a PDF was provided; extraction quality may be lower.
-      userContent = [
-        {
-          type: "text",
-          text: `A CME certificate PDF has been provided as a base64 data URL below. Extract the requested fields.\n\nData URL (truncated for context): data:application/pdf;base64,[base64-encoded PDF]\n\n${EXTRACTION_PROMPT}`,
+      contentBlock = {
+        type: "document",
+        source: {
+          type: "base64",
+          media_type: "application/pdf",
+          data: base64Data,
         },
-      ];
-      console.warn("PDF submitted — GPT-4o vision does not render PDFs; extraction may be limited.");
+      };
     } else {
-      userContent = [
-        {
-          type: "image_url",
-          image_url: { url: dataUrl, detail: "high" },
+      const imageMediaType = file.type as ImageMediaType;
+      contentBlock = {
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: imageMediaType,
+          data: base64Data,
         },
-        {
-          type: "text",
-          text: EXTRACTION_PROMPT,
-        },
-      ];
+      };
     }
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       messages: [
         {
           role: "user",
-          content: userContent,
+          content: [
+            contentBlock,
+            {
+              type: "text",
+              text: EXTRACTION_PROMPT,
+            },
+          ],
         },
       ],
     });
 
-    // Parse GPT-4o's response
-    const responseText = response.choices[0]?.message?.content ?? "";
+    // Parse Claude's response
+    const responseText = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => (block as { type: "text"; text: string }).text)
+      .join("");
 
     // Strip markdown code fences if present
     const cleaned = responseText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
@@ -314,7 +316,7 @@ async function extractCertificateWithGPT4o(file: File): Promise<ExtractionResult
 
     return { success: true, data: parsed };
   } catch (error) {
-    console.error("GPT-4o extraction error:", error);
+    console.error("Claude extraction error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown extraction error",
