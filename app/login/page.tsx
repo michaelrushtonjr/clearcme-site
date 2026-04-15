@@ -35,6 +35,7 @@ export default function LoginPage() {
             </span>
           </a>
           <p className="mt-2 text-sm text-slate-500">Sign in to your account</p>
+          <p className="mt-1 text-xs text-slate-400">Built by a board-certified physician · All 50 states + DC</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">

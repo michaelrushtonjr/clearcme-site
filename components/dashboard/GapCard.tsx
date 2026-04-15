@@ -46,16 +46,19 @@ export default function GapCard({ gaps, renewalDays }: Props) {
               <p className="text-sm font-medium text-slate-900 truncate">{gap.label}</p>
               <p className="text-xs text-slate-500">{gap.detail}</p>
             </div>
-            <Link
-              href={gap.href}
-              className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-                isUrgent
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-amber-600 text-white hover:bg-amber-700"
-              }`}
-            >
-              Fix →
-            </Link>
+            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              <Link
+                href={gap.href}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  isUrgent
+                    ? "bg-red-600 text-white hover:bg-red-700"
+                    : "bg-amber-600 text-white hover:bg-amber-700"
+                }`}
+              >
+                Fix →
+              </Link>
+              <span className="text-xs text-slate-400">We show only courses relevant to your missing requirements</span>
+            </div>
           </div>
         ))}
       </div>

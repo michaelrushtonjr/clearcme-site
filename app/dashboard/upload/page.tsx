@@ -12,6 +12,9 @@ export default function UploadPage() {
         <p className="text-slate-500 mt-1 text-sm">
           Upload your CME certificates — AI will extract credit info automatically.
         </p>
+        <p className="text-xs text-slate-400 mt-1">
+          Your certificate is encrypted in transit and at rest · AI extraction takes ~10 seconds
+        </p>
       </div>
 
       <CertificateUpload />
