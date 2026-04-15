@@ -46,7 +46,7 @@ export default function HoursNeededTile({
     <div ref={ref} className="relative">
       <button
         onClick={() => hasData && setOpen(!open)}
-        className="w-full text-left bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+        className="w-full text-left bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
         aria-expanded={open}
       >
         <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">

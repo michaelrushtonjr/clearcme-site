@@ -210,8 +210,8 @@ export default async function DashboardPage() {
       {/* Empty state for brand-new users: prominent CTA, no empty stat tiles */}
       {isNewUser ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <svg className="w-8 h-8 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
           </div>
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-sm min-h-[44px]"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-sm shadow-sm min-h-[44px]"
           >
             Add License →
           </Link>
@@ -233,12 +233,12 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
               {hasCertificates ? (
                 <>
-                  <p className="text-2xl font-bold text-blue-700">{totalHours.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-[#0F766E]">{totalHours.toFixed(1)}</p>
                   <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
                 </>
               ) : (
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
               {nextRenewal?.daysUntilRenewal != null ? (
@@ -286,7 +286,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
               {totalMandatoryRequired > 0 ? (
@@ -316,7 +316,7 @@ export default async function DashboardPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
                   {licenses.length >= 2 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-100 text-[#0F766E] text-xs font-semibold">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
                       </svg>
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
                     ✓ Verified by Vera™
                   </span>
                 </div>
-                <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <Link href="/dashboard/compliance" className="text-sm text-[#0F766E] hover:text-[#0D9488] font-medium">
                   View full map →
                 </Link>
               </div>
@@ -351,7 +351,7 @@ export default async function DashboardPage() {
                     <Link
                       key={data.license.id}
                       href="/dashboard/compliance"
-                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all"
                     >
                       {/* Card header */}
                       <div className="flex items-start justify-between mb-4">
@@ -436,7 +436,7 @@ export default async function DashboardPage() {
               <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
               <Link
                 href="/dashboard/upload"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors min-h-[44px] inline-flex items-center"
+                className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors min-h-[44px] inline-flex items-center"
               >
                 + Upload certificate
               </Link>

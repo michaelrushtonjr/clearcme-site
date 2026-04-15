@@ -94,11 +94,11 @@ function themeClasses(theme: Theme) {
       };
     case "blue":
       return {
-        wrapper: "bg-blue-50 border-blue-200",
-        icon: "bg-blue-100 text-blue-600",
-        headline: "text-blue-900",
-        body: "text-blue-800",
-        cta: "bg-blue-600 hover:bg-blue-700 text-white",
+        wrapper: "bg-teal-50 border-teal-200",
+        icon: "bg-teal-100 text-[#0F766E]",
+        headline: "text-[#1E293B]",
+        body: "text-[#1E293B]",
+        cta: "bg-[#0F766E] hover:bg-[#0D9488] text-white",
       };
     case "green":
       return {

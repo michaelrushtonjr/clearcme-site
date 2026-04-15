@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
+/* ─── Brand design tokens (Variant B: Deep Teal) ─── */
+@theme {
+  /* Brand colors */
+  --color-brand-teal: #0F766E;
+  --color-brand-teal-light: #0D9488;
+  --color-brand-navy: #1E293B;
+  --color-brand-parchment: #FAFAF7;
+
+  /* Playfair Display serif — loaded via next/font */
+  --font-family-playfair: var(--font-playfair-display), "Playfair Display", Georgia, serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #FAFAF7;
+  --foreground: #1E293B;
 }
 
 body {

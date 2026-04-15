@@ -33,7 +33,7 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
 
 function Check() {
   return (
-    <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+    <svg className="w-4 h-4 text-[#0F766E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
     </svg>
   );
@@ -64,7 +64,7 @@ export default function PricingPage() {
       price: { annual: "$99/yr", monthly: "$9/mo" },
       cta: "Start Essential",
       ctaHref: "/login",
-      ctaStyle: "border border-blue-600 text-blue-600 hover:bg-blue-50",
+      ctaStyle: "border border-[#0F766E] text-[#0F766E] hover:bg-teal-50",
       features: [
         "Everything in Free",
         "Multi-state tracking (up to 2 states)",
@@ -82,7 +82,7 @@ export default function PricingPage() {
       price: { annual: "$199/yr", monthly: "$19/mo" },
       cta: "Start Pro",
       ctaHref: "/login",
-      ctaStyle: "bg-blue-600 text-white hover:bg-blue-700",
+      ctaStyle: "bg-[#0F766E] text-white hover:bg-[#0D9488]",
       features: [
         "Everything in Essential",
         "Multi-state tracking (unlimited states)",
@@ -114,20 +114,20 @@ export default function PricingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#FAFAF7]">
       {/* Nav */}
       <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <Link href="/" className="text-2xl font-bold text-slate-900 tracking-tight">
-          Clear<span className="text-blue-600">CME</span>
+        <Link href="/" className="text-2xl font-bold text-[#1E293B] tracking-tight">
+          Clear<span className="text-[#0F766E]">CME</span>
         </Link>
         <div className="flex items-center gap-6">
-          <Link href="/mate-act" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
             DEA MATE Act
           </Link>
-          <Link href="/methodology" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
             Methodology
           </Link>
-          <Link href="/login" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+          <Link href="/login" className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors">
             Sign in →
           </Link>
         </div>
@@ -135,9 +135,12 @@ export default function PricingPage() {
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight tracking-tight mb-4">
+        <h1
+          className="text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
+          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+        >
           Know exactly where you stand —<br />
-          <span className="text-blue-600">for less than your renewal application fee.</span>
+          <span className="text-[#0F766E]">for less than your renewal application fee.</span>
         </h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
           Nevada physicians pay $250 to renew. California pays $690. ClearCME costs less than a dinner.
@@ -173,13 +176,13 @@ export default function PricingPage() {
               key={tier.name}
               className={`relative rounded-2xl border p-6 flex flex-col gap-5 ${
                 tier.popular
-                  ? "border-blue-500 ring-2 ring-blue-500 ring-offset-2 bg-white shadow-lg"
+                  ? "border-[#0F766E] ring-2 ring-[#0F766E] ring-offset-2 bg-white shadow-lg"
                   : "border-slate-200 bg-white"
               }`}
             >
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
+                  <span className="bg-[#0F766E] text-white text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
                     ⭐ Most Popular
                   </span>
                 </div>
@@ -189,7 +192,7 @@ export default function PricingPage() {
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
                   {tier.name}
                 </p>
-                <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-slate-500" : "text-slate-900"}`}>
+                <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-slate-500" : "text-[#1E293B]"}`}>
                   {annual ? tier.price.annual : tier.price.monthly}
                 </p>
                 {tier.name !== "Free" && tier.name !== "Group" && (
@@ -221,7 +224,7 @@ export default function PricingPage() {
 
       {/* FAQ */}
       <section className="max-w-3xl mx-auto px-6 py-16">
-        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">Frequently asked questions</h2>
+        <h2 className="text-2xl font-bold text-[#1E293B] mb-8 text-center">Frequently asked questions</h2>
         <div className="space-y-3">
           {faqs.map((faq, i) => (
             <div
@@ -232,7 +235,7 @@ export default function PricingPage() {
                 className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition-colors"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
               >
-                <span className="font-semibold text-slate-900 text-sm pr-4">{faq.q}</span>
+                <span className="font-semibold text-[#1E293B] text-sm pr-4">{faq.q}</span>
                 <svg
                   className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
                   fill="none"
@@ -251,7 +254,7 @@ export default function PricingPage() {
                       Want early access when MOC tracking launches?{" "}
                       <a
                         href="mailto:moc@clearcme.ai"
-                        className="text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-[#0F766E] hover:text-[#0D9488] font-medium"
                       >
                         Join the MOC early access list →
                       </a>
@@ -267,7 +270,7 @@ export default function PricingPage() {
       {/* Bottom CTA */}
       <section className="bg-slate-50 border-t border-slate-100 py-16">
         <div className="max-w-xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
+          <h2 className="text-2xl font-bold text-[#1E293B] mb-3">
             Start free — no credit card required.
           </h2>
           <p className="text-slate-500 mb-8">
@@ -275,7 +278,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-base shadow-sm"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
           >
             Sign in with Google →
           </Link>
@@ -284,10 +287,10 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6">
+      <footer className="border-t border-slate-100 py-8 px-6 bg-[#FAFAF7]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <span className="font-bold text-slate-900 tracking-tight text-base">
-            Clear<span className="text-blue-600">CME</span>
+          <span className="font-bold text-[#1E293B] tracking-tight text-base">
+            Clear<span className="text-[#0F766E]">CME</span>
           </span>
           <div className="flex gap-6">
             <Link href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</Link>

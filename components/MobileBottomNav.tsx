@@ -9,7 +9,7 @@ const navItems = [
     label: "Dashboard",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-blue-600" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -28,7 +28,7 @@ const navItems = [
     label: "Upload",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-blue-600" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -47,7 +47,7 @@ const navItems = [
     label: "Compliance",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-blue-600" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -66,7 +66,7 @@ const navItems = [
     label: "Profile",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-blue-600" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -100,12 +100,12 @@ export default function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] transition-colors ${
-                active ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
+                active ? "text-[#0F766E]" : "text-slate-400 hover:text-slate-600"
               }`}
               aria-current={active ? "page" : undefined}
             >
               {item.icon(active)}
-              <span className={`text-[10px] font-medium leading-none ${active ? "text-blue-600" : "text-slate-400"}`}>
+              <span className={`text-[10px] font-medium leading-none ${active ? "text-[#0F766E]" : "text-slate-400"}`}>
                 {item.label}
               </span>
             </Link>

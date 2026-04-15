@@ -25,8 +25,8 @@ export default function DashboardNav({ user }: { user: NavUser }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              Clear<span className="text-blue-600">CME</span>
+            <span className="text-xl font-bold text-[#1E293B] tracking-tight">
+              Clear<span className="text-[#0F766E]">CME</span>
             </span>
           </Link>
 
@@ -38,7 +38,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
                 href={item.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-teal-50 text-[#0F766E]"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >

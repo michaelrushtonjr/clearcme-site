@@ -49,7 +49,7 @@ export default function AuditExportButton({ licenseId }: AuditExportButtonProps)
       <button
         onClick={handleDownload}
         disabled={loading}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 shadow-sm"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-colors disabled:opacity-60 shadow-sm"
       >
         {loading ? (
           <>

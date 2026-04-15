@@ -284,19 +284,19 @@ export default async function CompliancePage() {
 
       {/* No licenses */}
       {licenses.length === 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center">
-          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
+          <div className="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-blue-900 mb-2">No licenses configured</h3>
-          <p className="text-sm text-blue-700 mb-4">
+          <h3 className="font-semibold text-[#1E293B] mb-2">No licenses configured</h3>
+          <p className="text-sm text-[#0F766E] mb-4">
             Add your state medical licenses to see personalized compliance requirements.
           </p>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0F766E] text-white text-sm font-medium rounded-xl hover:bg-[#0D9488] transition-colors"
           >
             Add licenses →
           </Link>
@@ -308,7 +308,7 @@ export default async function CompliancePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Total Hours Earned</p>
-            <p className="text-2xl font-bold text-blue-700">{totalHoursAllCerts.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-[#0F766E]">{totalHoursAllCerts.toFixed(1)}</p>
             <p className="text-xs text-slate-400 mt-0.5">across all certificates</p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
@@ -389,7 +389,7 @@ export default async function CompliancePage() {
                 <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      isCompliant ? "bg-green-500" : totalHoursEarned > 0 ? "bg-blue-500" : "bg-slate-300"
+                      isCompliant ? "bg-green-500" : totalHoursEarned > 0 ? "bg-[#0F766E]" : "bg-slate-300"
                     }`}
                     style={{ width: `${Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100)}%` }}
                   />
@@ -525,7 +525,7 @@ export default async function CompliancePage() {
           </h2>
           <Link
             href="/dashboard/upload"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-[#0F766E] hover:text-[#0D9488] font-medium"
           >
             + Upload
           </Link>
@@ -535,7 +535,7 @@ export default async function CompliancePage() {
         {certificates.length > 0 && (
           <div className="px-5 py-4 bg-slate-50 border border-slate-200 rounded-b-2xl -mt-2 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">Total hours</span>
-            <span className="text-sm font-bold text-blue-700">
+            <span className="text-sm font-bold text-[#0F766E]">
               {totalHoursAllCerts.toFixed(1)} hrs
             </span>
           </div>

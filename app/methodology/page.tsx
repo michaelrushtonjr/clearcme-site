@@ -51,20 +51,20 @@ const verificationTable = [
 
 export default function MethodologyPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#FAFAF7]">
       {/* Nav */}
       <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <Link href="/" className="text-2xl font-bold text-slate-900 tracking-tight">
-          Clear<span className="text-blue-600">CME</span>
+        <Link href="/" className="text-2xl font-bold text-[#1E293B] tracking-tight">
+          Clear<span className="text-[#0F766E]">CME</span>
         </Link>
         <div className="flex items-center gap-6">
-          <Link href="/pricing" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
             Pricing
           </Link>
-          <Link href="/mate-act" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
             DEA MATE Act
           </Link>
-          <Link href="/login" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+          <Link href="/login" className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors">
             Sign in →
           </Link>
         </div>
@@ -72,10 +72,13 @@ export default function MethodologyPage() {
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-10">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wide">
+        <div className="inline-flex items-center gap-2 bg-teal-50 text-[#0F766E] text-xs font-semibold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wide">
           Data Quality
         </div>
-        <h1 className="text-4xl font-bold text-slate-900 leading-tight tracking-tight mb-4">
+        <h1
+          className="text-4xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
+          style={{ fontFamily: 'var(--font-playfair-display), "Playfair Display", Georgia, serif' }}
+        >
           How ClearCME verifies state CME requirements
         </h1>
         <p className="text-lg text-slate-500 leading-relaxed">
@@ -89,7 +92,7 @@ export default function MethodologyPage() {
 
         {/* Primary sources */}
         <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4 flex items-center gap-2">
             <span className="text-2xl">🏛️</span> Primary sources only
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed mb-4">
@@ -102,7 +105,7 @@ export default function MethodologyPage() {
               "Published board rules and licensing statutes",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#0F766E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 {item}
@@ -118,7 +121,7 @@ export default function MethodologyPage() {
 
         {/* Last verified dates */}
         <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4 flex items-center gap-2">
             <span className="text-2xl">📅</span> Last verified dates &amp; source URLs
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed">
@@ -126,13 +129,13 @@ export default function MethodologyPage() {
           </p>
           <ul className="mt-3 space-y-2 text-sm text-slate-700">
             <li className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-[#0F766E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
               A &ldquo;last verified&rdquo; date — so you know when we last confirmed accuracy
             </li>
             <li className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-[#0F766E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
               A direct source URL to the primary board page or regulation
@@ -142,7 +145,7 @@ export default function MethodologyPage() {
 
         {/* Continuous monitoring */}
         <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4 flex items-center gap-2">
             <span className="text-2xl">🔍</span> Continuous monitoring (Vera)
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed">
@@ -154,16 +157,16 @@ export default function MethodologyPage() {
 
         {/* Update frequency */}
         <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4 flex items-center gap-2">
             <span className="text-2xl">⚡</span> Update frequency
           </h2>
           <ul className="space-y-3 text-sm text-slate-700">
             <li className="flex items-start gap-3">
-              <span className="font-semibold text-blue-700 whitespace-nowrap">Within 30 days:</span>
+              <span className="font-semibold text-[#0F766E] whitespace-nowrap">Within 30 days:</span>
               <span className="text-slate-600">Any confirmed regulatory change is updated within 30 days of confirmation.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="font-semibold text-blue-700 whitespace-nowrap">Annual:</span>
+              <span className="font-semibold text-[#0F766E] whitespace-nowrap">Annual:</span>
               <span className="text-slate-600">All 51 jurisdictions (50 states + DC) are fully re-verified on a 12-month cycle.</span>
             </li>
           </ul>
@@ -171,7 +174,7 @@ export default function MethodologyPage() {
 
         {/* Known limitations */}
         <div className="bg-amber-50 rounded-2xl border border-amber-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-4 flex items-center gap-2">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4 flex items-center gap-2">
             <span className="text-2xl">⚠️</span> Known limitations
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed mb-3">
@@ -196,8 +199,8 @@ export default function MethodologyPage() {
         </div>
 
         {/* Discrepancy reporting */}
-        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
-          <h2 className="font-bold text-slate-900 text-xl mb-3 flex items-center gap-2">
+        <div className="bg-teal-50 rounded-2xl border border-teal-200 p-6">
+          <h2 className="font-bold text-[#1E293B] text-xl mb-3 flex items-center gap-2">
             <span className="text-2xl">📬</span> Found an error?
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed mb-4">
@@ -206,7 +209,7 @@ export default function MethodologyPage() {
           </p>
           <a
             href="mailto:accuracy@clearcme.ai"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-colors"
           >
             Report a discrepancy → accuracy@clearcme.ai
           </a>
@@ -214,7 +217,7 @@ export default function MethodologyPage() {
 
         {/* Verification status table */}
         <div>
-          <h2 className="font-bold text-slate-900 text-xl mb-4">Verification status — sample states</h2>
+          <h2 className="font-bold text-[#1E293B] text-xl mb-4">Verification status — sample states</h2>
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-sm">
               <thead>
@@ -228,7 +231,7 @@ export default function MethodologyPage() {
               <tbody className="divide-y divide-slate-100">
                 {verificationTable.map((row) => (
                   <tr key={row.code} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900">{row.state}</td>
+                    <td className="px-4 py-3 font-medium text-[#1E293B]">{row.state}</td>
                     <td className="px-4 py-3 text-slate-600">{row.lastVerified}</td>
                     <td className="px-4 py-3">
                       <span className="text-green-700 font-medium">{row.confidence}</span>
@@ -238,7 +241,7 @@ export default function MethodologyPage() {
                         href={row.source}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline truncate block max-w-[200px]"
+                        className="text-[#0F766E] hover:underline truncate block max-w-[200px]"
                         title={row.sourceLabel}
                       >
                         {row.sourceLabel}
@@ -256,10 +259,10 @@ export default function MethodologyPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6">
+      <footer className="border-t border-slate-100 py-8 px-6 bg-[#FAFAF7]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <span className="font-bold text-slate-900 tracking-tight text-base">
-            Clear<span className="text-blue-600">CME</span>
+          <span className="font-bold text-[#1E293B] tracking-tight text-base">
+            Clear<span className="text-[#0F766E]">CME</span>
           </span>
           <div className="flex gap-6">
             <Link href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</Link>
