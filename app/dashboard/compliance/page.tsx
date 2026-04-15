@@ -272,6 +272,9 @@ export default async function CompliancePage() {
           <p className="text-slate-500 mt-1 text-sm">
             Live status of your state license compliance
           </p>
+          <p className="text-xs text-slate-500 mt-1">
+            Requirement rules cross-checked against state board guidance
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <ComplianceExportButton exportData={exportData} />

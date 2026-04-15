@@ -504,6 +504,16 @@ function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
 
 function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: () => void }) {
   const ex = cert.extracted!;
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [fields, setFields] = useState({
+    title: ex.title ?? "",
+    provider: ex.provider ?? "",
+    date: "",
+    creditHours: ex.creditHours ? String(ex.creditHours) : "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const CREDIT_LABELS: Record<string, string> = {
     AMA_PRA_1: "AMA PRA Category 1",
@@ -534,6 +544,33 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
     OTHER_MANDATORY: "Mandatory Topic",
   };
 
+  const handleFixSave = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const res = await fetch(`/api/certificates/${cert.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: fields.title || undefined,
+          provider: fields.provider || undefined,
+          activityDate: fields.date || undefined,
+          creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setSaveError(err.error ?? "Save failed");
+      } else {
+        setShowAdvanced(false);
+        setConfirmed(true);
+      }
+    } catch {
+      setSaveError("Network error — please try again");
+    }
+    setSaving(false);
+  };
+
   return (
     <div className="bg-white border-2 border-green-300 rounded-3xl overflow-hidden shadow-lg">
       {/* Hero header */}
@@ -549,74 +586,178 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
 
       {/* Receipt body */}
       <div className="px-6 py-6 space-y-5">
-        {/* Course title — large and prominent */}
-        <div className="text-center border-b border-slate-100 pb-5">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Course</p>
-          <p className="text-xl font-bold text-slate-900 leading-snug">{ex.title}</p>
-          <p className="text-base text-slate-500 mt-1">{ex.provider}</p>
-        </div>
+        {/* Layer 1: Summary view (default) */}
+        {!showAdvanced && (
+          <>
+            {/* Course title — large and prominent */}
+            <div className="text-center border-b border-slate-100 pb-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Course</p>
+              <p className="text-xl font-bold text-slate-900 leading-snug">{ex.title}</p>
+              <p className="text-base text-slate-500 mt-1">{ex.provider}</p>
+            </div>
 
-        {/* Key stats row */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 rounded-2xl p-4 text-center">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Completed</p>
-            <p className="text-base font-semibold text-slate-800">{ex.date}</p>
-          </div>
-          <div className="bg-blue-50 rounded-2xl p-4 text-center">
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Credits Earned</p>
-            <p className="text-3xl font-black text-blue-700 leading-none">{ex.creditHours.toFixed(1)}</p>
-            <p className="text-xs text-blue-500 mt-1 font-medium">{creditLabel} Credits</p>
-          </div>
-        </div>
+            {/* Key stats row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-50 rounded-2xl p-4 text-center">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Completed</p>
+                <p className="text-base font-semibold text-slate-800">{ex.date}</p>
+              </div>
+              <div className="bg-blue-50 rounded-2xl p-4 text-center">
+                <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Credits Earned</p>
+                <p className="text-3xl font-black text-blue-700 leading-none">{ex.creditHours.toFixed(1)}</p>
+                <p className="text-xs text-blue-500 mt-1 font-medium">{creditLabel} Credits</p>
+              </div>
+            </div>
 
-        {/* Mandatory topics */}
-        {ex.topics.length > 0 && (
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics Detected</p>
-            <div className="flex flex-wrap gap-2">
-              {ex.topics.map((t) => (
-                <span
-                  key={t}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full"
-                >
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                  {TOPIC_FORMAT[t] ?? t.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
-                </span>
-              ))}
+            {/* Mandatory topics */}
+            {ex.topics.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics Detected</p>
+                <div className="flex flex-wrap gap-2">
+                  {ex.topics.map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full"
+                    >
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                      {TOPIC_FORMAT[t] ?? t.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {confirmed ? (
+              <>
+                {/* Confirmation message */}
+                <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                  <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <p className="text-sm text-green-800 font-medium">
+                    This certificate has been added to your compliance record.
+                  </p>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                  <button
+                    onClick={onReset}
+                    className="flex-1 py-3 px-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm"
+                  >
+                    Upload Another
+                  </button>
+                  <Link
+                    href="/dashboard/compliance"
+                    className="flex-1 py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm text-center"
+                  >
+                    View My Compliance →
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Layer 1 action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                  <button
+                    onClick={() => setConfirmed(true)}
+                    className="flex-1 py-3 px-4 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors text-sm"
+                  >
+                    Looks good ✓
+                  </button>
+                  <button
+                    onClick={() => setShowAdvanced(true)}
+                    className="flex-1 py-3 px-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm"
+                  >
+                    Fix something
+                  </button>
+                </div>
+
+                {/* Trust note */}
+                <p className="text-xs text-slate-400 text-center">
+                  Your certificate is encrypted in transit and at rest · AI extraction takes ~10 seconds
+                </p>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Layer 2: Edit fields (revealed when "Fix something" is clicked) */}
+        {showAdvanced && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-900">Edit extracted details</h3>
+              <button
+                onClick={() => setShowAdvanced(false)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                ← Back
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Course Title</label>
+              <input
+                type="text"
+                value={fields.title}
+                onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. Advanced Cardiac Life Support"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Provider / Accreditor</label>
+              <input
+                type="text"
+                value={fields.provider}
+                onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
+                placeholder="e.g. American Heart Association"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Completion Date</label>
+                <input
+                  type="date"
+                  value={fields.date}
+                  onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Credit Hours</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={fields.creditHours}
+                  onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
+                  placeholder="e.g. 2.5"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+            </div>
+
+            {saveError && <p className="text-xs text-red-600">{saveError}</p>}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAdvanced(false)}
+                className="flex-1 py-2 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFixSave}
+                disabled={saving}
+                className="flex-1 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving…" : "Save Changes"}
+              </button>
             </div>
           </div>
         )}
-
-        {/* Confirmation message */}
-        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-          <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-          <p className="text-sm text-green-800 font-medium">
-            This certificate has been added to your compliance record.
-          </p>
-        </div>
-
-        {/* AI disclaimer */}
-        <p className="text-xs text-slate-400 text-center">
-          ⚠ AI-extracted — verify accuracy before relying on this for compliance.
-        </p>
-
-        {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-1">
-          <button
-            onClick={onReset}
-            className="flex-1 py-3 px-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm"
-          >
-            Upload Another
-          </button>
-          <Link
-            href="/dashboard/compliance"
-            className="flex-1 py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm text-center"
-          >
-            View My Compliance →
-          </Link>
-        </div>
       </div>
     </div>
   );

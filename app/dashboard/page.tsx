@@ -9,24 +9,11 @@ import OnboardingChecklist from "@/components/OnboardingChecklist";
 import CertificateList from "@/components/CertificateList";
 import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
-import ReturnBanner from "@/components/dashboard/ReturnBanner";
+import GapCard from "@/components/dashboard/GapCard";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
-
-  // Capture lastLoginAt before updating it
-  const userRecord = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { lastLoginAt: true },
-  });
-  const previousLoginAt = userRecord?.lastLoginAt ?? null;
-
-  // Update lastLoginAt for next session
-  await prisma.user.update({
-    where: { id: userId },
-    data: { lastLoginAt: new Date() },
-  });
 
   const [certificates, licenses] = await Promise.all([
     prisma.certificate.findMany({
@@ -139,48 +126,34 @@ export default async function DashboardPage() {
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
   const isNewUser = !hasLicenses && !hasCertificates;
-
-  // Return banner data
-  const newCertsCount = previousLoginAt
-    ? certificates.filter((c) => c.createdAt > previousLoginAt).length
-    : 0;
-
-  // Next soonest renewal info for banner
-  const nextRenewalForBanner = nextRenewal?.daysUntilRenewal != null
-    ? { state: nextRenewal.license.state, daysAway: nextRenewal.daysUntilRenewal }
-    : null;
-
-  // Count new compliance rules since last login
-  const newRequirementsCount = previousLoginAt
-    ? await prisma.complianceRule.count({
-        where: {
-          state: { in: licenses.map((l) => l.state) },
-          updatedAt: { gt: previousLoginAt },
-        },
-      })
-    : 0;
   const recentCerts = certificates.slice(0, 5);
 
-  // Shared credit detection: AMA_PRA_1 certs that cover multiple active license states
-  const licenseStates = licenses.map((l) => l.state);
-  const sharedCredits: Record<string, string[]> = {};
-  if (licenseStates.length >= 2) {
-    for (const cert of certificates) {
-      if (cert.creditType === "AMA_PRA_1") {
-        // AMA PRA Category 1 is accepted by all states — mark all license states
-        sharedCredits[cert.id] = licenseStates;
-      }
+  const onboardingComplete = hasLicenses && hasCertificates && validCompliance.length > 0;
+
+  // Build top 3 compliance gaps for the attention card (ordered by urgency)
+  const allGaps: { label: string; detail: string; href: string; urgency: number }[] = [];
+  for (const d of validCompliance) {
+    // General hour gaps
+    if (d.hoursNeeded > 0) {
+      allGaps.push({
+        label: `${d.license.state} ${d.license.licenseType}: ${d.hoursNeeded.toFixed(1)} hrs still needed`,
+        detail: d.daysUntilRenewal != null ? `${d.daysUntilRenewal} days to renewal` : "No renewal date set",
+        href: "/dashboard/compliance",
+        urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal : 0,
+      });
+    }
+    // Mandatory topic gaps
+    for (const t of d.mandatoryTopics) {
+      allGaps.push({
+        label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())} — ${t.hoursNeeded.toFixed(1)} hrs short`,
+        detail: "Mandatory topic requirement",
+        href: "/dashboard/compliance",
+        urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
+      });
     }
   }
-
-  // Onboarding steps: 1=account(always done), 2=license, 3=certificate
-  const onboardingSteps = [
-    { label: "Create your account", done: true },
-    { label: "Add your first license", done: hasLicenses },
-    { label: "Upload a certificate", done: hasCertificates },
-  ];
-  const stepsCompleted = onboardingSteps.filter((s) => s.done).length;
-  const onboardingComplete = stepsCompleted === 3;
+  allGaps.sort((a, b) => b.urgency - a.urgency);
+  const topGaps = allGaps.slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -194,51 +167,74 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Return banner — only shown to returning users after 24hrs */}
-      <ReturnBanner
-        lastLoginAt={previousLoginAt?.toISOString() ?? null}
-        newCertsCount={newCertsCount}
-        renewalInfo={nextRenewalForBanner}
-        newRequirementsCount={newRequirementsCount}
+      {/* Onboarding checklist — 4-step activation */}
+      <OnboardingChecklist
+        hasLicense={hasLicenses}
+        hasCertificate={hasCertificates}
+        hasComplianceData={validCompliance.length > 0}
       />
 
-      {/* Onboarding checklist — client component with dismiss */}
-      {!onboardingComplete && (
-        <OnboardingChecklist steps={onboardingSteps} stepsCompleted={stepsCompleted} />
-      )}
-
-      {/* Empty state for brand-new users: prominent CTA, no empty stat tiles */}
-      {isNewUser ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
-          <div className="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <svg className="w-8 h-8 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
+      {/* Empty state: no certificates uploaded yet — guided command center */}
+      {!hasCertificates ? (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Your Compliance Command Center</h2>
+            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+              Upload your first CME certificate and ClearCME will automatically track your hours, flag gaps, and keep you audit-ready.
+            </p>
+            <Link
+              href="/dashboard/upload"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-sm min-h-[44px]"
+            >
+              Upload first certificate →
+            </Link>
+            <p className="text-xs text-slate-400 mt-4">AI extracts credit info automatically</p>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Get your compliance map</h2>
-          <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-            Add your state medical license and we&apos;ll show you exactly which CME credits you need — and how to get them.
-          </p>
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-sm shadow-sm min-h-[44px]"
-          >
-            Add License →
-          </Link>
-          <p className="text-xs text-slate-400 mt-4">Takes less than a minute</p>
+
+          {/* Preview panels — placeholder values */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Renewal Countdown</p>
+              <p className="text-2xl font-bold text-slate-300">— days</p>
+              <p className="text-xs text-slate-400 mt-1">Available after first upload</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Mandatory Topics</p>
+              <p className="text-2xl font-bold text-slate-300">0 / —</p>
+              <p className="text-xs text-slate-400 mt-1">Tracked per state requirement</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Hours Progress</p>
+              <p className="text-2xl font-bold text-slate-300">0 of 40</p>
+              <p className="text-xs text-slate-400 mt-1">hours logged</p>
+            </div>
+          </div>
         </div>
       ) : (
         <>
+          {/* Persistent gap summary card — above the fold */}
+          {topGaps.length > 0 && (
+            <GapCard
+              gaps={topGaps}
+              renewalDays={nextRenewal?.daysUntilRenewal ?? null}
+            />
+          )}
+
           {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
               {hasCertificates ? (
                 <>
-                  <p className="text-2xl font-bold text-[#0F766E]">{totalHours.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-blue-700">{totalHours.toFixed(1)}</p>
                   <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
                 </>
               ) : (
@@ -258,7 +254,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
               {nextRenewal?.daysUntilRenewal != null ? (
@@ -286,7 +282,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all min-h-[44px]"
+              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
             >
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
               {totalMandatoryRequired > 0 ? (
@@ -312,33 +308,12 @@ export default async function DashboardPage() {
           {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
-                  {licenses.length >= 2 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-100 text-[#0F766E] text-xs font-semibold">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
-                      </svg>
-                      Multi-state
-                    </span>
-                  )}
-                  <span
-                    title="ClearCME compliance data is verified against primary state board sources by our automated QA system."
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-semibold cursor-default select-none"
-                  >
-                    ✓ Verified by Vera™
-                  </span>
-                </div>
-                <Link href="/dashboard/compliance" className="text-sm text-[#0F766E] hover:text-[#0D9488] font-medium">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
+                <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   View full map →
                 </Link>
               </div>
-              {licenses.length >= 2 && (
-                <p className="text-xs text-slate-500 mb-4">
-                  Requirements shown per state — some mandatory topics may satisfy multiple states.
-                </p>
-              )}
               <div className="grid sm:grid-cols-2 gap-4">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
@@ -351,24 +326,14 @@ export default async function DashboardPage() {
                     <Link
                       key={data.license.id}
                       href="/dashboard/compliance"
-                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-sm transition-all"
+                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
                     >
                       {/* Card header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1 min-w-0 pr-3">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold text-slate-900">
-                              {data.license.state} — {data.license.licenseType}
-                            </p>
-                            {data.license.npiNumber && (
-                              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                </svg>
-                                NPI Verified
-                              </span>
-                            )}
-                          </div>
+                          <p className="font-semibold text-slate-900">
+                            {data.license.state} — {data.license.licenseType}
+                          </p>
                           {data.daysUntilRenewal != null && (
                             <p
                               className={`text-xs mt-0.5 font-medium ${
@@ -436,7 +401,7 @@ export default async function DashboardPage() {
               <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
               <Link
                 href="/dashboard/upload"
-                className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors min-h-[44px] inline-flex items-center"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors min-h-[44px] inline-flex items-center"
               >
                 + Upload certificate
               </Link>
@@ -446,7 +411,6 @@ export default async function DashboardPage() {
               certs={recentCerts}
               totalCount={certificates.length}
               showViewAll
-              sharedCredits={sharedCredits}
             />
           </section>
         </>
