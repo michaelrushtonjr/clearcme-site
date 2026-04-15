@@ -1,4 +1,5 @@
 import CertificateUpload from "@/components/CertificateUpload";
+import MobileCameraUpload from "@/components/MobileCameraUpload";
 
 export const metadata = {
   title: "Upload Certificate — ClearCME",
@@ -17,7 +18,15 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <CertificateUpload />
+      {/* Mobile: camera-first upload */}
+      <div className="sm:hidden">
+        <MobileCameraUpload />
+      </div>
+
+      {/* Desktop: drag-and-drop */}
+      <div className="hidden sm:block">
+        <CertificateUpload />
+      </div>
 
       <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">What we accept</h3>

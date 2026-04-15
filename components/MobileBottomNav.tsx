@@ -44,7 +44,7 @@ const navItems = [
   },
   {
     href: "/dashboard/compliance",
-    label: "Compliance",
+    label: "Gaps",
     icon: (active: boolean) => (
       <svg
         className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
@@ -82,7 +82,11 @@ const navItems = [
   },
 ];
 
-export default function MobileBottomNav() {
+interface MobileBottomNavProps {
+  gapCount?: number;
+}
+
+export default function MobileBottomNav({ gapCount = 0 }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -95,6 +99,7 @@ export default function MobileBottomNav() {
       <div className="flex items-stretch justify-around">
         {navItems.map((item) => {
           const active = isActive(item.href);
+          const showBadge = item.href === "/dashboard/compliance" && gapCount > 0;
           return (
             <Link
               key={item.href}
@@ -104,7 +109,14 @@ export default function MobileBottomNav() {
               }`}
               aria-current={active ? "page" : undefined}
             >
-              {item.icon(active)}
+              <div className="relative">
+                {item.icon(active)}
+                {showBadge && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                    {gapCount > 9 ? "9+" : gapCount}
+                  </span>
+                )}
+              </div>
               <span className={`text-[10px] font-medium leading-none ${active ? "text-[#0F766E]" : "text-slate-400"}`}>
                 {item.label}
               </span>

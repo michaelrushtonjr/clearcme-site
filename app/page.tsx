@@ -3,6 +3,7 @@
 import { useState } from "react";
 import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
+import HeroProductPreview from "@/components/HeroProductPreview";
 
 type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
 
@@ -266,38 +267,48 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-teal-50 text-[#0F766E] text-sm font-medium px-4 py-1.5 rounded-full mb-8">
-          <span className="w-2 h-2 bg-[#0F766E] rounded-full animate-pulse" />
-          All 50 states · MD and DO · Every specialty
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
+        <div className="flex flex-col lg:flex-row items-center gap-12">
+          {/* Left: copy + CTA */}
+          <div className="flex-1 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-teal-50 text-[#0F766E] text-sm font-medium px-4 py-1.5 rounded-full mb-8">
+              <span className="w-2 h-2 bg-[#0F766E] rounded-full animate-pulse" />
+              All 50 states · MD and DO · Every specialty
+            </div>
+
+            <h1
+              className="font-playfair text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
+            >
+              Know exactly what CME
+              <br />
+              you <em className="text-[#0F766E] italic font-bold">actually</em> need.
+            </h1>
+
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
+              ClearCME tracks your credits, maps state requirements, and tells you
+              exactly what&apos;s missing — before your renewal deadline.
+              No spreadsheets. No guessing.
+            </p>
+
+            {/* Hero CTA */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start items-center">
+              <a
+                href="/login"
+                className="px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm whitespace-nowrap"
+              >
+                Create Free Account →
+              </a>
+            </div>
+            <p className="text-xs text-slate-400 mt-3">
+              Free · No credit card required · Covering all 50 states + DC — including Nevada, California, Texas, and Florida renewal cycles
+            </p>
+          </div>
+
+          {/* Right: product preview */}
+          <div className="flex-shrink-0 w-full lg:w-auto">
+            <HeroProductPreview />
+          </div>
         </div>
-
-        <h1
-          className="font-playfair text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
-        >
-          Know exactly what CME
-          <br />
-          you <em className="text-[#0F766E] italic font-bold">actually</em> need.
-        </h1>
-
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-          ClearCME tracks your credits, maps state requirements, and tells you
-          exactly what&apos;s missing — before your renewal deadline.
-          No spreadsheets. No guessing.
-        </p>
-
-        {/* Hero CTA */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-          <a
-            href="/login"
-            className="px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm whitespace-nowrap"
-          >
-            Create Free Account →
-          </a>
-        </div>
-        <p className="text-xs text-slate-400 mt-3">
-          Free · No credit card required · Covering all 50 states + DC — including Nevada, California, Texas, and Florida renewal cycles
-        </p>
 
         {/* Urgency framing — renewal season */}
         <div className="mt-4 mb-2">
