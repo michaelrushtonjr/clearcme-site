@@ -27,15 +27,30 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // No Scout courses yet for this topic
-
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
+      {
+        name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
+        provider: "FreeCME (by Relias)",
+        providerUrl: "https://www.freecme.com",
+        credits: "6 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Relias/FreeCME platform. Search \"POWER\" on freecme.com. 6-hour series focused on opioid misuse prevention in women. Requires free account.",
+        url: "https://www.freecme.com/",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-16",
+      }
     ],
   },
   OPIOID_PRESCRIBING: {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Knowledge+",
@@ -106,7 +121,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
       {
         name: "Ethical Dilemmas in Patient Care",
         provider: "Medscape Education",
@@ -161,7 +176,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
       {
         name: "Unveiling Unconscious Bias",
         provider: "Stanford Center for CME",
@@ -192,8 +207,23 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // No Scout courses yet for this topic
-
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
+      {
+        name: "Project ECHO Addiction/SUD/Behavioral Health Programs (CME Available via iECHO)",
+        provider: "Project ECHO (University of New Mexico)",
+        providerUrl: "https://iecho.org",
+        credits: "1 AMA PRA Category 1 / ANCC",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "ECHO teleECHO sessions offer CME for live attendance. Topics include addiction, SUD, mental health, and suicide prevention. Register at iecho.org to find a program near your specialty. Many sessions are weekly and free to join. CME credit typically requires live attendance.",
+        url: "https://iecho.org/welcome (register and search addiction/behavioral health programs)",
+        accreditation: "ACCME (varies by hub — check individual program)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-16",
+      }
     ],
   },
   DOMESTIC_VIOLENCE: {
@@ -208,7 +238,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
+    // Auto-synced from Scout catalog — 2026-04-16T14:40:26.454Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

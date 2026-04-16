@@ -10,6 +10,7 @@ import CertificateList from "@/components/CertificateList";
 import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
+import AuditExportButton from "@/components/dashboard/AuditExportButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -307,6 +308,12 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
+          {/* Audit export trust signal */}
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span>📄 Your audit trail is ready —</span>
+            <AuditExportButton variant="inline" />
+          </div>
+
           {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
             <section>
@@ -380,15 +387,33 @@ export default async function DashboardPage() {
 
                       {/* Mandatory topics status */}
                       {data.mandatoryTotal > 0 && (
-                        <p
-                          className={`text-xs mt-1.5 font-medium ${
-                            data.mandatoryPendingCount > 0 ? "text-amber-600" : "text-green-600"
-                          }`}
-                        >
-                          {data.mandatoryPendingCount > 0
-                            ? `⚠️ ${data.mandatoryPendingCount} mandatory topic${data.mandatoryPendingCount === 1 ? "" : "s"} pending`
-                            : "✅ All mandatory topics complete"}
-                        </p>
+                        data.mandatoryPendingCount > 0 ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {data.mandatoryTopics.map((t) => (
+                              <Link
+                                key={t.topic}
+                                href={`/courses/${encodeURIComponent(t.topic.toLowerCase().replace(/_/g, "-"))}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-[11px] font-medium rounded-full hover:bg-amber-200 transition-colors"
+                              >
+                                ⚠️{" "}
+                                {t.topic
+                                  .replace(/_/g, " ")
+                                  .toLowerCase()
+                                  .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                {" — "}
+                                {t.hoursNeeded % 1 === 0
+                                  ? t.hoursNeeded.toFixed(0)
+                                  : t.hoursNeeded.toFixed(1)}{" "}
+                                hrs
+                              </Link>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs mt-1.5 font-medium text-green-600">
+                            ✅ All mandatory topics complete
+                          </p>
+                        )
                       )}
                     </Link>
                   );

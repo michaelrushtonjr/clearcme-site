@@ -4,9 +4,11 @@ import { useState } from "react";
 
 interface AuditExportButtonProps {
   licenseId?: string;
+  /** "default" = full teal button (existing), "inline" = minimal text link */
+  variant?: "default" | "inline";
 }
 
-export default function AuditExportButton({ licenseId }: AuditExportButtonProps) {
+export default function AuditExportButton({ licenseId, variant = "default" }: AuditExportButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +45,21 @@ export default function AuditExportButton({ licenseId }: AuditExportButtonProps)
       setLoading(false);
     }
   };
+
+  if (variant === "inline") {
+    return (
+      <span className="flex flex-col items-start gap-0.5">
+        <button
+          onClick={handleDownload}
+          disabled={loading}
+          className="text-xs text-teal-600 hover:text-teal-800 hover:underline font-medium transition-colors disabled:opacity-60"
+        >
+          {loading ? "Building ZIP…" : "Download audit trail"}
+        </button>
+        {error && <span className="text-xs text-red-600">{error}</span>}
+      </span>
+    );
+  }
 
   return (
     <div className="flex flex-col items-end gap-1">

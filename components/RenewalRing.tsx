@@ -20,14 +20,24 @@ export default function RenewalRing({
   const pct = totalHours > 0 ? Math.min(1, hoursEarned / totalHours) : 0;
   const pctInt = Math.round(pct * 100);
 
-  const critical = daysUntilRenewal != null && daysUntilRenewal < 90;
+  // Three-tier urgency thresholds
+  const RED_DAYS = 60;    // ≤60 days → emergency
+  const AMBER_DAYS = 180; // 61–180 days → action zone
+  // >180 days → on pace (teal)
+
+  const isEmergency = daysUntilRenewal != null && daysUntilRenewal <= RED_DAYS;
+  const isActionZone = daysUntilRenewal != null && daysUntilRenewal > RED_DAYS && daysUntilRenewal <= AMBER_DAYS;
+  const isOnPace = daysUntilRenewal == null || daysUntilRenewal > AMBER_DAYS;
+
   // Use effectiveHoursNeeded to determine color — if mandatory topics are unmet, never show green
   const ringColor =
     isCompliant
-      ? "#22c55e" // green — only when truly compliant (hours + all mandatories met)
-      : critical || effectiveHoursNeeded > totalHours * 0.5
-      ? "#ef4444" // red — critical or more than half still needed
-      : "#f59e0b"; // amber — some progress but not compliant
+      ? "#22c55e"  // green — only when truly compliant (hours + all mandatories met)
+      : isEmergency
+      ? "#ef4444"  // red — ≤60 days (emergency)
+      : isActionZone
+      ? "#f59e0b"  // amber — 61–180 days (action zone)
+      : "#14b8a6"; // teal — >180 days (on pace)
 
   const size = 80;
   const strokeWidth = 8;
@@ -88,10 +98,18 @@ export default function RenewalRing({
       {!isCompliant && hrsPerMonth != null && daysUntilRenewal != null && daysUntilRenewal > 0 && (
         <p
           className={`text-xs font-medium text-center ${
-            critical ? "text-red-600" : pct >= 0.75 ? "text-green-600" : "text-amber-600"
+            isEmergency
+              ? "text-red-600"
+              : isActionZone
+              ? "text-amber-600"
+              : "text-teal-600"
           }`}
         >
-          ⚡ {hrsPerMonth.toFixed(1)} hrs/month needed
+          {isEmergency
+            ? `🚨 ${hrsPerMonth.toFixed(1)} hrs/mo needed`
+            : isActionZone
+            ? `⚡ ${hrsPerMonth.toFixed(1)} hrs/mo needed`
+            : `✅ ${hrsPerMonth.toFixed(1)} hrs/mo — on pace`}
         </p>
       )}
       {isCompliant && (
