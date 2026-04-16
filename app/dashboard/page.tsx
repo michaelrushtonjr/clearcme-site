@@ -11,6 +11,8 @@ import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
+import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
+import { keyToSlug } from "@/lib/courses";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -82,13 +84,20 @@ export default async function DashboardPage() {
         ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         : null;
 
-      // Breakdown data for the popover
+      // Breakdown data for the popover (unmet only — for gap display)
       const mandatoryTopics = mandatoryResults
         .filter((r) => !r.isMet)
         .map((r) => ({
           topic: r.topic,
           hoursNeeded: Math.max(0, r.needed - r.earned),
         }));
+
+      // All mandatory topics for chip display (met + unmet)
+      const allMandatoryTopics = mandatoryResults.map((r) => ({
+        topic: r.topic,
+        hoursNeeded: Math.max(0, r.needed - r.earned),
+        isMet: r.isMet,
+      }));
 
       return {
         license,
@@ -100,6 +109,7 @@ export default async function DashboardPage() {
         mandatoryPendingCount,
         mandatoryGapHours,
         mandatoryTopics,
+        allMandatoryTopics,
         effectiveHoursNeeded,
         daysUntilRenewal,
         isCompliant,
@@ -123,6 +133,19 @@ export default async function DashboardPage() {
     mandatoryPendingCount: d.mandatoryPendingCount,
     mandatoryTopics: d.mandatoryTopics,
   }));
+
+  // Topic name shortening map for chip display
+  const TOPIC_SHORT_NAMES: Record<string, string> = {
+    OPIOID_PRESCRIBING: "Opioid/DEA MATE",
+    SUBSTANCE_USE: "Substance Use",
+    IMPLICIT_BIAS: "Implicit Bias",
+    PATIENT_SAFETY: "Patient Safety",
+    SUICIDE_PREVENTION: "Suicide Prevention",
+    DOMESTIC_VIOLENCE: "Domestic Violence",
+    HUMAN_TRAFFICKING: "Human Trafficking",
+    ETHICS: "Ethics",
+    DEA_MATE_ACT: "DEA MATE Act",
+  };
 
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
@@ -308,12 +331,6 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {/* Audit export trust signal */}
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>📄 Your audit trail is ready —</span>
-            <AuditExportButton variant="inline" />
-          </div>
-
           {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
             <section>
@@ -323,6 +340,35 @@ export default async function DashboardPage() {
                   View full map →
                 </Link>
               </div>
+
+              {/* Rec 4: Compliance celebration cards (one per compliant license) */}
+              {validCompliance
+                .filter((d) => d.isCompliant)
+                .map((data) => {
+                  const renewalYear = data.license.renewalDate
+                    ? new Date(data.license.renewalDate).getFullYear()
+                    : new Date().getFullYear();
+                  const renewalDateLabel = data.license.renewalDate
+                    ? new Date(data.license.renewalDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "—";
+                  return (
+                    <div key={`celebration-${data.license.id}`} className="mb-4">
+                      <ComplianceCelebration
+                        licenseId={data.license.id}
+                        renewalYear={renewalYear}
+                        state={data.license.state}
+                        licenseType={data.license.licenseType}
+                        renewalDateLabel={renewalDateLabel}
+                        totalHoursEarned={data.hoursEarned}
+                        mandatoryTotal={data.mandatoryTotal}
+                      />
+                    </div>
+                  );
+                })}
+
               <div className="grid sm:grid-cols-2 gap-4 mb-3">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
@@ -385,35 +431,44 @@ export default async function DashboardPage() {
                         {data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs earned
                       </p>
 
-                      {/* Mandatory topics status */}
-                      {data.mandatoryTotal > 0 && (
-                        data.mandatoryPendingCount > 0 ? (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {data.mandatoryTopics.map((t) => (
+                      {/* Rec 1: Named mandatory topic chips */}
+                      {data.allMandatoryTopics.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {data.allMandatoryTopics.map((t) => {
+                            const shortName =
+                              TOPIC_SHORT_NAMES[t.topic] ??
+                              t.topic
+                                .replace(/_/g, " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (l: string) => l.toUpperCase());
+                            const slug = keyToSlug(t.topic);
+                            if (t.isMet) {
+                              return (
+                                <span
+                                  key={t.topic}
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[11px] font-medium rounded-full"
+                                >
+                                  ✓ {shortName}
+                                </span>
+                              );
+                            }
+                            return (
                               <Link
                                 key={t.topic}
-                                href={`/courses/${encodeURIComponent(t.topic.toLowerCase().replace(/_/g, "-"))}`}
+                                href={`/courses/${encodeURIComponent(slug)}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-[11px] font-medium rounded-full hover:bg-amber-200 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium rounded-full hover:bg-amber-100 transition-colors"
                               >
-                                ⚠️{" "}
-                                {t.topic
-                                  .replace(/_/g, " ")
-                                  .toLowerCase()
-                                  .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                {shortName}
                                 {" — "}
                                 {t.hoursNeeded % 1 === 0
                                   ? t.hoursNeeded.toFixed(0)
                                   : t.hoursNeeded.toFixed(1)}{" "}
                                 hrs
                               </Link>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs mt-1.5 font-medium text-green-600">
-                            ✅ All mandatory topics complete
-                          </p>
-                        )
+                            );
+                          })}
+                        </div>
                       )}
                     </Link>
                   );
@@ -430,6 +485,15 @@ export default async function DashboardPage() {
               </div>
             </section>
           )}
+
+          {/* Rec 3: Audit trail card — visible below license cards */}
+          <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 text-sm">
+            <p className="font-semibold text-teal-900 mb-1">📄 Your audit trail is ready</p>
+            <p className="text-teal-700 text-xs mb-3">
+              Download a board-ready summary of your CME credits and compliance status at any time.
+            </p>
+            <AuditExportButton variant="default" />
+          </div>
 
           {/* Recent certificates */}
           <section>

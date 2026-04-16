@@ -20,30 +20,47 @@ export default function RenewalRing({
   const pct = totalHours > 0 ? Math.min(1, hoursEarned / totalHours) : 0;
   const pctInt = Math.round(pct * 100);
 
-  // Three-tier urgency thresholds
-  const RED_DAYS = 60;    // ≤60 days → emergency
-  const AMBER_DAYS = 180; // 61–180 days → action zone
-  // >180 days → on pace (teal)
+  // New three-tier urgency system
+  const comfortable =
+    daysUntilRenewal != null &&
+    daysUntilRenewal > 180 &&
+    effectiveHoursNeeded < totalHours * 0.25;
+  const critical =
+    daysUntilRenewal != null &&
+    daysUntilRenewal < 60 &&
+    effectiveHoursNeeded > 0;
+  const actionZone = !comfortable && !critical && !isCompliant;
 
-  const isEmergency = daysUntilRenewal != null && daysUntilRenewal <= RED_DAYS;
-  const isActionZone = daysUntilRenewal != null && daysUntilRenewal > RED_DAYS && daysUntilRenewal <= AMBER_DAYS;
-  const isOnPace = daysUntilRenewal == null || daysUntilRenewal > AMBER_DAYS;
-
-  // Use effectiveHoursNeeded to determine color — if mandatory topics are unmet, never show green
-  const ringColor =
-    isCompliant
-      ? "#22c55e"  // green — only when truly compliant (hours + all mandatories met)
-      : isEmergency
-      ? "#ef4444"  // red — ≤60 days (emergency)
-      : isActionZone
-      ? "#f59e0b"  // amber — 61–180 days (action zone)
-      : "#14b8a6"; // teal — >180 days (on pace)
+  const ringColor = isCompliant
+    ? "#22c55e"  // green — truly compliant
+    : comfortable
+    ? "#0F766E"  // teal — on track
+    : critical
+    ? "#ef4444"  // red — renewal at risk
+    : "#f59e0b"; // amber — action zone
 
   const size = 80;
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - pct);
+
+  // Pace indicator text
+  let paceText: string | null = null;
+  let paceColor = "text-slate-500";
+  if (isCompliant) {
+    paceText = "Complete ✓";
+    paceColor = "text-green-600";
+  } else if (comfortable) {
+    paceText = "You're on track ✓";
+    paceColor = "text-teal-600";
+  } else if (critical) {
+    paceText = "⚠️ Renewal at risk";
+    paceColor = "text-red-600";
+  } else if (actionZone && hrsPerMonth != null) {
+    paceText = `⚡ ${hrsPerMonth.toFixed(1)} hrs/month needed`;
+    paceColor = "text-amber-600";
+  }
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -94,26 +111,12 @@ export default function RenewalRing({
           )}
         </div>
       </div>
+
       {/* Pace indicator */}
-      {!isCompliant && hrsPerMonth != null && daysUntilRenewal != null && daysUntilRenewal > 0 && (
-        <p
-          className={`text-xs font-medium text-center ${
-            isEmergency
-              ? "text-red-600"
-              : isActionZone
-              ? "text-amber-600"
-              : "text-teal-600"
-          }`}
-        >
-          {isEmergency
-            ? `🚨 ${hrsPerMonth.toFixed(1)} hrs/mo needed`
-            : isActionZone
-            ? `⚡ ${hrsPerMonth.toFixed(1)} hrs/mo needed`
-            : `✅ ${hrsPerMonth.toFixed(1)} hrs/mo — on pace`}
+      {paceText && (
+        <p className={`text-xs font-medium text-center ${paceColor}`}>
+          {paceText}
         </p>
-      )}
-      {isCompliant && (
-        <p className="text-xs font-medium text-green-600 text-center">On track ✓</p>
       )}
     </div>
   );
