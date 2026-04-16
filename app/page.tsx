@@ -310,18 +310,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Urgency framing — renewal season */}
-        <div className="mt-4 mb-2">
-          <p className="text-xs text-slate-400 text-center">
-            🗓 Renewal season is coming —{" "}
-            <span className="text-slate-500">Nevada physicians renew July 1</span>
-            {" · "}
-            <span className="text-slate-500">California physicians renew every 2 years</span>
-            {" · "}
-            <span className="text-slate-500">New York physicians renew every 3 years</span>
-          </p>
-        </div>
-
         {/* Trust badges */}
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
           <span title="CME certificates are professional credentials, not Protected Health Information.">
