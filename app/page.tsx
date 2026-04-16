@@ -408,7 +408,7 @@ export default function Home() {
         <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
           ClearCME was built by a board-certified physician
           who got tired of guessing whether their CME was actually compliant.
-          We know what the board wants, because we&apos;ve been there.
+          The simplicity we wished we&apos;d had.
         </p>
 
         {/* Testimonial */}
