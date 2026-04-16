@@ -9,6 +9,11 @@ export type Course = {
   isHippo: boolean;
   description: string;
   url: string;
+  // Optional Scout-sourced metadata
+  accreditation?: string;
+  deaMateCompliant?: boolean;
+  stateAcceptance?: string;
+  verified?: string;
 };
 
 export type TopicCatalog = {
@@ -22,164 +27,204 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-      {
-        name: "OUD Decoded",
-        provider: "Hippo Education",
-        providerUrl: "https://home.hippoed.com",
-        credits: "12.25 AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "Included with Hippo subscription",
-        isFree: false,
-        isHippo: true,
-        description:
-          "Satisfy the DEA MATE Act 8-hr requirement with this comprehensive audio course on treating patients with opioid use disorder.",
-        url: "https://home.hippoed.com/oud-decoded",
-      },
+    // No Scout courses yet for this topic
+
     ],
   },
   OPIOID_PRESCRIBING: {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
+    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
       {
-        name: "OUD Decoded",
-        provider: "Hippo Education",
-        providerUrl: "https://home.hippoed.com",
-        credits: "12.25 AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "Included with Hippo subscription",
-        isFree: false,
-        isHippo: true,
-        description:
-          "Covers opioid prescribing best practices, risk management, and SUD treatment — satisfies most state opioid prescribing mandates.",
-        url: "https://home.hippoed.com/oud-decoded",
-      },
-      {
-        name: "Safe Opioid Prescribing",
-        provider: "CME Outfitters",
-        providerUrl: "https://www.cmeoutfitters.com",
-        credits: "1-3 AMA PRA Category 1",
+        name: "Pain Management and Opioids CME",
+        provider: "NEJM Knowledge+",
+        providerUrl: "https://knowledgeplus.nejm.org",
+        credits: "10.25 AMA PRA Category 1",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "Free accredited course on safe opioid prescribing practices.",
-        url: "https://www.cmeoutfitters.com/opioidquicklinks/",
+        description: "Case-based learning with 60+ clinical scenarios. Excellent for clinically rigorous learning.",
+        url: "https://knowledgeplus.nejm.org/cme-mocs/pain-management-and-opioids-cme/",
+        accreditation: "ACCME",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
       },
+      {
+        name: "Online 8-Hour SUD 101 Training",
+        provider: "PCSS-MOUD (funded by SAMHSA)",
+        providerUrl: "https://pcssnow.org",
+        credits: "8 AMA PRA Category 1 / AAPA Category 1 / ANCC / ACPE / IPCE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Comprehensive 8-module bundle covering SUD overview, assessment, and MOUD. Fulfills the full 8-hour federal requirement.",
+        url: "https://pcssnow.org/medications-for-opioid-use-disorder/",
+        accreditation: "ACCME / AAPA / ANCC / ACPE",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
+      },
+      {
+        name: "Online 8-Hour Training: Pain, Opioids & Effective Patient Care",
+        provider: "PCSS-MOUD",
+        providerUrl: "https://pcssnow.org",
+        credits: "8 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Flexible curriculum allowing users to pick 8 modules from 14 options in the Pain Core Curriculum.",
+        url: "https://pcssnow.org/medications-for-opioid-use-disorder/",
+        accreditation: "ACCME",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
+      },
+      {
+        name: "Opioid and Substance Use Disorder CME/CE",
+        provider: "Pri-Med",
+        providerUrl: "https://www.pri-med.com",
+        credits: "8 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Specifically designed for primary care providers to meet the MATE Act requirement.",
+        url: "https://www.pri-med.com/online-education/opioid-sud-cme-center",
+        accreditation: "ACCME",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
+      }
     ],
   },
   ETHICS: {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
+    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
       {
-        name: "Ethics & Resilience in Healthcare",
-        provider: "CME Outfitters",
-        providerUrl: "https://www.cmeoutfitters.com",
-        credits: "1-2 AMA PRA Category 1",
+        name: "Ethical Dilemmas in Patient Care",
+        provider: "Medscape Education",
+        providerUrl: "https://www.medscape.org",
+        credits: "1 AMA PRA Category 1",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description:
-          "Accredited ethics CME covering professional responsibility, resilience, and ethical decision-making.",
-        url: "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
+        description: "Explores common ethical challenges in clinical practice. Requires free Medscape account.",
+        url: "https://www.medscape.org/public/ethics",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
       },
+      {
+        name: "Medical Ethics: Patient Autonomy and Confidentiality",
+        provider: "Pri-Med",
+        providerUrl: "https://www.pri-med.com",
+        credits: "1 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Focuses on foundational principles of medical ethics in a primary care context.",
+        url: "https://www.pri-med.com/online-education/ethics-cme",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
+      },
+      {
+        name: "Boundaries for Physicians",
+        provider: "AMA Ed Hub",
+        providerUrl: "https://edhub.ama-assn.org",
+        credits: "1 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free for AMA Members (varies for non-members)",
+        isFree: true,
+        isHippo: false,
+        description: "Part of the AMA Code of Medical Ethics collection.",
+        url: "https://edhub.ama-assn.org/pages/ethics-collection",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-15",
+      }
     ],
   },
   IMPLICIT_BIAS: {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
+    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
       {
-        name: "Addressing Racial Disparities and Bias in Health Care",
-        provider: "CME Outfitters",
-        providerUrl: "https://www.cmeoutfitters.com",
-        credits: "1-2 AMA PRA Category 1",
+        name: "Unveiling Unconscious Bias",
+        provider: "Stanford Center for CME",
+        providerUrl: "https://cme.stanford.edu",
+        credits: "1 AMA PRA Category 1",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description:
-          "Free accredited course on implicit bias, health equity, and cultural competency.",
-        url: "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
-      },
+        description: "High-quality module from Stanford addressing implicit bias in healthcare.",
+        url: "https://cme.stanford.edu/",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; specifically meets California and Illinois requirements.",
+        verified: "2026-04-15",
+      }
     ],
   },
   PATIENT_SAFETY: {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-      {
-        name: "Patient Safety CME",
-        provider: "ACEP Anytime",
-        providerUrl: "https://www.acep.org/acepanytime",
-        credits: "2 AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "ACEP member pricing",
-        isFree: false,
-        isHippo: false,
-        description:
-          "ACEP-accredited patient safety content for emergency medicine physicians.",
-        url: "https://www.acep.org/acepanytime/",
-      },
+    // No Scout courses yet for this topic
+
     ],
   },
   SUICIDE_PREVENTION: {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-      {
-        name: "Suicide Prevention for Healthcare Professionals",
-        provider: "Pri-Med",
-        providerUrl: "https://bootcamp.pri-med.com",
-        credits: "2 AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description:
-          "Evidence-based suicide prevention training for healthcare professionals.",
-        url: "https://bootcamp.pri-med.com/en/mental-health",
-      },
+    // No Scout courses yet for this topic
+
     ],
   },
   DOMESTIC_VIOLENCE: {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-      {
-        name: "Domestic Violence CME",
-        provider: "CME Outfitters",
-        providerUrl: "https://www.cmeoutfitters.com",
-        credits: "1-2 AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description:
-          "Accredited CME on identifying and responding to domestic violence in clinical settings.",
-        url: "https://www.cmeoutfitters.com",
-      },
+    // No Scout courses yet for this topic
+
     ],
   },
   HUMAN_TRAFFICKING: {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
+    // Auto-synced from Scout catalog — 2026-04-16T05:50:38.519Z
       {
-        name: "Human Trafficking CME",
-        provider: "CME Outfitters",
-        providerUrl: "https://www.cmeoutfitters.com",
-        credits: "1 AMA PRA Category 1",
+        name: "Identifying Human Trafficking: What Physicians Need to Know",
+        provider: "Texas Medical Association (TMA)",
+        providerUrl: "https://www.texmed.org",
+        credits: "1 AMA PRA Category 1 / Ethics Credit",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description:
-          "Accredited training on recognizing and responding to human trafficking.",
-        url: "https://www.cmeoutfitters.com",
-      },
+        description: "Fulfills both Ethics and Human Trafficking requirements for many states.",
+        url: "https://www.texmed.org/Education/",
+        accreditation: "ACCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1. Specifically meets Texas mandatory requirement.",
+        verified: "2026-04-15",
+      }
     ],
   },
 };
