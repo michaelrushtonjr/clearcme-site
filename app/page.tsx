@@ -279,15 +279,15 @@ export default function Home() {
             <h1
               className="font-playfair text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
             >
-              Know exactly what CME
+              Know what CME
               <br />
               you <em className="text-[#0F766E] italic font-bold">actually</em> need.
             </h1>
 
             <p className="text-xl text-slate-500 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
               ClearCME tracks your credits, maps state requirements, and tells you
-              exactly what&apos;s missing — before your renewal deadline.
-              No spreadsheets. No guessing.
+              what&apos;s missing — before your renewal deadline.
+              No spreadsheets. No guessing. And if your board ever asks for documentation, it&apos;s just another Tuesday.
             </p>
 
             {/* Hero CTA */}
