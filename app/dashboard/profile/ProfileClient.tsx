@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import NpiVerifier from "@/components/NpiVerifier";
 
@@ -51,6 +51,14 @@ interface AdditionalLicense {
   expanded: boolean;
 }
 
+interface ExistingLicense {
+  id: string;
+  state: string;
+  licenseType: string;
+  renewalDate: string | null;
+  npiNumber: string | null;
+}
+
 interface ProfileClientProps {
   userName: string | null;
 }
@@ -59,6 +67,20 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Existing licenses from API
+  const [existingLicenses, setExistingLicenses] = useState<ExistingLicense[]>([]);
+  const [licensesLoading, setLicensesLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/licenses")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setExistingLicenses(data);
+      })
+      .catch(() => {})
+      .finally(() => setLicensesLoading(false));
+  }, []);
 
   // Additional licenses
   const [additionalLicenses, setAdditionalLicenses] = useState<AdditionalLicense[]>([]);
@@ -224,6 +246,49 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
   return (
     <div className="max-w-xl mx-auto">
+
+      {/* Existing licenses section */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-slate-900 mb-3">My Medical Licenses</h2>
+
+        {licensesLoading ? (
+          <div className="text-sm text-slate-400 py-4 text-center">Loading licenses…</div>
+        ) : existingLicenses.length === 0 ? (
+          <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl px-5 py-6 text-center text-sm text-slate-400">
+            No licenses added yet
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {existingLicenses.map((lic) => (
+              <div
+                key={lic.id}
+                className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-slate-900">
+                    {lic.state} — {lic.licenseType}
+                  </p>
+                  {lic.renewalDate && (
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Renewal: {new Date(lic.renewalDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    </p>
+                  )}
+                </div>
+                {lic.npiNumber && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-2.5 py-1">
+                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    NPI Verified
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add License form */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Add Medical License</h1>
         <p className="text-slate-500 mt-1">

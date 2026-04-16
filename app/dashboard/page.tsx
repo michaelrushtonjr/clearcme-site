@@ -154,6 +154,7 @@ export default async function DashboardPage() {
   }
   allGaps.sort((a, b) => b.urgency - a.urgency);
   const topGaps = allGaps.slice(0, 3);
+  const allGapsCount = allGaps.length;
 
   return (
     <div className="space-y-8">
@@ -222,6 +223,7 @@ export default async function DashboardPage() {
             <GapCard
               gaps={topGaps}
               renewalDays={nextRenewal?.daysUntilRenewal ?? null}
+              allGapsCount={allGapsCount}
             />
           )}
 
@@ -314,7 +316,7 @@ export default async function DashboardPage() {
                   View full map →
                 </Link>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 mb-3">
                 {validCompliance.map((data) => {
                   const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
                   const hrsPerMonth =
@@ -391,6 +393,15 @@ export default async function DashboardPage() {
                     </Link>
                   );
                 })}
+              </div>
+              {/* Add Another License CTA */}
+              <div className="flex justify-center mt-1">
+                <Link
+                  href="/dashboard/profile"
+                  className="text-sm text-teal-600 hover:text-teal-800 hover:underline transition-colors border border-dashed border-teal-300 rounded-lg px-4 py-2 hover:border-teal-500"
+                >
+                  ＋ Add Another License
+                </Link>
               </div>
             </section>
           )}

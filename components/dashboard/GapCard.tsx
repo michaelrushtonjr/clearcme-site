@@ -9,14 +9,28 @@ interface Gap {
 interface Props {
   gaps: Gap[];
   renewalDays: number | null;
+  allGapsCount?: number;
 }
 
-export default function GapCard({ gaps, renewalDays }: Props) {
+export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
   if (gaps.length === 0) return null;
 
   const isUrgent = renewalDays !== null && renewalDays <= 90;
   const borderColor = isUrgent ? "border-red-200" : "border-amber-200";
   const bgColor = isUrgent ? "bg-red-50" : "bg-amber-50";
+
+  // Show max 3 items; compute overflow
+  const MAX_VISIBLE = 3;
+  const visibleGaps = gaps.slice(0, MAX_VISIBLE);
+  const totalCount = allGapsCount ?? gaps.length;
+  const overflowCount = totalCount - MAX_VISIBLE;
+
+  // Check if all gaps share the same renewal deadline
+  const allSameDeadline =
+    overflowCount > 0 &&
+    gaps.every((g) => g.detail === gaps[0].detail) &&
+    gaps[0].detail.includes("days to renewal") === false &&
+    gaps[0].detail !== "Mandatory topic requirement";
 
   return (
     <div className={`${bgColor} ${borderColor} border rounded-2xl p-5`}>
@@ -37,7 +51,7 @@ export default function GapCard({ gaps, renewalDays }: Props) {
       </div>
 
       <div className="space-y-2">
-        {gaps.map((gap, i) => (
+        {visibleGaps.map((gap, i) => (
           <div
             key={i}
             className="flex items-center justify-between gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100"
@@ -62,6 +76,15 @@ export default function GapCard({ gaps, renewalDays }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Overflow count */}
+      {overflowCount > 0 && (
+        <p className="text-sm text-slate-500 italic text-center mt-3">
+          {allSameDeadline
+            ? `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"} due ${gaps[0].detail}`
+            : `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"}`}
+        </p>
+      )}
     </div>
   );
 }
