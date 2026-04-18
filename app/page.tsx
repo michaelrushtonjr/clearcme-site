@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
 import HeroProductPreview from "@/components/HeroProductPreview";
@@ -69,6 +69,60 @@ const DEMO_STATES: Record<DemoState, {
     ],
   },
 };
+
+function MethodologyAccordion() {
+  const [open, setOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white max-w-2xl mx-auto">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-700 hover:text-[#0F766E] transition-colors text-left"
+        aria-expanded={open}
+      >
+        <span>How do we verify CME requirements? →</span>
+        <svg
+          className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          ref={contentRef}
+          className="px-6 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100"
+        >
+          <p className="mt-4">
+            Every requirement in ClearCME is sourced directly from official state medical board statutes,
+            administrative codes, and renewal guidance — not third-party aggregators. We cross-reference
+            primary sources and update rules each renewal cycle.
+          </p>
+          <p className="mt-2">
+            Mandatory topic hour requirements (opioid prescribing, implicit bias, MATE Act, and others)
+            are verified against each board&apos;s published rules, not peer-sourced data. When a rule is
+            ambiguous, we flag it and default to the conservative interpretation to protect you.
+          </p>
+          <p className="mt-2">
+            Our data covers all 50 states plus DC for MD and DO licenses, continuously maintained as boards
+            update their requirements.
+          </p>
+          <a
+            href="/methodology"
+            className="inline-flex items-center gap-1 mt-4 text-sm font-medium hover:underline"
+            style={{ color: "#0F766E" }}
+          >
+            Read our full methodology →
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function DemoSection() {
   const [activeState, setActiveState] = useState<DemoState>("NV");
@@ -385,6 +439,11 @@ export default function Home() {
 
       {/* Demo Section with State Switcher */}
       <DemoSection />
+
+      {/* Methodology trust accordion */}
+      <section className="py-10 px-6">
+        <MethodologyAccordion />
+      </section>
 
       {/* Social proof */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">

@@ -8,6 +8,7 @@ import CertificateList from "@/components/CertificateList";
 import UrgencyCard, { NextActionCardProps } from "@/components/dashboard/UrgencyCard";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
+import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { keyToSlug } from "@/lib/courses";
 
 export const metadata = {
@@ -263,8 +264,31 @@ export default async function CompliancePage() {
     totalHoursAllCerts,
   };
 
+  // Build aha-moment modal props from the most-urgent license with real data
+  const ahaSource = complianceData.find((d) => d.rule !== null);
+  const ahaProps = ahaSource
+    ? {
+        state: ahaSource.license.state,
+        licenseType: ahaSource.license.licenseType,
+        requirementCount: ahaSource.rule!.mandatoryRequirements.length,
+        gapCount: ahaSource.mandatoryGaps.filter((g) => !g.isMet).length,
+        renewalDate: ahaSource.license.renewalDate
+          ? new Date(ahaSource.license.renewalDate).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })
+          : null,
+      }
+    : null;
+
   return (
     <div className="space-y-8">
+      {/* Aha-moment modal — fires once on first compliance map visit */}
+      {ahaProps && ahaProps.requirementCount > 0 && (
+        <AhaMomentModal {...ahaProps} />
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -428,17 +452,20 @@ export default async function CompliancePage() {
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Topics</h3>
                   <div className="space-y-2">
-                    {mandatoryGaps.map((gap) => {
+                    {mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
                       const statusIcon = gap.isMet
                         ? "✅"
                         : gap.earned > 0
                         ? "⚠️"
                         : "🔴";
+                      // Mark the first unmet gap for aha-moment scroll target
+                      const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
                       return (
                         <div
                           key={gap.topic}
+                          {...(isFirstGap ? { "data-gap-card": "true", tabIndex: -1 } : {})}
                           className={`rounded-xl border p-4 ${
                             gap.isMet
                               ? "border-green-100 bg-green-50"

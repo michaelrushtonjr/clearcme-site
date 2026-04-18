@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -50,7 +50,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Knowledge+",
@@ -137,7 +137,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Ethical Dilemmas in Patient Care",
         provider: "Medscape Education",
@@ -192,7 +192,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Unveiling Unconscious Bias",
         provider: "Stanford Center for CME",
@@ -223,7 +223,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -278,7 +278,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Domestic Violence & Abuse CME (Multiple Courses)",
         provider: "Pri-Med",
@@ -301,7 +301,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
