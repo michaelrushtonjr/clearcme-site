@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -50,7 +50,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Knowledge+",
@@ -114,6 +114,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: true,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-15",
+      },
+      {
+        name: "OUD Decoded: A DEA-Compliant Audio Course",
+        provider: "Hippo Education",
+        providerUrl: "https://home.hippoed.com",
+        credits: "12.25 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "$30",
+        isFree: false,
+        isHippo: true,
+        description: "Audio (podcast-style) format for DEA MATE Act compliance. 12.25 AMA PRA Cat 1 credits — exceeds the 8-hour minimum. Covers OUD management, practice-changing guidance. Accessible format for busy EM physicians. Pricing not visible without login — confirm before listing as under $30.",
+        url: "https://home.hippoed.com/oud-decoded",
+        accreditation: "ACCME",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-17 (URL confirmed active; price TBD)",
       }
     ],
   },
@@ -121,7 +137,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "Ethical Dilemmas in Patient Care",
         provider: "Medscape Education",
@@ -176,7 +192,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "Unveiling Unconscious Bias",
         provider: "Stanford Center for CME",
@@ -207,7 +223,23 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
+      {
+        name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
+        provider: "AAFP (American Academy of Family Physicians)",
+        providerUrl: "https://www.aafp.org",
+        credits: "1.75 AMA PRA Category 1 / AOA Category 2 equivalent / AAFP Prescribed",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free online CME focused on suicide risk reduction in health professionals (physician wellbeing focus, not primarily patient-facing). Faculty: Christine Yu Moutier, MD (AFSP Chief Medical Officer). Covers organizational strategies to reduce suicide risk among healthcare workers. AAFP Prescribed credits count toward Nevada's suicide prevention requirement. Approved through April 1, 2029. Note: This course is physician-focused rather than patient-focused — pairs well with a patient-focused suicide prevention course to meet full hour requirements. Term of Approval: 04/01/2026–04/01/2029.",
+        url: "https://www.aafp.org/cme/all/physician-well-being/mental-health-as-a-vital-sign.html",
+        accreditation: "ACCME (AAFP)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; meets Nevada suicide prevention requirement (partial — 1.75 of 2 hrs required every 4 years)",
+        verified: "2026-04-18",
+      },
       {
         name: "Project ECHO Addiction/SUD/Behavioral Health Programs (CME Available via iECHO)",
         provider: "Project ECHO (University of New Mexico)",
@@ -223,6 +255,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-16",
+      },
+      {
+        name: "Identifying and Responding to Suicide Risk",
+        provider: "American Medical Association (AMA Ed Hub)",
+        providerUrl: "https://edhub.ama-assn.org",
+        credits: "1 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Online enduring module. Covers suicide prevalence/impact, identifying at-risk patients, recognizing warning signs in colleagues, tools/resources to support at-risk individuals, communication techniques for suicide prevention. ABMS Lifelong Learning CME approved by 15 specialty boards including Family Medicine, Preventive Medicine, and Psychiatry. AMA members: free. Non-members: $20. Expires May 13, 2028. Pairs with AAFP mental health course to potentially cover Nevada's 2-hour suicide prevention requirement. Direct URL blocked by Cloudflare — access through edhub.ama-assn.org with AMA login.",
+        url: "https://edhub.ama-assn.org/ (Activity ID: 3841 — search \"suicide risk\" on AMA Ed Hub)",
+        accreditation: "ACCME (AMA)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; meets Nevada suicide prevention requirement (partial — 1 of 2 hrs required every 4 years); multiple ABMS board approvals",
+        verified: "2026-04-18 (confirmed via ABMS continuingcertification.org listing)",
       }
     ],
   },
@@ -230,7 +278,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "Domestic Violence & Abuse CME (Multiple Courses)",
         provider: "Pri-Med",
@@ -253,7 +301,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-16T19:26:38.188Z
+    // Auto-synced from Scout catalog — 2026-04-18T04:04:52.039Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
@@ -269,6 +317,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1. Specifically meets Texas mandatory requirement.",
         verified: "2026-04-15",
+      },
+      {
+        name: "Human Trafficking in a Clinical Setting: Your Role and Responsibility",
+        provider: "AMA Ed Hub / Hope for Justice Education",
+        providerUrl: "https://edhub.ama-assn.org",
+        credits: "0.5 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "AMA Ed Hub course from Hope for Justice (anti-trafficking nonprofit). Endorsed on AMA.org physician resources page. Specifically recommended by Inova Health System CME for Virginia mandatory human trafficking training. AMA Ed Hub is Cloudflare-protected — direct URL confirmed from Inova CME page and AMA search. Free account required at edhub.ama-assn.org. Exact credit hours require login to confirm.",
+        url: "https://edhub.ama-assn.org/hope-for-justice-edu/module/2808105",
+        accreditation: "ACCME (AMA)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; cited by Inova CME as meeting Virginia Board of Medicine human trafficking CE requirement",
+        verified: "2026-04-17 (URL confirmed via Inova CME portal; direct access requires AMA Ed Hub login)",
       }
     ],
   },
