@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -50,7 +50,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -137,7 +137,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "Ethical Dilemmas in Patient Care",
         provider: "Medscape Education",
@@ -192,22 +192,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
-        name: "Unveiling Unconscious Bias",
+        name: "~~Unveiling Unconscious Bias~~ ⚠️ LINK BROKEN — DO NOT USE",
         provider: "Stanford Center for CME",
-        providerUrl: "https://cme.stanford.edu",
-        credits: "1 AMA PRA Category 1",
+        providerUrl: "",
+        credits: "0",
         creditType: "AMA_PRA_1",
-        price: "Free",
+        price: "Unknown",
         isFree: true,
         isHippo: false,
-        description: "High-quality module from Stanford addressing implicit bias in healthcare. Free — no registration required beyond Stanford CME account. Pair with ScientiaCME (1.5hr, free) for NJ compliance.",
-        url: "https://cme.stanford.edu/",
-        accreditation: "ACCME",
+        description: "~~Unveiling Unconscious Bias~~ ⚠️ LINK BROKEN — DO NOT USE",
+        url: "",
+        accreditation: "",
         deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1; specifically meets CA and IL implicit bias requirements. **NJ:** Combine with ScientiaCME implicit bias course (1.5hr) for 2.5hr total to satisfy NJ's 2hr requirement (P.L.2021 c.96).",
-        verified: "2026-04-15 (URL active; confirm Stanford CME still hosts this at next opportunity)",
+        stateAcceptance: "",
+        verified: "",
       }
     ],
   },
@@ -223,7 +223,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -278,7 +278,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "Domestic Violence & Abuse CME (Multiple Courses)",
         provider: "Pri-Med",
@@ -301,7 +301,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
+    // Auto-synced from Scout catalog — 2026-04-19T21:54:03.350Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
