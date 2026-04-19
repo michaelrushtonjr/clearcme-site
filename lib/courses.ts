@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -50,22 +50,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Pain Management and Opioids CME",
-        provider: "NEJM Knowledge+",
-        providerUrl: "https://knowledgeplus.nejm.org",
+        provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
+        providerUrl: "https://pain-management-cme.nejm.org",
         credits: "10.25 AMA PRA Category 1",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "Case-based learning with 60+ clinical scenarios. Excellent for clinically rigorous learning.",
-        url: "https://knowledgeplus.nejm.org/cme-mocs/pain-management-and-opioids-cme/",
+        description: "62 case-based questions across 8 focused topics. 50+ videos and infographics. PDF summaries. Progress tracking. Updated April 2026 — active and confirmed. Previously at knowledgeplus.nejm.org — new URL is pain-management-cme.nejm.org. This 10-hour no-cost course satisfies the DEA's 8-hour requirement and may help with CDC safe prescribing compliance.",
+        url: "https://pain-management-cme.nejm.org/",
         accreditation: "ACCME",
         deaMateCompliant: true,
         stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-04-15",
+        verified: "2026-04-18 (URL updated; content confirmed live)",
       },
       {
         name: "Online 8-Hour SUD 101 Training",
@@ -137,7 +137,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Ethical Dilemmas in Patient Care",
         provider: "Medscape Education",
@@ -192,7 +192,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Unveiling Unconscious Bias",
         provider: "Stanford Center for CME",
@@ -202,12 +202,12 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "High-quality module from Stanford addressing implicit bias in healthcare.",
+        description: "High-quality module from Stanford addressing implicit bias in healthcare. Free — no registration required beyond Stanford CME account. Pair with ScientiaCME (1.5hr, free) for NJ compliance.",
         url: "https://cme.stanford.edu/",
         accreditation: "ACCME",
         deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1; specifically meets California and Illinois requirements.",
-        verified: "2026-04-15",
+        stateAcceptance: "All states accepting AMA PRA Category 1; specifically meets CA and IL implicit bias requirements. **NJ:** Combine with ScientiaCME implicit bias course (1.5hr) for 2.5hr total to satisfy NJ's 2hr requirement (P.L.2021 c.96).",
+        verified: "2026-04-15 (URL active; confirm Stanford CME still hosts this at next opportunity)",
       }
     ],
   },
@@ -223,7 +223,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -278,7 +278,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Domestic Violence & Abuse CME (Multiple Courses)",
         provider: "Pri-Med",
@@ -301,7 +301,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-18T13:11:41.273Z
+    // Auto-synced from Scout catalog — 2026-04-19T01:42:44.595Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

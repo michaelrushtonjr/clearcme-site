@@ -1,16 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
 
 // GET /api/compliance — compute and return compliance status for the current user
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+export async function GET(req: NextRequest) {
+  // Support both NextAuth session (web) and mobile JWT
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const userId = session.user.id;
 
   // Get all physician licenses
   const licenses = await prisma.physicianLicense.findMany({
