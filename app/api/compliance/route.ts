@@ -6,6 +6,7 @@ import type { Certificate, MandatoryRequirement } from "@prisma/client";
 
 // GET /api/compliance — compute and return compliance status for the current user
 export async function GET(req: NextRequest) {
+  try {
   // Support both NextAuth session (web) and mobile JWT
   const mobileUserId = await getMobileUserId(req);
   const session = mobileUserId ? null : await auth();
@@ -138,4 +139,8 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ compliance: complianceResults });
+  } catch (error) {
+    console.error("Compliance API error:", error);
+    return NextResponse.json({ error: "Internal server error", compliance: [] }, { status: 500 });
+  }
 }
