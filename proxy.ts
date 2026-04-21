@@ -6,11 +6,8 @@ export async function proxy(request: NextRequest) {
   const session = await auth();
   const { pathname } = request.nextUrl;
 
-  // Protect dashboard and API routes (except auth endpoints)
-  const isProtected =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/api/certificates") ||
-    pathname.startsWith("/api/compliance");
+  // Protect dashboard pages (API routes handle their own auth via getMobileUserId + auth())
+  const isProtected = pathname.startsWith("/dashboard");
 
   if (isProtected && !session?.user) {
     const loginUrl = new URL("/login", request.url);
@@ -24,7 +21,5 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/api/certificates/:path*",
-    "/api/compliance/:path*",
   ],
 };
