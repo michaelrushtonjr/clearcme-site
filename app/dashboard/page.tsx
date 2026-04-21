@@ -12,6 +12,7 @@ import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
+import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { keyToSlug } from "@/lib/courses";
 
 export default async function DashboardPage() {
@@ -193,11 +194,13 @@ export default async function DashboardPage() {
       </div>
 
       {/* Onboarding checklist — 4-step activation */}
-      <OnboardingChecklist
-        hasLicense={hasLicenses}
-        hasCertificate={hasCertificates}
-        hasComplianceData={validCompliance.length > 0}
-      />
+      <DashboardSection label="Onboarding Checklist">
+        <OnboardingChecklist
+          hasLicense={hasLicenses}
+          hasCertificate={hasCertificates}
+          hasComplianceData={validCompliance.length > 0}
+        />
+      </DashboardSection>
 
       {/* Empty state: no certificates uploaded yet — guided command center */}
       {!hasCertificates ? (
@@ -244,14 +247,17 @@ export default async function DashboardPage() {
         <>
           {/* Persistent gap summary card — above the fold */}
           {topGaps.length > 0 && (
-            <GapCard
-              gaps={topGaps}
-              renewalDays={nextRenewal?.daysUntilRenewal ?? null}
-              allGapsCount={allGapsCount}
-            />
+            <DashboardSection label="Compliance Gaps">
+              <GapCard
+                gaps={topGaps}
+                renewalDays={nextRenewal?.daysUntilRenewal ?? null}
+                allGapsCount={allGapsCount}
+              />
+            </DashboardSection>
           )}
 
           {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
+          <DashboardSection label="Stats Overview">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link
               href="/dashboard/compliance"
@@ -330,9 +336,11 @@ export default async function DashboardPage() {
               )}
             </Link>
           </div>
+          </DashboardSection>
 
           {/* License compliance cards with Renewal Ring */}
           {validCompliance.length > 0 && (
+            <DashboardSection label="License Compliance">
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
@@ -484,9 +492,11 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             </section>
+            </DashboardSection>
           )}
 
           {/* Rec 3: Audit trail card — visible below license cards */}
+          <DashboardSection label="Audit Trail">
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 text-sm">
             <p className="font-semibold text-teal-900 mb-1">📄 Your audit trail is ready</p>
             <p className="text-teal-700 text-xs mb-3">
@@ -494,8 +504,10 @@ export default async function DashboardPage() {
             </p>
             <AuditExportButton variant="default" />
           </div>
+          </DashboardSection>
 
           {/* Recent certificates */}
+          <DashboardSection label="Recent Certificates">
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
@@ -513,6 +525,7 @@ export default async function DashboardPage() {
               showViewAll
             />
           </section>
+          </DashboardSection>
         </>
       )}
     </div>
