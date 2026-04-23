@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  getRenewalRuleConfig,
+  getSuggestedRenewalDate,
+  type LicenseType,
+  type StateCode,
+} from "@/lib/state-requirements";
 
 const US_STATES: { code: string; name: string }[] = [
   { code: "AL", name: "Alabama" },
@@ -74,25 +80,27 @@ const SPECIALTIES = [
   "Other",
 ];
 
+const BIRTH_MONTHS = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+] as const;
+
 interface AdditionalLicense {
   id: string;
   state: string;
   licenseType: string;
   renewalDate: string;
   unsureDate: boolean;
-}
-
-function estimateRenewalDate(stateCode: string): string {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() + 2);
-  if (stateCode === "NV") {
-    const renewYear = d.getMonth() >= 6 ? d.getFullYear() + 1 : d.getFullYear();
-    return `${renewYear}-07-01`;
-  }
-  if (stateCode === "CA") {
-    return `${d.getFullYear()}-01-31`;
-  }
-  return d.toISOString().split("T")[0];
 }
 
 export default function SetupPage() {
@@ -105,8 +113,10 @@ export default function SetupPage() {
   const [state, setState] = useState("");
   const [licenseType, setLicenseType] = useState("");
   const [specialty, setSpecialty] = useState("");
+  const [birthMonth, setBirthMonth] = useState<number | null>(null);
   const [renewalDate, setRenewalDate] = useState("");
   const [unsureDate, setUnsureDate] = useState(false);
+  const [isEditingSuggestedRenewal, setIsEditingSuggestedRenewal] = useState(false);
 
   // Step 4: multi-state
   const [isMultiState, setIsMultiState] = useState<boolean | null>(null);
@@ -114,9 +124,82 @@ export default function SetupPage() {
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
-  const canSubmitStep3 = unsureDate || !!renewalDate;
+  const canSubmitStep3 = !!renewalDate;
 
   const selectedStateName = US_STATES.find((s) => s.code === state)?.name ?? state;
+  const primaryRenewalRule =
+    state && licenseType
+      ? getRenewalRuleConfig(state as StateCode, licenseType as LicenseType)
+      : null;
+  const primarySuggestedRenewal =
+    state && licenseType
+      ? getSuggestedRenewalDate(state as StateCode, licenseType as LicenseType, {
+          ...(birthMonth ? { birthMonth } : {}),
+        })
+      : { date: null as string | null, note: undefined as string | undefined };
+  const canUsePrimarySmartEstimate = !!primarySuggestedRenewal.date;
+  const isPrimaryVariableRenewal = primaryRenewalRule?.renewalType === "variable";
+  const shouldLockPrimaryRenewalInput =
+    !isPrimaryVariableRenewal && canUsePrimarySmartEstimate && unsureDate && !isEditingSuggestedRenewal;
+
+  function getSmartRenewalSuggestion(selectedState: string, selectedLicenseType: string) {
+    if (!selectedState || !selectedLicenseType) {
+      return { date: null as string | null, note: undefined as string | undefined };
+    }
+
+    return getSuggestedRenewalDate(
+      selectedState as StateCode,
+      selectedLicenseType as LicenseType,
+      {
+        ...(birthMonth ? { birthMonth } : {}),
+      },
+    );
+  }
+
+  function getFinalRenewalDate(
+    selectedState: string,
+    selectedLicenseType: string,
+    currentRenewalDate: string,
+    shouldUseEstimate: boolean,
+  ): string {
+    if (!shouldUseEstimate) {
+      return currentRenewalDate;
+    }
+
+    return getSmartRenewalSuggestion(selectedState, selectedLicenseType).date ?? currentRenewalDate;
+  }
+
+  function applyPrimarySuggestedRenewal() {
+    if (!primarySuggestedRenewal.date) return;
+    setRenewalDate(primarySuggestedRenewal.date);
+    setUnsureDate(true);
+    setIsEditingSuggestedRenewal(false);
+  }
+
+  useEffect(() => {
+    setRenewalDate("");
+    setUnsureDate(false);
+    setIsEditingSuggestedRenewal(false);
+  }, [state, licenseType]);
+
+  useEffect(() => {
+    if (!state || !licenseType || isPrimaryVariableRenewal) return;
+    if (!primarySuggestedRenewal.date) return;
+
+    if ((!renewalDate && !isEditingSuggestedRenewal) || unsureDate) {
+      setRenewalDate(primarySuggestedRenewal.date);
+      setUnsureDate(true);
+      setIsEditingSuggestedRenewal(false);
+    }
+  }, [
+    state,
+    licenseType,
+    isPrimaryVariableRenewal,
+    primarySuggestedRenewal.date,
+    renewalDate,
+    unsureDate,
+    isEditingSuggestedRenewal,
+  ]);
 
   function addAdditionalLicense() {
     if (additionalLicenses.length >= 4) return; // max 5 total (1 primary + 4 additional)
@@ -143,7 +226,7 @@ export default function SetupPage() {
   }
 
   async function handleSubmit() {
-    const finalRenewalDate = unsureDate ? estimateRenewalDate(state) : renewalDate;
+    const finalRenewalDate = getFinalRenewalDate(state, licenseType, renewalDate, unsureDate);
     setLoading(true);
     setError("");
     try {
@@ -166,9 +249,12 @@ export default function SetupPage() {
       // POST additional licenses in sequence
       for (const lic of additionalLicenses) {
         if (!lic.state || !lic.licenseType) continue;
-        const licRenewalDate = lic.unsureDate
-          ? estimateRenewalDate(lic.state)
-          : lic.renewalDate || estimateRenewalDate(lic.state);
+        const licRenewalDate = getFinalRenewalDate(
+          lic.state,
+          lic.licenseType,
+          lic.renewalDate,
+          lic.unsureDate,
+        );
         const res = await fetch("/api/licenses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -341,35 +427,123 @@ export default function SetupPage() {
                 This lets us show your countdown and pace your CME plan.
               </p>
 
-              {!unsureDate && (
-                <div className="mb-4">
-                  <input
-                    type="date"
-                    value={renewalDate}
-                    onChange={(e) => setRenewalDate(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              {primaryRenewalRule && (
+                <div className="mb-4 bg-teal-50 border border-teal-100 text-[#0F766E] rounded-xl px-4 py-3 text-sm">
+                  Your {selectedStateName} {licenseType} license renews:{" "}
+                  <span className="font-semibold">{primaryRenewalRule.renewalDeadline}</span>
                 </div>
+              )}
+
+              {primaryRenewalRule?.renewalType === "birth-based" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Birth month
+                  </label>
+                  <select
+                    value={birthMonth ?? ""}
+                    onChange={(e) => {
+                      setBirthMonth(e.target.value ? Number(e.target.value) : null);
+                    }}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="">Select your birth month…</option>
+                    {BIRTH_MONTHS.map((month) => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {canUsePrimarySmartEstimate && !isPrimaryVariableRenewal && (
+                <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-sm font-medium text-slate-900">Is this your next renewal?</p>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={applyPrimarySuggestedRenewal}
+                      className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                        unsureDate && !isEditingSuggestedRenewal
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : "border-slate-200 text-slate-700 hover:border-blue-300"
+                      }`}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUnsureDate(false);
+                        setIsEditingSuggestedRenewal(true);
+                      }}
+                      className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                        !unsureDate || isEditingSuggestedRenewal
+                          ? "bg-white border-slate-300 text-slate-900"
+                          : "border-slate-200 text-slate-700 hover:border-blue-300"
+                      }`}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <input
+                  type="date"
+                  value={renewalDate}
+                  onChange={(e) => {
+                    setRenewalDate(e.target.value);
+                    setUnsureDate(false);
+                    setIsEditingSuggestedRenewal(true);
+                  }}
+                  disabled={shouldLockPrimaryRenewalInput}
+                  className={`w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    shouldLockPrimaryRenewalInput ? "bg-slate-50 text-slate-500" : ""
+                  }`}
+                />
+              </div>
+
+              {primarySuggestedRenewal.note && (
+                <p className="text-xs text-slate-500 mb-4 px-1">{primarySuggestedRenewal.note}</p>
+              )}
+
+              {isPrimaryVariableRenewal && primaryRenewalRule && (
+                <p className="text-xs text-slate-500 mb-4 px-1">
+                  Renewal timing is individualized for this license. Use the date listed on your
+                  board record: {primaryRenewalRule.renewalDeadline}.
+                </p>
               )}
 
               <button
                 type="button"
                 onClick={() => {
-                  setUnsureDate(!unsureDate);
-                  if (!unsureDate) setRenewalDate("");
+                  if (unsureDate) {
+                    setUnsureDate(false);
+                    setIsEditingSuggestedRenewal(true);
+                    return;
+                  }
+
+                  applyPrimarySuggestedRenewal();
                 }}
+                disabled={!canUsePrimarySmartEstimate}
                 className={`flex items-center gap-2 text-sm px-4 py-3 rounded-xl border w-full transition-colors ${
-                  unsureDate
+                  !canUsePrimarySmartEstimate
+                    ? "border-slate-200 text-slate-300 cursor-not-allowed"
+                    : unsureDate && !isEditingSuggestedRenewal
                     ? "border-blue-300 bg-blue-50 text-blue-700 font-medium"
                     : "border-slate-200 text-slate-500 hover:border-slate-300"
                 }`}
               >
                 <span
                   className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                    unsureDate ? "bg-blue-600 border-blue-600" : "border-slate-300"
+                    unsureDate && !isEditingSuggestedRenewal
+                      ? "bg-blue-600 border-blue-600"
+                      : "border-slate-300"
                   }`}
                 >
-                  {unsureDate && (
+                  {unsureDate && !isEditingSuggestedRenewal && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -378,9 +552,21 @@ export default function SetupPage() {
                 I&apos;m not sure — estimate based on {selectedStateName || "my state"}
               </button>
 
-              {unsureDate && (
+              {!canUsePrimarySmartEstimate && primaryRenewalRule?.renewalType === "birth-based" && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
-                  We&apos;ll estimate your renewal based on {selectedStateName}&apos;s typical schedule. You can update this anytime.
+                  Choose your birth month to generate a smart renewal estimate.
+                </p>
+              )}
+
+              {!canUsePrimarySmartEstimate && isPrimaryVariableRenewal && (
+                <p className="text-xs text-slate-400 mt-2 px-1">
+                  Smart estimates are not available when renewal timing varies by board record.
+                </p>
+              )}
+
+              {unsureDate && !isEditingSuggestedRenewal && canUsePrimarySmartEstimate && (
+                <p className="text-xs text-slate-400 mt-2 px-1">
+                  We&apos;ll use this smart estimate as your renewal date. You can update it anytime.
                 </p>
               )}
 
@@ -447,84 +633,119 @@ export default function SetupPage() {
                   </div>
 
                   {/* Additional license cards */}
-                  {additionalLicenses.map((lic, idx) => (
-                    <div key={lic.id} className="border border-slate-200 rounded-xl p-4 space-y-3 relative">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          License {idx + 2}
-                        </p>
+                  {additionalLicenses.map((lic, idx) => {
+                    const additionalSuggestedRenewal = getSmartRenewalSuggestion(
+                      lic.state,
+                      lic.licenseType,
+                    );
+                    const canUseAdditionalSmartEstimate = !!additionalSuggestedRenewal.date;
+
+                    return (
+                      <div key={lic.id} className="border border-slate-200 rounded-xl p-4 space-y-3 relative">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                            License {idx + 2}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => removeAdditionalLicense(lic.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors"
+                            aria-label="Remove license"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* State */}
+                        <select
+                          value={lic.state}
+                          onChange={(e) =>
+                            updateAdditionalLicense(lic.id, {
+                              state: e.target.value,
+                              renewalDate: "",
+                              unsureDate: false,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="" disabled>Select state…</option>
+                          {US_STATES.filter((s) => s.code !== state).map((s) => (
+                            <option key={s.code} value={s.code}>{s.name}</option>
+                          ))}
+                        </select>
+
+                        {/* License Type */}
+                        <div className="flex gap-2">
+                          {["MD", "DO"].map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() =>
+                                updateAdditionalLicense(lic.id, {
+                                  licenseType: type,
+                                  renewalDate: "",
+                                  unsureDate: false,
+                                })
+                              }
+                              className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
+                                lic.licenseType === type
+                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  : "border-slate-200 text-slate-700 hover:border-blue-300"
+                              }`}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Renewal date */}
+                        {!lic.unsureDate && (
+                          <input
+                            type="date"
+                            value={lic.renewalDate}
+                            onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )}
+
                         <button
                           type="button"
-                          onClick={() => removeAdditionalLicense(lic.id)}
-                          className="text-slate-400 hover:text-red-500 transition-colors"
-                          aria-label="Remove license"
+                          onClick={() => {
+                            if (lic.unsureDate) {
+                              updateAdditionalLicense(lic.id, { unsureDate: false });
+                              return;
+                            }
+
+                            if (!canUseAdditionalSmartEstimate || !additionalSuggestedRenewal.date) return;
+
+                            updateAdditionalLicense(lic.id, {
+                              unsureDate: true,
+                              renewalDate: additionalSuggestedRenewal.date,
+                            });
+                          }}
+                          disabled={!!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate}
+                          className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border w-full transition-colors ${
+                            !!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate
+                              ? "border-slate-200 text-slate-300 cursor-not-allowed"
+                              : lic.unsureDate
+                              ? "border-blue-300 bg-blue-50 text-blue-700"
+                              : "border-slate-200 text-slate-400 hover:border-slate-300"
+                          }`}
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${lic.unsureDate ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
+                            {lic.unsureDate && (
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </span>
+                          Estimate renewal date
                         </button>
                       </div>
-
-                      {/* State */}
-                      <select
-                        value={lic.state}
-                        onChange={(e) => updateAdditionalLicense(lic.id, { state: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      >
-                        <option value="" disabled>Select state…</option>
-                        {US_STATES.filter((s) => s.code !== state).map((s) => (
-                          <option key={s.code} value={s.code}>{s.name}</option>
-                        ))}
-                      </select>
-
-                      {/* License Type */}
-                      <div className="flex gap-2">
-                        {["MD", "DO"].map((type) => (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => updateAdditionalLicense(lic.id, { licenseType: type })}
-                            className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
-                              lic.licenseType === type
-                                ? "bg-blue-600 border-blue-600 text-white"
-                                : "border-slate-200 text-slate-700 hover:border-blue-300"
-                            }`}
-                          >
-                            {type}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Renewal date */}
-                      {!lic.unsureDate && (
-                        <input
-                          type="date"
-                          value={lic.renewalDate}
-                          onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => updateAdditionalLicense(lic.id, { unsureDate: !lic.unsureDate, renewalDate: "" })}
-                        className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border w-full transition-colors ${
-                          lic.unsureDate
-                            ? "border-blue-300 bg-blue-50 text-blue-700"
-                            : "border-slate-200 text-slate-400 hover:border-slate-300"
-                        }`}
-                      >
-                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${lic.unsureDate ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
-                          {lic.unsureDate && (
-                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </span>
-                        Estimate renewal date
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Add another state button */}
                   {additionalLicenses.length < 4 && (
