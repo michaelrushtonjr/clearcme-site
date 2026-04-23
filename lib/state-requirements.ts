@@ -1,4 +1,5 @@
 export type LicenseType = "MD" | "DO";
+export type RenewalType = "fixed" | "birth-based" | "variable";
 
 export type StateCode =
   | "AK"
@@ -66,10 +67,42 @@ export interface StateRequirement {
   totalHoursLabel: string;
   cycleYears: number | null;
   cycleLabel: string;
+  renewalDeadline: string;
+  renewalType: RenewalType;
   mandatoryTopics: MandatoryTopic[];
 }
 
-type RequirementSeed = Omit<StateRequirement, "stateCode" | "stateName">;
+type RequirementSeed = Omit<
+  StateRequirement,
+  "stateCode" | "stateName" | "renewalDeadline" | "renewalType"
+>;
+
+type FixedRenewalRule = {
+  kind: "fixed";
+  month: number;
+  day: number;
+  yearPattern?: "annual" | "odd" | "even";
+};
+
+type BirthBasedRenewalRule = {
+  kind: "birth-based";
+  usesExactBirthday?: boolean;
+};
+
+type VariableRenewalRule = {
+  kind: "variable";
+};
+
+export type RenewalRuleSchedule =
+  | FixedRenewalRule
+  | BirthBasedRenewalRule
+  | VariableRenewalRule;
+
+export interface RenewalRuleConfig {
+  renewalDeadline: string;
+  renewalType: RenewalType;
+  schedule: RenewalRuleSchedule;
+}
 
 export const STATE_NAME_BY_CODE: Record<StateCode, string> = {
   AK: "Alaska",
@@ -128,6 +161,105 @@ export const STATE_NAME_BY_CODE: Record<StateCode, string> = {
 export const STATE_OPTIONS = (Object.entries(STATE_NAME_BY_CODE) as [StateCode, string][])
   .map(([code, name]) => ({ code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
+
+const fixedRenewal = (
+  renewalDeadline: string,
+  month: number,
+  day: number,
+  yearPattern: FixedRenewalRule["yearPattern"] = "annual",
+): RenewalRuleConfig => ({
+  renewalDeadline,
+  renewalType: "fixed",
+  schedule: { kind: "fixed", month, day, yearPattern },
+});
+
+const birthBasedRenewal = (
+  renewalDeadline: string,
+  options: Omit<BirthBasedRenewalRule, "kind"> = {},
+): RenewalRuleConfig => ({
+  renewalDeadline,
+  renewalType: "birth-based",
+  schedule: { kind: "birth-based", ...options },
+});
+
+const variableRenewal = (renewalDeadline: string): RenewalRuleConfig => ({
+  renewalDeadline,
+  renewalType: "variable",
+  schedule: { kind: "variable" },
+});
+
+const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
+  AK: variableRenewal("Biennial renewal date varies by physician and license record"),
+  AL: fixedRenewal("December 31 annually", 12, 31),
+  AR: birthBasedRenewal("During your birth month each year"),
+  AZ: birthBasedRenewal("On or before your birthday, every 2 years", {
+    usesExactBirthday: true,
+  }),
+  CA: birthBasedRenewal("Last day of your birth month, every 2 years"),
+  CO: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  CT: variableRenewal("Annual registration date varies by physician; CME uses a 24-month lookback"),
+  DC: birthBasedRenewal("Last day of your birth month, every 2 years"),
+  DE: fixedRenewal("March 31 of odd-numbered years", 3, 31, "odd"),
+  FL: variableRenewal("January 31 of your assigned odd- or even-year biennium"),
+  GA: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  HI: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
+  IA: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  ID: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  IL: variableRenewal("July 31 of your renewal year, every 3 years"),
+  IN: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
+  KS: fixedRenewal("July 31 annually", 7, 31),
+  KY: variableRenewal("Triennial renewal date varies by physician and license record"),
+  LA: variableRenewal("Annual renewal date varies by physician and license record"),
+  MA: variableRenewal("Every 2 years from your issuance or prior renewal date"),
+  MD: variableRenewal("September 30 of your renewal year, every 2 years"),
+  ME: birthBasedRenewal("Last day of your birth month, every 2 years"),
+  MI: variableRenewal("Every 3 years; renewal date varies by physician and license record"),
+  MN: birthBasedRenewal("During your birth month, every 3 years"),
+  MO: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  MS: fixedRenewal("June 30 annually", 6, 30),
+  MT: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  NC: birthBasedRenewal("On or before your birthday each year", {
+    usesExactBirthday: true,
+  }),
+  ND: variableRenewal("Triennial renewal deadline varies by physician and license record"),
+  NE: fixedRenewal("October 1 of even-numbered years", 10, 1, "even"),
+  NH: variableRenewal("June 30 of your renewal year, every 2 years"),
+  NJ: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
+  NM: variableRenewal("July 1 of your renewal year, every 3 years"),
+  NV: birthBasedRenewal("On or before your birthday every other year", {
+    usesExactBirthday: true,
+  }),
+  NY: variableRenewal("Every 2 years; deadline is tied to your NYSED registration cycle"),
+  OH: variableRenewal("Biennial registration date varies by physician and license record"),
+  OK: variableRenewal("Triennial MD renewal date varies by board cohort"),
+  OR: variableRenewal("License expiration varies by physician; Oregon renewals are not on one statewide fixed date"),
+  PA: variableRenewal("December 31 of your MD renewal year, every 2 years"),
+  RI: fixedRenewal("June 1 of even-numbered years", 6, 1, "even"),
+  SC: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  SD: fixedRenewal("March 1 of odd-numbered years", 3, 1, "odd"),
+  TN: birthBasedRenewal("During your birth month, every 2 years"),
+  TX: birthBasedRenewal("During your birth month, every 2 years"),
+  UT: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
+  VA: birthBasedRenewal("During your birth month, every 2 years"),
+  VT: variableRenewal("Vermont MD renewal deadline is not confirmed in the compliance map"),
+  WA: variableRenewal("Every 4 years; renewal date varies by physician and license record"),
+  WI: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
+  WV: variableRenewal("Biennial renewal deadline varies by physician and board"),
+  WY: variableRenewal("June 30 of your renewal year, every 3 years"),
+};
+
+const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
+  AZ: fixedRenewal("December 31 of odd-numbered years", 12, 31, "odd"),
+  CA: variableRenewal("California DO renewal deadline varies by osteopathic board cohort"),
+  FL: fixedRenewal("March 31 of even-numbered years", 3, 31, "even"),
+  HI: variableRenewal("June 30 of your DO renewal year, every 2 years"),
+  KS: fixedRenewal("October 31 annually", 10, 31),
+  ME: variableRenewal("Maine DO renewal deadline varies by osteopathic board cohort"),
+  NV: fixedRenewal("December 31 annually", 12, 31),
+  OK: fixedRenewal("June 30 annually", 6, 30),
+  PA: fixedRenewal("October 31 of even-numbered years", 10, 31, "even"),
+  VT: fixedRenewal("September 30 of even-numbered years", 9, 30, "even"),
+};
 
 const topic = (name: string, hours: string, note?: string): MandatoryTopic => ({
   topic: name,
@@ -774,11 +906,107 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
 };
 
-const buildRequirement = (stateCode: StateCode, seed: RequirementSeed): StateRequirement => ({
-  stateCode,
-  stateName: STATE_NAME_BY_CODE[stateCode],
-  ...seed,
-});
+const getRuleConfig = (
+  stateCode: StateCode,
+  licenseType: LicenseType,
+): RenewalRuleConfig =>
+  licenseType === "DO"
+    ? doRenewalRules[stateCode] ?? mdRenewalRules[stateCode]
+    : mdRenewalRules[stateCode];
+
+const startOfLocalDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const toInputDateValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const endOfMonth = (year: number, month: number) =>
+  new Date(year, month, 0);
+
+const matchesYearPattern = (
+  year: number,
+  yearPattern: FixedRenewalRule["yearPattern"] = "annual",
+) => {
+  if (yearPattern === "odd") return year % 2 === 1;
+  if (yearPattern === "even") return year % 2 === 0;
+  return true;
+};
+
+export function getRenewalRuleConfig(
+  stateCode: StateCode,
+  licenseType: LicenseType,
+): RenewalRuleConfig {
+  return getRuleConfig(stateCode, licenseType);
+}
+
+export function getSuggestedRenewalDate(
+  stateCode: StateCode,
+  licenseType: LicenseType,
+  options: { birthMonth?: number; referenceDate?: Date } = {},
+): {
+  date: string | null;
+  note?: string;
+} {
+  const rule = getRuleConfig(stateCode, licenseType);
+  const referenceDate = startOfLocalDay(options.referenceDate ?? new Date());
+
+  if (rule.schedule.kind === "fixed") {
+    let year = referenceDate.getFullYear();
+
+    while (true) {
+      if (matchesYearPattern(year, rule.schedule.yearPattern)) {
+        const candidate = new Date(year, rule.schedule.month - 1, rule.schedule.day);
+        if (candidate >= referenceDate) {
+          return { date: toInputDateValue(candidate) };
+        }
+      }
+
+      year += 1;
+    }
+  }
+
+  if (rule.schedule.kind === "birth-based") {
+    if (!options.birthMonth) {
+      return { date: null };
+    }
+
+    const currentYear = referenceDate.getFullYear();
+    const candidateThisYear = endOfMonth(currentYear, options.birthMonth);
+    const candidate =
+      candidateThisYear >= referenceDate
+        ? candidateThisYear
+        : endOfMonth(currentYear + 1, options.birthMonth);
+
+    return {
+      date: toInputDateValue(candidate),
+      note: rule.schedule.usesExactBirthday
+        ? "We use the end of your birth month as a smart starting point. Edit it if your board renews on your exact birthday."
+        : undefined,
+    };
+  }
+
+  return { date: null };
+}
+
+const buildRequirement = (
+  stateCode: StateCode,
+  licenseType: LicenseType,
+  seed: RequirementSeed,
+): StateRequirement => {
+  const renewalRule = getRuleConfig(stateCode, licenseType);
+
+  return {
+    stateCode,
+    stateName: STATE_NAME_BY_CODE[stateCode],
+    ...seed,
+    renewalDeadline: renewalRule.renewalDeadline,
+    renewalType: renewalRule.renewalType,
+  };
+};
 
 export const STATE_REQUIREMENTS: Record<
   StateCode,
@@ -787,8 +1015,12 @@ export const STATE_REQUIREMENTS: Record<
   (Object.keys(STATE_NAME_BY_CODE) as StateCode[]).map((stateCode) => [
     stateCode,
     {
-      MD: buildRequirement(stateCode, mdRequirements[stateCode]),
-      DO: buildRequirement(stateCode, doOverrides[stateCode] ?? mdRequirements[stateCode]),
+      MD: buildRequirement(stateCode, "MD", mdRequirements[stateCode]),
+      DO: buildRequirement(
+        stateCode,
+        "DO",
+        doOverrides[stateCode] ?? mdRequirements[stateCode],
+      ),
     },
   ]),
 ) as Record<StateCode, Record<LicenseType, StateRequirement>>;
