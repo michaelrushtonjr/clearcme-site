@@ -84,6 +84,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#FAFAF7" }}>
       {/* Mobile value line — shown only below lg */}
       <div className="w-full max-w-sm lg:hidden">
+        <a href="/" className="block text-center mb-6">
+          <span className="text-2xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
+            Clear<span style={{ color: "#0F766E" }}>CME</span>
+          </span>
+        </a>
+        <p className="text-center text-sm text-slate-600 mb-1">Sign in to your account</p>
+        <p className="text-center text-xs text-slate-400 mb-4">
+          Built by a board-certified physician · All 50 states + DC
+        </p>
         <p className="text-center text-xs text-slate-500 mb-4 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2">
           Free · No PHI stored · 3-step setup: license → map → gaps
         </p>
