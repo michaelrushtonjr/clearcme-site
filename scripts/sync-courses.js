@@ -19,7 +19,17 @@ const TRUSTED_PROVIDERS = [
   'pcss', 'pcss-moud', 'samhsa', 'ama ed hub', 'medscape', 'medscape education',
   'nejm knowledge+', 'pri-med', 'stanford', 'stanford center for cme',
   'cdc', 'aafp', 'statpearls', 'echo', 'hippo education', 'cme outfitters',
-  'proce', 'freecme', 'texas medical association', 'tma'
+  'proce', 'freecme', 'texas medical association', 'tma',
+  // Roz-verified batch — Apr 23, 2026
+  'adventhealth', 'advocate health', 'advocate aurora',
+  'american college of physicians', 'acp',
+  'american society of addiction medicine', 'asam',
+  'baptist health south florida', 'baptist health',
+  'baylor college of medicine', 'bcm',
+  'hca healthcare', 'medstar health',
+  'memorial healthcare system',
+  'the doctors company', 'doctors company',
+  'university of california, san francisco', 'ucsf',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────
