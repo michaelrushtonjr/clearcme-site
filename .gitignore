@@ -17,3 +17,5 @@ npm-debug.log*
 
 /app/generated/prisma
 .vercel
+.env.check
+.env.prod
