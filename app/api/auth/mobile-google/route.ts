@@ -6,6 +6,16 @@ import { SignJWT } from "jose";
 // Accepts a Google ID token from native mobile sign-in, validates it,
 // finds or creates the user, and returns a signed JWT for mobile API access.
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "capacitor://localhost",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -110,9 +120,9 @@ export async function POST(req: NextRequest) {
         name: user.name,
         image: user.image,
       },
-    });
+    }, { headers: CORS_HEADERS });
   } catch (error) {
     console.error("Mobile Google auth error:", error);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+    return NextResponse.json({ error: "Authentication failed" }, { status: 500, headers: CORS_HEADERS });
   }
 }
