@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
 import HeroProductPreview from "@/components/HeroProductPreview";
+import CheckYourStateWidget from "@/components/CheckYourStateWidget";
 
 type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
 
@@ -374,6 +375,8 @@ export default function Home() {
           <span>⭐ All 50 states + DC</span>
         </div>
       </section>
+
+      <CheckYourStateWidget />
 
       {/* Renewal Season Info Strip */}
       <RenewalSeasonStrip />
