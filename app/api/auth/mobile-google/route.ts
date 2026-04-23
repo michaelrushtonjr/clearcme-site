@@ -7,7 +7,7 @@ import { SignJWT } from "jose";
 // finds or creates the user, and returns a signed JWT for mobile API access.
 
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "capacitor://localhost",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
