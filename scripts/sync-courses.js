@@ -30,6 +30,8 @@ const TRUSTED_PROVIDERS = [
   'memorial healthcare system',
   'the doctors company', 'doctors company',
   'university of california, san francisco', 'ucsf',
+  // Eva-verified Apr 24, 2026 — ACCME accreditation confirmed on site
+  'scientiacme',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────

@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -114,7 +114,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -233,7 +233,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -416,7 +416,23 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+      {
+        name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
+        provider: "ScientiaCME",
+        providerUrl: "https://www.scientiacme.org",
+        credits: "1.5 AMA PRA Category 1 + ABIM MOC Points + ABP MOC Points",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Comprehensive coverage of cultural competence, implicit bias, and health equity. Topics include: principles of cultural competence, implicit bias in healthcare decision-making, LGBTQIA+ considerations, populations with limited English proficiency, underserved communities (aged, race/ethnicity, SES), CLAS standards, patient-centered communication strategies. Earns ABIM and ABP MOC points. Target audience: physicians, pharmacists, PAs, NPs, and other HCPs. Expires July 4, 2026 — active now. **NJ physicians:** pair with Advocate Health implicit bias course (both free) for full 2hr NJ compliance.",
+        url: "https://www.scientiacme.org/cme-528-111-0-1-10-bias-cultural-competence-training-cme",
+        accreditation: "ACCME (Activity #202796178)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; meets CA (no fixed hour min for implicit bias), IL (requires implicit bias CME), MD (requires implicit bias CME), NY (1hr required — covered by this course alone). **NJ note:** NJ (P.L.2021 c.96) requires 2hr/cycle — combine with Advocate Health implicit bias course (1.0hr, free, above) for 2.5hr total to satisfy NJ's 2hr requirement.",
+        verified: "2026-04-18",
+      },
       {
         name: "Implicit Bias Awareness Training for Licensed Healthcare Professionals 2026",
         provider: "Advocate Health (Advocate Aurora Health — jointly accredited)",
@@ -487,7 +503,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -558,7 +574,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -629,7 +645,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -700,7 +716,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
