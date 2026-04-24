@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import DashboardFAB from "@/components/dashboard/DashboardFAB";
 
 export const metadata = {
   title: "Dashboard — ClearCME",
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
+      <DashboardFAB />
       <MobileBottomNav />
     </div>
   );

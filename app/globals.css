@@ -14,6 +14,7 @@
 :root {
   --background: #FAFAF7;
   --foreground: #1E293B;
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
