@@ -11,10 +11,12 @@ import HoursNeededTile from "@/components/HoursNeededTile";
 import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
+import CEBrokerExportButton from "@/components/dashboard/CEBrokerExportButton";
 import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
 import ComplianceHeatmap, { type ComplianceOverview } from "@/components/dashboard/ComplianceHeatmap";
 import ComplianceDiffNotifications from "@/components/dashboard/ComplianceDiffNotifications";
 import { DashboardSection } from "@/components/dashboard/DashboardSections";
+import { isCEBrokerState } from "@/lib/cebroker-export";
 import { keyToSlug } from "@/lib/courses";
 
 export default async function DashboardPage() {
@@ -423,10 +425,10 @@ export default async function DashboardPage() {
                       : null;
 
                   return (
-                    <div key={data.license.id} id={`license-${data.license.id}`} className="scroll-mt-24">
+                    <div key={data.license.id} id={`license-${data.license.id}`} className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-sm transition-all">
                       <Link
                         href="/dashboard/compliance"
-                        className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+                        className="block p-5"
                       >
                         {/* Card header */}
                         <div className="flex items-start justify-between mb-4">
@@ -516,6 +518,15 @@ export default async function DashboardPage() {
                           </div>
                         )}
                       </Link>
+
+                      {isCEBrokerState(data.license.state) && (
+                        <div className="border-t border-slate-100 bg-[#FAFAF7] px-5 py-4 rounded-b-2xl">
+                          <CEBrokerExportButton
+                            licenseId={data.license.id}
+                            state={data.license.state}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
