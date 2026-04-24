@@ -12,6 +12,7 @@ import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
+import ComplianceHeatmap, { type ComplianceOverview } from "@/components/dashboard/ComplianceHeatmap";
 import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { keyToSlug } from "@/lib/courses";
 
@@ -135,6 +136,27 @@ export default async function DashboardPage() {
     mandatoryTopics: d.mandatoryTopics,
   }));
 
+  const complianceOverview: ComplianceOverview[] = validCompliance.map((data) => {
+    const completedHours = Math.max(0, data.rule.totalHours - data.effectiveHoursNeeded);
+    const percentage =
+      data.rule.totalHours > 0
+        ? Math.min(100, (completedHours / data.rule.totalHours) * 100)
+        : data.isCompliant
+        ? 100
+        : 0;
+
+    return {
+      state: data.license.state,
+      licenseType: data.license.licenseType,
+      percentage,
+      daysUntilRenewal: data.daysUntilRenewal,
+      hasGeneralGap: data.hoursNeeded > 0,
+      hasMandatoryGap: data.mandatoryPendingCount > 0,
+      isCompliant: data.isCompliant,
+      licenseId: data.license.id,
+    };
+  });
+
   // Topic name shortening map for chip display
   const TOPIC_SHORT_NAMES: Record<string, string> = {
     OPIOID_PRESCRIBING: "Opioid/DEA MATE",
@@ -245,6 +267,12 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <>
+          {complianceOverview.length > 0 && (
+            <DashboardSection label="Compliance Heatmap">
+              <ComplianceHeatmap items={complianceOverview} />
+            </DashboardSection>
+          )}
+
           {/* Persistent gap summary card — above the fold */}
           {topGaps.length > 0 && (
             <DashboardSection label="Compliance Gaps">
@@ -386,99 +414,100 @@ export default async function DashboardPage() {
                       : null;
 
                   return (
-                    <Link
-                      key={data.license.id}
-                      href="/dashboard/compliance"
-                      className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
-                    >
-                      {/* Card header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1 min-w-0 pr-3">
-                          <p className="font-semibold text-slate-900">
-                            {data.license.state} — {data.license.licenseType}
-                          </p>
-                          {data.daysUntilRenewal != null && (
-                            <p
-                              className={`text-xs mt-0.5 font-medium ${
-                                data.daysUntilRenewal <= 90
-                                  ? "text-red-600"
-                                  : data.daysUntilRenewal <= 180
-                                  ? "text-amber-600"
-                                  : "text-slate-400"
+                    <div key={data.license.id} id={`license-${data.license.id}`} className="scroll-mt-24">
+                      <Link
+                        href="/dashboard/compliance"
+                        className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+                      >
+                        {/* Card header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <p className="font-semibold text-slate-900">
+                              {data.license.state} — {data.license.licenseType}
+                            </p>
+                            {data.daysUntilRenewal != null && (
+                              <p
+                                className={`text-xs mt-0.5 font-medium ${
+                                  data.daysUntilRenewal <= 90
+                                    ? "text-red-600"
+                                    : data.daysUntilRenewal <= 180
+                                    ? "text-amber-600"
+                                    : "text-slate-400"
+                                }`}
+                              >
+                                {data.daysUntilRenewal <= 0
+                                  ? "Renewal overdue"
+                                  : `${data.daysUntilRenewal} days to renewal`}
+                              </p>
+                            )}
+                            <span
+                              className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
+                                data.isCompliant
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-amber-100 text-amber-700"
                               }`}
                             >
-                              {data.daysUntilRenewal <= 0
-                                ? "Renewal overdue"
-                                : `${data.daysUntilRenewal} days to renewal`}
-                            </p>
-                          )}
-                          <span
-                            className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
-                              data.isCompliant
-                                ? "bg-green-100 text-green-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
-                          </span>
+                              {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
+                            </span>
+                          </div>
+
+                          {/* Renewal Ring */}
+                          <RenewalRing
+                            hoursEarned={data.hoursEarned}
+                            totalHours={data.rule.totalHours}
+                            daysUntilRenewal={data.daysUntilRenewal}
+                            effectiveHoursNeeded={data.effectiveHoursNeeded}
+                            isCompliant={data.isCompliant}
+                            hrsPerMonth={hrsPerMonth}
+                          />
                         </div>
 
-                        {/* Renewal Ring */}
-                        <RenewalRing
-                          hoursEarned={data.hoursEarned}
-                          totalHours={data.rule.totalHours}
-                          daysUntilRenewal={data.daysUntilRenewal}
-                          effectiveHoursNeeded={data.effectiveHoursNeeded}
-                          isCompliant={data.isCompliant}
-                          hrsPerMonth={hrsPerMonth}
-                        />
-                      </div>
+                        {/* Hours sub-line */}
+                        <p className="text-xs text-slate-500">
+                          {data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs earned
+                        </p>
 
-                      {/* Hours sub-line */}
-                      <p className="text-xs text-slate-500">
-                        {data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs earned
-                      </p>
-
-                      {/* Rec 1: Named mandatory topic chips */}
-                      {data.allMandatoryTopics.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {data.allMandatoryTopics.map((t) => {
-                            const shortName =
-                              TOPIC_SHORT_NAMES[t.topic] ??
-                              t.topic
-                                .replace(/_/g, " ")
-                                .toLowerCase()
-                                .replace(/\b\w/g, (l: string) => l.toUpperCase());
-                            const slug = keyToSlug(t.topic);
-                            if (t.isMet) {
+                        {/* Rec 1: Named mandatory topic chips */}
+                        {data.allMandatoryTopics.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {data.allMandatoryTopics.map((t) => {
+                              const shortName =
+                                TOPIC_SHORT_NAMES[t.topic] ??
+                                t.topic
+                                  .replace(/_/g, " ")
+                                  .toLowerCase()
+                                  .replace(/\b\w/g, (l: string) => l.toUpperCase());
+                              const slug = keyToSlug(t.topic);
+                              if (t.isMet) {
+                                return (
+                                  <span
+                                    key={t.topic}
+                                    className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[11px] font-medium rounded-full"
+                                  >
+                                    ✓ {shortName}
+                                  </span>
+                                );
+                              }
                               return (
-                                <span
+                                <Link
                                   key={t.topic}
-                                  className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[11px] font-medium rounded-full"
+                                  href={`/courses/${encodeURIComponent(slug)}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium rounded-full hover:bg-amber-100 transition-colors"
                                 >
-                                  ✓ {shortName}
-                                </span>
+                                  {shortName}
+                                  {" — "}
+                                  {t.hoursNeeded % 1 === 0
+                                    ? t.hoursNeeded.toFixed(0)
+                                    : t.hoursNeeded.toFixed(1)}{" "}
+                                  hrs
+                                </Link>
                               );
-                            }
-                            return (
-                              <Link
-                                key={t.topic}
-                                href={`/courses/${encodeURIComponent(slug)}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium rounded-full hover:bg-amber-100 transition-colors"
-                              >
-                                {shortName}
-                                {" — "}
-                                {t.hoursNeeded % 1 === 0
-                                  ? t.hoursNeeded.toFixed(0)
-                                  : t.hoursNeeded.toFixed(1)}{" "}
-                                hrs
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </Link>
+                            })}
+                          </div>
+                        )}
+                      </Link>
+                    </div>
                   );
                 })}
               </div>
