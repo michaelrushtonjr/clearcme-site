@@ -13,6 +13,7 @@ import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
 import ComplianceHeatmap, { type ComplianceOverview } from "@/components/dashboard/ComplianceHeatmap";
+import ComplianceDiffNotifications from "@/components/dashboard/ComplianceDiffNotifications";
 import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { keyToSlug } from "@/lib/courses";
 
@@ -283,6 +284,14 @@ export default async function DashboardPage() {
               />
             </DashboardSection>
           )}
+
+          <DashboardSection label="Compliance Diff Notifications">
+            <ComplianceDiffNotifications />
+          </DashboardSection>
+
+          <DashboardSection label="Compliance Diff Notifications">
+            <ComplianceDiffNotifications />
+          </DashboardSection>
 
           {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
           <DashboardSection label="Stats Overview">

@@ -74,6 +74,7 @@ model User {
   licenses        PhysicianLicense[]
   certificates    Certificate[]
   complianceStatus ComplianceStatus[]
+  complianceDiffs  UserComplianceDiff[]
   subscription    Subscription?
 
   @@index([email])
@@ -215,6 +216,24 @@ model ComplianceRule {
   @@index([state])
 }
 
+model ComplianceRuleChange {
+  id            String      @id @default(cuid())
+  state         String
+  licenseType   LicenseType
+  changeType    String
+  field         String
+  oldValue      String
+  newValue      String
+  effectiveDate DateTime?
+  detectedAt    DateTime    @default(now())
+  description   String
+
+  userDiffs UserComplianceDiff[]
+
+  @@index([state, licenseType])
+  @@index([detectedAt])
+}
+
 model MandatoryRequirement {
   id               String       @id @default(cuid())
   complianceRuleId String
@@ -254,6 +273,24 @@ model ComplianceStatus {
   @@unique([userId, licenseState, licenseType, cycleStart])
   @@index([userId])
   @@index([licenseState])
+}
+
+model UserComplianceDiff {
+  id                    String   @id @default(cuid())
+  userId                String
+  changeId              String
+  impactDescription     String
+  additionalHoursNeeded Float?
+  isRead                Boolean  @default(false)
+  isDismissed           Boolean  @default(false)
+  createdAt             DateTime @default(now())
+
+  user   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  change ComplianceRuleChange @relation(fields: [changeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, changeId])
+  @@index([userId, isRead, isDismissed])
+  @@index([changeId])
 }
 
 // ─── Waitlist ─────────────────────────────────────────────────────────────────
