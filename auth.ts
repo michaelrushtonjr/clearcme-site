@@ -27,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: process.env.NODE_ENV !== "production" || !!process.env.AUTH_DEBUG,
   pages: {
     signIn: "/login",
-    error: "/login",
+    // error: "/login",  // temporarily disabled to see real error
   },
   logger: {
     error(error) {
