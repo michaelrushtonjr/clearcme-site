@@ -25,7 +25,7 @@ const providers = [
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers,
-  debug: true,
+  debug: false,
   pages: {
     signIn: "/login",
   },
