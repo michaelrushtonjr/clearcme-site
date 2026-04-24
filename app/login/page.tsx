@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
 // Email magic link is only available when RESEND_API_KEY is configured.
@@ -64,6 +65,8 @@ function TrustBlock() {
 }
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -96,6 +99,12 @@ export default function LoginPage() {
         <p className="text-center text-xs text-slate-500 mb-4 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2">
           Free · No PHI stored · 3-step setup: license → map → gaps
         </p>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+            <strong>Auth error:</strong> {error}
+          </div>
+        )}
 
         <AuthForm
           email={email}
