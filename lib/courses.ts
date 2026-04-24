@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -114,7 +114,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -196,6 +196,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-19",
       },
       {
+        name: "Free DEA MATE Act Training — 8 Hours CME (3 Courses)",
+        provider: "RxCE.com",
+        providerUrl: "https://rxce.com",
+        credits: "8 AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "3 free on-demand courses totaling 8.0 hours. No tests required. Self-paced, mobile-friendly. Certificate downloadable immediately upon completion. No documentation submitted to DEA — physician simply checks attestation box on next DEA renewal. Free account required (email signup only). Board-certified addiction medicine/psychiatry physicians deemed auto-compliant per MATE Act. RxCE has 20+ years providing online CE. Founded to provide high-quality CE at low cost. Page confirmed active April 2026. No explicit expiration date listed (enduring activity).",
+        url: "https://rxce.com/LandingPages/Mate",
+        accreditation: "ACCME / ACPE / ANCC (Jointly Accredited Provider of IPE)",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-24",
+      },
+      {
         name: "Pain Management and Opioids: Balancing Risks and Benefits",
         provider: "American Society of Addiction Medicine (ASAM) eLearning",
         providerUrl: "https://elearning.asam.org",
@@ -233,7 +249,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -416,7 +432,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -503,7 +519,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -574,7 +590,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -645,7 +661,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -716,7 +732,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T09:40:47.726Z
+    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

@@ -32,6 +32,8 @@ const TRUSTED_PROVIDERS = [
   'university of california, san francisco', 'ucsf',
   // Eva-verified Apr 24, 2026 — ACCME accreditation confirmed on site
   'scientiacme',
+  // RxCE — jointly accredited (ACCME+ACPE+ANCC), verified Apr 24, 2026
+  'rxce', 'rxce.com',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────
