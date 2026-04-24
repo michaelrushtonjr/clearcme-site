@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -114,7 +114,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -233,7 +233,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -347,6 +347,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-18",
       },
       {
+        name: "ACP Ethics Case Study: Raising Money from Patients? What's a Physician to Do?",
+        provider: "American College of Physicians (ACP)",
+        providerUrl: "https://www.acponline.org",
+        credits: "0.5 AMA PRA Category 1 + ABIM MOC Points",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "ACP Ethics and Professionalism case study examining the ethical implications when physicians solicit charitable donations from patients — including conflicts with the patient-physician relationship, confidentiality concerns, community-institution relationships, and physician leadership. Authors: Elliott J. Crigger, PhD; Noel N. Deep, MD, MACP; Lois Snyder Sulmasy, JD. Released May 29, 2025. Expires May 28, 2028. Read the article then complete a brief survey and 100%-passing quiz to claim credit. Earns ABIM MOC points. ACP membership likely required for credit claiming.",
+        url: "https://www.acponline.org/cme-moc/online-learning-center/raising-money-from-patients-whats-a-physician-to-do",
+        accreditation: "ACCME (ACP)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-23 (URL confirmed live; credit, cost, and expiry all explicit on page)",
+      },
+      {
         name: "ACP Ethics Case Studies: Pain Management Near the End-of-Life: What Would Mom Want?",
         provider: "American College of Physicians (ACP)",
         providerUrl: "https://www.acponline.org",
@@ -371,12 +387,12 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "ACP maintains a library of 15+ ethics case studies, each earning AMA PRA Cat 1 CME/MOC credits. Topics include: end-of-life care, information blocking, SUD and medical records, misinformation, professional boundaries/chaperones, telemedicine ethics, physician social media, resource allocation, firearm safety, and more. Each case is read as a journal article then completed with a brief survey/quiz. Individually cataloged cases: Pain Management/End-of-Life (0.5hr) and Chaperones/Boundaries (0.25hr). Highly recommended for stacking ethics credits from a single trusted ACCME-accredited source.",
+        description: "ACP maintains a library of 15+ ethics case studies, each earning AMA PRA Cat 1 CME/MOC credits. Topics include: end-of-life care, information blocking, SUD and medical records, misinformation, professional boundaries/chaperones, telemedicine ethics, physician social media, resource allocation, firearm safety, and more. Each case is read as a journal article then completed with a brief survey/quiz. Individually cataloged cases: Pain Management/End-of-Life (0.5hr), Chaperones/Boundaries (0.25hr), Raising Money from Patients (0.5hr). Highly recommended for stacking ethics credits from a single trusted ACCME-accredited source.",
         url: "https://www.acponline.org/clinical-information/medical-ethics-and-professionalism/ethics-case-studies-education-resources",
         accreditation: "ACCME (ACP)",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-04-18 (hub page confirmed live; individual case URLs verified)",
+        verified: "2026-04-23 (hub page reconfirmed; 11 new cases identified in hub; Raising Money from Patients newly cataloged)",
       },
       {
         name: "ACP Ethics Case Studies: Chaperones, Professional Boundaries and the Potential for Misunderstandings",
@@ -400,7 +416,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "Implicit Bias Awareness Training for Licensed Healthcare Professionals 2026",
         provider: "Advocate Health (Advocate Aurora Health — jointly accredited)",
@@ -471,7 +487,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -542,7 +558,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -613,7 +629,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -684,7 +700,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-23T14:49:48.838Z
+    // Auto-synced from Scout catalog — 2026-04-24T09:24:39.278Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
