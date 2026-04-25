@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -114,7 +114,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -249,7 +249,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -448,7 +448,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -535,7 +535,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -585,6 +585,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-20",
       },
       {
+        name: "IHI Open School: Introduction to Patient Safety (Free Courses — TA103, TA104, PFC203)",
+        provider: "Institute for Healthcare Improvement (IHI)",
+        providerUrl: "https://education.ihi.org",
+        credits: "1 AMA PRA Category 1 / ANCC / ACPE / AAFP Elective / MOC Part 2",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Three courses are permanently free without subscription: TA103 (Introduction to Safety Systems), TA104 (Human Factors and Safety), and PFC203 (Person- and Family-Centered Care). Create free account at education.ihi.org. Additional patient safety courses available via paid Patient Safety Subscription ($XX/year). IHI is jointly accredited — CME, CNE, and pharmacy CE all available.",
+        url: "https://education.ihi.org/ (log in or create free account → browse catalog → search TA103, TA104, PFC203)",
+        accreditation: "ACCME (jointly accredited with ACPE, ANCC)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; specifically meets FL and PA patient safety requirements",
+        verified: "2026-04-16",
+      },
+      {
         name: "Medical Errors: Identifying and Avoiding Common Misdiagnoses in Clinical Practice (Parts 1 & 2)",
         provider: "Pri-Med Institute",
         providerUrl: "https://www.pri-med.com",
@@ -606,7 +622,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -677,7 +693,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -748,7 +764,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
+    // Auto-synced from Scout catalog — 2026-04-25T09:24:52.427Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
@@ -796,6 +812,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; meets Texas mandatory human trafficking training requirement",
         verified: "2026-04-20 (listing live; individual course status mixed — some archived, at least one 2025 session appears active)",
+      },
+      {
+        name: "Human Trafficking and Healthcare Training (Abbreviated + Extended)",
+        provider: "Freedom 4/24 (via Centra Health)",
+        providerUrl: "https://www.freedom424.org",
+        credits: "1 AMA PRA Category 1 (physicians) / ANCC Credit (nurses) / AAPA Category 1 (PAs) / IPCE (all other healthcare professionals)",
+        creditType: "AMA_PRA_1",
+        price: "TBD (pricing not publicly displayed on the live course page)",
+        isFree: true,
+        isHippo: false,
+        description: "Live page confirmed 2026-04-18. Two course options are publicly listed: abbreviated (1 AMA PRA Category 1 credit available upon completion) and extended (2 AMA PRA Category 1 credits available upon completion). Trauma-informed, asynchronous, online training covering labor and sex trafficking, victim/trafficker profiles, clinical identification, survivor-centered response, and mandated reporting. Pricing was not shown on the public CME page, so cost remains unconfirmed.",
+        url: "https://www.freedom424.org/human-trafficking-cme-training",
+        accreditation: "ACCME jointly accredited via Centra Health (ACCME + ACPE + ANCC — provides CME, CNE, and pharmacy CE)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; based on Texas HHS Human Trafficking Training Standards (satisfies TX mandatory requirement)",
+        verified: "2026-04-18 (URL active; credits confirmed; price still unconfirmed)",
       },
       {
         name: "Human Trafficking: Identification and Response from Health Care Providers",

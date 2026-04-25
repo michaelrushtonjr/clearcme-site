@@ -34,6 +34,10 @@ const TRUSTED_PROVIDERS = [
   'scientiacme',
   // RxCE — jointly accredited (ACCME+ACPE+ANCC), verified Apr 24, 2026
   'rxce', 'rxce.com',
+  // IHI — jointly accredited (ACCME+ACPE+ANCC), offers AMA PRA Category 1 Credits, verified Apr 25, 2026
+  'institute for healthcare improvement', 'ihi',
+  // Freedom 4/24 — via Centra (jointly accredited ACCME+ACPE+ANCC), offers AMA PRA Category 1 Credits, verified Apr 25, 2026
+  'freedom 4/24', 'freedom424', 'freedom 424',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────
