@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -114,7 +114,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "Pain Management and Opioids CME",
         provider: "NEJM Group (formerly NEJM Knowledge+, now with AMBOSS)",
@@ -249,7 +249,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -395,6 +395,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-18",
       },
       {
+        name: "ACP Ethics Case Study: Updating the Information Blocking Rule: Implications for Patients and Physicians",
+        provider: "American College of Physicians (ACP)",
+        providerUrl: "https://www.acponline.org",
+        credits: "0.25 AMA PRA Category 1 + ABIM MOC Points",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "ACP Ethics and Professionalism journal-article case study on recent regulatory changes to the federal information-blocking rule and what delayed release of certain results means for physicians and patients. Read the case study, review supplemental material, then complete the CME/MOC survey. Released April 3, 2026. Expires April 2, 2029. Earns ABIM MOC points. ACP membership required to claim credit.",
+        url: "https://www.acponline.org/cme-moc/online-learning-center/updating-the-information-blocking-rule-implications-for-patients-and-physicians",
+        accreditation: "ACCME (ACP)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-04-24 (OLC page explicitly states 0.25 AMA PRA Category 1, Free to Members, ACCME accreditation, and Apr 2029 expiry)",
+      },
+      {
         name: "ACP Ethics Case Study Series (Platform Note — 15+ Free Cases)",
         provider: "American College of Physicians (ACP) — Center for Ethics and Professionalism",
         providerUrl: "https://www.acponline.org",
@@ -432,7 +448,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -519,7 +535,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -590,7 +606,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -661,7 +677,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -732,7 +748,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-04-24T15:51:36.995Z
+    // Auto-synced from Scout catalog — 2026-04-25T01:44:40.677Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
