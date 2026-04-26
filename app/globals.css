@@ -1,28 +1,27 @@
 @import "tailwindcss";
 
-/* ─── Brand design tokens (Variant B: Deep Teal) ─── */
 @theme {
-  /* Brand colors */
-  --color-brand-teal: #0F766E;
-  --color-brand-teal-light: #0D9488;
+  --color-brand-gold: #D97706;
+  --color-brand-gold-bright: #EAB308;
+  --color-brand-gold-hover: #F59E0B;
+  --color-brand-gold-light: #FEF3C7;
   --color-brand-navy: #1E293B;
-  --color-brand-parchment: #FAFAF7;
-
-  --font-family-playfair: Georgia, "Times New Roman", serif;
+  --color-brand-rust: #7C2D12;
+  --font-family-playfair: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-family-plex: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
   --background: #FAFAF7;
   --foreground: #1E293B;
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-.font-playfair {
-  font-family: var(--font-family-playfair);
-}
+.font-playfair { font-family: "Playfair Display", Georgia, serif; }
+.font-plex { font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; }

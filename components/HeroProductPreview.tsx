@@ -5,7 +5,7 @@ export default function HeroProductPreview() {
     <div className="w-full max-w-sm mx-auto lg:mx-0">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
         {/* Header */}
-        <div className="bg-[#0F766E] px-4 py-3 flex items-center gap-2">
+        <div className="bg-[#1E293B] px-4 py-3 flex items-center gap-2">
           <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-white/30" />
             <div className="w-2.5 h-2.5 rounded-full bg-white/30" />
@@ -22,13 +22,13 @@ export default function HeroProductPreview() {
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E2E8F0" strokeWidth="3" />
                 <circle
                   cx="18" cy="18" r="15.9" fill="none"
-                  stroke="#0F766E" strokeWidth="3"
+                  stroke="#D97706" strokeWidth="3"
                   strokeDasharray="70 30"
                   strokeLinecap="round"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[10px] font-bold text-[#0F766E]">70%</span>
+                <span className="text-[10px] font-bold text-[#D97706]">70%</span>
               </div>
             </div>
             <div>
@@ -53,17 +53,17 @@ export default function HeroProductPreview() {
           </div>
 
           {/* Panel 3: Renewal countdown */}
-          <div className="flex items-center gap-3 p-3 bg-teal-50 rounded-xl border border-teal-100">
-            <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-[#D97706]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[#0F766E] truncate">Nevada renewal</p>
-              <p className="text-[10px] text-teal-600">July 1, 2026</p>
+              <p className="text-xs font-semibold text-[#D97706] truncate">Nevada renewal</p>
+              <p className="text-[10px] text-amber-700">July 1, 2026</p>
             </div>
-            <span className="text-[10px] font-bold text-white bg-[#0F766E] rounded-full px-2 py-0.5 flex-shrink-0">78 days</span>
+            <span className="text-[10px] font-bold text-white bg-[#D97706] rounded-full px-2 py-0.5 flex-shrink-0">78 days</span>
           </div>
         </div>
       </div>

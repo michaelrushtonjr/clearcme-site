@@ -26,7 +26,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="text-xl font-bold text-[#1E293B] tracking-tight">
-              Clear<span className="text-[#0F766E]">CME</span>
+              Clear<span className="text-[#D97706]">CME</span>
             </span>
           </Link>
 
@@ -38,7 +38,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
                 href={item.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? "bg-teal-50 text-[#0F766E]"
+                    ? "bg-amber-50 text-[#D97706]"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
@@ -69,7 +69,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
               href={item.href}
               className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 pathname === item.href
-                  ? "bg-teal-50 text-[#0F766E]"
+                  ? "bg-amber-50 text-[#D97706]"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
