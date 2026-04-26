@@ -349,7 +349,7 @@ function DemoSection() {
             href="/login"
             className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
           >
-            See YOUR compliance map → Sign in with Google
+            See your compliance map → Sign in with Google
           </a>
           <p className="text-xs text-slate-400 mt-3">
             Free · Takes under 2 minutes · No certificate upload needed to get started
