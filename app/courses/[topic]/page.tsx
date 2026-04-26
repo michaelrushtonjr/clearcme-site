@@ -114,7 +114,7 @@ export default async function CourseDiscoveryPage({
                       </a>
                       {course.isHippo && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 border border-purple-100 rounded-full text-xs font-medium text-purple-700">
-                          🦛 via Hippo
+                          via Hippo
                         </span>
                       )}
                       {course.isFree && (

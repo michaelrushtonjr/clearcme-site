@@ -442,7 +442,7 @@ export default async function CompliancePage() {
                     const critical = daysUntilRenewal < 60 && pctDone < 0.5;
                     return (
                       <p className={`text-xs mt-1.5 font-medium ${critical ? "text-red-600" : onTrack ? "text-green-600" : "text-amber-600"}`}>
-                        {critical ? "⚠️" : onTrack ? "✓" : "⚡"} To finish by renewal, you need {hrsPerMonth.toFixed(1)} hrs/month
+                        {critical ? "!" : onTrack ? "✓" : "→"} To finish by renewal, you need {hrsPerMonth.toFixed(1)} hrs/month
                       </p>
                     );
                   })()
@@ -515,7 +515,7 @@ export default async function CompliancePage() {
                                 </Link>
                                 {HIPPO_TOPICS.has(gap.topic) ? (
                                   <span className="inline-flex items-center gap-1 text-xs text-purple-700 font-medium">
-                                    <span>🦛</span> via Hippo Education
+                                    via Hippo Education
                                   </span>
                                 ) : (
                                   <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>

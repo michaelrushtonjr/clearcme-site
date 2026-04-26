@@ -36,12 +36,12 @@ function StatusBadge({ status, creditHours }: { status: string; creditHours: num
   }
   if (status === "COMPLETED") {
     return (
-      <span className="text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-lg whitespace-nowrap">✅ Completed</span>
+      <span className="text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-lg whitespace-nowrap">Completed</span>
     );
   }
   if (status === "FAILED") {
     return (
-      <span className="text-xs text-red-600 bg-red-50 px-2.5 py-1 rounded-lg whitespace-nowrap">⚠️ Failed</span>
+      <span className="text-xs text-red-600 bg-red-50 px-2.5 py-1 rounded-lg whitespace-nowrap">Failed</span>
     );
   }
   return (

@@ -138,7 +138,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
   if (isFullyCompliant) {
     return {
       theme: "green",
-      icon: "✅",
+      icon: "✓",
       headline: `You're compliant — next renewal: ${renewalDateLabel}`,
       explanation:
         "All CME requirements are met for this cycle. Keep uploading certificates as you earn them.",
@@ -161,7 +161,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       : true;
     return {
       theme: "red",
-      icon: "⚠️",
+      icon: "!",
       headline: `Renewal in ${daysUntilRenewal} days — complete ${topicName} now`,
       explanation: `Your ${renewalDateLabel} renewal is approaching. Focus on your highest-priority gap first to avoid a compliance violation.`,
       ctaLabel: `Find ${topicName} CME →`,
@@ -187,7 +187,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
     const ctaExternal = !INTERNAL_COURSE_TOPICS.has(req.topic);
     return {
       theme: "amber",
-      icon: "📋",
+      icon: "·",
       headline: `Complete your ${label} requirement — it's a one-time task`,
       explanation: `This is a mandatory one-time requirement for your ${props.licenseState} license. You only have to do it once — best to knock it out now.`,
       ctaLabel: `Find ${label} CME →`,
