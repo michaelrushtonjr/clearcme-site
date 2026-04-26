@@ -75,7 +75,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
       <div className="px-6 py-5 border-b border-slate-100">
         <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
           <span className="text-xl font-bold text-[#1E293B] tracking-tight">
-            Clear<span className="text-[#D97706]">CME</span>
+            Clear<span className="text-[#0F766E]">CME</span>
           </span>
         </Link>
       </div>
@@ -89,11 +89,11 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
             onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
               isActive(item.href)
-                ? "bg-amber-50 text-[#D97706]"
+                ? "bg-teal-50 text-[#0F766E]"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             }`}
           >
-            <span className={isActive(item.href) ? "text-[#D97706]" : "text-slate-400"}>
+            <span className={isActive(item.href) ? "text-[#0F766E]" : "text-slate-400"}>
               {item.icon}
             </span>
             {item.label}
@@ -104,8 +104,8 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
       {/* User footer */}
       <div className="px-3 py-4 border-t border-slate-100">
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-[#D97706]">
+          <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-semibold text-[#0F766E]">
               {(user.name ?? user.email ?? "U")[0].toUpperCase()}
             </span>
           </div>
@@ -118,7 +118,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
         </div>
         <Link
           href="/methodology"
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-[#D97706] hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-[#0F766E] hover:bg-slate-50 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -149,7 +149,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
       <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-lg font-bold text-[#1E293B] tracking-tight">
-            Clear<span className="text-[#D97706]">CME</span>
+            Clear<span className="text-[#0F766E]">CME</span>
           </span>
         </Link>
         <button
