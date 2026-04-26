@@ -19,25 +19,26 @@ function clampPercentage(value: number) {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-function getProgressTone(percentage: number) {
-  if (percentage >= 80) {
-    return {
-      bar: "bg-[#10B981]",
-      pill: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    };
-  }
+function getUrgencyTone(daysUntilRenewal: number | null, percentComplete: number) {
+  if (percentComplete >= 100) return "met";
+  if (daysUntilRenewal === null) return "open";
+  if (daysUntilRenewal < 0) return "due";
+  if (daysUntilRenewal < 60) return "warn-now";
+  if (daysUntilRenewal < 180) return "warn-soon";
+  return "open";
+}
 
-  if (percentage >= 50) {
-    return {
-      bar: "bg-[#F59E0B]",
-      pill: "bg-amber-50 text-amber-700 border-amber-200",
-    };
-  }
+const TONE_MAP: Record<string, { bar: string; pill: string }> = {
+  met:        { bar: "bg-brand-emerald",  pill: "bg-brand-emeraldTint text-brand-emerald border-brand-emeraldTint" },
+  open:       { bar: "bg-brand-teal",     pill: "bg-brand-amberTint text-brand-amber border-brand-amberRule" },
+  "warn-soon":{ bar: "bg-brand-amberMid", pill: "bg-brand-amberTint text-brand-amberMid border-brand-amberRule" },
+  "warn-now": { bar: "bg-brand-crimson",  pill: "bg-brand-crimsonTint text-brand-crimson border-brand-crimsonTint" },
+  due:        { bar: "bg-brand-crimson",  pill: "bg-brand-crimsonTint text-brand-crimson border-brand-crimsonTint" },
+};
 
-  return {
-    bar: "bg-[#EF4444]",
-    pill: "bg-red-50 text-red-700 border-red-200",
-  };
+function getProgressTone(percentage: number, daysUntilRenewal: number | null = null) {
+  const key = getUrgencyTone(daysUntilRenewal, percentage);
+  return TONE_MAP[key];
 }
 
 function getRenewalLabel(daysUntilRenewal: number | null) {
@@ -80,8 +81,8 @@ export default function ComplianceHeatmap({ items }: ComplianceHeatmapProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#0F766E]">
               Multi-State Compliance
             </p>
-            <h2 className="font-playfair text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Compliance heatmap overview
+            <h2 className="font-display text-2xl font-bold tracking-tight text-brand-navy sm:text-3xl">
+              {items.length === 1 ? `Your ${items[0].state} license` : "Multi-state compliance heatmap"}
             </h2>
           </div>
           <p className="text-sm text-slate-600">
@@ -93,7 +94,7 @@ export default function ComplianceHeatmap({ items }: ComplianceHeatmapProps) {
       <div className="mt-4 space-y-3">
         {items.map((item) => {
           const percentage = clampPercentage(item.percentage);
-          const tone = getProgressTone(percentage);
+          const tone = getProgressTone(percentage, item.daysUntilRenewal);
           const warningLabel = getWarningLabel(item);
           const renewalLabel = getRenewalLabel(item.daysUntilRenewal);
 

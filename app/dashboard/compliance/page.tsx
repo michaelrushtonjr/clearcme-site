@@ -71,29 +71,33 @@ const PARTNER_URLS: Record<string, string> = {
 /** Topics sourced from Hippo Education — show badge */
 const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "OPIOID_PRESCRIBING", "INFECTION_CONTROL"]);
 
-function RenewalCountdown({ days }: { days: number | null }) {
+function getUrgencyTone(daysUntilRenewal: number | null, percentComplete: number) {
+  if (percentComplete >= 100) return "met";
+  if (daysUntilRenewal === null) return "open";
+  if (daysUntilRenewal < 0) return "due";
+  if (daysUntilRenewal < 60) return "warn-now";
+  if (daysUntilRenewal < 180) return "warn-soon";
+  return "open";
+}
+
+const TONE: Record<string, { bg: string; text: string; border: string; bar: string }> = {
+  met:        { bg: "bg-brand-emeraldTint", text: "text-brand-emerald",  border: "border-brand-emeraldTint", bar: "bg-brand-emerald" },
+  open:       { bg: "bg-brand-amberTint",   text: "text-brand-amber",    border: "border-brand-amberRule",   bar: "bg-brand-teal" },
+  "warn-soon":{ bg: "bg-brand-amberTint",   text: "text-brand-amberMid", border: "border-brand-amberRule",   bar: "bg-brand-amberMid" },
+  "warn-now": { bg: "bg-brand-crimsonTint", text: "text-brand-crimson",  border: "border-brand-crimsonTint", bar: "bg-brand-crimson" },
+  due:        { bg: "bg-brand-crimsonTint", text: "text-brand-crimson",  border: "border-brand-crimsonTint", bar: "bg-brand-crimson" },
+};
+
+function RenewalCountdown({ days, percentComplete }: { days: number | null; percentComplete: number }) {
   if (days === null) return null;
-  const isUrgent = days <= 90;
-  const isWarning = days <= 180;
+  const tone = TONE[getUrgencyTone(days, percentComplete)];
 
   return (
-    <div
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-        isUrgent
-          ? "bg-red-50 text-red-700"
-          : isWarning
-          ? "bg-amber-50 text-amber-700"
-          : "bg-green-50 text-green-700"
-      }`}
-    >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${tone.bg} ${tone.text} ${tone.border}`}>
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      {days <= 0
-        ? "Renewal overdue"
-        : days === 1
-        ? "1 day until renewal"
-        : `${days} days until renewal`}
+      {days <= 0 ? "Renewal overdue" : days === 1 ? "1 day until renewal" : `${days} days until renewal`}
     </div>
   );
 }
@@ -292,12 +296,10 @@ export default async function CompliancePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Compliance Map</h1>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-teal mb-1">The full record</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-navy">Compliance Map</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Live status of your state license compliance
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            Requirement rules cross-checked against state board guidance
+            Live status of your state license compliance — requirement rules cross-checked against state board guidance
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -389,7 +391,7 @@ export default async function CompliancePage() {
                 </p>
               )}
             </div>
-            <RenewalCountdown days={daysUntilRenewal} />
+            <RenewalCountdown days={daysUntilRenewal} percentComplete={totalHoursNeeded > 0 ? Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100) : (isCompliant ? 100 : 0)} />
           </div>
 
           {!rule ? (
@@ -454,11 +456,9 @@ export default async function CompliancePage() {
                   <div className="space-y-2">
                     {mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
-                      const statusIcon = gap.isMet
-                        ? "✅"
-                        : gap.earned > 0
-                        ? "⚠️"
-                        : "🔴";
+                      const topicToneKey = gap.isMet ? "met" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
+                      const topicTone = TONE[topicToneKey];
+                      const statusIcon = gap.isMet ? "✓" : gap.earned > 0 ? "~" : "○";
                       // Mark the first unmet gap for aha-moment scroll target
                       const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
@@ -466,13 +466,7 @@ export default async function CompliancePage() {
                         <div
                           key={gap.topic}
                           {...(isFirstGap ? { "data-gap-card": "true", tabIndex: -1 } : {})}
-                          className={`rounded-xl border p-4 ${
-                            gap.isMet
-                              ? "border-green-100 bg-green-50"
-                              : gap.earned > 0
-                              ? "border-amber-100 bg-amber-50"
-                              : "border-red-100 bg-red-50"
-                          }`}
+                          className={`rounded-xl border p-4 ${topicTone.bg} ${topicTone.border}`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2 flex-1 min-w-0">
