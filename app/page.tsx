@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { BrandLockup } from "@/components/BrandLockup";
 import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
 import HeroProductPreview from "@/components/HeroProductPreview";
@@ -70,6 +71,62 @@ const DEMO_STATES: Record<DemoState, {
     ],
   },
 };
+
+function CheckIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function WarningIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
+    </svg>
+  );
+}
+
+function LockIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+      />
+    </svg>
+  );
+}
+
+function HospitalIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      />
+    </svg>
+  );
+}
+
+function StarIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+      />
+    </svg>
+  );
+}
 
 function MethodologyAccordion() {
   const [open, setOpen] = useState(false);
@@ -152,8 +209,8 @@ function DemoSection() {
               onClick={() => setActiveState(s)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all border ${
                 activeState === s
-                  ? "bg-[#0F766E] text-white border-[#0F766E] shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-[#0F766E] hover:text-[#0F766E]"
+                  ? "bg-brand-teal text-white border-brand-teal shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-brand-teal hover:text-brand-teal"
               }`}
             >
               {s}
@@ -198,8 +255,13 @@ function DemoSection() {
                 <div>
                   <p className="font-semibold text-slate-900">{demo.label} — {demo.licenseType.split("·")[0].trim()}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{demo.daysToRenewal} days to renewal</p>
-                  <span className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${metCount === totalCount ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                    {metCount === totalCount ? "✓ Compliant" : "⚠ Incomplete"}
+                  <span
+                    className={`inline-flex items-center gap-1.5 mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
+                      metCount === totalCount ? "bg-green-100 text-green-700" : "bg-brand-amberTint text-brand-amber"
+                    }`}
+                  >
+                    {metCount === totalCount ? <CheckIcon className="w-3.5 h-3.5" /> : <WarningIcon className="w-3.5 h-3.5" />}
+                    {metCount === totalCount ? "Compliant" : "Incomplete"}
                   </span>
                 </div>
                 {/* Ring SVG */}
@@ -228,7 +290,10 @@ function DemoSection() {
               </div>
               <p className="text-xs text-slate-500">{hoursEarned}.0 / {demo.totalHours} hrs earned</p>
               {metCount < totalCount && (
-                <p className="text-xs mt-1.5 font-medium text-amber-600">⚠️ {totalCount - metCount} mandatory topic{totalCount - metCount !== 1 ? "s" : ""} pending</p>
+                <p className="inline-flex items-center gap-1 text-xs mt-1.5 font-medium text-brand-amber">
+                  <WarningIcon className="w-3.5 h-3.5" />
+                  {totalCount - metCount} mandatory topic{totalCount - metCount !== 1 ? "s" : ""} pending
+                </p>
               )}
             </div>
 
@@ -239,20 +304,20 @@ function DemoSection() {
                 <div
                   key={req.topic}
                   className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${
-                    !req.met ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"
+                    !req.met ? "bg-brand-amberTint border-brand-amberRule text-brand-amber" : "bg-slate-50 border-slate-200"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     {!req.met ? (
-                      <span className="text-amber-500">⚠️</span>
+                      <WarningIcon className="w-4 h-4 text-brand-amber" />
                     ) : (
-                      <span className="text-green-500">✅</span>
+                      <CheckIcon className="w-4 h-4 text-green-500" />
                     )}
-                    <span className={!req.met ? "font-medium text-amber-900" : "text-slate-700"}>
+                    <span className={!req.met ? "font-medium text-brand-amber" : "text-slate-700"}>
                       {req.topic}
                       {req.note && <span className="ml-1 text-xs text-slate-400">({req.note})</span>}
                       {!req.met && (
-                        <span className="ml-1 text-xs text-amber-600">— not yet completed</span>
+                        <span className="ml-1 text-xs text-brand-amber">— not yet completed</span>
                       )}
                     </span>
                   </div>
@@ -260,7 +325,7 @@ function DemoSection() {
                     <span className="text-xs text-slate-400">{req.hrs}</span>
                     <span
                       className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        req.met ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                        req.met ? "bg-green-100 text-green-700" : "bg-white/70 text-brand-amber border border-brand-amberRule"
                       }`}
                     >
                       {req.met ? "Met" : "Gap"}
@@ -297,27 +362,25 @@ function DemoSection() {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#FAFAF7]">
+    <main className="min-h-screen bg-brand-parchment">
       {/* Urgency banner */}
       <UrgencyBanner />
 
       {/* Nav */}
-      <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto bg-[#FAFAF7]">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-[#1E293B] tracking-tight">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-6">
-          <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
-          <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
-          <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
-          <a
-            href="/login"
-            className="text-sm font-medium border border-[#0F766E] text-[#0F766E] px-4 py-1.5 rounded-lg hover:bg-[#0F766E] hover:text-white transition-colors"
-          >
-            Create Free Account →
-          </a>
+      <nav className="sticky top-0 z-50 border-b border-slate-100 bg-brand-parchment/85 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <BrandLockup size="lg" />
+          <div className="flex items-center gap-6">
+            <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
+            <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
+            <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
+            <a
+              href="/login"
+              className="text-sm font-medium border border-brand-teal text-brand-teal px-4 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors"
+            >
+              Create Free Account →
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -332,7 +395,7 @@ export default function Home() {
             </div>
 
             <h1
-              className="font-playfair text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
+              className="font-display text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
             >
               Know what CME
               <br />
@@ -367,12 +430,22 @@ export default function Home() {
 
         {/* Trust badges */}
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
-          <span title="CME certificates are professional credentials, not Protected Health Information.">
-            🔒 Secure &amp; Private (Non-PHI)
+          <span className="inline-flex items-center gap-2" title="CME certificates are professional credentials, not Protected Health Information.">
+            <LockIcon className="w-4 h-4" />
+            Secure &amp; Private (Non-PHI)
           </span>
-          <span className="text-[#0F766E] font-medium">✓ ACCME data verified</span>
-          <span>🏥 Built by a physician</span>
-          <span>⭐ All 50 states + DC</span>
+          <span className="inline-flex items-center gap-2 text-[#0F766E] font-medium">
+            <CheckIcon className="w-4 h-4" />
+            ACCME data verified
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <HospitalIcon className="w-4 h-4" />
+            Built by a physician
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <StarIcon className="w-4 h-4" />
+            All 50 states + DC
+          </span>
         </div>
       </section>
 
@@ -382,10 +455,10 @@ export default function Home() {
       <RenewalSeasonStrip />
 
       {/* Problem / Value props */}
-      <section className="bg-slate-50 py-20">
+      <section className="bg-brand-paperSoft py-20">
         <div className="max-w-5xl mx-auto px-6">
           <h2
-            className="font-playfair text-3xl font-bold text-[#1E293B] text-center mb-4"
+            className="font-display text-3xl font-bold text-[#1E293B] text-center mb-4"
           >
             CME compliance is a mess.
           </h2>
@@ -427,7 +500,7 @@ export default function Home() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm border-l-4 border-l-[#0F766E]"
+                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm border-l-4 border-l-brand-teal"
               >
                 <div className="mb-4 w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
                   {item.icon}
@@ -449,38 +522,40 @@ export default function Home() {
       </section>
 
       {/* Social proof */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <h2
-          className="font-playfair text-3xl font-bold text-[#1E293B] mb-4"
-        >
-          Built by a physician, for physicians.
-        </h2>
-        <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-          ClearCME was built by a board-certified physician
-          who got tired of guessing whether their CME was actually compliant.
-          The simplicity we wished we&apos;d had.
-        </p>
-
-        {/* Testimonial */}
-        <div className="mt-12 max-w-xl mx-auto bg-slate-50 rounded-2xl p-6 text-left border border-slate-100">
-          <p className="text-slate-700 text-base leading-relaxed italic">
-            &ldquo;Finally — a tool that actually maps what I need for my state. I had no idea I was missing the DEA MATE Act requirement until ClearCME flagged it. Saved me hours before my renewal.&rdquo;
+      <section className="bg-brand-parchment py-20">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2
+            className="font-playfair text-3xl font-bold text-[#1E293B] mb-4"
+          >
+            Built by a physician, for physicians.
+          </h2>
+          <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
+            ClearCME was built by a board-certified physician
+            who got tired of guessing whether their CME was actually compliant.
+            The simplicity we wished we&apos;d had.
           </p>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-[#0F766E] font-bold text-sm">EM</div>
-            <div>
-              <p className="text-sm font-medium text-[#1E293B]">Emergency Medicine Physician</p>
-              <p className="text-xs text-slate-400">Dr. M.R. — Emergency Medicine, Nevada</p>
+
+          {/* Testimonial */}
+          <div className="mt-12 max-w-xl mx-auto bg-slate-50 rounded-2xl p-6 text-left border border-slate-100">
+            <p className="font-display italic text-slate-700 text-base leading-relaxed">
+              &ldquo;Finally — a tool that actually maps what I need for my state. I had no idea I was missing the DEA MATE Act requirement until ClearCME flagged it. Saved me hours before my renewal.&rdquo;
+            </p>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-[#0F766E] font-bold text-sm">EM</div>
+              <div>
+                <p className="text-sm font-medium text-[#1E293B]">Emergency Medicine Physician</p>
+                <p className="text-xs text-slate-400">Dr. M.R. — Emergency Medicine, Nevada</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Second CTA */}
-      <section className="bg-[#0F766E] py-16">
+      <section className="bg-brand-teal py-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
-            className="font-playfair text-3xl font-bold text-white mb-4"
+            className="font-display text-3xl font-bold text-white mb-4"
           >
             Start tracking your CME today.
           </h2>
@@ -489,7 +564,7 @@ export default function Home() {
           </p>
           <a
             href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#0F766E] font-semibold rounded-xl hover:bg-teal-50 transition-colors text-base shadow-sm"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-brand-teal font-semibold rounded-xl hover:bg-brand-tealTint transition-colors text-base shadow-sm"
           >
             Create Free Account →
           </a>
@@ -497,11 +572,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6 bg-[#FAFAF7]">
+      <footer className="border-t border-slate-100 py-8 px-6 bg-brand-parchment">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <span className="font-bold text-[#1E293B] tracking-tight text-base">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
+          <BrandLockup size="sm" href="/" />
           <div className="flex flex-wrap justify-center gap-5">
             <a href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</a>
             <a href="/mate-act" className="hover:text-slate-700 transition-colors">DEA MATE Act</a>

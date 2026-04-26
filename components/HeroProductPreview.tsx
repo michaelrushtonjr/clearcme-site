@@ -39,17 +39,17 @@ export default function HeroProductPreview() {
           </div>
 
           {/* Panel 2: DEA MATE gap */}
-          <div className="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100">
-            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-center gap-3 p-3 bg-brand-amberTint rounded-xl border border-brand-amberRule">
+            <div className="w-8 h-8 rounded-lg bg-white/70 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-brand-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-red-700 truncate">DEA MATE Act</p>
-              <p className="text-[10px] text-red-500">0 / 8 hrs · Required by law</p>
+              <p className="text-xs font-semibold text-brand-amber truncate">DEA MATE Act</p>
+              <p className="text-[10px] text-brand-amber">0 / 8 hrs · Required by law</p>
             </div>
-            <span className="text-[10px] font-bold text-white bg-red-500 rounded-full px-2 py-0.5 flex-shrink-0">Missing</span>
+            <span className="text-[10px] font-bold text-white bg-brand-amber rounded-full px-2 py-0.5 flex-shrink-0">Missing</span>
           </div>
 
           {/* Panel 3: Renewal countdown */}
