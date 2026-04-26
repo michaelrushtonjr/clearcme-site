@@ -6,22 +6,19 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
-import CertificateList from "@/components/CertificateList";
 import HoursNeededTile from "@/components/HoursNeededTile";
-import RenewalRing from "@/components/RenewalRing";
 import GapCard from "@/components/dashboard/GapCard";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
-import CEBrokerExportButton from "@/components/dashboard/CEBrokerExportButton";
-import ComplianceCelebration from "@/components/dashboard/ComplianceCelebration";
-import ComplianceHeatmap, { type ComplianceOverview } from "@/components/dashboard/ComplianceHeatmap";
 import ComplianceDiffNotifications from "@/components/dashboard/ComplianceDiffNotifications";
 import { DashboardSection } from "@/components/dashboard/DashboardSections";
-import { isCEBrokerState } from "@/lib/cebroker-export";
+import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { keyToSlug } from "@/lib/courses";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const firstName = session?.user?.name?.split(" ")[0] ?? "";
 
   const [certificates, licenses] = await Promise.all([
     prisma.certificate.findMany({
@@ -89,20 +86,12 @@ export default async function DashboardPage() {
         ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         : null;
 
-      // Breakdown data for the popover (unmet only — for gap display)
       const mandatoryTopics = mandatoryResults
         .filter((r) => !r.isMet)
         .map((r) => ({
           topic: r.topic,
           hoursNeeded: Math.max(0, r.needed - r.earned),
         }));
-
-      // All mandatory topics for chip display (met + unmet)
-      const allMandatoryTopics = mandatoryResults.map((r) => ({
-        topic: r.topic,
-        hoursNeeded: Math.max(0, r.needed - r.earned),
-        isMet: r.isMet,
-      }));
 
       return {
         license,
@@ -114,7 +103,6 @@ export default async function DashboardPage() {
         mandatoryPendingCount,
         mandatoryGapHours,
         mandatoryTopics,
-        allMandatoryTopics,
         effectiveHoursNeeded,
         daysUntilRenewal,
         isCompliant,
@@ -128,8 +116,8 @@ export default async function DashboardPage() {
   const totalMandatoryMet = validCompliance.reduce((sum, d) => sum + d.mandatoryMet, 0);
   const totalMandatoryRequired = validCompliance.reduce((sum, d) => sum + d.mandatoryTotal, 0);
   const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.effectiveHoursNeeded, 0);
+  const allCompliant = validCompliance.length > 0 && validCompliance.every((d) => d.isCompliant);
 
-  // Build license breakdowns for the popover
   const licenseBreakdowns = validCompliance.map((d) => ({
     state: d.license.state,
     licenseType: d.license.licenseType,
@@ -139,51 +127,12 @@ export default async function DashboardPage() {
     mandatoryTopics: d.mandatoryTopics,
   }));
 
-  const complianceOverview: ComplianceOverview[] = validCompliance.map((data) => {
-    const completedHours = Math.max(0, data.rule.totalHours - data.effectiveHoursNeeded);
-    const percentage =
-      data.rule.totalHours > 0
-        ? Math.min(100, (completedHours / data.rule.totalHours) * 100)
-        : data.isCompliant
-        ? 100
-        : 0;
-
-    return {
-      state: data.license.state,
-      licenseType: data.license.licenseType,
-      percentage,
-      daysUntilRenewal: data.daysUntilRenewal,
-      hasGeneralGap: data.hoursNeeded > 0,
-      hasMandatoryGap: data.mandatoryPendingCount > 0,
-      isCompliant: data.isCompliant,
-      licenseId: data.license.id,
-    };
-  });
-
-  // Topic name shortening map for chip display
-  const TOPIC_SHORT_NAMES: Record<string, string> = {
-    OPIOID_PRESCRIBING: "Opioid/DEA MATE",
-    SUBSTANCE_USE: "Substance Use",
-    IMPLICIT_BIAS: "Implicit Bias",
-    PATIENT_SAFETY: "Patient Safety",
-    SUICIDE_PREVENTION: "Suicide Prevention",
-    DOMESTIC_VIOLENCE: "Domestic Violence",
-    HUMAN_TRAFFICKING: "Human Trafficking",
-    ETHICS: "Ethics",
-    DEA_MATE_ACT: "DEA MATE Act",
-  };
-
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
-  const isNewUser = !hasLicenses && !hasCertificates;
-  const recentCerts = certificates.slice(0, 5);
-
-  const onboardingComplete = hasLicenses && hasCertificates && validCompliance.length > 0;
 
   // Build top 3 compliance gaps for the attention card (ordered by urgency)
   const allGaps: { label: string; detail: string; href: string; urgency: number }[] = [];
   for (const d of validCompliance) {
-    // General hour gaps
     if (d.hoursNeeded > 0) {
       allGaps.push({
         label: `${d.license.state} ${d.license.licenseType}: ${d.hoursNeeded.toFixed(1)} hrs still needed`,
@@ -192,12 +141,11 @@ export default async function DashboardPage() {
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal : 0,
       });
     }
-    // Mandatory topic gaps
     for (const t of d.mandatoryTopics) {
       allGaps.push({
         label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())} — ${t.hoursNeeded.toFixed(1)} hrs short`,
         detail: "Mandatory topic requirement",
-        href: "/dashboard/compliance",
+        href: `/courses/${encodeURIComponent(keyToSlug(t.topic))}`,
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
       });
     }
@@ -206,15 +154,23 @@ export default async function DashboardPage() {
   const topGaps = allGaps.slice(0, 3);
   const allGapsCount = allGaps.length;
 
+  // Primary renewal description for status line
+  const primaryRenewalDescription = nextRenewal?.daysUntilRenewal != null
+    ? `${nextRenewal.license.state} renews in ${nextRenewal.daysUntilRenewal} days`
+    : "no renewal date set";
+
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Greeting + status line */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Welcome back{session?.user?.name ? `, ${session.user.name.split(" ")[0]}` : ""}
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-navy">
+          Hello{firstName ? `, ${firstName}` : ""}.
         </h1>
-        <p className="text-slate-500 mt-1 text-sm">
-          Your CME compliance dashboard
+        <p className="text-sm text-slate-500 mt-1.5">
+          <strong className="text-brand-navy font-semibold">
+            {licenses.length} active license{licenses.length === 1 ? "" : "s"}
+          </strong>{" "}
+          · {primaryRenewalDescription} · {totalHours.toFixed(1)} hours logged this cycle
         </p>
       </div>
 
@@ -227,56 +183,54 @@ export default async function DashboardPage() {
         />
       </DashboardSection>
 
-      {/* Empty state: no certificates uploaded yet — guided command center */}
+      {/* Empty state: no certificates yet */}
       {!hasCertificates ? (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="bg-brand-paper rounded-card border border-brand-rule p-10 text-center">
+            <div className="w-16 h-16 bg-brand-tealTint rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Your Compliance Command Center</h2>
+            <h2 className="font-display text-xl font-semibold text-brand-navy mb-2">Your Compliance Command Center</h2>
             <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
               Upload your first CME certificate and ClearCME will automatically track your hours, flag gaps, and keep you audit-ready.
             </p>
             <Link
               href="/dashboard/upload"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-sm min-h-[44px]"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-teal text-white font-semibold rounded-xl hover:bg-brand-tealDeep transition-colors text-sm shadow-card-1 min-h-[44px]"
             >
               Upload first certificate →
             </Link>
             <p className="text-xs text-slate-400 mt-4">AI extracts credit info automatically</p>
           </div>
 
-          {/* Preview panels — placeholder values */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Renewal Countdown</p>
-              <p className="text-2xl font-bold text-slate-300">— days</p>
-              <p className="text-xs text-slate-400 mt-1">Available after first upload</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Mandatory Topics</p>
-              <p className="text-2xl font-bold text-slate-300">0 / —</p>
-              <p className="text-xs text-slate-400 mt-1">Tracked per state requirement</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-5 text-center opacity-75">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Hours Progress</p>
-              <p className="text-2xl font-bold text-slate-300">0 of 40</p>
-              <p className="text-xs text-slate-400 mt-1">hours logged</p>
-            </div>
+            {["Renewal Countdown", "Mandatory Topics", "Hours Progress"].map((label) => (
+              <div key={label} className="bg-brand-paper rounded-card border border-dashed border-brand-rule p-5 text-center opacity-75">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">{label}</p>
+                <p className="text-2xl font-bold text-slate-300">—</p>
+                <p className="text-xs text-slate-400 mt-1">Available after first upload</p>
+              </div>
+            ))}
           </div>
         </div>
       ) : (
         <>
-          {complianceOverview.length > 0 && (
-            <DashboardSection label="Compliance Heatmap">
-              <ComplianceHeatmap items={complianceOverview} />
-            </DashboardSection>
-          )}
+          {/* NextActionCard or AuditReadyCard */}
+          {allCompliant ? (
+            <AuditReadyCard />
+          ) : topGaps.length > 0 ? (
+            <NextActionCard
+              title={<>Complete your <em>{topGaps[0].label.split(":")[0]}</em> requirement</>}
+              body={topGaps[0].label}
+              ctaHref={topGaps[0].href}
+              ctaLabel="View compliance map"
+              source={topGaps[0].detail}
+            />
+          ) : null}
 
-          {/* Persistent gap summary card — above the fold */}
+          {/* Plan to finish — gap summary (compressed) */}
           {topGaps.length > 0 && (
             <DashboardSection label="Compliance Gaps">
               <GapCard
@@ -287,293 +241,72 @@ export default async function DashboardPage() {
             </DashboardSection>
           )}
 
+          {/* Compliance diff notifications */}
           <DashboardSection label="Compliance Diff Notifications">
             <ComplianceDiffNotifications />
           </DashboardSection>
 
-          <DashboardSection label="Compliance Diff Notifications">
-            <ComplianceDiffNotifications />
-          </DashboardSection>
-
-          {/* Stats row — 2x2 on mobile, 4-across on sm+ */}
+          {/* KPI strip — 3 cells (no Days to Renewal) */}
           <DashboardSection label="Stats Overview">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Link
-              href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
-            >
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
-              {hasCertificates ? (
-                <>
-                  <p className="text-2xl font-bold text-blue-700">{totalHours.toFixed(1)}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-slate-300">—</p>
-                  <p className="text-xs text-slate-400 mt-0.5">upload a certificate</p>
-                </>
-              )}
-            </Link>
-
-            {/* Clickable Hours Still Needed tile with popover breakdown */}
-            <HoursNeededTile
-              totalHoursStillNeeded={totalHoursStillNeeded}
-              hasData={validCompliance.length > 0}
-              licenses={licenseBreakdowns}
-            />
-
-            <Link
-              href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
-            >
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Days to Renewal</p>
-              {nextRenewal?.daysUntilRenewal != null ? (
-                <>
-                  <p className={`text-2xl font-bold ${
-                    nextRenewal.daysUntilRenewal <= 90
-                      ? "text-red-600"
-                      : nextRenewal.daysUntilRenewal <= 180
-                      ? "text-amber-600"
-                      : "text-slate-700"
-                  }`}>
-                    {nextRenewal.daysUntilRenewal}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">{nextRenewal.license.state} {nextRenewal.license.licenseType}</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-slate-300">—</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {hasLicenses ? "no renewal set" : "add a license"}
-                  </p>
-                </>
-              )}
-            </Link>
-
-            <Link
-              href="/dashboard/compliance"
-              className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all min-h-[44px]"
-            >
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
-              {totalMandatoryRequired > 0 ? (
-                <>
-                  <p className={`text-2xl font-bold ${
-                    totalMandatoryMet === totalMandatoryRequired ? "text-green-600" : "text-amber-600"
-                  }`}>
-                    {totalMandatoryMet}/{totalMandatoryRequired}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">complete</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-slate-300">—</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {hasLicenses ? "none required" : "add a license"}
-                  </p>
-                </>
-              )}
-            </Link>
-          </div>
-          </DashboardSection>
-
-          {/* License compliance cards with Renewal Ring */}
-          {validCompliance.length > 0 && (
-            <DashboardSection label="License Compliance">
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-900">Compliance by License</h2>
-                <Link href="/dashboard/compliance" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                  View full map →
-                </Link>
-              </div>
-
-              {/* Rec 4: Compliance celebration cards (one per compliant license) */}
-              {validCompliance
-                .filter((d) => d.isCompliant)
-                .map((data) => {
-                  const renewalYear = data.license.renewalDate
-                    ? new Date(data.license.renewalDate).getFullYear()
-                    : new Date().getFullYear();
-                  const renewalDateLabel = data.license.renewalDate
-                    ? new Date(data.license.renewalDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "—";
-                  return (
-                    <div key={`celebration-${data.license.id}`} className="mb-4">
-                      <ComplianceCelebration
-                        licenseId={data.license.id}
-                        renewalYear={renewalYear}
-                        state={data.license.state}
-                        licenseType={data.license.licenseType}
-                        renewalDateLabel={renewalDateLabel}
-                        totalHoursEarned={data.hoursEarned}
-                        mandatoryTotal={data.mandatoryTotal}
-                      />
-                    </div>
-                  );
-                })}
-
-              <div className="grid sm:grid-cols-2 gap-4 mb-3">
-                {validCompliance.map((data) => {
-                  const monthsLeft = data.daysUntilRenewal != null ? data.daysUntilRenewal / 30.4 : null;
-                  const hrsPerMonth =
-                    monthsLeft != null && monthsLeft > 0
-                      ? data.effectiveHoursNeeded / monthsLeft
-                      : null;
-
-                  return (
-                    <div key={data.license.id} id={`license-${data.license.id}`} className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-sm transition-all">
-                      <Link
-                        href="/dashboard/compliance"
-                        className="block p-5"
-                      >
-                        {/* Card header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1 min-w-0 pr-3">
-                            <p className="font-semibold text-slate-900">
-                              {data.license.state} — {data.license.licenseType}
-                            </p>
-                            {data.daysUntilRenewal != null && (
-                              <p
-                                className={`text-xs mt-0.5 font-medium ${
-                                  data.daysUntilRenewal <= 90
-                                    ? "text-red-600"
-                                    : data.daysUntilRenewal <= 180
-                                    ? "text-amber-600"
-                                    : "text-slate-400"
-                                }`}
-                              >
-                                {data.daysUntilRenewal <= 0
-                                  ? "Renewal overdue"
-                                  : `${data.daysUntilRenewal} days to renewal`}
-                              </p>
-                            )}
-                            <span
-                              className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
-                                data.isCompliant
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-amber-100 text-amber-700"
-                              }`}
-                            >
-                              {data.isCompliant ? "✓ Compliant" : "⚠ Incomplete"}
-                            </span>
-                          </div>
-
-                          {/* Renewal Ring */}
-                          <RenewalRing
-                            hoursEarned={data.hoursEarned}
-                            totalHours={data.rule.totalHours}
-                            daysUntilRenewal={data.daysUntilRenewal}
-                            effectiveHoursNeeded={data.effectiveHoursNeeded}
-                            isCompliant={data.isCompliant}
-                            hrsPerMonth={hrsPerMonth}
-                          />
-                        </div>
-
-                        {/* Hours sub-line */}
-                        <p className="text-xs text-slate-500">
-                          {data.hoursEarned.toFixed(1)} / {data.rule.totalHours} hrs earned
-                        </p>
-
-                        {/* Rec 1: Named mandatory topic chips */}
-                        {data.allMandatoryTopics.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {data.allMandatoryTopics.map((t) => {
-                              const shortName =
-                                TOPIC_SHORT_NAMES[t.topic] ??
-                                t.topic
-                                  .replace(/_/g, " ")
-                                  .toLowerCase()
-                                  .replace(/\b\w/g, (l: string) => l.toUpperCase());
-                              const slug = keyToSlug(t.topic);
-                              if (t.isMet) {
-                                return (
-                                  <span
-                                    key={t.topic}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 text-[11px] font-medium rounded-full"
-                                  >
-                                    ✓ {shortName}
-                                  </span>
-                                );
-                              }
-                              return (
-                                <Link
-                                  key={t.topic}
-                                  href={`/courses/${encodeURIComponent(slug)}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium rounded-full hover:bg-amber-100 transition-colors"
-                                >
-                                  {shortName}
-                                  {" — "}
-                                  {t.hoursNeeded % 1 === 0
-                                    ? t.hoursNeeded.toFixed(0)
-                                    : t.hoursNeeded.toFixed(1)}{" "}
-                                  hrs
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </Link>
-
-                      {isCEBrokerState(data.license.state) && (
-                        <div className="border-t border-slate-100 bg-[#FAFAF7] px-5 py-4 rounded-b-2xl">
-                          <CEBrokerExportButton
-                            licenseId={data.license.id}
-                            state={data.license.state}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Add Another License CTA */}
-              <div className="flex justify-center mt-1">
-                <Link
-                  href="/dashboard/profile"
-                  className="text-sm text-teal-600 hover:text-teal-800 hover:underline transition-colors border border-dashed border-teal-300 rounded-lg px-4 py-2 hover:border-teal-500"
-                >
-                  ＋ Add Another License
-                </Link>
-              </div>
-            </section>
-            </DashboardSection>
-          )}
-
-          {/* Rec 3: Audit trail card — visible below license cards */}
-          <DashboardSection label="Audit Trail">
-          <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 text-sm">
-            <p className="font-semibold text-teal-900 mb-1">📄 Your audit trail is ready</p>
-            <p className="text-teal-700 text-xs mb-3">
-              Download a board-ready summary of your CME credits and compliance status at any time.
-            </p>
-            <AuditExportButton variant="default" />
-          </div>
-          </DashboardSection>
-
-          {/* Recent certificates */}
-          <DashboardSection label="Recent Certificates">
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Recent Certificates</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Link
-                href="/dashboard/upload"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors min-h-[44px] inline-flex items-center"
+                href="/dashboard/compliance"
+                className="bg-brand-paper rounded-card border border-brand-rule p-5 hover:border-brand-tealRule hover:shadow-card-1 transition-all min-h-[44px]"
               >
-                + Upload certificate
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
+                {hasCertificates ? (
+                  <>
+                    <p className="text-2xl font-bold text-brand-teal">{totalHours.toFixed(1)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-slate-300">—</p>
+                    <p className="text-xs text-slate-400 mt-0.5">upload a certificate</p>
+                  </>
+                )}
+              </Link>
+
+              <HoursNeededTile
+                totalHoursStillNeeded={totalHoursStillNeeded}
+                hasData={validCompliance.length > 0}
+                licenses={licenseBreakdowns}
+              />
+
+              <Link
+                href="/dashboard/compliance"
+                className="bg-brand-paper rounded-card border border-brand-rule p-5 hover:border-brand-tealRule hover:shadow-card-1 transition-all min-h-[44px]"
+              >
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
+                {totalMandatoryRequired > 0 ? (
+                  <>
+                    <p className={`text-2xl font-bold ${totalMandatoryMet === totalMandatoryRequired ? "text-brand-emerald" : "text-brand-amber"}`}>
+                      {totalMandatoryMet}/{totalMandatoryRequired}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">complete</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-slate-300">—</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{hasLicenses ? "none required" : "add a license"}</p>
+                  </>
+                )}
               </Link>
             </div>
+          </DashboardSection>
 
-            <CertificateList
-              certs={recentCerts}
-              totalCount={certificates.length}
-              showViewAll
-            />
-          </section>
+          {/* Activity feed */}
+          <ActivityFeed items={[]} />
+
+          {/* Audit trail card */}
+          <DashboardSection label="Audit Trail">
+            <div className="bg-brand-tealTint border border-brand-tealRule rounded-card p-4 text-sm">
+              <p className="font-semibold text-brand-navy mb-1">Your audit trail is ready</p>
+              <p className="text-slate-600 text-xs mb-3">
+                Download a board-ready summary of your CME credits and compliance status at any time.
+              </p>
+              <AuditExportButton variant="default" />
+            </div>
           </DashboardSection>
         </>
       )}
