@@ -32,7 +32,7 @@ export default function CheckYourStateWidget() {
             Instant Preview
           </span>
           <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-[#1E293B] mt-5 mb-3">
-            What does YOUR state require?
+            What does your state require?
           </h2>
           <p className="text-slate-500 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
             Pick your state and license type to preview the renewal rules physicians see
