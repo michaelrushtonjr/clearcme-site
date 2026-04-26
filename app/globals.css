@@ -1,28 +1,75 @@
 @import "tailwindcss";
 
-/* ─── Brand design tokens (Variant B: Deep Teal) ─── */
+/* ─── Brand design tokens (v2 — Deep Teal + Newsreader) ─── */
 @theme {
-  /* Brand colors */
-  --color-brand-teal: #0F766E;
-  --color-brand-teal-light: #0D9488;
-  --color-brand-navy: #1E293B;
-  --color-brand-parchment: #FAFAF7;
+  /* Brand colors — existing */
+  --color-brand-teal:         #0F766E;
+  --color-brand-teal-light:   #0D9488;
+  --color-brand-navy:         #1E293B;
+  --color-brand-parchment:    #FAFAF7;
 
-  --font-family-playfair: Georgia, "Times New Roman", serif;
+  /* Brand colors — v2 additions */
+  --color-brand-teal-deep:    #115E59;
+  --color-brand-teal-tint:    #E0F2EF;
+  --color-brand-teal-rule:    #B5DAD3;
+  --color-brand-teal-band:    #F0FDFA;
+  --color-brand-teal-band-rule: #CCFBF1;
+
+  --color-brand-paper:        #FFFFFF;
+  --color-brand-paper-soft:   #F4F2EA;
+
+  --color-brand-rule:         #E5E1D2;
+  --color-brand-rule-soft:    #EFECDD;
+
+  --color-brand-amber:        #92400E;
+  --color-brand-amber-mid:    #B45309;
+  --color-brand-amber-tint:   #FBF1DC;
+  --color-brand-amber-rule:   #E9D29A;
+
+  --color-brand-crimson:      #991B1B;
+  --color-brand-crimson-tint: #FBEAEA;
+
+  --color-brand-emerald:      #065F46;
+  --color-brand-emerald-tint: #DDF1E7;
+
+  /* Fonts */
+  --font-family-playfair: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-family-display:  "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 :root {
   --background: #FAFAF7;
   --foreground: #1E293B;
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --brand-teal:        #0F766E;
+  --brand-teal-deep:   #115E59;
+  --brand-teal-tint:   #E0F2EF;
+  --brand-teal-rule:   #B5DAD3;
+  --brand-navy:        #1E293B;
+  --brand-parchment:   #FAFAF7;
+  --brand-paper:       #FFFFFF;
+  --brand-paper-soft:  #F4F2EA;
+  --brand-rule:        #E5E1D2;
+  --brand-rule-soft:   #EFECDD;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* Font utilities */
 .font-playfair {
-  font-family: var(--font-family-playfair);
+  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+}
+.font-display {
+  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+}
+
+/* Italic teal accent inside display headings */
+.font-display em,
+.font-playfair em {
+  font-style: italic;
+  color: var(--brand-teal);
+  font-weight: inherit;
 }
