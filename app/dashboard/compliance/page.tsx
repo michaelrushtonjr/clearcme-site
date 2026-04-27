@@ -10,6 +10,8 @@ import ComplianceExportButton from "@/components/dashboard/ComplianceExportButto
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { keyToSlug } from "@/lib/courses";
+import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
+import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -364,7 +366,7 @@ export default async function CompliancePage() {
       )}
 
       {/* Per-license compliance cards */}
-      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal }) => (
+      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts }) => (
         <section key={license.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           {/* Card header */}
           <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -449,6 +451,19 @@ export default async function CompliancePage() {
                 )}
               </div>
 
+              {/* Compliance Forecast */}
+              {!isCompliant && (
+                <ComplianceForecast
+                  state={license.state}
+                  licenseType={license.licenseType}
+                  hoursEarned={totalHoursEarned}
+                  totalHours={totalHoursNeeded}
+                  renewalDate={license.renewalDate}
+                  certDates={cycleCerts.map((c) => c.activityDate?.toISOString() ?? c.createdAt.toISOString())}
+                  licenseId={license.id}
+                />
+              )}
+
               {/* Mandatory topics */}
               {mandatoryGaps.length > 0 && (
                 <div>
@@ -523,6 +538,14 @@ export default async function CompliancePage() {
                               </div>
                             )}
                           </div>
+
+                          {/* Gap-specific course feed — Pixel rec #4 */}
+                          {!gap.isMet && (
+                            <GapCourseFeed
+                              topic={gap.topic}
+                              hoursNeeded={gap.gap}
+                            />
+                          )}
                         </div>
                       );
                     })}
