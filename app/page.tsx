@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
 import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
@@ -182,6 +182,57 @@ function MethodologyAccordion() {
   );
 }
 
+function InlineTrustLine({ className = "" }: { className?: string }) {
+  return (
+    <p className={`text-xs text-slate-500 ${className}`}>
+      <span className="font-medium text-slate-700">Encrypted uploads</span> · Non-PHI certificates · never sent to boards or employers
+    </p>
+  );
+}
+
+function MobileStickyCta() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      const hero = document.getElementById("hero");
+      const finalCta = document.getElementById("final-cta");
+      const heroBottom = hero?.getBoundingClientRect().bottom ?? 0;
+      const finalCtaTop = finalCta?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
+
+      setVisible(heroBottom < 0 && finalCtaTop > window.innerHeight * 0.75);
+    };
+
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    window.addEventListener("resize", updateVisibility);
+
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+    };
+  }, []);
+
+  return (
+    <div
+      className={`fixed inset-x-0 bottom-0 z-50 sm:hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] transition-transform duration-300 ${
+        visible ? "translate-y-0" : "translate-y-full"
+      }`}
+      aria-hidden={!visible}
+    >
+      <a
+        href="/login"
+        className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-brand-teal px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-teal-light focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2"
+      >
+        See my CME gaps →
+      </a>
+      <p className="mt-1.5 text-center text-[11px] font-medium text-slate-500">
+        Free · no card · under 2 min
+      </p>
+    </div>
+  );
+}
+
 function DemoSection() {
   const [activeState, setActiveState] = useState<DemoState>("NV");
   const demo = DEMO_STATES[activeState];
@@ -202,14 +253,16 @@ function DemoSection() {
         </div>
 
         {/* State switcher pills */}
-        <div className="flex justify-center gap-2 mb-6 flex-wrap">
+        <div className="grid grid-cols-5 gap-2 mb-6 sm:flex sm:justify-center sm:flex-wrap" aria-label="Demo state selector">
           {(["NV", "CA", "TX", "FL", "NY"] as DemoState[]).map((s) => (
             <button
               key={s}
               onClick={() => setActiveState(s)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all border ${
+              type="button"
+              aria-pressed={activeState === s}
+              className={`min-h-11 rounded-xl px-3 py-2 text-sm font-semibold transition-all border focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2 sm:min-h-0 sm:rounded-full sm:px-4 sm:py-1.5 ${
                 activeState === s
-                  ? "bg-brand-teal text-white border-brand-teal shadow-sm"
+                  ? "bg-brand-teal text-white border-brand-teal shadow-sm ring-2 ring-brand-teal/20"
                   : "bg-white text-slate-600 border-slate-200 hover:border-brand-teal hover:text-brand-teal"
               }`}
             >
@@ -340,6 +393,9 @@ function DemoSection() {
               <span className="font-semibold text-slate-700">{demo.label}: </span>
               {demo.totalHours} hrs total · {totalCount} mandatory topics · {demo.daysToRenewal} days to renewal
             </p>
+            <p className="mt-2 text-center text-xs text-slate-400">
+              Built from a 50-state compliance map · updated from board-source rules
+            </p>
           </div>
         </div>
 
@@ -354,6 +410,9 @@ function DemoSection() {
           <p className="text-xs text-slate-400 mt-3">
             Free · Takes under 2 minutes · No certificate upload needed to get started
           </p>
+          <p className="text-xs text-slate-500 mt-2">
+            Built by a physician · free to start
+          </p>
         </div>
       </div>
     </section>
@@ -362,7 +421,8 @@ function DemoSection() {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-brand-parchment">
+    <main className="min-h-screen bg-brand-parchment pb-24 sm:pb-0">
+      <MobileStickyCta />
       {/* Urgency banner */}
       <UrgencyBanner />
 
@@ -385,7 +445,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
+      <section id="hero" className="max-w-6xl mx-auto px-6 pt-20 pb-16">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Left: copy + CTA */}
           <div className="flex-1 text-center lg:text-left">
@@ -418,8 +478,9 @@ export default function Home() {
               </a>
             </div>
             <p className="text-xs text-slate-400 mt-3">
-              Free · No credit card required · Covering all 50 states + DC — including Nevada, California, Texas, and Florida renewal cycles
+              Free · No credit card required · Built by a physician · covering all 50 states + DC
             </p>
+            <InlineTrustLine className="mt-2" />
           </div>
 
           {/* Right: product preview */}
@@ -478,6 +539,7 @@ export default function Home() {
                 ),
                 title: "Upload your certificates",
                 body: "PDF or image. AI extracts credits, categories, and dates automatically.",
+                trust: "Encrypted uploads · Non-PHI · never sent to boards/employers",
               },
               {
                 icon: (
@@ -487,6 +549,7 @@ export default function Home() {
                 ),
                 title: "See your compliance map",
                 body: "Real-time gap analysis based on your state, license type, and specialty.",
+                trust: "Built from a 50-state compliance map",
               },
               {
                 icon: (
@@ -496,6 +559,7 @@ export default function Home() {
                 ),
                 title: "Fill the gaps in one click",
                 body: "Purchase exactly what you need — accredited courses, state-approved topics.",
+                trust: "Built by a physician · free to start",
               },
             ].map((item) => (
               <div
@@ -507,6 +571,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-semibold text-[#1E293B] mb-2">{item.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{item.body}</p>
+                <p className="mt-3 text-xs font-medium text-slate-500">{item.trust}</p>
               </div>
             ))}
           </div>
@@ -552,7 +617,7 @@ export default function Home() {
       </section>
 
       {/* Second CTA */}
-      <section className="bg-brand-teal py-16">
+      <section id="final-cta" className="bg-brand-teal py-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
             className="font-display text-3xl font-bold text-white mb-4"
@@ -560,7 +625,7 @@ export default function Home() {
             Start tracking your CME today.
           </h2>
           <p className="text-teal-100 mb-8">
-            Free tier available. No credit card required.
+            Free tier available. No credit card required. Built from a 50-state compliance map.
           </p>
           <a
             href="/login"
