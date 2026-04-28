@@ -394,8 +394,8 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   HI: {
-    totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHours: 100,
+    totalHoursLabel: "100 hours (40 Category 1 + 60 Category 2, or 100 Category 1)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
