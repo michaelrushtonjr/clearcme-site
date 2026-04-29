@@ -570,11 +570,14 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   ND: {
-    totalHours: 60,
-    totalHoursLabel: "60 hours",
-    cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
-    mandatoryTopics: [mateTopic()],
+    totalHours: 40,
+    totalHoursLabel: "40 hours",
+    cycleYears: 2,
+    cycleLabel: "2-year renewal cycle",
+    mandatoryTopics: [
+      topic("Nutrition and metabolic health", "1 hr per renewal cycle"),
+      mateTopic(),
+    ],
   },
   NE: {
     totalHours: 50,
