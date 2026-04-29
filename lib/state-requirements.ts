@@ -241,7 +241,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   TX: birthBasedRenewal("During your birth month, every 2 years"),
   UT: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   VA: birthBasedRenewal("During your birth month, every 2 years"),
-  VT: variableRenewal("Vermont MD renewal deadline is not confirmed in the compliance map"),
+  VT: fixedRenewal("November 30 of even-numbered years", 11, 30, "even"),
   WA: variableRenewal("Every 4 years; renewal date varies by physician and license record"),
   WI: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
   WV: variableRenewal("Biennial renewal deadline varies by physician and board"),
