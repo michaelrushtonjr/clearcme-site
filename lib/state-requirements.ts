@@ -475,15 +475,15 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   MA: {
-    totalHours: 100,
-    totalHoursLabel: "100 credits",
+    totalHours: 50,
+    totalHoursLabel: "50 credits",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Risk management", "10 hrs per cycle"),
       topic("Board regulations review", "2 credits per cycle"),
       topic("Opioid education and pain management", "3 hrs per cycle", "If prescribing controlled substances"),
-      topic("Implicit bias in health care", "2 hrs per cycle"),
+      topic("Implicit bias in health care", "2 hrs one-time", "Required if not completed previously"),
       topic("End-of-life care", "2 hrs one-time"),
       topic("Child abuse recognition and reporting", "One-time training"),
       topic("Domestic and sexual violence", "One-time training"),
