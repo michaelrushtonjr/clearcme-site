@@ -688,7 +688,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("Patient safety / risk management", "12 hrs per cycle"),
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
-      topic("Pain management / opioid prescribing", "2 hrs per cycle", "If holding a DEA registration"),
+      topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA MD prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
       topic("Initial opioid education", "4 hrs one-time", "Before first prescriptive authority"),
       mateTopic(),
     ],
