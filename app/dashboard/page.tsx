@@ -83,6 +83,8 @@ export default async function DashboardPage() {
       const isCompliant = hoursNeeded === 0 && mandatoryMet === rule.mandatoryRequirements.length;
 
       const daysUntilRenewal = license.renewalDate
+        // Server-rendered dashboard snapshot; intentionally computed at request time.
+        // eslint-disable-next-line react-hooks/purity
         ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         : null;
 
@@ -222,10 +224,11 @@ export default async function DashboardPage() {
             <AuditReadyCard />
           ) : topGaps.length > 0 ? (
             <NextActionCard
-              title={<>Complete your <em>{topGaps[0].label.split(":")[0]}</em> requirement</>}
-              body={topGaps[0].label}
+              eyebrow="Next best action"
+              title={<>Do this next: <em>{topGaps[0].label}</em></>}
+              body={<>This is your highest-priority compliance move based on deadline proximity and mandatory-topic status. Finish this first, then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
               ctaHref={topGaps[0].href}
-              ctaLabel="View compliance map"
+              ctaLabel={topGaps[0].href.startsWith("/courses/") ? "Find matching CME" : "Upload certificate"}
               source={topGaps[0].detail}
             />
           ) : null}

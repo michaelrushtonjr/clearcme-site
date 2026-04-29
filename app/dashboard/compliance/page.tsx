@@ -90,6 +90,28 @@ const TONE: Record<string, { bg: string; text: string; border: string; bar: stri
   due:        { bg: "bg-brand-crimsonTint", text: "text-brand-crimson",  border: "border-brand-crimsonTint", bar: "bg-brand-crimson" },
 };
 
+function requirementStatusLabel({
+  isMet,
+  earned,
+  daysUntilRenewal,
+}: {
+  isMet: boolean;
+  earned: number;
+  daysUntilRenewal: number | null;
+}) {
+  if (isMet) return "Met";
+  if (daysUntilRenewal !== null && daysUntilRenewal <= 90) return "Action needed";
+  if (earned > 0) return "At risk";
+  return "Missing";
+}
+
+function requirementStatusClass(label: string) {
+  if (label === "Met") return "bg-green-100 text-green-700";
+  if (label === "Action needed") return "bg-red-600 text-white";
+  if (label === "At risk") return "bg-amber-100 text-amber-800 border border-amber-200";
+  return "bg-white/70 text-brand-amber border border-brand-amberRule";
+}
+
 function RenewalCountdown({ days, percentComplete }: { days: number | null; percentComplete: number }) {
   if (days === null) return null;
   const tone = TONE[getUrgencyTone(days, percentComplete)];
@@ -474,6 +496,11 @@ export default async function CompliancePage() {
                       const topicToneKey = gap.isMet ? "met" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
                       const topicTone = TONE[topicToneKey];
                       const statusIcon = gap.isMet ? "✓" : gap.earned > 0 ? "~" : "○";
+                      const statusLabel = requirementStatusLabel({
+                        isMet: gap.isMet,
+                        earned: gap.earned,
+                        daysUntilRenewal,
+                      });
                       // Mark the first unmet gap for aha-moment scroll target
                       const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
@@ -504,6 +531,9 @@ export default async function CompliancePage() {
                                   {gap.gap.toFixed(1)} hrs short
                                 </p>
                               )}
+                              <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${requirementStatusClass(statusLabel)}`}>
+                                {statusLabel}
+                              </span>
                             </div>
                           </div>
                           {/* Progress bar */}

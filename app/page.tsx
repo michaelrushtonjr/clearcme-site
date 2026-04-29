@@ -241,6 +241,15 @@ function DemoSection() {
   const hoursEarned = Math.round(demo.totalHours * 0.85);
   const hoursLeft = demo.totalHours - hoursEarned;
   const ringPercent = hoursEarned / demo.totalHours;
+  const stateSummary = (state: DemoState) => {
+    const stateDemo = DEMO_STATES[state];
+    const stateMetCount = stateDemo.requirements.filter((r) => r.met).length;
+    const stateHoursLeft = stateDemo.totalHours - Math.round(stateDemo.totalHours * 0.85);
+
+    return stateMetCount === stateDemo.requirements.length
+      ? "Met"
+      : `${stateHoursLeft} hrs left · ${stateDemo.daysToRenewal}d`;
+  };
 
   return (
     <section className="py-20 bg-white">
@@ -253,20 +262,23 @@ function DemoSection() {
         </div>
 
         {/* State switcher pills */}
-        <div className="grid grid-cols-5 gap-2 mb-6 sm:flex sm:justify-center sm:flex-wrap" aria-label="Demo state selector">
+        <div className="grid grid-cols-2 gap-2 mb-6 sm:flex sm:justify-center sm:flex-wrap" aria-label="Demo state selector">
           {(["NV", "CA", "TX", "FL", "NY"] as DemoState[]).map((s) => (
             <button
               key={s}
               onClick={() => setActiveState(s)}
               type="button"
               aria-pressed={activeState === s}
-              className={`min-h-11 rounded-xl px-3 py-2 text-sm font-semibold transition-all border focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2 sm:min-h-0 sm:rounded-full sm:px-4 sm:py-1.5 ${
+              className={`min-h-14 rounded-xl px-3 py-2 text-left text-sm font-semibold transition-all border focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2 sm:min-h-0 sm:rounded-full sm:px-4 sm:py-2 ${
                 activeState === s
                   ? "bg-brand-teal text-white border-brand-teal shadow-sm ring-2 ring-brand-teal/20"
                   : "bg-white text-slate-600 border-slate-200 hover:border-brand-teal hover:text-brand-teal"
               }`}
             >
-              {s}
+              <span className="block leading-none">{s}</span>
+              <span className={`mt-1 block text-[10px] font-medium leading-tight ${activeState === s ? "text-white/80" : "text-slate-400"}`}>
+                {stateSummary(s)}
+              </span>
             </button>
           ))}
         </div>
@@ -314,7 +326,7 @@ function DemoSection() {
                     }`}
                   >
                     {metCount === totalCount ? <CheckIcon className="w-3.5 h-3.5" /> : <WarningIcon className="w-3.5 h-3.5" />}
-                    {metCount === totalCount ? "Compliant" : "Incomplete"}
+                    {metCount === totalCount ? "Met" : demo.daysToRenewal < 120 ? "Action needed" : "Missing"}
                   </span>
                 </div>
                 {/* Ring SVG */}
@@ -381,7 +393,7 @@ function DemoSection() {
                         req.met ? "bg-green-100 text-green-700" : "bg-white/70 text-brand-amber border border-brand-amberRule"
                       }`}
                     >
-                      {req.met ? "Met" : "Gap"}
+                      {req.met ? "Met" : demo.daysToRenewal < 120 ? "Action needed" : "Missing"}
                     </span>
                   </div>
                 </div>
