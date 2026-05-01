@@ -12,10 +12,19 @@ import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { keyToSlug } from "@/lib/courses";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
+import { formatStateName } from "@/lib/state-names";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
 };
+
+interface RequirementSourceMeta {
+  sourceTitle?: string;
+  sourceUrl?: string;
+  lastReviewed?: Date;
+  scopeCaveat?: string;
+  whyThisApplies: string;
+}
 
 interface MandatoryGap {
   topic: string;
@@ -24,6 +33,7 @@ interface MandatoryGap {
   needed: number;
   gap: number;
   isMet: boolean;
+  sourceMeta?: RequirementSourceMeta;
 }
 
 function daysUntil(date: Date | null): number | null {
@@ -112,6 +122,52 @@ function requirementStatusClass(label: string) {
   return "bg-white/70 text-brand-amber border border-brand-amberRule";
 }
 
+function formatReviewDate(date?: Date) {
+  if (!date) return null;
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function buildRequirementSourceMeta({
+  state,
+  licenseType,
+  sourceUrl,
+  ruleUpdatedAt,
+  ruleNotes,
+  topic,
+  hoursRequired,
+  firstRenewalOnly,
+  requirementNotes,
+}: {
+  state: string;
+  licenseType: string;
+  sourceUrl?: string | null;
+  ruleUpdatedAt?: Date;
+  ruleNotes?: string | null;
+  topic: string;
+  hoursRequired: number;
+  firstRenewalOnly: boolean;
+  requirementNotes?: string | null;
+}): RequirementSourceMeta {
+  const stateName = formatStateName(state);
+  const scopeParts = [
+    firstRenewalOnly ? "Applies as a one-time / first-renewal requirement when applicable." : null,
+    requirementNotes,
+    ruleNotes,
+  ].filter(Boolean);
+
+  return {
+    sourceTitle: `${stateName} ${licenseType} licensing requirements`,
+    sourceUrl: sourceUrl ?? undefined,
+    lastReviewed: ruleUpdatedAt,
+    scopeCaveat: scopeParts.length > 0 ? scopeParts.join(" ") : undefined,
+    whyThisApplies: `This appears because your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${formatTopic(topic)}${firstRenewalOnly ? " as a one-time requirement" : " in this renewal cycle"}.`,
+  };
+}
+
 function RenewalCountdown({ days, percentComplete }: { days: number | null; percentComplete: number }) {
   if (days === null) return null;
   const tone = TONE[getUrgencyTone(days, percentComplete)];
@@ -193,6 +249,17 @@ export default async function CompliancePage() {
           needed: req.hoursRequired,
           gap: Math.max(0, req.hoursRequired - earnedForTopic),
           isMet: earnedForTopic >= req.hoursRequired,
+          sourceMeta: buildRequirementSourceMeta({
+            state: license.state,
+            licenseType: license.licenseType,
+            sourceUrl: rule.sourceUrl,
+            ruleUpdatedAt: rule.updatedAt,
+            ruleNotes: rule.notes,
+            topic: req.topic,
+            hoursRequired: req.hoursRequired,
+            firstRenewalOnly: req.firstRenewalOnly,
+            requirementNotes: req.notes,
+          }),
         };
       });
       const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet);
@@ -568,6 +635,50 @@ export default async function CompliancePage() {
                               </div>
                             )}
                           </div>
+
+                          {gap.sourceMeta && (
+                            <details className="group mt-3 rounded-lg border border-white/70 bg-white/55 px-3 py-2 text-xs text-slate-600 open:bg-white/80">
+                              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-medium text-slate-700 marker:hidden">
+                                <span>Source / reviewed</span>
+                                <span className="text-slate-400 transition-transform group-open:rotate-180">⌄</span>
+                              </summary>
+                              <div className="mt-2 space-y-1.5 leading-relaxed">
+                                {(gap.sourceMeta.sourceUrl || gap.sourceMeta.sourceTitle) && (
+                                  <p>
+                                    <span className="font-semibold text-slate-700">Official source: </span>
+                                    {gap.sourceMeta.sourceUrl ? (
+                                      <a
+                                        href={gap.sourceMeta.sourceUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-brand-teal underline decoration-brand-teal/30 underline-offset-2 hover:text-[#0D9488]"
+                                      >
+                                        {gap.sourceMeta.sourceTitle ?? "State board guidance"}
+                                      </a>
+                                    ) : (
+                                      <span>{gap.sourceMeta.sourceTitle}</span>
+                                    )}
+                                  </p>
+                                )}
+                                {gap.sourceMeta.lastReviewed && (
+                                  <p>
+                                    <span className="font-semibold text-slate-700">Last reviewed: </span>
+                                    {formatReviewDate(gap.sourceMeta.lastReviewed)}
+                                  </p>
+                                )}
+                                {gap.sourceMeta.scopeCaveat && (
+                                  <p>
+                                    <span className="font-semibold text-slate-700">Scope / caveat: </span>
+                                    {gap.sourceMeta.scopeCaveat}
+                                  </p>
+                                )}
+                                <p>
+                                  <span className="font-semibold text-slate-700">Why this applies: </span>
+                                  {gap.sourceMeta.whyThisApplies}
+                                </p>
+                              </div>
+                            </details>
+                          )}
 
                           {/* Gap-specific course feed — Pixel rec #4 */}
                           {!gap.isMet && (
