@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface ExtractedCredit {
@@ -27,8 +26,29 @@ interface UploadedCert {
 
 type UploadState = "idle" | "uploading" | "done" | "error";
 
+const TOPIC_FORMAT: Record<string, string> = {
+  OPIOID_PRESCRIBING: "Opioid Prescribing",
+  PAIN_MANAGEMENT: "Pain Management",
+  IMPLICIT_BIAS: "Implicit Bias",
+  END_OF_LIFE_CARE: "End-of-Life Care",
+  DOMESTIC_VIOLENCE: "Domestic Violence",
+  CHILD_ABUSE: "Child Abuse",
+  ELDER_ABUSE: "Elder Abuse",
+  HUMAN_TRAFFICKING: "Human Trafficking",
+  INFECTION_CONTROL: "Infection Control",
+  PATIENT_SAFETY: "Patient Safety",
+  ETHICS: "Ethics",
+  CULTURAL_COMPETENCY: "Cultural Competency",
+  SUBSTANCE_USE: "Substance Use / MATE Act",
+  SUICIDE_PREVENTION: "Suicide Prevention",
+  OTHER_MANDATORY: "Mandatory Topic",
+};
+
+function formatTopicLabel(topic: string) {
+  return TOPIC_FORMAT[topic] ?? topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export default function CertificateUpload() {
-  const router = useRouter();
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [progress, setProgress] = useState(0);
   const [uploadedCerts, setUploadedCerts] = useState<UploadedCert[]>([]);
@@ -109,7 +129,7 @@ export default function CertificateUpload() {
       setUploadedCerts(results);
       setUploadState("done");
     },
-    [router]
+    []
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -123,6 +143,17 @@ export default function CertificateUpload() {
     multiple: true,
     disabled: uploadState === "uploading",
   });
+
+  const processedCerts = uploadedCerts.filter((cert) => !cert.error);
+  const extractedCerts = uploadedCerts.filter((cert) => cert.extracted && !cert.error);
+  const failedCerts = uploadedCerts.filter((cert) => cert.error || cert.extractionFailed);
+  const totalCreditsAdded = extractedCerts.reduce(
+    (sum, cert) => sum + (cert.extracted?.creditHours ?? 0),
+    0,
+  );
+  const detectedTopics = Array.from(
+    new Set(extractedCerts.flatMap((cert) => cert.extracted?.topics ?? [])),
+  );
 
   const reset = () => {
     setUploadState("idle");
@@ -193,6 +224,54 @@ export default function CertificateUpload() {
       {/* Results */}
       {uploadState === "done" && uploadedCerts.length > 0 && (
         <div className="space-y-4">
+          <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+                  Compliance Updated
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                  Your CME record was refreshed after upload
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {extractedCerts.length > 0
+                    ? `${totalCreditsAdded.toFixed(1)} credit${totalCreditsAdded === 1 ? "" : "s"} added across ${extractedCerts.length} certificate${extractedCerts.length === 1 ? "" : "s"}.`
+                    : "No credits were added yet — review the certificate details below to finish saving them."}
+                </p>
+              </div>
+
+              <Link
+                href="/dashboard/compliance"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              >
+                See updated gaps →
+              </Link>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Processed</p>
+                <p className="mt-1 text-2xl font-black text-slate-900">{processedCerts.length}</p>
+              </div>
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Credits added</p>
+                <p className="mt-1 text-2xl font-black text-blue-700">{totalCreditsAdded.toFixed(1)}</p>
+              </div>
+              <div className="rounded-2xl bg-white/80 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Needs review</p>
+                <p className={`mt-1 text-2xl font-black ${failedCerts.length > 0 ? "text-amber-700" : "text-emerald-700"}`}>
+                  {failedCerts.length}
+                </p>
+              </div>
+            </div>
+
+            {detectedTopics.length > 0 && (
+              <p className="mt-3 text-xs text-slate-500">
+                Mandatory-topic matches detected: {detectedTopics.map(formatTopicLabel).join(", ")}.
+              </p>
+            )}
+          </div>
+
           {uploadedCerts.length > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-semibold text-slate-900">
