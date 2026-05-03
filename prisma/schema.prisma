@@ -310,7 +310,7 @@ model Subscription {
   userId             String             @unique
   tier               SubscriptionTier   @default(FREE)
   status             SubscriptionStatus @default(ACTIVE)
-  stripeCustomerId   String?            // Placeholder — Stripe not yet configured
+  stripeCustomerId   String?
   stripePriceId      String?
   stripeSubId        String?
   currentPeriodStart DateTime?
@@ -320,10 +320,14 @@ model Subscription {
   updatedAt          DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([stripeCustomerId])
+  @@unique([stripeSubId])
 }
 
 enum SubscriptionTier {
   FREE
+  ESSENTIAL
   PRO
 }
 
@@ -332,4 +336,7 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
 }

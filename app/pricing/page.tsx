@@ -42,6 +42,36 @@ function Check() {
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const startCheckout = async (tier: "ESSENTIAL" | "PRO") => {
+    setCheckoutTier(tier);
+    setCheckoutError(null);
+
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      });
+
+      if (res.status === 401) {
+        window.location.href = `/login?callbackUrl=${encodeURIComponent(`/pricing?checkout=${tier.toLowerCase()}`)}`;
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? "Unable to start checkout");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      setCheckoutError(err instanceof Error ? err.message : "Unable to start checkout");
+      setCheckoutTier(null);
+    }
+  };
 
   const tiers = [
     {
@@ -64,6 +94,7 @@ export default function PricingPage() {
       price: { annual: "$99/yr", monthly: "$9/mo" },
       cta: "Start Essential",
       ctaHref: "/login",
+      checkoutTier: "ESSENTIAL" as const,
       ctaStyle: "border border-[#0F766E] text-[#0F766E] hover:bg-teal-50",
       features: [
         "Everything in Free",
@@ -82,6 +113,7 @@ export default function PricingPage() {
       price: { annual: "$199/yr", monthly: "$19/mo" },
       cta: "Start Pro",
       ctaHref: "/login",
+      checkoutTier: "PRO" as const,
       ctaStyle: "bg-[#0F766E] text-white hover:bg-[#0D9488]",
       features: [
         "Everything in Essential",
@@ -170,7 +202,10 @@ export default function PricingPage() {
 
         {/* Tier cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 text-left">
-          {tiers.map((tier) => (
+          {tiers.map((tier) => {
+            const tierCheckoutTier = tier.name === "Essential" ? "ESSENTIAL" : tier.name === "Pro" ? "PRO" : null;
+
+            return (
             <div
               key={tier.name}
               className={`relative rounded-2xl border p-6 flex flex-col gap-5 ${
@@ -210,15 +245,32 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                href={tier.ctaHref}
-                className={`block text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${tier.ctaStyle}`}
-              >
-                {tier.cta}
-              </Link>
+              {tierCheckoutTier ? (
+                <button
+                  type="button"
+                  onClick={() => startCheckout(tierCheckoutTier)}
+                  disabled={checkoutTier !== null}
+                  className={`block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${tier.ctaStyle}`}
+                >
+                  {checkoutTier === tierCheckoutTier ? "Opening checkout…" : tier.cta}
+                </button>
+              ) : (
+                <Link
+                  href={tier.ctaHref}
+                  className={`block text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${tier.ctaStyle}`}
+                >
+                  {tier.cta}
+                </Link>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
+        {checkoutError && (
+          <p className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {checkoutError}
+          </p>
+        )}
       </section>
 
       {/* FAQ */}
