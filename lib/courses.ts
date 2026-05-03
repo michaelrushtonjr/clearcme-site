@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -59,6 +59,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; AAFP Prescribed credit accepted by AMA as equivalent to AMA PRA Category 1",
         verified: "2026-04-27 (URL confirmed live; credit statement and modules re-verified)",
+      },
+      {
+        name: "PCSS MOUD Online Case-based Learning Collaboratives Session 2: Strategies to Effectively Manage Complicated Opioid Withdrawal in the Emergency Department or Hospital Setting",
+        provider: "PCSS-MOUD / American Society of Addiction Medicine (ASAM)",
+        providerUrl: "https://pcssnow.org",
+        credits: "1.5 AMA PRA Category 1 / AAPA Category 1 CME / ANCC / ACPE / IPCE / ABIM MOC / ABS MOC / ABA MOCA / ABP MOC / ABPM Continuing Certification",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Live virtual PCSS-MOUD/ASAM session scheduled May 6, 2026, 5:00–6:30 pm ET, focused on complicated opioid withdrawal management in emergency department and hospital settings. Faculty include emergency/addiction physician Andrew Herring, MD. PCSS page verifies physician audience, CE availability, 1.5 AMA PRA Category 1 credits, ASAM joint accreditation, and ED/hospital OUD-withdrawal learning objectives; ASAM eLearning page independently verifies non-member price is Free, open registration 3/2/2026–5/13/2026, close access date 3/2/2029, and up to 1.5 credits per session. Recording/slides are expected about two weeks after the live event.",
+        url: "https://pcssnow.org/courses/pcss-moud-online-case-based-learning-collaboratives-session-2-strategies-to-effectively-manage-complicated-opioid-withdrawal-in-the-emergency-department-or-hospital-setting/",
+        accreditation: "ACCME / ACPE / ANCC (ASAM jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-03 (PCSS course page + ASAM eLearning registration page confirm title, date, free non-member access, physician audience, 1.5 AMA PRA Cat 1, and joint accreditation)",
       },
       {
         name: "Appropriate Use of Drug Testing in Clinical Addiction Medicine",
@@ -130,7 +146,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -393,7 +409,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -608,7 +624,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -695,7 +711,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -782,7 +798,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -853,7 +869,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -972,7 +988,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
+    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
