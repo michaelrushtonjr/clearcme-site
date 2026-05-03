@@ -5,8 +5,39 @@ import { useRouter } from "next/navigation";
 
 type UploadState = "idle" | "uploading" | "done" | "error";
 
+interface MobileUploadResult {
+  id: string;
+  fileName: string;
+  creditHours: number;
+  topics: string[];
+  needsReview: boolean;
+  extractionFailed: boolean;
+}
+
 interface MobileCameraUploadProps {
   onUploadComplete?: () => void;
+}
+
+const TOPIC_FORMAT: Record<string, string> = {
+  OPIOID_PRESCRIBING: "Opioid Prescribing",
+  PAIN_MANAGEMENT: "Pain Management",
+  IMPLICIT_BIAS: "Implicit Bias",
+  END_OF_LIFE_CARE: "End-of-Life Care",
+  DOMESTIC_VIOLENCE: "Domestic Violence",
+  CHILD_ABUSE: "Child Abuse",
+  ELDER_ABUSE: "Elder Abuse",
+  HUMAN_TRAFFICKING: "Human Trafficking",
+  INFECTION_CONTROL: "Infection Control",
+  PATIENT_SAFETY: "Patient Safety",
+  ETHICS: "Ethics",
+  CULTURAL_COMPETENCY: "Cultural Competency",
+  SUBSTANCE_USE: "Substance Use / MATE Act",
+  SUICIDE_PREVENTION: "Suicide Prevention",
+  OTHER_MANDATORY: "Mandatory Topic",
+};
+
+function formatTopicLabel(topic: string) {
+  return TOPIC_FORMAT[topic] ?? topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUploadProps) {
@@ -17,6 +48,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [uploadResults, setUploadResults] = useState<MobileUploadResult[]>([]);
 
   const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,11 +74,24 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
+  const resetUpload = () => {
+    setUploadState("idle");
+    setPreviewSrc(null);
+    setCapturedFile(null);
+    setUploadResults([]);
+    setErrorMsg(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const uploadFiles = async (files: File[]) => {
     setUploadState("uploading");
     setErrorMsg(null);
+    setUploadResults([]);
 
     try {
+      const results: MobileUploadResult[] = [];
+
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
@@ -55,12 +100,27 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error ?? "Upload failed");
         }
+
+        const data = await res.json();
+        const cert = data.certificate;
+        const isNeedsReview = cert?.extractionStatus === "NEEDS_REVIEW";
+        const hasExtracted = cert?.extractionStatus === "COMPLETED" || isNeedsReview;
+
+        results.push({
+          id: cert?.id ?? crypto.randomUUID(),
+          fileName: cert?.fileName ?? file.name,
+          creditHours: hasExtracted ? cert?.creditHours ?? 0 : 0,
+          topics: hasExtracted ? cert?.topics ?? [] : [],
+          needsReview: isNeedsReview,
+          extractionFailed: cert?.extractionStatus === "FAILED",
+        });
       }
+
+      setUploadResults(results);
       setUploadState("done");
       setPreviewSrc(null);
       setCapturedFile(null);
       onUploadComplete?.();
-      setTimeout(() => router.push("/dashboard/compliance"), 1200);
     } catch (err: unknown) {
       setUploadState("error");
       setErrorMsg(err instanceof Error ? err.message : "Upload failed");
@@ -120,15 +180,67 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
 
   // Done
   if (uploadState === "done") {
+    const processedCount = uploadResults.length;
+    const totalCreditsAdded = uploadResults.reduce((sum, cert) => sum + cert.creditHours, 0);
+    const needsReviewCount = uploadResults.filter((cert) => cert.needsReview || cert.extractionFailed).length;
+    const detectedTopics = Array.from(new Set(uploadResults.flatMap((cert) => cert.topics)));
+
     return (
-      <div className="py-8 text-center space-y-2">
-        <div className="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto">
-          <svg className="w-7 h-7 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+      <div className="space-y-4 rounded-2xl border border-teal-100 bg-teal-50/80 p-4 text-left shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white text-[#0F766E] shadow-sm">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0F766E]">Compliance updated</p>
+            <h3 className="mt-1 text-lg font-bold text-slate-900">Your certificate was processed</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              {totalCreditsAdded > 0
+                ? `${totalCreditsAdded.toFixed(1)} credit${totalCreditsAdded === 1 ? "" : "s"} added from ${processedCount} upload${processedCount === 1 ? "" : "s"}.`
+                : "No credits were added yet — review the upload on your compliance page to finish classification."}
+            </p>
+          </div>
         </div>
-        <p className="font-semibold text-slate-800">Certificate uploaded!</p>
-        <p className="text-sm text-slate-500">Redirecting to your compliance dashboard…</p>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl bg-white/85 p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Processed</p>
+            <p className="mt-1 text-xl font-black text-slate-900">{processedCount}</p>
+          </div>
+          <div className="rounded-xl bg-white/85 p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Credits</p>
+            <p className="mt-1 text-xl font-black text-[#0F766E]">{totalCreditsAdded.toFixed(1)}</p>
+          </div>
+          <div className="rounded-xl bg-white/85 p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Review</p>
+            <p className={`mt-1 text-xl font-black ${needsReviewCount > 0 ? "text-amber-700" : "text-emerald-700"}`}>
+              {needsReviewCount}
+            </p>
+          </div>
+        </div>
+
+        {detectedTopics.length > 0 && (
+          <p className="rounded-xl bg-white/70 px-3 py-2 text-xs text-slate-600">
+            Mandatory-topic matches detected: {detectedTopics.map(formatTopicLabel).join(", ")}.
+          </p>
+        )}
+
+        <div className="space-y-2">
+          <button
+            onClick={() => router.push("/dashboard/compliance")}
+            className="w-full rounded-xl bg-[#0F766E] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0D9488]"
+          >
+            View updated gaps →
+          </button>
+          <button
+            onClick={resetUpload}
+            className="w-full rounded-xl border border-teal-200 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0F766E] transition-colors hover:bg-white"
+          >
+            Upload another certificate
+          </button>
+        </div>
       </div>
     );
   }
