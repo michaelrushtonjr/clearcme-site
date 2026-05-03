@@ -311,7 +311,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   CA: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 hours (initial license issued for <13 months: 25 hours for first renewal)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -420,7 +420,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   ID: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (current board certification or residency/fellowship status may satisfy under IDAPA 24.33.01 §100.04)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
@@ -600,7 +600,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid prescribing / OUD treatment", "3 hrs every 2 years", "If DEA-licensed"),
+      topic("Opioid prescribing / OUD treatment", "3 hrs every 2 years", "If required to register with NH controlled drug prescription health and safety program; cite Med 402.01(o)-(p) / Med 502"),
       mateTopic(),
     ],
   },
@@ -687,7 +687,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   PA: {
     totalHours: 100,
-    totalHoursLabel: "100 hours",
+    totalHoursLabel: "100 hours (retain CME records 2 years after renewal; MD registration expires Dec. 31 of even-numbered years)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -711,7 +711,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   SC: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (30 specialty + 8 non-specialty + 2 controlled-substance)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -730,7 +730,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 40,
     totalHoursLabel: "40 hours",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; for 2025+ use 24 months preceding renewal, not two calendar years",
     mandatoryTopics: [
       topic("Controlled substance prescribing", "2 hrs per cycle", "Applies to all licensees unless exempted by statute"),
       mateTopic(),
@@ -751,13 +751,13 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   UT: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (34 Category 1 minimum)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; licenses expire January 31 of even-numbered years",
     mandatoryTopics: [
       topic("Suicide prevention training", "0.5 credit every renewal"),
-      topic("Controlled substance prescribing", "4 hrs every renewal", "Includes Utah tutorial; if prescribing controlled substances"),
-      topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024"),
+      topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"),
+      topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"),
       mateTopic(),
     ],
   },
