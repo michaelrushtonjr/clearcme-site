@@ -926,7 +926,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   WA: {
     totalHours: 150,
-    totalHoursLabel: "150 hours (at least 60 Category 1; DOH page may state Category 1A — hold marketing claim until category floor is confirmed)",
+    totalHoursLabel: "150 hours (at least 60 Category 1A per WA DOH; WAC 246-853-070 uses broader Category 1 wording)",
     cycleYears: 3,
     cycleLabel: "3-year renewal cycle",
     mandatoryTopics: [
