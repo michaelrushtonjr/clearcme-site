@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -77,6 +77,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-18",
       },
       {
+        name: "Polysubstance Use: The Exception or the Rule?",
+        provider: "PCSS-MOUD / American Psychiatric Association (APA)",
+        providerUrl: "https://pcssnow.org",
+        credits: "1 AMA PRA Category 1 / COP",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free on-demand enduring webinar for physicians/psychiatrists by Stephen Wyatt, DO, FAOAAM. PCSS page now exposes the recording (“Watch Now”), presentation slides, CE availability, physician target audience, APA joint accreditation, and 1.0 AMA PRA Category 1 credit. APA Learning Center public catalog also lists the activity as on-demand, 1 CME/COP, and Free. Practical topic: evaluating and treating patients with polysubstance use disorders, including life-threatening complications and evidence-based treatments.",
+        url: "https://pcssnow.org/courses/polysubstance-use-the-exception-or-the-rule/",
+        accreditation: "ACCME / ACPE / ANCC (APA jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-03 (PCSS page confirms active on-demand recording, free APA listing, 1.0 AMA PRA Cat 1, and joint accreditation)",
+      },
+      {
         name: "Screening for Alcohol, Tobacco, Cannabis and Polysubstance Use",
         provider: "American Academy of Family Physicians (AAFP)",
         providerUrl: "https://www.aafp.org",
@@ -114,7 +130,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -377,7 +393,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -592,7 +608,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -679,7 +695,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -766,7 +782,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -837,7 +853,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -956,7 +972,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-01T05:36:11.033Z
+    // Auto-synced from Scout catalog — 2026-05-03T10:50:26.302Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

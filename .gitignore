@@ -19,3 +19,5 @@ npm-debug.log*
 .vercel
 .env.check
 .env.prod
+.env.vercel
+.vscode/

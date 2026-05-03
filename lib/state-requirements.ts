@@ -258,6 +258,7 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
   NV: fixedRenewal("December 31 annually", 12, 31),
   OK: fixedRenewal("June 30 annually", 6, 30),
   PA: fixedRenewal("October 31 of even-numbered years", 10, 31, "even"),
+  WA: variableRenewal("Every 3 years; renewal date varies by osteopathic license record"),
   VT: fixedRenewal("September 30 of even-numbered years", 9, 30, "even"),
 };
 
@@ -300,7 +301,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   AZ: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (accepted activities include ACCME Category 1 and other board-recognized CME; no carryover)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -320,12 +321,16 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   CO: {
-    totalHours: 30,
-    totalHoursLabel: "30 hours",
+    totalHours: null,
+    totalHoursLabel: "No general state physician CME hour minimum verified; state-specific 2-hour substance-use training applies",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Substance use disorder training", "2 hrs per cycle", "May be waived for some non-opioid prescribers"),
+      topic(
+        "Substance use prevention / treatment competency",
+        "2 cumulative hrs per cycle",
+        "Exemptions may apply under C.R.S. 12-30-114(1)(b); qualifying training may include CE, self-study, peer review, relevant service, conferences, teaching, or presentations",
+      ),
       mateTopic(),
     ],
   },
@@ -422,9 +427,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   IL: {
     totalHours: 150,
-    totalHoursLabel: "150 hours",
+    totalHoursLabel: "150 hours (minimum 60 formal CME; up to 90 informal CME)",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "3-year renewal cycle; first Illinois renewal is CME-exempt",
     mandatoryTopics: [
       topic("Opioid prescribing", "1 hr per cycle"),
       topic("Sexual harassment prevention", "1 hr per cycle"),
@@ -601,14 +606,14 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   NJ: {
     totalHours: 100,
-    totalHoursLabel: "100 credits",
+    totalHoursLabel: "100 credits (at least 40 Category I; Category I/II recognized by AMA, AOA, ACCME, or comparable board-recognized bodies)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; initial accredited-GME exemption may apply with board orientation due within 24 months",
     mandatoryTopics: [
-      topic("Cultural competency", "6 hrs per cycle"),
+      topic("Cultural competency", "6 hrs one-time/conditional", "Required if not completed in medical school or post-secondary education; not a recurring per-cycle requirement"),
       topic("End-of-life care", "2 hrs per cycle"),
       topic("Opioid prescribing", "1 hr per cycle"),
-      topic("Sexual misconduct prevention", "2 hrs per cycle", "Applies starting with the 2027 renewal cycle"),
+      topic("Sexual misconduct prevention", "2 hrs per cycle", "Commences with the biennial renewal period beginning July 1, 2025"),
       topic("Implicit bias in perinatal care", "1 hr per cycle", "If providing perinatal care"),
       mateTopic(),
     ],
@@ -626,7 +631,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   NV: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 Category 1 hours (20 hours must be in specialty or scope of practice)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -689,7 +694,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Patient safety / risk management", "12 hrs per cycle"),
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
       topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA MD prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
-      topic("Initial opioid education", "4 hrs one-time", "Before first prescriptive authority"),
+      topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
       mateTopic(),
     ],
   },
@@ -733,9 +738,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   TX: {
     totalHours: 48,
-    totalHoursLabel: "48 hours",
+    totalHoursLabel: "48 hours (at least 24 formal Category 1/1A credits; ACCME/AMA PRA, AAFP Prescribed, AOA Category 1-A, or TMA-approved)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; newly licensed physicians are exempt at first registration/renewal",
     mandatoryTopics: [
       topic("Medical ethics / professional responsibility", "2 hrs per cycle"),
       topic("Safe prescribing / pain management", "2 hrs per cycle"),
@@ -776,10 +781,15 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   WA: {
     totalHours: 200,
-    totalHoursLabel: "200 hours",
+    totalHoursLabel: "200 hours (Category I allowed for all hours; Category II-V limits apply)",
     cycleYears: 4,
     cycleLabel: "4-year renewal cycle",
-    mandatoryTopics: [topic("Suicide assessment, treatment, and management", "6 hrs one-time", "During first full CME reporting period")],
+    mandatoryTopics: [
+      topic("Suicide assessment, treatment, and management", "6 hrs one-time", "During first full CME reporting period"),
+      topic("Health equity", "2 hrs every 4 years", "Counts toward CME"),
+      topic("Opioid prescribing best practices", "At least 1 hr one-time", "If licensed to prescribe opioids; due by first full reporting period after initial licensure"),
+      mateTopic(),
+    ],
   },
   WI: {
     totalHours: 30,
@@ -816,21 +826,21 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
 const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   AZ: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (at least 24 AOA Category 1A; no more than 16 AMA Category 1)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid / controlled substance prescribing", "3 hrs per cycle", "If authorized to prescribe Schedule II drugs or dispense controlled substances"),
+      topic("Opioid / controlled substance prescribing", "3 hrs per cycle", "If authorized to prescribe Schedule II drugs or dispense controlled substances; must be AOA 1A or AMA Category 1"),
       mateTopic(),
     ],
   },
   CA: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 hours (20 AOA Category 1A/1B; remaining 30 may be AOA or AMA-accredited)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle tied to the osteopathic license renewal period",
     mandatoryTopics: [
-      topic("Schedule II addiction-risk course", "Required each cycle"),
+      topic("Schedule II drugs / opioid addiction-risk course", "At least 1 hr per cycle"),
       mateTopic(),
     ],
   },
@@ -857,7 +867,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   NV: {
     totalHours: 35,
-    totalHoursLabel: "35 hours",
+    totalHoursLabel: "35 hours (at least 10 hours Category 1A from an AOA- or ACCME-accredited sponsor)",
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
@@ -879,11 +889,14 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   PA: {
     totalHours: 100,
-    totalHoursLabel: "100 hours",
+    totalHoursLabel: "100 hours (at least 20 AOA Category 1-A)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; first-time PA licensure is CME-exempt for the following biennial renewal period",
     mandatoryTopics: [
+      topic("Patient safety / risk management", "12 hrs per cycle", "Category 1 or 2"),
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
+      topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA DO prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
+      topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
       mateTopic(),
     ],
   },
@@ -894,6 +907,18 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Safe and effective prescribing of controlled substances", "2 hrs every renewal", "If DEA-registered"),
+      mateTopic(),
+    ],
+  },
+  WA: {
+    totalHours: 150,
+    totalHoursLabel: "150 hours (at least 60 Category 1A)",
+    cycleYears: 3,
+    cycleLabel: "3-year renewal cycle",
+    mandatoryTopics: [
+      topic("Suicide assessment, treatment, and management", "6 hrs one-time", "By first full CE reporting period after initial licensure"),
+      topic("Health equity", "2 hrs every 4 years", "Counts toward CE"),
+      topic("Opioid prescribing best practices", "At least 1 hr one-time", "If licensed to prescribe opioids; due by first full reporting period after initial licensure"),
       mateTopic(),
     ],
   },
