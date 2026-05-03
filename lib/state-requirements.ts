@@ -518,15 +518,15 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   MI: {
     totalHours: 150,
-    totalHoursLabel: "150 hours",
+    totalHoursLabel: "150 hours (at least 75 Category 1)",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "3-year renewal cycle; renewal date varies by physician/license record",
     mandatoryTopics: [
       topic("Medical ethics", "1 hr per cycle"),
-      topic("Pain and symptom management", "3 hrs per cycle", "At least 1 hr must cover controlled substances"),
-      topic("Opioid / controlled substance awareness", "Required each cycle", "For licensed prescribers / dispensers"),
-      topic("Implicit bias", "3 hrs per cycle"),
+      topic("Pain and symptom management", "3 hrs per cycle", "At least 1 hr must include controlled substance prescribing"),
+      topic("Implicit bias", "3 hrs per cycle", "1 hr for each year of the license cycle"),
       topic("Human trafficking identification", "One-time training"),
+      topic("Opioids / controlled-substance awareness", "Required for MI controlled-substance license renewal", "Separate controlled-substance license condition; no standalone CME hour count in the Medicine CME rule"),
       mateTopic(),
     ],
   },
@@ -865,6 +865,20 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
   },
+  MI: {
+    totalHours: 150,
+    totalHoursLabel: "150 hours (at least 60 Category 1; at least 40 hours through AOA/MOA-approved Category 1A-style programs)",
+    cycleYears: 3,
+    cycleLabel: "3-year renewal cycle; renewal date varies by physician/license record",
+    mandatoryTopics: [
+      topic("Medical ethics", "1 hr per cycle"),
+      topic("Pain and symptom management", "3 hrs per cycle", "At least 1 hr must include controlled substance prescribing"),
+      topic("Implicit bias", "3 hrs per cycle", "1 hr for each year of the license cycle"),
+      topic("Human trafficking identification", "One-time training"),
+      topic("Opioids / controlled-substance awareness", "Required for MI controlled-substance license renewal", "Separate controlled-substance license condition; no standalone CME hour count in the Osteopathic CME rule"),
+      mateTopic(),
+    ],
+  },
   NV: {
     totalHours: 35,
     totalHoursLabel: "35 hours (at least 10 hours Category 1A from an AOA- or ACCME-accredited sponsor)",
@@ -912,7 +926,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   WA: {
     totalHours: 150,
-    totalHoursLabel: "150 hours (at least 60 Category 1A)",
+    totalHoursLabel: "150 hours (at least 60 Category 1; DOH page may state Category 1A — hold marketing claim until category floor is confirmed)",
     cycleYears: 3,
     cycleLabel: "3-year renewal cycle",
     mandatoryTopics: [
