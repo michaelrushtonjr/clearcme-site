@@ -321,10 +321,10 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   CO: {
-    totalHours: null,
-    totalHoursLabel: "No general state physician CME hour minimum verified; state-specific 2-hour substance-use training applies",
+    totalHours: 30,
+    totalHoursLabel: "30 hours per 24-month cycle (effective for the 2027 renewal cycle)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; new CME framework begins with 2027 renewal",
     mandatoryTopics: [
       topic(
         "Substance use prevention / treatment competency",
