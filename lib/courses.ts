@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -45,6 +45,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-16",
       },
       {
+        name: "Integrating Addiction Medicine with Treatment Courts Course - All Rise (July/August 2026 live-virtual)",
+        provider: "American Society of Addiction Medicine (ASAM) eLearning / All Rise",
+        providerUrl: "https://elearning.asam.org",
+        credits: "4 AMA PRA Category 1-equivalent physician medical credits / ABIM MOC / ABP MOC / ABS Continuing Certification / ABA MOCA 2.0",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free three-part live-virtual course on July 31, August 7, and August 14, 2026 (12:00–1:30 pm ET each day). Designed for physicians, PAs, nurses, and NPs engaging with treatment-court systems. Covers diagnosis/treatment when patients first engage with treatment courts, court structure/effectiveness, team roles, evidence-based addiction-treatment advocacy, non-stigmatizing communication about legal involvement, release-of-information considerations, and case-based partnership practices for SUD treatment. Open registration 2/23/2026–8/21/2026; close access date 12/31/2026. Funded via ASAM/All Rise ONDCP grant initiative.",
+        url: "https://elearning.asam.org/products/integrating-addiction-medicine-with-treatment-courts-course-all-rise-july-31-august-7-14-2026",
+        accreditation: "ACCME / ACPE / ANCC (ASAM jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting accredited physician CME / AMA PRA Category 1-equivalent physician credits",
+        verified: "2026-05-04 (ASAM product page confirms free non-member registration, physician target audience, 4 physician credits, joint accreditation, registration/access dates, and live-virtual schedule)",
+      },
+      {
         name: "Addiction Treatment and Care CME for Family Physicians",
         provider: "American Academy of Family Physicians (AAFP)",
         providerUrl: "https://www.aafp.org",
@@ -59,6 +75,54 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; AAFP Prescribed credit accepted by AMA as equivalent to AMA PRA Category 1",
         verified: "2026-04-27 (URL confirmed live; credit statement and modules re-verified)",
+      },
+      {
+        name: "SUD 101: Best Clinical Practices for Treating Opioid Use Disorder in Pregnancy and the Postpartum Period",
+        provider: "PCSS-MOUD / American Academy of Addiction Psychiatry (AAAP)",
+        providerUrl: "https://pcssnow.org",
+        credits: "2 AMA PRA Category 1 / AAPA Category 1 CME / Nursing Contact Hours / Pharmacy CE / IPCE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free on-demand supplemental SUD 101 module focused on OUD treatment during pregnancy and postpartum, including methadone/buprenorphine, detoxification/withdrawal risks, induction/dosing/pain management, and neonatal opioid withdrawal/NAS planning. PCSS course page verifies physician audience, CE availability, AMA PRA Category 1 designation, and Begin Course access; the Oasis LMS page independently verifies on-demand access through Apr 27, 2029, $0.00 cost, 2 CME credits, and AAAP joint accreditation.",
+        url: "https://pcssnow.org/courses/best-clinical-practices-for-treating-opioid-use-disorder-in-pregnancy-and-the-postpartum-period/",
+        accreditation: "ACCME / ACPE / ANCC (AAAP jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-04 (PCSS page + Oasis LMS page confirm free access, 2 AMA PRA Cat 1 credits, physician audience, access expiry Apr 27 2029, and AAAP joint accreditation)",
+      },
+      {
+        name: "SUD 101: Opioids for Pain — Understanding and Mitigating Risks",
+        provider: "PCSS-MOUD / American Academy of Addiction Psychiatry (AAAP)",
+        providerUrl: "https://pcssnow.org",
+        credits: "1.75 AMA PRA Category 1 / AAPA Category 1 CME / Nursing Contact Hours / Pharmacy CE / IPCE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free on-demand supplemental SUD 101 module by Roger Chou, MD, based on CDC opioid-prescribing principles. Covers risk factors for opioid misuse/OUD/overdose in chronic pain, screening and assessment for problematic opioid use, risk mitigation, and non-opioid pain treatment approaches. PCSS course page verifies physician audience and CE availability; Oasis LMS page independently verifies on-demand access through Apr 21, 2029, $0.00 cost, 1.75 CME credits, and AAAP joint accreditation.",
+        url: "https://pcssnow.org/courses/opioids-for-pain-understanding-and-mitigating-risks-2/",
+        accreditation: "ACCME / ACPE / ANCC (AAAP jointly accredited)",
+        deaMateCompliant: true,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-04 (PCSS page + Oasis LMS page confirm free access, 1.75 AMA PRA Cat 1 credits, physician audience, access expiry Apr 21 2029, and AAAP joint accreditation)",
+      },
+      {
+        name: "SUD 101: Substance Use Disorders in Older Adults",
+        provider: "PCSS-MOUD / American Academy of Addiction Psychiatry (AAAP)",
+        providerUrl: "https://pcssnow.org",
+        credits: "1.75 AMA PRA Category 1 / AAPA Category 1 CME / Nursing Contact Hours / Pharmacy CE / IPCE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free on-demand supplemental SUD 101 module covering prevalence, signs/symptoms, screening, psychopharmacologic considerations, and psychosocial treatment planning for older adults with SUDs, including nonmedical prescription-drug/illicit opioid use plus alcohol, tobacco, stimulant/cocaine, cannabis, and sedative-hypnotic use. PCSS page verifies CE availability and AMA PRA Category 1 designation; Oasis LMS page independently verifies on-demand access through Apr 29, 2029, $0.00 cost, 1.75 CME credits, and AAAP joint accreditation. Note: the PCSS listing’s audience tags omit “Physicians,” but the course detail text and LMS accreditation page explicitly include physician CME credit and target audience.",
+        url: "https://pcssnow.org/courses/substance-use-disorders-in-older-adults/",
+        accreditation: "ACCME / ACPE / ANCC (AAAP jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-04 (PCSS page + Oasis LMS page confirm free access, 1.75 AMA PRA Cat 1 credits, access expiry Apr 29 2029, and AAAP joint accreditation)",
       },
       {
         name: "PCSS MOUD Online Case-based Learning Collaboratives Session 2: Strategies to Effectively Manage Complicated Opioid Withdrawal in the Emergency Department or Hospital Setting",
@@ -146,7 +210,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -409,7 +473,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -624,7 +688,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -711,7 +775,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -798,7 +862,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -869,7 +933,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -988,7 +1052,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-03T17:33:17.194Z
+    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

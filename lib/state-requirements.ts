@@ -968,7 +968,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   WV: {
     totalHours: 32,
-    totalHoursLabel: "32 hours for 2026 renewal (at least 16 AOA Category 1A/1B); 50 hours for cycles ending on or after July 1, 2027 (30 specialty, at least 25 AOA Category 1)",
+    totalHoursLabel: "32 hours (at least 16 AOA Category 1A/1B)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; D.O. renewal due June 30",
     mandatoryTopics: [
