@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Privacy Policy</h1>
-        <p className="text-slate-500 text-sm mb-10">Last updated: April 2026</p>
+        <p className="text-slate-500 text-sm mb-10">Last updated: May 2026</p>
 
         <div className="prose prose-slate max-w-none space-y-8 text-slate-700">
 
@@ -25,6 +25,7 @@ export default function PrivacyPage() {
               <li><strong>Account information</strong> — your name and email address, provided via Google Sign-In</li>
               <li><strong>License information</strong> — state(s) of licensure, license type (MD/DO), and renewal dates you enter</li>
               <li><strong>CME certificates</strong> — files you upload and the extracted data (course title, provider, credit hours, date)</li>
+              <li><strong>Billing information</strong> — subscription status and payment identifiers handled through our payment processor; we do not store full card numbers</li>
               <li><strong>Usage data</strong> — standard web analytics (page views, feature usage) to improve the product</li>
             </ul>
           </section>
@@ -36,14 +37,15 @@ export default function PrivacyPage() {
               <li>Provide compliance tracking and gap analysis personalized to your licenses</li>
               <li>Send renewal reminders and compliance alerts (if opted in)</li>
               <li>Improve the accuracy of our compliance database</li>
-              <li>Communicate product updates</li>
+              <li>Communicate product updates, billing notices, and support responses</li>
             </ul>
             <p className="mt-3">We do not sell your personal information to third parties.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-3">3. HIPAA Notice</h2>
-            <p>ClearCME is a CME compliance tracking tool. <strong>We do not store Protected Health Information (PHI)</strong> as defined by HIPAA. CME certificates and physician licensing information are not medical records and are not subject to HIPAA. ClearCME is not a covered entity under HIPAA.</p>
+            <p>ClearCME is a CME compliance tracking tool. <strong>We do not intentionally collect or store Protected Health Information (PHI)</strong> as defined by HIPAA. CME certificates and physician licensing information are professional compliance records, not patient medical records. ClearCME is not a covered entity under HIPAA.</p>
+            <p className="mt-3">Please do not upload patient charts, patient identifiers, clinical photographs, or other patient-specific information. If you believe PHI was uploaded accidentally, contact us promptly so we can help remove it.</p>
           </section>
 
           <section>
@@ -53,17 +55,17 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-3">5. Data Storage & Security</h2>
-            <p>Your data is stored in a secured PostgreSQL database hosted in the United States. We use industry-standard encryption for data in transit (HTTPS/TLS) and at rest. Access to your data is restricted to you and authorized ClearCME systems.</p>
+            <p>Your data is stored in a secured PostgreSQL database hosted in the United States. We use industry-standard encryption for data in transit (HTTPS/TLS) and at rest. Access to your data is restricted to you and authorized ClearCME systems and service providers needed to operate the product.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-3">6. Third-Party Partners</h2>
-            <p>ClearCME may recommend CME courses from partner providers (such as Hippo Education and CME Outfitters). When you click through to a partner&rsquo;s site, their privacy policy applies. We may receive referral commissions from partners, but we do not share your personal data with them.</p>
+            <p>ClearCME may recommend CME courses from partner providers. When you click through to a partner&rsquo;s site, their privacy policy applies. We may receive referral commissions from paid partners, but we do not sell your personal data or share your uploaded certificate data with course providers for advertising.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-3">7. Your Rights</h2>
-            <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us at <a href="mailto:hello@clearcme.ai" className="text-blue-600 hover:underline">hello@clearcme.ai</a>. Account deletion will remove all associated data within 30 days.</p>
+            <p>You may request access to, correction of, export of, or deletion of your personal data at any time by contacting us at <a href="mailto:hello@clearcme.ai" className="text-blue-600 hover:underline">hello@clearcme.ai</a>. Account deletion will remove associated active account data within 30 days, except where limited backup retention, fraud prevention, tax, accounting, security, or legal obligations require temporary retention.</p>
           </section>
 
           <section>
@@ -73,7 +75,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-slate-900 mb-3">9. Contact</h2>
-            <p>Questions about your privacy? Contact us at <a href="mailto:hello@clearcme.ai" className="text-blue-600 hover:underline">hello@clearcme.ai</a>.</p>
+            <p>Questions about your privacy, data, or account deletion? Contact us at <a href="mailto:hello@clearcme.ai" className="text-blue-600 hover:underline">hello@clearcme.ai</a>.</p>
           </section>
 
         </div>

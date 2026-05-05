@@ -191,7 +191,7 @@ function buildHtml(data: ExportData): string {
   }
 
   <div class="footer">
-    ClearCME · clearcme.com · This report is for personal compliance tracking only and does not constitute legal or regulatory advice.
+    ClearCME · clearcme.ai · This report is for personal compliance tracking only and does not constitute legal, medical, or regulatory advice.
   </div>
 </body>
 </html>`;

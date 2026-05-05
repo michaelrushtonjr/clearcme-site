@@ -23,7 +23,15 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
   },
   {
     q: "Is my data secure?",
-    a: "Yes. ClearCME is Secure & Private (Non-PHI). CME certificates are professional credentials, not Protected Health Information. Your data is encrypted in transit and at rest.",
+    a: "Yes. ClearCME is Secure & Private (Non-PHI). CME certificates are professional credentials, not patient medical records. Please do not upload patient identifiers or clinical records. Your data is encrypted in transit and at rest.",
+  },
+  {
+    q: "What if I subscribe and it is not right for me?",
+    a: "Email hello@clearcme.ai within 14 days of purchase. During launch, we will either help fix the issue or handle a reasonable refund in good faith.",
+  },
+  {
+    q: "Is this legal or licensing advice?",
+    a: "No. ClearCME is a tracking and organization tool. We verify requirements against primary sources, but you remain responsible for confirming your specific obligations with your licensing board.",
   },
   {
     q: "What states are covered?",
