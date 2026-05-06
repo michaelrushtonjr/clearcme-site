@@ -814,7 +814,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Controlled substance prescribing / drug diversion", "3 hrs for 2026 renewal", "If prescribing, administering, or dispensing controlled substances in West Virginia; WVBOM says 2026 is the last renewal cycle requiring this course as a renewal prerequisite"),
+      topic("Risk assessment and responsible prescribing / controlled substances", "3 hrs for 2026 renewal", "If prescribing, administering, or dispensing controlled substances in West Virginia; WVBOM says 2026 is the final renewal cycle requiring this course as a renewal prerequisite; post-2026, new prescribers/dispensers still complete the Board-approved course within 1 year of initial licensure"),
       topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"),
       mateTopic(),
     ],
