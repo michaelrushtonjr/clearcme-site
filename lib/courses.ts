@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -210,7 +210,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -473,7 +473,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -619,6 +619,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-23 (URL confirmed live; credit, cost, and expiry all explicit on page)",
       },
       {
+        name: "ACP Ethics Case Study: Substance Use Disorder & the Medical Record",
+        provider: "American College of Physicians (ACP)",
+        providerUrl: "https://www.acponline.org",
+        credits: "0.5 AMA PRA Category 1 + ABIM MOC Points",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "ACP Ethics and Professionalism journal-article case study on privacy, consent, care coordination, HIPAA alignment, and updated 2024 Part 2 rules for substance-use-disorder treatment records. Read the case study, then complete the CME/MOC survey. Released January 27, 2026; expires January 26, 2029. Earns ABIM MOC points. ACP membership required to claim credit.",
+        url: "https://www.acponline.org/cme-moc/online-learning-center/substance-use-disorder-the-medical-record",
+        accreditation: "ACCME (ACP)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-06 (OLC page explicitly states active status, 0.5 AMA PRA Category 1 credit, Free to Members, ACCME accreditation, Jan 2029 expiry, and SUD/medical-ethics related topics)",
+      },
+      {
         name: "ACP Ethics Case Studies: Pain Management Near the End-of-Life: What Would Mom Want?",
         provider: "American College of Physicians (ACP)",
         providerUrl: "https://www.acponline.org",
@@ -688,7 +704,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -754,20 +770,36 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-04-21 (via MOOC-list and opencourser.com confirming AMA PRA Cat 1 designation; $0.00 confirmed on Stanford Online course page)",
       },
       {
-        name: "~~Unveiling Unconscious Bias~~ ⚠️ LINK BROKEN — DO NOT USE",
-        provider: "Stanford Center for CME",
-        providerUrl: "",
-        credits: "0",
+        name: "Culturally Respectful Care: Foundational Principles for Self and Practice Evaluation",
+        provider: "CME Outfitters",
+        providerUrl: "https://www.cmeoutfitters.com",
+        credits: "0.75 AMA PRA Category 1 (+ IPCE, ANCC, ACPE, AAPA, ABIM MOC, Royal College MOC, MIPS IA)",
         creditType: "AMA_PRA_1",
-        price: "Unknown",
+        price: "Free",
         isFree: true,
         isHippo: false,
-        description: "~~Unveiling Unconscious Bias~~ ⚠️ LINK BROKEN — DO NOT USE",
-        url: "",
-        accreditation: "",
+        description: "On-demand CME Snack launched Mar 31, 2023; credit expires Dec 31, 2026. Target audience includes physicians, nurses, pharmacists, PAs, NPs, and other clinicians. Learning objectives include identifying root causes of health disparities, integrating cultural humility into clinical interactions, and incorporating regular self-assessment for bias. Faculty include Monica E. Peek, MD, MPH, MSc and Cristina M. Gonzalez, MD, MEd. Post-test/evaluation online; immediate certificate after completion.",
+        url: "https://www.cmeoutfitters.com/activity/culturally-respectful-care-foundational-principles-for-self-and-practice-evaluation/",
+        accreditation: "ACCME / ACPE / ANCC jointly accredited provider (CME Outfitters)",
         deaMateCompliant: false,
-        stateAcceptance: "",
-        verified: "",
+        stateAcceptance: "All states accepting AMA PRA Category 1. Covers implicit bias recognition/management, cultural humility, health disparities, and respectful care; pairs with another implicit-bias course for NJ 2hr requirement.",
+        verified: "2026-05-05 (public page confirms 0.75 AMA PRA Cat 1, joint accreditation, physician target audience, on-demand credit expiration 12/31/2026, and free account credit-claim workflow)",
+      },
+      {
+        name: "Actionable Strategies in Your Role as a Physician in Inclusive Patient Management and Respectful Care",
+        provider: "CME Outfitters",
+        providerUrl: "https://www.cmeoutfitters.com",
+        credits: "0.75 AMA PRA Category 1 (+ IPCE, ANCC, ACPE, AAPA, ABIM MOC, Royal College MOC, MIPS IA)",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "On-demand webcast launched Apr 28, 2023; credit expires Dec 31, 2026. Target audience includes physicians, nurses, pharmacists, PAs, NPs, psychologists, social workers, community health workers, and other clinicians. Learning objectives include identifying racism's impact on underserved patients and implementing respectful-care strategies to address inequities. Faculty include Monica E. Peek, MD, MPH, MSc and Monica Vela, MD, FACP.",
+        url: "https://www.cmeoutfitters.com/activity/adp-sn191/",
+        accreditation: "ACCME / ACPE / ANCC jointly accredited provider (CME Outfitters)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1. Covers systemic racism, bias, cultural humility, inclusive patient management, respectful care, and health-equity strategies; pairs with another implicit-bias course for NJ 2hr requirement.",
+        verified: "2026-05-05 (public page confirms 0.75 AMA PRA Cat 1, joint accreditation, physician target audience, on-demand credit expiration 12/31/2026, and free account credit-claim workflow)",
       }
     ],
   },
@@ -775,7 +807,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -862,7 +894,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -933,7 +965,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -1029,22 +1061,6 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; designed to satisfy domestic violence/abuse requirements for many state boards; Texas medical ethics/professional responsibility noted by Pri-Med",
         verified: "2026-04-25",
-      },
-      {
-        name: "Domestic Violence & Abuse CME (Multiple Courses)",
-        provider: "Pri-Med",
-        providerUrl: "https://www.pri-med.com",
-        credits: "0 AMA PRA Category 1 / CE",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description: "Pri-Med offers multiple free DV/abuse CME courses covering identification of abuse types (physical, emotional, financial, sexual), culturally sensitive screening, documentation, legal considerations, and referral strategies. Free account required (no subscription fee). Target audience includes MDs, DOs, NPs, PAs. Individual verified Pri-Med courses are cataloged separately above.",
-        url: "https://www.pri-med.com/topic/domestic-violence-cme",
-        accreditation: "ACCME",
-        deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-04-25",
       }
     ],
   },
@@ -1052,7 +1068,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-04T22:48:30.803Z
+    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",

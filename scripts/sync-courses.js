@@ -92,6 +92,35 @@ function parseDeaMate(raw) {
   return raw.toLowerCase().includes('yes');
 }
 
+function isPublishableCourse(course) {
+  const haystack = [
+    course.title,
+    course.provider,
+    course.creditType,
+    course.costLabel,
+    course.url,
+    course.accreditation,
+    course.stateAcceptance,
+    course.notes,
+    course.verified,
+  ].join(' ').toLowerCase();
+
+  if (!course.provider || !course.url || !course.creditHours) return false;
+  if (!haystack.includes('ama pra category 1')) return false;
+
+  const blockedSignals = [
+    'do not use',
+    'link broken',
+    'unverifiable',
+    'cannot be confirmed',
+    'action required',
+    'reference-only',
+    'not physician-facing',
+    'not verified as ama pra category 1',
+  ];
+  return !blockedSignals.some(signal => haystack.includes(signal));
+}
+
 // ── Parse catalog ─────────────────────────────────────────────────────────────
 function parseCatalog(markdown) {
   const lines = markdown.split('\n');
@@ -196,7 +225,7 @@ function buildCourseObject(c) {
   try {
     const u = new URL(c.url);
     providerUrl = `${u.protocol}//${u.hostname}`;
-  } catch (_) {
+  } catch {
     providerUrl = c.url;
   }
 
@@ -378,8 +407,12 @@ function main() {
   const allCourses = parseCatalog(markdown);
   console.log(`   Parsed ${allCourses.length} course(s) total`);
 
-  const approvedCourses = allCourses.filter(c => c.trusted);
-  const pendingCourses  = allCourses.filter(c => !c.trusted);
+  const publishableCourses = allCourses.filter(isPublishableCourse);
+  const excludedCourses = allCourses.filter(c => !isPublishableCourse(c));
+  const approvedCourses = publishableCourses.filter(c => c.trusted);
+  const pendingCourses  = publishableCourses.filter(c => !c.trusted);
+  console.log(`   ✅ Publishable after safety filters: ${publishableCourses.length}`);
+  console.log(`   🚫 Excluded (broken/non-physician/not AMA/etc.): ${excludedCourses.length}`);
   console.log(`   ✅ Approved (trusted providers): ${approvedCourses.length}`);
   console.log(`   ⚠️  Pending (unknown providers):  ${pendingCourses.length}`);
 
