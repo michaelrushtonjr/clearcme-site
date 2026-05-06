@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -210,7 +210,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -473,7 +473,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -704,7 +704,23 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
+      {
+        name: "5 Minute Moment for Racial Justice in Healthcare Series",
+        provider: "Stanford Center for Continuing Medical Education",
+        providerUrl: "https://stanford.cloud-cme.com",
+        credits: "1.5 AMA PRA Category 1 / Non-Physician Participation Credit",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "On-demand case-based multimedia curriculum teaching how racism and implicit bias affect routine care and how clinicians can discuss racism in medicine with learners. Stanford page explicitly lists registration fee as FREE, estimated completion time 1hr 30min, 1.50 AMA PRA Category 1 credits, physician audience, and expiration Nov 27 2026. Series topics include racial disparities in maternal health, medication prescribing and scientific studies, child maltreatment reporting, pulse oximetry, medical mistrust, pain management, kidney disease diagnosis/treatment, dermatologic diagnosis in darker skin, pediatric UTI race correction, and limited-English-proficiency disparities.",
+        url: "https://stanford.cloud-cme.com/course/courseoverview?P=3000&EID=48965",
+        accreditation: "ACCME / ACPE / ANCC (Stanford Medicine jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1. Covers implicit bias, racial health disparities, structural racism, health equity, and racially just care; pairs well with other free implicit-bias courses for NJ's 2hr requirement.",
+        verified: "2026-05-06 (Stanford CloudCME page confirms free registration, 1.5 AMA PRA Cat 1, joint accreditation, physician audience, and Nov 2026 expiry)",
+      },
       {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
@@ -807,7 +823,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -894,7 +910,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -965,7 +981,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -1068,7 +1084,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-06T15:30:00.493Z
+    // Auto-synced from Scout catalog — 2026-05-06T16:50:28.343Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
