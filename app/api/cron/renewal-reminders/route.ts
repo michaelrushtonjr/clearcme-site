@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { prisma } from "@/lib/prisma";
 
 // Expo Push API endpoint
@@ -105,7 +106,9 @@ export async function POST(req: NextRequest) {
         const msUntilRenewal = license.renewalDate.getTime() - now.getTime();
         const daysUntilRenewal = Math.ceil(msUntilRenewal / (1000 * 60 * 60 * 24));
 
-        const compliance = complianceMap.get(`${license.state}-${license.licenseType}`);
+        const compliance = isComputedComplianceBlocked(license.state, license.licenseType)
+          ? null
+          : complianceMap.get(`${license.state}-${license.licenseType}`);
         const gapHours = compliance ? Math.max(0, compliance.gapHours) : null;
 
         // Determine designation label (MD / DO / etc.)

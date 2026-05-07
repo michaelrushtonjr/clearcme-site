@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { prisma } from "@/lib/prisma";
 import SettingsClient from "./SettingsClient";
 
@@ -36,12 +37,14 @@ export default async function SettingsPage() {
 
   const licenseRequirements = await Promise.all(
     licenses.map(async (license) => {
-      const rule = await prisma.complianceRule.findUnique({
-        where: {
-          state_licenseType: { state: license.state, licenseType: license.licenseType },
-        },
-        include: { mandatoryRequirements: true },
-      });
+      const rule = isComputedComplianceBlocked(license.state, license.licenseType)
+        ? null
+        : await prisma.complianceRule.findUnique({
+            where: {
+              state_licenseType: { state: license.state, licenseType: license.licenseType },
+            },
+            include: { mandatoryRequirements: true },
+          });
       return {
         licenseId: license.id,
         state: license.state,

@@ -12,6 +12,7 @@ import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { keyToSlug } from "@/lib/courses";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
+import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { formatStateName } from "@/lib/state-names";
 import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
@@ -211,15 +212,18 @@ export default async function CompliancePage() {
   // For each license, compute compliance inline (so page always shows fresh data)
   const complianceData = await Promise.all(
     licenses.map(async (license) => {
-      const rule = await prisma.complianceRule.findUnique({
-        where: {
-          state_licenseType: {
-            state: license.state,
-            licenseType: license.licenseType,
-          },
-        },
-        include: { mandatoryRequirements: true },
-      });
+      const computedComplianceBlocked = isComputedComplianceBlocked(license.state, license.licenseType);
+      const rule = computedComplianceBlocked
+        ? null
+        : await prisma.complianceRule.findUnique({
+            where: {
+              state_licenseType: {
+                state: license.state,
+                licenseType: license.licenseType,
+              },
+            },
+            include: { mandatoryRequirements: true },
+          });
 
       if (!rule) {
         return {
@@ -232,6 +236,7 @@ export default async function CompliancePage() {
           mandatoryGaps: [] as MandatoryGap[],
           daysUntilRenewal: daysUntil(license.renewalDate),
           cycleCerts: [],
+          blockedMessage: computedComplianceBlockedMessage(license.state, license.licenseType),
         };
       }
 
@@ -488,7 +493,7 @@ export default async function CompliancePage() {
       )}
 
       {/* Per-license compliance cards */}
-      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts }) => (
+      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => (
         <section key={license.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           {/* Card header */}
           <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -521,7 +526,7 @@ export default async function CompliancePage() {
           {!rule ? (
             <div className="px-6 py-8 text-center">
               <p className="text-slate-500 text-sm">
-                Compliance rules for {license.state} {license.licenseType} are not yet loaded.
+                {blockedMessage ?? "Compliance rules for this license are not yet loaded."}
               </p>
               <p className="text-xs text-slate-400 mt-1">
                 We&apos;re adding state requirements continuously — check back soon.

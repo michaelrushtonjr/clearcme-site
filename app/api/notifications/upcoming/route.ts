@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { jwtVerify } from "jose";
 
 // Helper: extract and verify mobile JWT from Authorization header
@@ -72,7 +73,9 @@ export async function GET(req: NextRequest) {
       const msUntilRenewal = renewalDate.getTime() - now.getTime();
       const daysUntilRenewal = Math.ceil(msUntilRenewal / (1000 * 60 * 60 * 24));
 
-      const compliance = complianceByStateType.get(`${license.state}-${license.licenseType}`);
+      const compliance = isComputedComplianceBlocked(license.state, license.licenseType)
+        ? null
+        : complianceByStateType.get(`${license.state}-${license.licenseType}`);
       const hoursNeeded = compliance ? Math.max(0, compliance.gapHours) : null;
 
       return {

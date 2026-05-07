@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
+import { isComputedComplianceBlocked, computedComplianceBlockedMessage } from "@/lib/compliance-rule-availability";
 import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 // GET /api/compliance — compute and return compliance status for the current user
@@ -44,25 +45,29 @@ export async function GET(req: NextRequest) {
   const complianceResults = [];
 
   for (const license of licenses) {
+    const computedComplianceBlocked = isComputedComplianceBlocked(license.state, license.licenseType);
+
     // Get compliance rules for this state + license type
-    const rule = await prisma.complianceRule.findUnique({
-      where: {
-        state_licenseType: {
-          state: license.state,
-          licenseType: license.licenseType,
-        },
-      },
-      include: { mandatoryRequirements: true },
-    });
+    const rule = computedComplianceBlocked
+      ? null
+      : await prisma.complianceRule.findUnique({
+          where: {
+            state_licenseType: {
+              state: license.state,
+              licenseType: license.licenseType,
+            },
+          },
+          include: { mandatoryRequirements: true },
+        });
 
     if (!rule) {
-      // No rule configured yet for this state
+      // No rule configured yet, or computed compliance is intentionally blocked for this state.
       complianceResults.push({
         state: license.state,
         licenseType: license.licenseType,
         renewalDate: license.renewalDate,
         status: "NO_RULES_CONFIGURED",
-        message: `Compliance rules for ${license.state} ${license.licenseType} not yet loaded.`,
+        message: computedComplianceBlockedMessage(license.state, license.licenseType),
       });
       continue;
     }

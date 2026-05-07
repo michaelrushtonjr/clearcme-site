@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { prisma } from "@/lib/prisma";
 import JSZip from "jszip";
 
@@ -125,10 +126,13 @@ export async function GET(req: NextRequest) {
   const licenseSummaries: LicenseSummary[] = [];
 
   for (const lic of licenses) {
-    const rule = await prisma.complianceRule.findUnique({
-      where: { state_licenseType: { state: lic.state, licenseType: lic.licenseType } },
-      include: { mandatoryRequirements: true },
-    });
+    const computedComplianceBlocked = isComputedComplianceBlocked(lic.state, lic.licenseType);
+    const rule = computedComplianceBlocked
+      ? null
+      : await prisma.complianceRule.findUnique({
+          where: { state_licenseType: { state: lic.state, licenseType: lic.licenseType } },
+          include: { mandatoryRequirements: true },
+        });
 
     if (!rule) {
       licenseSummaries.push({

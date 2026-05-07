@@ -14,6 +14,7 @@ import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { keyToSlug } from "@/lib/courses";
+import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 export default async function DashboardPage() {
@@ -53,6 +54,8 @@ export default async function DashboardPage() {
   // Compute compliance for all licenses
   const complianceData = await Promise.all(
     licenses.map(async (license) => {
+      if (isComputedComplianceBlocked(license.state, license.licenseType)) return null;
+
       const rule = await prisma.complianceRule.findUnique({
         where: {
           state_licenseType: { state: license.state, licenseType: license.licenseType },
