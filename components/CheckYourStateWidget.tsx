@@ -29,14 +29,13 @@ export default function CheckYourStateWidget() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-10">
           <span className="inline-flex items-center gap-2 bg-white text-[#0F766E] text-xs font-semibold px-4 py-1.5 rounded-full border border-teal-100 shadow-sm uppercase tracking-[0.18em]">
-            Instant Preview
+            Preview
           </span>
           <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-[#1E293B] mt-5 mb-3">
-            What does your state require?
+            Check your state
           </h2>
           <p className="text-slate-500 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-            Pick your state and license type to preview the renewal rules physicians see
-            inside ClearCME before they sign up.
+            See hours, cycle, and mandatory topics.
           </p>
         </div>
 
@@ -92,11 +91,10 @@ export default function CheckYourStateWidget() {
 
             <div className="mt-6 rounded-2xl bg-teal-50/80 border border-teal-100 px-4 py-4">
               <p className="text-sm font-semibold text-[#0F766E]">
-                Built from our 50-state compliance map
+                Source-backed rules
               </p>
               <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                This preview is intentionally concise. Full accounts add specialty rules,
-                first-renewal exceptions, and state-by-state edge cases.
+                Full account adds specialty, renewal, and upload logic.
               </p>
             </div>
           </div>
@@ -120,11 +118,10 @@ export default function CheckYourStateWidget() {
                   </svg>
                 </div>
                 <h3 className="font-playfair text-2xl font-bold text-[#1E293B] mb-3">
-                  Choose your state to preview the map
+                  Pick a state
                 </h3>
                 <p className="text-slate-500 max-w-xl leading-relaxed">
-                  We&apos;ll show the cycle length, total CME hours, and the key topic
-                  mandates physicians typically miss when renewal season gets close.
+                  See the rules before signup.
                 </p>
               </div>
             ) : (
@@ -135,11 +132,10 @@ export default function CheckYourStateWidget() {
                       {requirement.stateName} • {selectedLicenseType}
                     </span>
                     <h3 className="font-playfair text-3xl font-bold text-[#1E293B] mt-4">
-                      Your quick compliance snapshot
+                      Quick snapshot
                     </h3>
                     <p className="text-slate-500 mt-2 max-w-2xl">
-                      A fast look at the baseline rule set before specialty and first-renewal
-                      logic get layered in.
+                      Baseline rules. Personal gaps after signup.
                     </p>
                   </div>
 
@@ -147,26 +143,26 @@ export default function CheckYourStateWidget() {
                     href="/login"
                     className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#0F766E] text-white font-semibold rounded-2xl hover:bg-[#0D9488] transition-colors shadow-sm whitespace-nowrap"
                   >
-                    See your full compliance map — Free →
+                    See my gaps →
                   </a>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 mt-8">
                   <div className="rounded-3xl border border-slate-200 bg-[#FAFAF7] px-5 py-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-3">
-                      Total CME Hours
+                      Hours
                     </p>
                     <p className="text-3xl font-bold text-[#1E293B] leading-none">
                       {requirement.totalHoursLabel}
                     </p>
                     <p className="text-sm text-slate-500 mt-3">
-                      Required per tracked cycle for this license.
+                      Per cycle.
                     </p>
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-[#FAFAF7] px-5 py-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-3">
-                      Renewal Cycle
+                      Cycle
                     </p>
                     <p className="text-3xl font-bold text-[#1E293B] leading-none">
                       {requirement.cycleYears ? `${requirement.cycleYears} year${requirement.cycleYears === 1 ? "" : "s"}` : "Variable"}
@@ -178,10 +174,10 @@ export default function CheckYourStateWidget() {
                 <div className="mt-8">
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      Key Mandatory Topics
+                      Topics
                     </h4>
                     <span className="text-xs text-slate-400">
-                      {requirement.mandatoryTopics.length} tracked item
+                      {requirement.mandatoryTopics.length} item
                       {requirement.mandatoryTopics.length === 1 ? "" : "s"}
                     </span>
                   </div>
@@ -212,7 +208,7 @@ export default function CheckYourStateWidget() {
                   {hiddenTopicCount > 0 && (
                     <p className="text-sm text-slate-500 mt-4">
                       + {hiddenTopicCount} more state-specific item
-                      {hiddenTopicCount === 1 ? "" : "s"} inside the full compliance map.
+                      {hiddenTopicCount === 1 ? "" : "s"} in your full map.
                     </p>
                   )}
                 </div>

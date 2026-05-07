@@ -11,7 +11,7 @@ export default function HeroProductPreview() {
             <div className="w-2.5 h-2.5 rounded-full bg-white/30" />
             <div className="w-2.5 h-2.5 rounded-full bg-white/30" />
           </div>
-          <span className="text-white/80 text-xs font-medium ml-1">ClearCME Dashboard</span>
+          <span className="text-white/80 text-xs font-medium ml-1">ClearCME</span>
         </div>
         
         <div className="p-4 space-y-3">
@@ -32,9 +32,9 @@ export default function HeroProductPreview() {
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-500">Your CME total</p>
+              <p className="text-xs text-slate-500">CME total</p>
               <p className="text-lg font-bold text-slate-800">28 / 40 hrs</p>
-              <p className="text-[10px] text-slate-400">12 hours remaining</p>
+              <p className="text-[10px] text-slate-400">12 hrs left</p>
             </div>
           </div>
 
@@ -47,7 +47,7 @@ export default function HeroProductPreview() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-brand-amber truncate">DEA MATE Act</p>
-              <p className="text-[10px] text-brand-amber">0 / 8 hrs · Required by law</p>
+              <p className="text-[10px] text-brand-amber">0 / 8 hrs</p>
             </div>
             <span className="text-[10px] font-bold text-white bg-brand-amber rounded-full px-2 py-0.5 flex-shrink-0">Missing</span>
           </div>
@@ -60,7 +60,7 @@ export default function HeroProductPreview() {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[#0F766E] truncate">Nevada renewal</p>
+              <p className="text-xs font-semibold text-[#0F766E] truncate">Renewal</p>
               <p className="text-[10px] text-teal-600">July 1, 2026</p>
             </div>
             <span className="text-[10px] font-bold text-white bg-[#0F766E] rounded-full px-2 py-0.5 flex-shrink-0">78 days</span>

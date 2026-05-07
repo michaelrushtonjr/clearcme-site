@@ -185,7 +185,7 @@ function MethodologyAccordion() {
 function InlineTrustLine({ className = "" }: { className?: string }) {
   return (
     <p className={`text-xs text-slate-500 ${className}`}>
-      <span className="font-medium text-slate-700">Encrypted uploads</span> · Non-PHI certificates · never sent to boards or employers
+      <span className="font-medium text-slate-700">Encrypted uploads</span> · Non-PHI · not sent to boards
     </p>
   );
 }
@@ -406,7 +406,7 @@ function DemoSection() {
               {demo.totalHours} hrs total · {totalCount} mandatory topics · {demo.daysToRenewal} days to renewal
             </p>
             <p className="mt-2 text-center text-xs text-slate-400">
-              Built from a 50-state compliance map · updated from board-source rules
+              50-state rule engine · updated from board-source rules
             </p>
           </div>
         </div>
@@ -417,13 +417,13 @@ function DemoSection() {
             href="/login"
             className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
           >
-            See your compliance map → Sign in with Google
+            See gaps → Sign in with Google
           </a>
           <p className="text-xs text-slate-400 mt-3">
-            Free · Takes under 2 minutes · No certificate upload needed to get started
+            Free · 2 minutes · no card
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Built by a physician · free to start
+            Physician-built
           </p>
         </div>
       </div>
@@ -453,7 +453,7 @@ export default function Home() {
               href="/login"
               className="text-sm font-medium border border-brand-teal text-brand-teal px-4 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors"
             >
-              Create Free Account →
+              Start free →
             </a>
           </div>
         </div>
@@ -466,21 +466,19 @@ export default function Home() {
           <div className="flex-1 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 bg-teal-50 text-[#0F766E] text-sm font-medium px-4 py-1.5 rounded-full mb-8">
               <span className="w-2 h-2 bg-[#0F766E] rounded-full animate-pulse" />
-              All 50 states · MD and DO · Every specialty
+              All states · MD + DO
             </div>
 
             <h1
               className="font-display text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
             >
-              Know what CME
+              Stop guessing.
               <br />
-              you <em className="text-[#0F766E] italic font-bold">actually</em> need.
+              Know your <em className="text-[#0F766E] italic font-bold">CME gaps</em>.
             </h1>
 
             <p className="text-xl text-slate-500 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-              ClearCME tracks your credits, maps state requirements, and tells you
-              what&apos;s missing — before your renewal deadline.
-              No spreadsheets. No guessing. And if your board ever asks for documentation, it&apos;s just another Tuesday.
+              Upload CME. Add licenses. See what&apos;s missing before renewal.
             </p>
 
             {/* Hero CTA */}
@@ -489,17 +487,17 @@ export default function Home() {
                 href="/login"
                 className="px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm whitespace-nowrap"
               >
-                Create Free Account →
+                Start free →
               </a>
               <a
                 href="/login"
                 className="px-5 py-3 text-sm font-semibold text-[#0F766E] hover:text-[#0D9488] transition-colors"
               >
-                Already have an account? Log in
+                Log in
               </a>
             </div>
             <p className="text-xs text-slate-400 mt-3">
-              Free · No credit card required · Built by a physician · covering all 50 states + DC
+              Free · no card · 2-minute setup
             </p>
             <InlineTrustLine className="mt-2" />
           </div>
@@ -514,19 +512,19 @@ export default function Home() {
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
           <span className="inline-flex items-center gap-2" title="CME certificates are professional credentials, not Protected Health Information.">
             <LockIcon className="w-4 h-4" />
-            Secure &amp; Private (Non-PHI)
+            Secure uploads
           </span>
           <span className="inline-flex items-center gap-2 text-[#0F766E] font-medium">
             <CheckIcon className="w-4 h-4" />
-            ACCME data verified
+            Source-backed rules
           </span>
           <span className="inline-flex items-center gap-2">
             <HospitalIcon className="w-4 h-4" />
-            Built by a physician
+            Physician-built
           </span>
           <span className="inline-flex items-center gap-2">
             <StarIcon className="w-4 h-4" />
-            All 50 states + DC
+            50 states + DC
           </span>
         </div>
       </section>
@@ -542,12 +540,10 @@ export default function Home() {
           <h2
             className="font-display text-3xl font-bold text-[#1E293B] text-center mb-4"
           >
-            CME compliance is a mess.
+            CME compliance is messy.
           </h2>
           <p className="text-slate-500 text-center max-w-xl mx-auto mb-14">
-            Every state is different. Requirements change. And you&apos;re busy
-            enough without tracking opioid hours and implicit bias mandates in a
-            spreadsheet.
+            Every state is different. ClearCME turns rules into a checklist.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-6">
@@ -558,9 +554,9 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 ),
-                title: "Upload your certificates",
-                body: "PDF or image. AI extracts credits, categories, and dates automatically.",
-                trust: "Encrypted uploads · Non-PHI · never sent to boards/employers",
+                title: "Upload certificates",
+                body: "AI reads hours, topics, and dates.",
+                trust: "Encrypted · Non-PHI",
               },
               {
                 icon: (
@@ -568,9 +564,9 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 ),
-                title: "See your compliance map",
-                body: "Real-time gap analysis based on your state, license type, and specialty.",
-                trust: "Built from a 50-state compliance map",
+                title: "See gaps",
+                body: "By state, degree, specialty, and renewal date.",
+                trust: "50-state rule engine",
               },
               {
                 icon: (
@@ -578,9 +574,9 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 ),
-                title: "Fill the gaps in one click",
-                body: "Purchase exactly what you need — accredited courses, state-approved topics.",
-                trust: "Built by a physician · free to start",
+                title: "Fix gaps",
+                body: "Find only the courses you need.",
+                trust: "Physician-built",
               },
             ].map((item) => (
               <div
@@ -613,27 +609,12 @@ export default function Home() {
           <h2
             className="font-playfair text-3xl font-bold text-[#1E293B] mb-4"
           >
-            Built by a physician, for physicians.
+            Physician-built, for physicians.
           </h2>
           <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-            ClearCME was built by a board-certified physician
-            who got tired of guessing whether their CME was actually compliant.
-            The simplicity we wished we&apos;d had.
+            Because CME tracking should take minutes, not weekends.
           </p>
 
-          {/* Testimonial */}
-          <div className="mt-12 max-w-xl mx-auto bg-slate-50 rounded-2xl p-6 text-left border border-slate-100">
-            <p className="font-display italic text-slate-700 text-base leading-relaxed">
-              &ldquo;Finally — a tool that actually maps what I need for my state. I had no idea I was missing the DEA MATE Act requirement until ClearCME flagged it. Saved me hours before my renewal.&rdquo;
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-[#0F766E] font-bold text-sm">EM</div>
-              <div>
-                <p className="text-sm font-medium text-[#1E293B]">Emergency Medicine Physician</p>
-                <p className="text-xs text-slate-400">Dr. M.R. — Emergency Medicine, Nevada</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -643,16 +624,16 @@ export default function Home() {
           <h2
             className="font-display text-3xl font-bold text-white mb-4"
           >
-            Start tracking your CME today.
+            Know your gaps today.
           </h2>
           <p className="text-teal-100 mb-8">
-            Free tier available. No credit card required. Built from a 50-state compliance map.
+            Free. No card. 2 minutes.
           </p>
           <a
             href="/login"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-brand-teal font-semibold rounded-xl hover:bg-brand-tealTint transition-colors text-base shadow-sm"
           >
-            Create Free Account →
+            Start free →
           </a>
         </div>
       </section>

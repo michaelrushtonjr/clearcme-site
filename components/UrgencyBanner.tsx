@@ -3,12 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 
 const MESSAGES = [
-  "⚠ NV MDs renew July 1 — are your 40 Cat 1 hours complete?",
-  "⚠ TX MDs & DOs renew Aug 31 — CE Broker tracking required",
-  "⚠ AL MDs renew Sept 30 — 25 Cat 1 hours required annually",
-  "⚠ WA MDs & DOs renew Oct 1 — 200 hours due every 4 years",
-  "⚠ NE MDs & DOs renew Oct 1 even years — 50 Cat 1 hours required",
-  "⚠ KS MDs renew Aug 1 — DOs renew Oct 31 — verify your cycle",
+  "Renewal coming? Check your gaps.",
+  "Multi-state licenses? Track them together.",
+  "DEA registered? Confirm MATE status.",
 ];
 
 const STORAGE_KEY = "urgency_dismissed";
@@ -34,7 +31,8 @@ export default function UrgencyBanner() {
     } catch {
       // ignore parse errors
     }
-    setVisible(true);
+    const timer = window.setTimeout(() => setVisible(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Rotate messages every 4 seconds with a fade

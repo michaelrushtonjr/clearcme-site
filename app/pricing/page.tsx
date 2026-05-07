@@ -98,14 +98,14 @@ export default function PricingPage() {
     {
       name: "Free",
       price: { annual: "$0", monthly: "$0" },
-      cta: "Get started free",
+      cta: "Start free",
       ctaHref: "/login",
       ctaStyle: "border border-slate-300 text-slate-700 hover:bg-slate-50",
       features: [
-        "Single state requirement lookup",
+        "1 state",
         "Renewal countdown",
-        "Up to 3 certificate uploads",
-        "Basic compliance dashboard",
+        "3 uploads",
+        "Basic dashboard",
       ],
       popular: false,
       muted: true,
@@ -118,13 +118,13 @@ export default function PricingPage() {
       checkoutTier: "ESSENTIAL" as const,
       ctaStyle: "border border-[#0F766E] text-[#0F766E] hover:bg-teal-50",
       features: [
-        "Everything in Free",
-        "Multi-state tracking (up to 2 states)",
-        "AI certificate extraction",
-        "Full gap analysis",
+        "Free +",
+        "Up to 2 states",
+        "AI upload reading",
+        "Gap analysis",
         "Deadline alerts",
-        "DEA MATE Act tracking",
-        "PDF compliance report",
+        "MATE tracking",
+        "PDF report",
       ],
       popular: false,
       muted: false,
@@ -137,12 +137,12 @@ export default function PricingPage() {
       checkoutTier: "PRO" as const,
       ctaStyle: "bg-[#0F766E] text-white hover:bg-[#0D9488]",
       features: [
-        "Everything in Essential",
-        "Multi-state tracking (unlimited states)",
-        "Side-by-side state comparison",
+        "Essential +",
+        "Unlimited states",
+        "State comparison",
         "Priority alerts",
-        "Shareable compliance summary",
-        "Quarterly digest emails",
+        "Shareable summary",
+        "Quarterly digest",
       ],
       popular: true,
       muted: false,
@@ -154,11 +154,11 @@ export default function PricingPage() {
       ctaHref: "mailto:hello@clearcme.ai",
       ctaStyle: "border border-slate-300 text-slate-700 hover:bg-slate-50",
       features: [
-        "Hospital / group billing",
-        "$149/physician/yr (10+ min.)",
+        "Group billing",
+        "10+ physicians",
         "Admin dashboard",
-        "Everything in Pro",
-        "Dedicated onboarding",
+        "Pro +",
+        "Onboarding",
         "Priority support",
       ],
       popular: false,
@@ -191,11 +191,11 @@ export default function PricingPage() {
         <h1
           className="font-playfair text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
         >
-          Know exactly where you stand —<br />
-          <span className="text-[#0F766E]">for less than your renewal application fee.</span>
+          Know your CME gaps.<br />
+          <span className="text-[#0F766E]">Pick a plan when you need more.</span>
         </h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
-          Nevada physicians pay $250 to renew. California pays $690. ClearCME costs less than a dinner.
+          Start free. Upgrade when you need multi-state tracking, uploads, or reports.
         </p>
 
         {/* Annual / Monthly toggle */}
