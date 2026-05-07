@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [user, licenses] = await Promise.all([
+  const [user, licenses, subscription] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, image: true },
@@ -19,6 +19,16 @@ export default async function SettingsPage() {
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
     }),
+    prisma.subscription.findUnique({
+      where: { userId },
+      select: {
+        tier: true,
+        status: true,
+        stripeCustomerId: true,
+        currentPeriodEnd: true,
+        cancelAtPeriodEnd: true,
+      },
+    }),
   ]);
 
   const sessionEmail = session?.user?.email ?? null;
@@ -26,6 +36,7 @@ export default async function SettingsPage() {
     <SettingsClient
       user={user ?? { id: userId, name: null, email: sessionEmail, image: null }}
       licenses={licenses}
+      subscription={subscription}
     />
   );
 }

@@ -49,6 +49,15 @@ const navItems = [
     ),
   },
   {
+    href: "/pricing",
+    label: "Upgrade",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard/settings",
     label: "Settings",
     icon: (
@@ -60,20 +69,20 @@ const navItems = [
   },
 ];
 
-export default function DashboardSidebar({ user }: { user: NavUser }) {
-  const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(href);
-  };
-
-  const SidebarContent = () => (
+function SidebarContent({
+  user,
+  isActive,
+  onNavigate,
+}: {
+  user: NavUser;
+  isActive: (href: string) => boolean;
+  onNavigate: () => void;
+}) {
+  return (
     <>
       {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-100">
-        <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+        <Link href="/dashboard" className="flex items-center gap-2" onClick={onNavigate}>
           <span className="text-xl font-bold text-[#1E293B] tracking-tight">
             Clear<span className="text-[#0F766E]">CME</span>
           </span>
@@ -86,7 +95,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
           <Link
             key={item.href}
             href={item.href}
-            onClick={() => setMobileOpen(false)}
+            onClick={onNavigate}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
               isActive(item.href)
                 ? "bg-teal-50 text-[#0F766E]"
@@ -137,12 +146,22 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
       </div>
     </>
   );
+}
+
+export default function DashboardSidebar({ user }: { user: NavUser }) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-200 min-h-screen fixed left-0 top-0 z-30">
-        <SidebarContent />
+        <SidebarContent user={user} isActive={isActive} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
       {/* Mobile top bar */}
@@ -177,7 +196,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
             onClick={() => setMobileOpen(false)}
           />
           <aside className="relative flex flex-col w-72 bg-white h-full">
-            <SidebarContent />
+            <SidebarContent user={user} isActive={isActive} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}

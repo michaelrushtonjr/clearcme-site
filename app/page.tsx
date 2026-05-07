@@ -446,6 +446,9 @@ export default function Home() {
             <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
             <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
             <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
+            <a href="/login" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">
+              Log in
+            </a>
             <a
               href="/login"
               className="text-sm font-medium border border-brand-teal text-brand-teal px-4 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors"
@@ -487,6 +490,12 @@ export default function Home() {
                 className="px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm whitespace-nowrap"
               >
                 Create Free Account →
+              </a>
+              <a
+                href="/login"
+                className="px-5 py-3 text-sm font-semibold text-[#0F766E] hover:text-[#0D9488] transition-colors"
+              >
+                Already have an account? Log in
               </a>
             </div>
             <p className="text-xs text-slate-400 mt-3">

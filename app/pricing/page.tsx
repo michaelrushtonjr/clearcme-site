@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const faqs: { q: string; a: string; mocCta?: boolean }[] = [
@@ -53,7 +53,7 @@ export default function PricingPage() {
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const startCheckout = async (tier: "ESSENTIAL" | "PRO") => {
+  const startCheckout = useCallback(async (tier: "ESSENTIAL" | "PRO") => {
     setCheckoutTier(tier);
     setCheckoutError(null);
 
@@ -79,7 +79,20 @@ export default function PricingPage() {
       setCheckoutError(err instanceof Error ? err.message : "Unable to start checkout");
       setCheckoutTier(null);
     }
-  };
+  }, []);
+
+  const autoCheckoutStarted = useRef(false);
+
+  useEffect(() => {
+    if (autoCheckoutStarted.current) return;
+
+    const checkoutParam = new URLSearchParams(window.location.search).get("checkout")?.toLowerCase();
+    const tier = checkoutParam === "essential" ? "ESSENTIAL" : checkoutParam === "pro" ? "PRO" : null;
+    if (!tier) return;
+
+    autoCheckoutStarted.current = true;
+    void startCheckout(tier);
+  }, [startCheckout]);
 
   const tiers = [
     {
