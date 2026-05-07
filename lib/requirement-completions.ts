@@ -119,6 +119,29 @@ export function evaluateRequirementFulfillment({
     };
   }
 
+  if (cadence === "CONDITIONAL") {
+    if (completedOn || completion) {
+      return {
+        status: "satisfied",
+        isSatisfied: true,
+        isUnknown: false,
+        isRecurring: false,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: null,
+      };
+    }
+    return {
+      status: "unknown",
+      isSatisfied: false,
+      isUnknown: true,
+      isRecurring: false,
+      isAttestable: true,
+      satisfiedUntil: null,
+      prompt: "This requirement may depend on your practice or board implementation details. Confirm applicability and keep source documentation.",
+    };
+  }
+
   if (cadence === "EVERY_N_YEARS") {
     const intervalYears = requirement.intervalYears ?? requirement.lookbackYears;
     if (completedOn && intervalYears) {
