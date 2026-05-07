@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -10,25 +9,26 @@ import { signIn } from "next-auth/react";
 const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
 
 const TRUST_BULLETS = [
-  { icon: "✓", text: "Free" },
-  { icon: "✓", text: "No PHI" },
-  { icon: "✓", text: "License → gaps → done" },
+  { icon: "✓", text: "Free to start" },
+  { icon: "✓", text: "No PHI stored — credits only" },
+  { icon: "✓", text: "3-step setup: license → map → gaps" },
 ];
 
 function TrustBlock() {
   return (
     <div className="flex flex-col justify-center h-full">
-      <Link href="/" className="inline-block mb-8">
+      <a href="/" className="inline-block mb-8">
         <span className="text-3xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
           Clear<span style={{ color: "#0F766E" }}>CME</span>
         </span>
-      </Link>
+      </a>
 
       <h2 className="text-2xl font-bold mb-2" style={{ color: "#1E293B" }}>
-        CME gaps, <span style={{ color: "#0F766E" }}>finally clear.</span>
+        CME compliance,{" "}
+        <span style={{ color: "#0F766E" }}>finally sorted.</span>
       </h2>
       <p className="text-slate-500 mb-8 text-sm leading-relaxed">
-        Add your license. See what’s missing.
+        Map your state license requirements, track your credits, and close gaps — before your renewal deadline.
       </p>
 
       <ul className="space-y-3 mb-10">
@@ -87,17 +87,17 @@ function LoginPageInner() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#FAFAF7" }}>
       {/* Mobile value line — shown only below lg */}
       <div className="w-full max-w-sm lg:hidden">
-        <Link href="/" className="block text-center mb-6">
+        <a href="/" className="block text-center mb-6">
           <span className="text-2xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
             Clear<span style={{ color: "#0F766E" }}>CME</span>
           </span>
-        </Link>
-        <p className="text-center text-sm text-slate-600 mb-1">Sign in</p>
+        </a>
+        <p className="text-center text-sm text-slate-600 mb-1">Sign in to your account</p>
         <p className="text-center text-xs text-slate-400 mb-4">
-          Physician-built · 50 states + DC
+          Built by a board-certified physician · All 50 states + DC
         </p>
         <p className="text-center text-xs text-slate-500 mb-4 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2">
-          Free · No PHI stored · License → gaps → done
+          Free · No PHI stored · 3-step setup: license → map → gaps
         </p>
 
         {error && (
@@ -124,9 +124,9 @@ function LoginPageInner() {
         {/* Right: auth form */}
         <div className="flex flex-col justify-center">
           <div className="mb-8">
-            <p className="text-sm text-slate-500">Sign in</p>
+            <p className="text-sm text-slate-500">Sign in to your account</p>
             <p className="text-xs text-slate-400 mt-0.5">
-              Physician-built · 50 states + DC
+              Built by a board-certified physician · All 50 states + DC
             </p>
           </div>
 

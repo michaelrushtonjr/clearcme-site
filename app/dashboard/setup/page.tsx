@@ -308,10 +308,10 @@ export default function SetupPage() {
                 Step 1 of {totalSteps}
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                State
+                What state do you practice in?
               </h1>
               <p className="text-sm text-slate-500 mb-6">
-                We’ll load your rules.
+                We&apos;ll load the exact CME requirements for your state — no guessing.
               </p>
               <select
                 value={state}
@@ -328,7 +328,7 @@ export default function SetupPage() {
                 ))}
               </select>
               <p className="text-xs text-slate-400 mt-3">
-                Add more states later.
+                Primary state only — you&apos;ll add more licenses in a moment.
               </p>
               <button
                 onClick={() => setStep(2)}
@@ -347,10 +347,10 @@ export default function SetupPage() {
                 Step 2 of {totalSteps}
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                License
+                What&apos;s your license type and specialty?
               </h1>
               <p className="text-sm text-slate-500 mb-6">
-                MD/DO changes the rules.
+                Some mandatory CME topics vary by degree type and specialty.
               </p>
 
               {/* MD / DO toggle */}
@@ -421,10 +421,10 @@ export default function SetupPage() {
                 Step 3 of {totalSteps}
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                Renewal date
+                When is your next license renewal?
               </h1>
               <p className="text-sm text-slate-500 mb-6">
-                Used for countdowns and gaps.
+                This lets us show your countdown and pace your CME plan.
               </p>
 
               {primaryRenewalRule && (
@@ -458,7 +458,7 @@ export default function SetupPage() {
 
               {canUsePrimarySmartEstimate && !isPrimaryVariableRenewal && (
                 <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-sm font-medium text-slate-900">Use this date?</p>
+                  <p className="text-sm font-medium text-slate-900">Is this your next renewal?</p>
                   <div className="mt-3 flex gap-2">
                     <button
                       type="button"
@@ -511,7 +511,8 @@ export default function SetupPage() {
 
               {isPrimaryVariableRenewal && primaryRenewalRule && (
                 <p className="text-xs text-slate-500 mb-4 px-1">
-                  Use the date on your board record: {primaryRenewalRule.renewalDeadline}.
+                  Renewal timing is individualized for this license. Use the date listed on your
+                  board record: {primaryRenewalRule.renewalDeadline}.
                 </p>
               )}
 
@@ -548,24 +549,24 @@ export default function SetupPage() {
                     </svg>
                   )}
                 </span>
-                Estimate from {selectedStateName || "my state"}
+                I&apos;m not sure — estimate based on {selectedStateName || "my state"}
               </button>
 
               {!canUsePrimarySmartEstimate && primaryRenewalRule?.renewalType === "birth-based" && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
-                  Choose birth month to estimate.
+                  Choose your birth month to generate a smart renewal estimate.
                 </p>
               )}
 
               {!canUsePrimarySmartEstimate && isPrimaryVariableRenewal && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
-                  Use your board record.
+                  Smart estimates are not available when renewal timing varies by board record.
                 </p>
               )}
 
               {unsureDate && !isEditingSuggestedRenewal && canUsePrimarySmartEstimate && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
-                  You can edit this later.
+                  We&apos;ll use this smart estimate as your renewal date. You can update it anytime.
                 </p>
               )}
 
@@ -594,10 +595,10 @@ export default function SetupPage() {
                 Step 4 of {totalSteps}
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                More states?
+                Are you licensed in more than one state?
               </h1>
               <p className="text-sm text-slate-500 mb-6">
-                Add them now, or later.
+                Many physicians hold licenses in multiple states. We&apos;ll track compliance for each one.
               </p>
 
               {/* Yes / No choice */}
@@ -768,8 +769,8 @@ export default function SetupPage() {
               {/* No = skip, just proceed */}
               {isMultiState === false && (
                 <div className="bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-600">
-                  Tracking{" "}
-                  <strong>{selectedStateName}</strong> only. Add more later.
+                  Got it — we&apos;ll track compliance for{" "}
+                  <strong>{selectedStateName}</strong> only. You can add more licenses anytime from your Profile.
                 </div>
               )}
 
@@ -800,7 +801,7 @@ export default function SetupPage() {
 
         {/* Reassurance footer */}
         <p className="text-center text-xs text-slate-400 mt-4">
-          No upload required · map is instant
+          No certificate upload required · Your compliance map is ready instantly
         </p>
       </div>
     </div>

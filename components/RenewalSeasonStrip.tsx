@@ -1,6 +1,6 @@
 export default function RenewalSeasonStrip() {
   const text =
-    "Renewal coming? Know your gaps before the board asks.";
+    "Renewal season is coming — Nevada MDs renew July 1 · California MDs renew Jan 31 (odd years) · California DOs renew Jan 31 · Texas MDs & DOs renew Aug 31 · Florida MDs renew Jan 31 · New York physicians renew every 2 years · Illinois MDs renew Jan 31 · Pennsylvania MDs & DOs renew Dec 31 (even years)";
 
   return (
     <div
