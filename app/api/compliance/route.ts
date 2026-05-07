@@ -103,8 +103,10 @@ export async function GET(req: NextRequest) {
           ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           : null,
       });
-      const isMet = earnedForTopic >= req.hoursRequired || fulfillment.isSatisfied;
-      const isUnknown = fulfillment.isUnknown && earnedForTopic < req.hoursRequired;
+      const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
+      const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
+      const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
+      const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
 
       return {
         requirementId: req.id,

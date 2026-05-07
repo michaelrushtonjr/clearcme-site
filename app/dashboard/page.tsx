@@ -90,12 +90,14 @@ export default async function DashboardPage() {
             ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             : null,
         });
-        const isUnknown = fulfillment.isUnknown && earned < req.hoursRequired;
+        const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
+        const hoursSatisfied = req.hoursRequired > 0 && earned >= req.hoursRequired;
+        const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
         return {
           topic: req.topic,
           earned,
           needed: req.hoursRequired,
-          isMet: earned >= req.hoursRequired || fulfillment.isSatisfied,
+          isMet: hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0),
           isUnknown,
         };
       });

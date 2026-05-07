@@ -263,8 +263,9 @@ export default async function CompliancePage() {
           licenseIssueDate: license.issueDate,
           daysUntilRenewal: daysUntil(license.renewalDate),
         });
-        const hoursSatisfied = earnedForTopic >= req.hoursRequired;
-        const isMet = hoursSatisfied || fulfillment.isSatisfied;
+        const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
+        const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
+        const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
         const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
         const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
         return {

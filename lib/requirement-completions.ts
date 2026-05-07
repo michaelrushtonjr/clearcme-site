@@ -64,7 +64,7 @@ export function evaluateRequirementFulfillment({
   const isNearRenewal = daysUntilRenewal !== null && daysUntilRenewal !== undefined && daysUntilRenewal <= 90;
   const isWestVirginiaFinalCsCycle =
     licenseState === "WV" &&
-    (requirement.topic === "OPIOID_PRESCRIBING" || requirement.topic === "SUBSTANCE_USE") &&
+    requirement.topic === "OPIOID_PRESCRIBING" &&
     cycleEnd <= new Date("2026-06-30T23:59:59.999Z");
 
   if (isWestVirginiaFinalCsCycle) {
