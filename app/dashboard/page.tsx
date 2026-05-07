@@ -14,13 +14,14 @@ import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { keyToSlug } from "@/lib/courses";
+import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
   const firstName = session?.user?.name?.split(" ")[0] ?? "";
 
-  const [certificates, licenses] = await Promise.all([
+  const [certificates, licenses, requirementCompletions] = await Promise.all([
     prisma.certificate.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -29,7 +30,17 @@ export default async function DashboardPage() {
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
     }),
+    prisma.userRequirementCompletion.findMany({
+      where: { userId },
+    }),
   ]);
+
+  const completionByRequirementAndLicense = new Map(
+    requirementCompletions.map((completion) => [
+      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
+      completion,
+    ])
+  );
 
   // Quick setup intercept: redirect first-time users with no licenses
   if (licenses.length === 0 && certificates.length === 0) {
@@ -66,21 +77,36 @@ export default async function DashboardPage() {
         const earned = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
           .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+        const completion =
+          completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
+          completionByRequirementAndLicense.get(`${req.id}:global`);
+        const fulfillment = evaluateRequirementFulfillment({
+          requirement: req,
+          completion,
+          cycleEnd,
+          licenseState: license.state,
+          licenseIssueDate: license.issueDate,
+          daysUntilRenewal: license.renewalDate
+            ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+            : null,
+        });
+        const isUnknown = fulfillment.isUnknown && earned < req.hoursRequired;
         return {
           topic: req.topic,
           earned,
           needed: req.hoursRequired,
-          isMet: earned >= req.hoursRequired,
+          isMet: earned >= req.hoursRequired || fulfillment.isSatisfied,
+          isUnknown,
         };
       });
 
       const mandatoryMet = mandatoryResults.filter((r) => r.isMet).length;
       const mandatoryGapHours = mandatoryResults
-        .filter((r) => !r.isMet)
+        .filter((r) => !r.isMet && !r.isUnknown)
         .reduce((sum, r) => sum + Math.max(0, r.needed - r.earned), 0);
-      const mandatoryPendingCount = rule.mandatoryRequirements.length - mandatoryMet;
+      const mandatoryPendingCount = mandatoryResults.filter((r) => !r.isMet && !r.isUnknown).length;
       const effectiveHoursNeeded = Math.max(hoursNeeded, mandatoryGapHours);
-      const isCompliant = hoursNeeded === 0 && mandatoryMet === rule.mandatoryRequirements.length;
+      const isCompliant = hoursNeeded === 0 && mandatoryResults.every((r) => r.isMet || r.isUnknown);
 
       const daysUntilRenewal = license.renewalDate
         // Server-rendered dashboard snapshot; intentionally computed at request time.
@@ -89,7 +115,7 @@ export default async function DashboardPage() {
         : null;
 
       const mandatoryTopics = mandatoryResults
-        .filter((r) => !r.isMet)
+        .filter((r) => !r.isMet && !r.isUnknown)
         .map((r) => ({
           topic: r.topic,
           hoursNeeded: Math.max(0, r.needed - r.earned),

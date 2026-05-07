@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [user, licenses, subscription] = await Promise.all([
+  const [user, licenses, subscription, requirementCompletions] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, image: true },
@@ -29,7 +29,29 @@ export default async function SettingsPage() {
         cancelAtPeriodEnd: true,
       },
     }),
+    prisma.userRequirementCompletion.findMany({
+      where: { userId },
+    }),
   ]);
+
+  const licenseRequirements = await Promise.all(
+    licenses.map(async (license) => {
+      const rule = await prisma.complianceRule.findUnique({
+        where: {
+          state_licenseType: { state: license.state, licenseType: license.licenseType },
+        },
+        include: { mandatoryRequirements: true },
+      });
+      return {
+        licenseId: license.id,
+        state: license.state,
+        licenseType: license.licenseType,
+        requirements: (rule?.mandatoryRequirements ?? []).filter((req) =>
+          req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL"
+        ),
+      };
+    })
+  );
 
   const sessionEmail = session?.user?.email ?? null;
   return (
@@ -37,6 +59,8 @@ export default async function SettingsPage() {
       user={user ?? { id: userId, name: null, email: sessionEmail, image: null }}
       licenses={licenses}
       subscription={subscription}
+      licenseRequirements={licenseRequirements}
+      requirementCompletions={requirementCompletions}
     />
   );
 }

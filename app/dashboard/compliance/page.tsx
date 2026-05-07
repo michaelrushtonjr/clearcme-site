@@ -13,6 +13,7 @@ import { keyToSlug } from "@/lib/courses";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 import { formatStateName } from "@/lib/state-names";
+import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -27,12 +28,18 @@ interface RequirementSourceMeta {
 }
 
 interface MandatoryGap {
+  requirementId: string;
   topic: string;
   description?: string;
   earned: number;
   needed: number;
   gap: number;
   isMet: boolean;
+  isUnknown: boolean;
+  isAttestable: boolean;
+  cadenceLabel: string;
+  prompt: string | null;
+  satisfiedUntil: Date | null;
   sourceMeta?: RequirementSourceMeta;
 }
 
@@ -69,17 +76,6 @@ const TOPIC_LABELS: Record<string, string> = {
   OTHER_MANDATORY: "Find Accredited CME →",
 };
 
-/** Best partner URL for each mandatory topic gap. Free/no-login preferred. */
-const PARTNER_URLS: Record<string, string> = {
-  OPIOID_PRESCRIBING: "https://home.hippoed.com/oud-decoded",
-  SUBSTANCE_USE: "https://home.hippoed.com/oud-decoded",
-  IMPLICIT_BIAS: "https://www.cmeoutfitters.com/activity/findings-from-an-educational-initiative-addressing-racial-disparities-and-bias-in-health-care-2/",
-  ETHICS: "https://www.cmeoutfitters.com/activity/integrating-resilience-ethics-and-traumatic-stress-relief-to-cultivate-a-culture-of-wellbeing/",
-  INFECTION_CONTROL: "https://home.hippoed.com/abxstewardship",
-  PATIENT_SAFETY: "https://www.acep.org/acepanytime/",
-  SUICIDE_PREVENTION: "https://bootcamp.pri-med.com/en/mental-health",
-};
-
 /** Topics sourced from Hippo Education — show badge */
 const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "OPIOID_PRESCRIBING", "INFECTION_CONTROL"]);
 
@@ -102,14 +98,17 @@ const TONE: Record<string, { bg: string; text: string; border: string; bar: stri
 
 function requirementStatusLabel({
   isMet,
+  isUnknown,
   earned,
   daysUntilRenewal,
 }: {
   isMet: boolean;
+  isUnknown?: boolean;
   earned: number;
   daysUntilRenewal: number | null;
 }) {
   if (isMet) return "Met";
+  if (isUnknown) return "Confirm";
   if (daysUntilRenewal !== null && daysUntilRenewal <= 90) return "Action needed";
   if (earned > 0) return "At risk";
   return "Missing";
@@ -117,6 +116,7 @@ function requirementStatusLabel({
 
 function requirementStatusClass(label: string) {
   if (label === "Met") return "bg-green-100 text-green-700";
+  if (label === "Confirm") return "bg-blue-100 text-blue-700";
   if (label === "Action needed") return "bg-red-600 text-white";
   if (label === "At risk") return "bg-amber-100 text-amber-800 border border-amber-200";
   return "bg-white/70 text-brand-amber border border-brand-amberRule";
@@ -187,7 +187,7 @@ export default async function CompliancePage() {
   const userId = session!.user!.id!;
 
   // Fetch compliance data + licenses with their rules
-  const [licenses, certificates] = await Promise.all([
+  const [licenses, certificates, requirementCompletions] = await Promise.all([
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
@@ -196,7 +196,17 @@ export default async function CompliancePage() {
       where: { userId, extractionStatus: "COMPLETED" },
       orderBy: { activityDate: "desc" },
     }),
+    prisma.userRequirementCompletion.findMany({
+      where: { userId },
+    }),
   ]);
+
+  const completionByRequirementAndLicense = new Map(
+    requirementCompletions.map((completion) => [
+      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
+      completion,
+    ])
+  );
 
   // For each license, compute compliance inline (so page always shows fresh data)
   const complianceData = await Promise.all(
@@ -242,13 +252,34 @@ export default async function CompliancePage() {
         const earnedForTopic = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
           .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+        const completion =
+          completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
+          completionByRequirementAndLicense.get(`${req.id}:global`);
+        const fulfillment = evaluateRequirementFulfillment({
+          requirement: req,
+          completion,
+          cycleEnd,
+          licenseState: license.state,
+          licenseIssueDate: license.issueDate,
+          daysUntilRenewal: daysUntil(license.renewalDate),
+        });
+        const hoursSatisfied = earnedForTopic >= req.hoursRequired;
+        const isMet = hoursSatisfied || fulfillment.isSatisfied;
+        const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
+        const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
         return {
+          requirementId: req.id,
           topic: req.topic,
           description: req.description ?? undefined,
           earned: earnedForTopic,
           needed: req.hoursRequired,
-          gap: Math.max(0, req.hoursRequired - earnedForTopic),
-          isMet: earnedForTopic >= req.hoursRequired,
+          gap: isMet ? 0 : actionableGap,
+          isMet,
+          isUnknown,
+          isAttestable: fulfillment.isAttestable,
+          cadenceLabel: cadenceLabel(req),
+          prompt: fulfillment.prompt,
+          satisfiedUntil: fulfillment.satisfiedUntil,
           sourceMeta: buildRequirementSourceMeta({
             state: license.state,
             licenseType: license.licenseType,
@@ -327,6 +358,7 @@ export default async function CompliancePage() {
         topic: g.topic,
         gap: g.gap,
         isMet: g.isMet,
+        isUnknown: g.isUnknown,
         // firstRenewalOnly is surfaced via the rule's mandatoryRequirements
         isOneTime:
           d.rule?.mandatoryRequirements.find((r) => r.topic === g.topic)
@@ -560,11 +592,12 @@ export default async function CompliancePage() {
                   <div className="space-y-2">
                     {mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
-                      const topicToneKey = gap.isMet ? "met" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
+                      const topicToneKey = gap.isMet ? "met" : gap.isUnknown ? "open" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
                       const topicTone = TONE[topicToneKey];
-                      const statusIcon = gap.isMet ? "✓" : gap.earned > 0 ? "~" : "○";
+                      const statusIcon = gap.isMet ? "✓" : gap.isUnknown ? "?" : gap.earned > 0 ? "~" : "○";
                       const statusLabel = requirementStatusLabel({
                         isMet: gap.isMet,
+                        isUnknown: gap.isUnknown,
                         earned: gap.earned,
                         daysUntilRenewal,
                       });
@@ -587,13 +620,22 @@ export default async function CompliancePage() {
                                 {gap.description && (
                                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{gap.description}</p>
                                 )}
+                                <p className="mt-1 text-xs font-medium text-slate-500">
+                                  Cadence: {gap.cadenceLabel}
+                                  {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
+                                </p>
+                                {gap.isUnknown && (
+                                  <p className="mt-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                                    {gap.prompt ?? "Confirm whether you have already completed this requirement before taking another course."}
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0">
                               <p className="text-sm font-bold text-slate-900">
                                 {gap.earned.toFixed(1)}/{gap.needed.toFixed(0)} hrs
                               </p>
-                              {!gap.isMet && (
+                              {!gap.isMet && !gap.isUnknown && (
                                 <p className={`text-xs mt-0.5 ${gap.earned > 0 ? "text-amber-700" : "text-red-600"}`}>
                                   {gap.gap.toFixed(1)} hrs short
                                 </p>
@@ -613,7 +655,7 @@ export default async function CompliancePage() {
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            {!gap.isMet && (
+                            {!gap.isMet && !gap.isUnknown && (
                               <div className="flex flex-col items-end gap-0.5">
                                 <Link
                                   href={`/courses/${keyToSlug(gap.topic)}`}
@@ -633,6 +675,14 @@ export default async function CompliancePage() {
                                   <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>
                                 )}
                               </div>
+                            )}
+                            {gap.isUnknown && (
+                              <Link
+                                href="/dashboard/settings#requirement-history"
+                                className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                              >
+                                Confirm history →
+                              </Link>
                             )}
                           </div>
 
@@ -681,7 +731,7 @@ export default async function CompliancePage() {
                           )}
 
                           {/* Gap-specific course feed — Pixel rec #4 */}
-                          {!gap.isMet && (
+                          {!gap.isMet && !gap.isUnknown && (
                             <GapCourseFeed
                               topic={gap.topic}
                               hoursNeeded={gap.gap}

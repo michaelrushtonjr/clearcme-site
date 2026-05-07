@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
+import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 // GET /api/compliance — compute and return compliance status for the current user
 export async function GET(req: NextRequest) {
@@ -29,6 +30,16 @@ export async function GET(req: NextRequest) {
   const certificates = await prisma.certificate.findMany({
     where: { userId, extractionStatus: "COMPLETED" },
   });
+
+  const requirementCompletions = await prisma.userRequirementCompletion.findMany({
+    where: { userId },
+  });
+  const completionByRequirementAndLicense = new Map(
+    requirementCompletions.map((completion) => [
+      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
+      completion,
+    ])
+  );
 
   const complianceResults = [];
 
@@ -79,14 +90,35 @@ export async function GET(req: NextRequest) {
       const earnedForTopic = cycleCerts
         .filter((c: Certificate) => c.specialTopics.includes(req.topic))
         .reduce((sum: number, c: Certificate) => sum + (c.creditHours ?? 0), 0);
+      const completion =
+        completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
+        completionByRequirementAndLicense.get(`${req.id}:global`);
+      const fulfillment = evaluateRequirementFulfillment({
+        requirement: req,
+        completion,
+        cycleEnd,
+        licenseState: license.state,
+        licenseIssueDate: license.issueDate,
+        daysUntilRenewal: license.renewalDate
+          ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+          : null,
+      });
+      const isMet = earnedForTopic >= req.hoursRequired || fulfillment.isSatisfied;
+      const isUnknown = fulfillment.isUnknown && earnedForTopic < req.hoursRequired;
 
       return {
+        requirementId: req.id,
         topic: req.topic,
         description: req.description,
         earned: earnedForTopic,
         needed: req.hoursRequired,
-        gap: Math.max(0, req.hoursRequired - earnedForTopic),
-        isMet: earnedForTopic >= req.hoursRequired,
+        gap: isMet || isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic),
+        isMet,
+        isUnknown,
+        isAttestable: fulfillment.isAttestable,
+        cadenceLabel: cadenceLabel(req),
+        prompt: fulfillment.prompt,
+        satisfiedUntil: fulfillment.satisfiedUntil,
       };
     });
 

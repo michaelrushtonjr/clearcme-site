@@ -28,14 +28,46 @@ interface Subscription {
   cancelAtPeriodEnd: boolean;
 }
 
+interface RequirementSummary {
+  id: string;
+  topic: string;
+  hoursRequired: number;
+  description: string | null;
+  firstRenewalOnly: boolean;
+  cadence: string;
+  intervalYears: number | null;
+  lookbackYears: number | null;
+  notes: string | null;
+}
+
+interface LicenseRequirementGroup {
+  licenseId: string;
+  state: string;
+  licenseType: string;
+  requirements: RequirementSummary[];
+}
+
+interface RequirementCompletion {
+  id: string;
+  physicianLicenseId: string | null;
+  mandatoryRequirementId: string;
+  completedYear: number | null;
+  completedAt: Date | null;
+  notes: string | null;
+}
+
 export default function SettingsClient({
   user,
   licenses,
   subscription,
+  licenseRequirements,
+  requirementCompletions,
 }: {
   user: User;
   licenses: License[];
   subscription: Subscription | null;
+  licenseRequirements: LicenseRequirementGroup[];
+  requirementCompletions: RequirementCompletion[];
 }) {
   const router = useRouter();
   const [name, setName] = useState(user.name ?? "");
@@ -45,6 +77,16 @@ export default function SettingsClient({
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState("");
+  const [savingRequirement, setSavingRequirement] = useState<string | null>(null);
+  const [requirementYears, setRequirementYears] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const completion of requirementCompletions) {
+      if (!completion.physicianLicenseId) continue;
+      initial[`${completion.mandatoryRequirementId}:${completion.physicianLicenseId}`] = completion.completedYear?.toString() ?? "";
+    }
+    return initial;
+  });
+  const [requirementError, setRequirementError] = useState("");
 
   // Notification preferences (stub — no backend yet)
   const [renewalReminders, setRenewalReminders] = useState(true);
@@ -84,6 +126,54 @@ export default function SettingsClient({
     } catch (err) {
       setBillingError(err instanceof Error ? err.message : "Unable to open billing portal");
       setBillingLoading(false);
+    }
+  };
+
+  const formatTopic = (topic: string) =>
+    topic
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+
+  const formatCadence = (req: RequirementSummary) => {
+    if (req.cadence === "ONE_TIME" || req.firstRenewalOnly) return "One-time";
+    if (req.cadence === "FIRST_RENEWAL_ONLY") return "First renewal only";
+    if (req.cadence === "INITIAL_LICENSE_ONLY") return "Initial licensure only";
+    if (req.cadence === "EVERY_N_YEARS") {
+      const years = req.intervalYears ?? req.lookbackYears;
+      return years ? `Every ${years} years` : "Recurring long-cycle";
+    }
+    if (req.cadence === "CONDITIONAL") return "Conditional";
+    return "Every renewal";
+  };
+
+  const saveRequirementCompletion = async (req: RequirementSummary, licenseId: string, action: "complete" | "clear") => {
+    const key = `${req.id}:${licenseId}`;
+    setSavingRequirement(key);
+    setRequirementError("");
+    try {
+      const yearRaw = requirementYears[key]?.trim();
+      const completedYear = yearRaw ? Number(yearRaw) : null;
+      if (yearRaw && (completedYear === null || !Number.isInteger(completedYear) || completedYear < 1950)) {
+        throw new Error("Enter a valid completion year, or leave it blank if you only know it was completed.");
+      }
+      const res = await fetch("/api/requirement-completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mandatoryRequirementId: req.id,
+          physicianLicenseId: licenseId,
+          completedYear,
+          action,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Unable to save requirement history");
+      router.refresh();
+    } catch (err) {
+      setRequirementError(err instanceof Error ? err.message : "Unable to save requirement history");
+    } finally {
+      setSavingRequirement(null);
     }
   };
 
@@ -254,6 +344,103 @@ export default function SettingsClient({
 
           {billingError && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{billingError}</p>
+          )}
+        </div>
+      </section>
+
+      {/* Requirement history */}
+      <section id="requirement-history" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <h2 className="font-semibold text-slate-900 text-sm">Special requirement history</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Tell ClearCME when one-time or long-cycle requirements are already satisfied so we do not push unnecessary courses.
+          </p>
+        </div>
+        <div className="px-6 py-5 space-y-5">
+          <p className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+            Attestations are for ClearCME recommendations only. You remain responsible for keeping primary CME documentation for your board&apos;s retention period.
+          </p>
+          {licenseRequirements.every((group) => group.requirements.length === 0) ? (
+            <p className="text-sm text-slate-500">No one-time or long-cycle requirements found for your active licenses.</p>
+          ) : (
+            licenseRequirements.map((group) => (
+              group.requirements.length > 0 && (
+                <div key={group.licenseId} className="space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    {group.state} {group.licenseType}
+                  </h3>
+                  <div className="space-y-3">
+                    {group.requirements.map((req) => {
+                      const key = `${req.id}:${group.licenseId}`;
+                      const saved = requirementCompletions.find(
+                        (completion) => completion.mandatoryRequirementId === req.id && completion.physicianLicenseId === group.licenseId
+                      );
+                      const saving = savingRequirement === key;
+                      return (
+                        <div key={key} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-semibold text-slate-900">{formatTopic(req.topic)}</p>
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                  {formatCadence(req)}
+                                </span>
+                                {saved && (
+                                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                    Recorded{saved.completedYear ? ` · ${saved.completedYear}` : ""}
+                                  </span>
+                                )}
+                              </div>
+                              {req.description && (
+                                <p className="mt-1 text-xs leading-relaxed text-slate-600">{req.description}</p>
+                              )}
+                              {req.notes && (
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500">{req.notes}</p>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2 sm:w-56">
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                min={1950}
+                                max={new Date().getFullYear() + 1}
+                                placeholder="Year completed"
+                                value={requirementYears[key] ?? ""}
+                                onChange={(e) => setRequirementYears((prev) => ({ ...prev, [key]: e.target.value }))}
+                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-teal-100"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => saveRequirementCompletion(req, group.licenseId, "complete")}
+                                  disabled={saving}
+                                  className="flex-1 rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0D9488] disabled:opacity-60"
+                                >
+                                  {saving ? "Saving…" : "Mark done"}
+                                </button>
+                                {saved && (
+                                  <button
+                                    type="button"
+                                    onClick={() => saveRequirementCompletion(req, group.licenseId, "clear")}
+                                    disabled={saving}
+                                    className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-white disabled:opacity-60"
+                                  >
+                                    Clear
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )
+            ))
+          )}
+          {requirementError && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{requirementError}</p>
           )}
         </div>
       </section>

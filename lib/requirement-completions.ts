@@ -1,0 +1,187 @@
+import type { MandatoryRequirement, UserRequirementCompletion } from "@prisma/client";
+
+type RequirementLike = Pick<
+  MandatoryRequirement,
+  "cadence" | "firstRenewalOnly" | "intervalYears" | "lookbackYears" | "topic"
+>;
+
+type CompletionLike = Pick<UserRequirementCompletion, "completedAt" | "completedYear"> | null | undefined;
+
+export type RequirementFulfillmentStatus = "satisfied" | "due" | "unknown" | "not_applicable";
+
+export interface RequirementFulfillment {
+  status: RequirementFulfillmentStatus;
+  isSatisfied: boolean;
+  isUnknown: boolean;
+  isRecurring: boolean;
+  isAttestable: boolean;
+  satisfiedUntil: Date | null;
+  prompt: string | null;
+}
+
+function completionDate(completion: CompletionLike): Date | null {
+  if (!completion) return null;
+  if (completion.completedAt) return completion.completedAt;
+  if (completion.completedYear) return new Date(Date.UTC(completion.completedYear, 0, 1));
+  return null;
+}
+
+function addYears(date: Date, years: number) {
+  const next = new Date(date);
+  next.setFullYear(next.getFullYear() + years);
+  return next;
+}
+
+export function isHistorySensitiveRequirement(req: RequirementLike) {
+  return (
+    req.cadence === "ONE_TIME" ||
+    req.cadence === "FIRST_RENEWAL_ONLY" ||
+    req.cadence === "INITIAL_LICENSE_ONLY" ||
+    req.cadence === "EVERY_N_YEARS" ||
+    req.firstRenewalOnly
+  );
+}
+
+export function evaluateRequirementFulfillment({
+  requirement,
+  completion,
+  cycleEnd,
+  licenseState,
+  licenseIssueDate,
+  daysUntilRenewal,
+}: {
+  requirement: RequirementLike;
+  completion: CompletionLike;
+  cycleEnd: Date;
+  licenseState?: string;
+  licenseIssueDate?: Date | null;
+  daysUntilRenewal?: number | null;
+}): RequirementFulfillment {
+  const cadence = requirement.firstRenewalOnly && requirement.cadence === "EVERY_RENEWAL"
+    ? "ONE_TIME"
+    : requirement.cadence;
+  const completedOn = completionDate(completion);
+  const isNearRenewal = daysUntilRenewal !== null && daysUntilRenewal !== undefined && daysUntilRenewal <= 90;
+  const isWestVirginiaFinalCsCycle =
+    licenseState === "WV" &&
+    (requirement.topic === "OPIOID_PRESCRIBING" || requirement.topic === "SUBSTANCE_USE") &&
+    cycleEnd <= new Date("2026-06-30T23:59:59.999Z");
+
+  if (isWestVirginiaFinalCsCycle) {
+    return {
+      status: "due",
+      isSatisfied: false,
+      isUnknown: false,
+      isRecurring: false,
+      isAttestable: false,
+      satisfiedUntil: null,
+      prompt: "West Virginia's 2026 controlled-substance renewal cycle remains a hard requirement before the post-2026 one-time transition.",
+    };
+  }
+
+  const likelyFirstRenewal = licenseIssueDate
+    ? cycleEnd <= addYears(licenseIssueDate, 2)
+    : false;
+
+  if (cadence === "ONE_TIME" || cadence === "FIRST_RENEWAL_ONLY" || cadence === "INITIAL_LICENSE_ONLY") {
+    if (completedOn || completion) {
+      return {
+        status: "satisfied",
+        isSatisfied: true,
+        isUnknown: false,
+        isRecurring: false,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: null,
+      };
+    }
+    if (likelyFirstRenewal || isNearRenewal) {
+      return {
+        status: "due",
+        isSatisfied: false,
+        isUnknown: false,
+        isRecurring: false,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: likelyFirstRenewal
+          ? "This appears to be an early renewal window. Confirm completion or treat as due."
+          : "Renewal is close. Confirm completion history now or treat this as due.",
+      };
+    }
+    return {
+      status: "unknown",
+      isSatisfied: false,
+      isUnknown: true,
+      isRecurring: false,
+      isAttestable: true,
+      satisfiedUntil: null,
+      prompt: "Have you already completed this one-time requirement? Attestations guide recommendations only; keep your original CME documentation.",
+    };
+  }
+
+  if (cadence === "EVERY_N_YEARS") {
+    const intervalYears = requirement.intervalYears ?? requirement.lookbackYears;
+    if (completedOn && intervalYears) {
+      const satisfiedUntil = addYears(completedOn, intervalYears);
+      const isSatisfied = satisfiedUntil >= cycleEnd;
+      return {
+        status: isSatisfied ? "satisfied" : "due",
+        isSatisfied,
+        isUnknown: false,
+        isRecurring: true,
+        isAttestable: true,
+        satisfiedUntil,
+        prompt: isSatisfied ? null : `This is due again if you have not completed it within the last ${intervalYears} years.`,
+      };
+    }
+    if (isNearRenewal) {
+      return {
+        status: "due",
+        isSatisfied: false,
+        isUnknown: false,
+        isRecurring: true,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: intervalYears
+          ? `Renewal is close. Confirm you completed this within the last ${intervalYears} years or treat it as due.`
+          : "Renewal is close. Confirm completion history now or treat this as due.",
+      };
+    }
+    return {
+      status: "unknown",
+      isSatisfied: false,
+      isUnknown: true,
+      isRecurring: true,
+      isAttestable: true,
+      satisfiedUntil: null,
+      prompt: intervalYears
+        ? `When did you last complete this ${intervalYears}-year requirement? Attestations guide recommendations only; keep your original CME documentation.`
+        : "When did you last complete this recurring requirement? Attestations guide recommendations only; keep your original CME documentation.",
+    };
+  }
+
+  return {
+    status: "due",
+    isSatisfied: false,
+    isUnknown: false,
+    isRecurring: false,
+    isAttestable: false,
+    satisfiedUntil: null,
+    prompt: null,
+  };
+}
+
+export function cadenceLabel(requirement: RequirementLike) {
+  const cadence = requirement.firstRenewalOnly && requirement.cadence === "EVERY_RENEWAL"
+    ? "ONE_TIME"
+    : requirement.cadence;
+  if (cadence === "ONE_TIME") return "One-time";
+  if (cadence === "FIRST_RENEWAL_ONLY") return "First renewal only";
+  if (cadence === "INITIAL_LICENSE_ONLY") return "Initial license only";
+  if (cadence === "EVERY_N_YEARS") {
+    const years = requirement.intervalYears ?? requirement.lookbackYears;
+    return years ? `Every ${years} years` : "Recurring long-cycle";
+  }
+  if (cadence === "CONDITIONAL") return "Conditional";
+  return "Every renewal";
+}

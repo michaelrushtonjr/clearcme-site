@@ -27,11 +27,18 @@ function rule(state, renewalCycleYears, totalHours, mandatories = [], opts = {})
 }
 
 function req(topic, hoursRequired, description, opts = {}) {
+  const notes = opts.notes || '';
+  const intervalYears = opts.intervalYears
+    || (notes.match(/every\s+(\d+)\s+years?/i)?.[1] ? Number(notes.match(/every\s+(\d+)\s+years?/i)[1]) : null)
+    || (notes.match(/(\d+)-year/i)?.[1] ? Number(notes.match(/(\d+)-year/i)[1]) : null);
   return {
     topic,
     hoursRequired,
     description: description || null,
     firstRenewalOnly: opts.oneTime || false,
+    cadence: opts.oneTime ? 'ONE_TIME' : intervalYears ? 'EVERY_N_YEARS' : 'EVERY_RENEWAL',
+    intervalYears,
+    lookbackYears: intervalYears,
     notes: opts.notes || null,
   };
 }

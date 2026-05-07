@@ -6,6 +6,7 @@ interface MandatoryGapSummary {
   topic: string;
   gap: number;
   isMet: boolean;
+  isUnknown?: boolean;
   isOneTime: boolean; // firstRenewalOnly in the DB
 }
 
@@ -131,7 +132,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
     isFullyCompliant,
   } = props;
 
-  const unmetMandatory = mandatoryGaps.filter((g) => !g.isMet);
+  const unmetMandatory = mandatoryGaps.filter((g) => !g.isMet && !g.isUnknown);
   const highestGapMandatory = [...unmetMandatory].sort((a, b) => b.gap - a.gap)[0] ?? null;
 
   // ── 5. Fully compliant ────────────────────────────────────────────────────

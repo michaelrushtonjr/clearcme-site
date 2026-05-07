@@ -76,6 +76,7 @@ model User {
   complianceStatus ComplianceStatus[]
   complianceDiffs  UserComplianceDiff[]
   subscription    Subscription?
+  requirementCompletions UserRequirementCompletion[]
 
   @@index([email])
 }
@@ -112,6 +113,7 @@ model PhysicianLicense {
   npiNumber        String?    // NPI from NPPES verification
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requirementCompletions UserRequirementCompletion[]
 
   @@unique([userId, state, licenseType])
   @@index([userId])
@@ -241,11 +243,54 @@ model MandatoryRequirement {
   hoursRequired    Float
   description      String?      // e.g. "3 hours opioid prescribing for first renewal"
   firstRenewalOnly Boolean      @default(false)
+  cadence          RequirementCadence @default(EVERY_RENEWAL)
+  intervalYears    Int?
+  lookbackYears    Int?
+  attestationAllowed Boolean    @default(true)
   notes            String?
 
   complianceRule ComplianceRule @relation(fields: [complianceRuleId], references: [id], onDelete: Cascade)
+  completions    UserRequirementCompletion[]
 
   @@index([complianceRuleId])
+}
+
+enum RequirementCadence {
+  EVERY_RENEWAL
+  ONE_TIME
+  FIRST_RENEWAL_ONLY
+  EVERY_N_YEARS
+  INITIAL_LICENSE_ONLY
+  CONDITIONAL
+}
+
+model UserRequirementCompletion {
+  id                     String       @id @default(cuid())
+  userId                 String
+  physicianLicenseId     String?
+  mandatoryRequirementId String
+  topic                  SpecialTopic
+  completedAt            DateTime?
+  completedYear          Int?
+  source                 RequirementCompletionSource @default(SELF_ATTESTED)
+  notes                  String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  physicianLicense     PhysicianLicense?    @relation(fields: [physicianLicenseId], references: [id], onDelete: Cascade)
+  mandatoryRequirement MandatoryRequirement @relation(fields: [mandatoryRequirementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mandatoryRequirementId, physicianLicenseId])
+  @@index([userId, topic])
+  @@index([physicianLicenseId])
+  @@index([mandatoryRequirementId])
+}
+
+enum RequirementCompletionSource {
+  SELF_ATTESTED
+  CERTIFICATE_UPLOAD
+  ADMIN_ADJUSTED
 }
 
 // ─── Compliance Status (Computed per User per License) ────────────────────────
