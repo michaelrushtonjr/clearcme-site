@@ -36,7 +36,7 @@ export function NextActionCard({
   return (
     <section
       aria-labelledby="next-action-title"
-      className="relative overflow-hidden rounded-card border border-brand-tealRule bg-gradient-to-b from-[#FCFBF6] to-brand-paper p-7 shadow-card-2"
+      className="relative overflow-hidden rounded-card border border-brand-tealRule bg-gradient-to-b from-[#FCFBF6] to-brand-paper p-5 shadow-card-2 sm:p-7"
     >
       {/* Teal left rule */}
       <div className="absolute inset-y-0 left-0 w-1 bg-brand-teal" aria-hidden />
@@ -48,17 +48,17 @@ export function NextActionCard({
 
       <h2
         id="next-action-title"
-        className="font-display text-2xl font-semibold leading-tight tracking-tight text-brand-navy mb-2"
+        className="font-display text-xl font-semibold leading-tight tracking-tight text-brand-navy mb-2 sm:text-2xl"
       >
         {title}
       </h2>
 
       <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">{body}</p>
 
-      <div className="flex flex-wrap items-center gap-3 mt-5">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
           href={ctaHref}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-teal hover:bg-brand-tealDeep px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+          className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-brand-teal px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-tealDeep sm:w-auto"
         >
           {ctaLabel}
           <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
@@ -67,14 +67,14 @@ export function NextActionCard({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-500 hover:text-brand-navy hover:bg-brand-paperSoft transition-colors"
+            className="min-h-[44px] rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-brand-paperSoft hover:text-brand-navy"
           >
             Dismiss for today
           </button>
         )}
 
         {source && (
-          <span className="ml-auto text-xs text-slate-400">{source}</span>
+          <span className="text-xs text-slate-400 sm:ml-auto sm:text-right">{source}</span>
         )}
       </div>
     </section>

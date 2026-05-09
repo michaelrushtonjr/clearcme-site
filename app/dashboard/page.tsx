@@ -176,8 +176,8 @@ export default async function DashboardPage() {
     }
     for (const t of d.mandatoryTopics) {
       allGaps.push({
-        label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())} — ${t.hoursNeeded.toFixed(1)} hrs short`,
-        detail: "Mandatory topic requirement",
+        label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}`,
+        detail: `${t.hoursNeeded.toFixed(1)} hrs short · mandatory topic`,
         href: `/courses/${encodeURIComponent(keyToSlug(t.topic))}`,
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
       });
@@ -256,8 +256,8 @@ export default async function DashboardPage() {
           ) : topGaps.length > 0 ? (
             <NextActionCard
               eyebrow="Next best action"
-              title={<>Do this next: <em>{topGaps[0].label}</em></>}
-              body={<>This is your highest-priority compliance move based on deadline proximity and mandatory-topic status. Finish this first, then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
+              title={<>Finish this next: <em>{topGaps[0].label}</em></>}
+              body={<>This is the highest-priority CME gap based on your renewal date and mandatory-topic requirements. Complete it first, then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
               ctaHref={topGaps[0].href}
               ctaLabel={topGaps[0].href.startsWith("/courses/") ? "Find matching CME" : "Upload certificate"}
               source={topGaps[0].detail}

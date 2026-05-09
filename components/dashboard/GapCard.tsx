@@ -40,11 +40,11 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
     overflowCount > 0 &&
     gaps.every((g) => g.detail === gaps[0].detail) &&
     gaps[0].detail.includes("days to renewal") === false &&
-    gaps[0].detail !== "Mandatory topic requirement";
+    !gaps[0].detail.includes("mandatory topic");
 
   return (
     <div className={`${bgColor} ${borderColor} border rounded-2xl p-5`}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${isUrgent ? "bg-red-500" : "bg-amber-500"} animate-pulse`} />
           <h3 className={`font-semibold text-sm ${isUrgent ? "text-red-900" : "text-amber-900"}`}>
@@ -71,17 +71,17 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
           return (
             <div
               key={i}
-              className="flex items-center justify-between gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100"
+              className="flex flex-col gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{gap.label}</p>
+                <p className="text-sm font-medium text-slate-900 break-words sm:truncate">{gap.label}</p>
                 <p className="text-xs text-slate-500">{gap.detail}</p>
               </div>
-              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                <span className="text-xs text-slate-400 text-right">{contextNote}</span>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-shrink-0 sm:items-end sm:gap-1">
+                <span className="text-xs text-slate-400 sm:text-right">{contextNote}</span>
                 <Link
                   href={gap.href}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 ${
                     isUrgent
                       ? "bg-red-600 text-white hover:bg-red-700"
                       : "bg-amber-600 text-white hover:bg-amber-700"
