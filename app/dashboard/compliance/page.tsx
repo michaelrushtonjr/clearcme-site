@@ -109,7 +109,7 @@ function requirementStatusLabel({
   daysUntilRenewal: number | null;
 }) {
   if (isMet) return "Met";
-  if (isUnknown) return "Confirm";
+  if (isUnknown) return "Needs your input";
   if (daysUntilRenewal !== null && daysUntilRenewal <= 90) return "Action needed";
   if (earned > 0) return "At risk";
   return "Missing";
@@ -117,7 +117,7 @@ function requirementStatusLabel({
 
 function requirementStatusClass(label: string) {
   if (label === "Met") return "bg-green-100 text-green-700";
-  if (label === "Confirm") return "bg-blue-100 text-blue-700";
+  if (label === "Needs your input") return "bg-blue-100 text-blue-700 border border-blue-200";
   if (label === "Action needed") return "bg-red-600 text-white";
   if (label === "At risk") return "bg-amber-100 text-amber-800 border border-amber-200";
   return "bg-white/70 text-brand-amber border border-brand-amberRule";
@@ -600,7 +600,7 @@ export default async function CompliancePage() {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
                       const topicToneKey = gap.isMet ? "met" : gap.isUnknown ? "open" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
                       const topicTone = TONE[topicToneKey];
-                      const statusIcon = gap.isMet ? "✓" : gap.isUnknown ? "?" : gap.earned > 0 ? "~" : "○";
+                      const statusIcon = gap.isMet ? "✓" : gap.isUnknown ? "Review" : gap.earned > 0 ? "~" : "○";
                       const statusLabel = requirementStatusLabel({
                         isMet: gap.isMet,
                         isUnknown: gap.isUnknown,
@@ -618,7 +618,15 @@ export default async function CompliancePage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2 flex-1 min-w-0">
-                              <span className="text-base mt-0.5">{statusIcon}</span>
+                              <span
+                                className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${
+                                  gap.isUnknown
+                                    ? "bg-blue-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-blue-700"
+                                    : "text-base"
+                                }`}
+                              >
+                                {statusIcon}
+                              </span>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-slate-900">
                                   {formatTopic(gap.topic)}
@@ -631,9 +639,13 @@ export default async function CompliancePage() {
                                   {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
                                 </p>
                                 {gap.isUnknown && (
-                                  <p className="mt-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                    {gap.prompt ?? "Confirm whether you have already completed this requirement before taking another course."}
-                                  </p>
+                                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                                    <p className="font-semibold">Tell ClearCME if you already completed this.</p>
+                                    <p className="mt-1 text-blue-800">
+                                      {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
+                                    </p>
+                                    <p className="mt-1 text-blue-700">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -685,9 +697,9 @@ export default async function CompliancePage() {
                             {gap.isUnknown && (
                               <Link
                                 href="/dashboard/settings#requirement-history"
-                                className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                                className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:w-auto sm:min-h-0 sm:py-1"
                               >
-                                Confirm history →
+                                Confirm my history →
                               </Link>
                             )}
                           </div>

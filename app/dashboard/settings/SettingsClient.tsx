@@ -350,15 +350,16 @@ export default function SettingsClient({
 
       {/* Requirement history */}
       <section id="requirement-history" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="font-semibold text-slate-900 text-sm">Special requirement history</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Tell ClearCME when one-time or long-cycle requirements are already satisfied so we do not push unnecessary courses.
+        <div className="px-6 py-4 border-b border-slate-100 bg-blue-50">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Required setup step</p>
+          <h2 className="mt-1 font-semibold text-slate-900 text-sm">Confirm your special requirement history</h2>
+          <p className="text-xs text-slate-600 mt-1">
+            Some CME topics are one-time or every few years. Confirm what you already completed so ClearCME can calculate your actual remaining hours.
           </p>
         </div>
         <div className="px-6 py-5 space-y-5">
-          <p className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-            Attestations are for ClearCME recommendations only. You remain responsible for keeping primary CME documentation for your board&apos;s retention period.
+          <p className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-relaxed text-blue-800">
+            This is a user attestation, not an error state. It helps ClearCME avoid recommending courses for requirements you may already have satisfied. Keep your original CME documentation for your board&apos;s retention period.
           </p>
           {licenseRequirements.every((group) => group.requirements.length === 0) ? (
             <p className="text-sm text-slate-500">No one-time or long-cycle requirements found for your active licenses.</p>
@@ -416,7 +417,7 @@ export default function SettingsClient({
                                   disabled={saving}
                                   className="flex-1 rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0D9488] disabled:opacity-60"
                                 >
-                                  {saving ? "Saving…" : "Mark done"}
+                                  {saving ? "Saving…" : "I completed this"}
                                 </button>
                                 {saved && (
                                   <button
