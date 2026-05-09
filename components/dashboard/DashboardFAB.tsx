@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const actionItemClassName =
-  "flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-md transition-all duration-200 ease-out";
+  "flex min-w-[13rem] items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-md transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100";
 
 export default function DashboardFAB() {
   const pathname = usePathname();
@@ -29,15 +29,10 @@ export default function DashboardFAB() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const handleStatusCheck = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setIsOpen(false);
-  };
-
   const handleExportAudit = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch("/api/certificates/export");
+      const response = await fetch("/api/audit-export");
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
         throw new Error((body as { error?: string }).error ?? `Server error ${response.status}`);
@@ -46,7 +41,7 @@ export default function DashboardFAB() {
       const blob = await response.blob();
       const disposition = response.headers.get("Content-Disposition") ?? "";
       const match = disposition.match(/filename="([^"]+)"/);
-      const fileName = match?.[1] ?? "ClearCME_Audit_Export.pdf";
+      const fileName = match?.[1] ?? "ClearCME_Audit_Package.zip";
 
       const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -88,19 +83,23 @@ export default function DashboardFAB() {
             onClick={handleExportAudit}
             disabled={isExporting}
             className={`${actionItemClassName} ${isExporting ? "opacity-70" : ""}`}
+            title="Downloads a ZIP organized by license, requirement, and year."
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>{isExporting ? "Preparing audit..." : "Export audit"}</span>
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span className="flex flex-col items-start leading-tight">
+              <span>{isExporting ? "Building audit ZIP…" : "Download audit ZIP"}</span>
+              <span className="text-[11px] font-normal text-slate-500">By year + requirement</span>
+            </span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleStatusCheck}
+          <Link
+            href="/dashboard/compliance"
+            onClick={() => setIsOpen(false)}
             className={actionItemClassName}
           >
             <span aria-hidden="true">📊</span>
             <span>Status check</span>
-          </button>
+          </Link>
 
           <Link
             href="/dashboard/upload"
@@ -117,7 +116,7 @@ export default function DashboardFAB() {
           aria-expanded={isOpen}
           aria-label={isOpen ? "Close quick actions" : "Open quick actions"}
           onClick={() => setIsOpen((open) => !open)}
-          className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E] text-white shadow-lg transition-transform duration-200 ease-out ${
+          className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E] text-white shadow-lg transition-transform duration-150 ease-out active:scale-95 ${
             isOpen ? "rotate-45" : "rotate-0"
           }`}
         >

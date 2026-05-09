@@ -52,9 +52,10 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
         <button
           onClick={handleDownload}
           disabled={loading}
-          className="text-xs text-teal-600 hover:text-teal-800 hover:underline font-medium transition-colors disabled:opacity-60"
+          className="text-xs text-teal-600 transition-all hover:text-teal-800 hover:underline active:scale-95 disabled:opacity-60 disabled:active:scale-100 font-medium"
+          title="Downloads a ZIP organized by license, requirement, and year."
         >
-          {loading ? "Building ZIP…" : "Download audit trail"}
+          {loading ? "Building ZIP…" : "Download audit ZIP"}
         </button>
         {error && <span className="text-xs text-red-600">{error}</span>}
       </span>
@@ -66,7 +67,8 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
       <button
         onClick={handleDownload}
         disabled={loading}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-colors disabled:opacity-60 shadow-sm"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100 shadow-sm"
+        title="Downloads a ZIP organized by license, requirement, and year."
       >
         {loading ? (
           <>
@@ -88,10 +90,13 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
         ) : (
           <>
             <span>📦</span>
-            Download Audit Package
+            Download Audit ZIP
           </>
         )}
       </button>
+      <p className="max-w-[16rem] text-right text-[11px] leading-snug text-slate-400">
+        ZIP organized by license, requirement, and year.
+      </p>
       {error && (
         <p className="text-xs text-red-600">{error}</p>
       )}
