@@ -440,23 +440,24 @@ export default function Home() {
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-slate-100 bg-brand-parchment/85 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-3">
           <BrandLockup size="lg" />
-          <div className="flex items-center gap-2 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
             <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
             <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
             <a
               href="/login"
-              className="text-sm font-medium text-[#475569] hover:text-[#1E293B] transition-colors px-2 py-1.5 sm:px-0"
+              className="inline-flex min-h-9 items-center justify-center rounded-full border border-slate-200 bg-white/60 px-3 text-sm font-semibold text-[#475569] shadow-sm transition-colors hover:border-slate-300 hover:bg-white hover:text-[#1E293B] sm:min-h-0 sm:border-0 sm:bg-transparent sm:px-0 sm:shadow-none"
             >
               Sign in
             </a>
             <a
               href="/login"
-              className="text-sm font-medium border border-brand-teal text-brand-teal px-3 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors sm:px-4"
+              className="inline-flex min-h-9 items-center justify-center rounded-full bg-brand-teal px-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-tealDark sm:min-h-0 sm:rounded-lg sm:border sm:border-brand-teal sm:bg-transparent sm:px-4 sm:py-1.5 sm:text-brand-teal sm:shadow-none sm:hover:bg-brand-tealTint"
             >
-              Create Free Account →
+              <span className="sm:hidden">Free Account</span>
+              <span className="hidden sm:inline">Create Free Account →</span>
             </a>
           </div>
         </div>
