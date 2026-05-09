@@ -442,16 +442,19 @@ export default function Home() {
       <nav className="sticky top-0 z-50 border-b border-slate-100 bg-brand-parchment/85 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <BrandLockup size="lg" />
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
             <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
             <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
-            <a href="/login" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">
-              Log in
+            <a
+              href="/login"
+              className="text-sm font-medium text-[#475569] hover:text-[#1E293B] transition-colors px-2 py-1.5 sm:px-0"
+            >
+              Sign in
             </a>
             <a
               href="/login"
-              className="text-sm font-medium border border-brand-teal text-brand-teal px-4 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors"
+              className="text-sm font-medium border border-brand-teal text-brand-teal px-3 py-1.5 rounded-lg hover:bg-brand-tealTint transition-colors sm:px-4"
             >
               Create Free Account →
             </a>
