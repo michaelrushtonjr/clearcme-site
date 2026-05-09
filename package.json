@@ -16,7 +16,7 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.86.1",
+    "@anthropic-ai/sdk": "^0.95.1",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
@@ -45,6 +45,9 @@
     "typescript": "^5"
   },
   "overrides": {
-    "postcss": "8.5.14"
+    "postcss": "8.5.14",
+    "hono": "4.12.18",
+    "@hono/node-server": "1.19.13",
+    "fast-uri": "3.1.2"
   }
 }
