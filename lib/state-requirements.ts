@@ -221,7 +221,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   NC: birthBasedRenewal("On or before your birthday each year", {
     usesExactBirthday: true,
   }),
-  ND: variableRenewal("Triennial renewal deadline varies by physician and license record"),
+  ND: variableRenewal("Biennial renewal deadline varies by physician and license record"),
   NE: fixedRenewal("October 1 of even-numbered years", 10, 1, "even"),
   NH: variableRenewal("June 30 of your renewal year, every 2 years"),
   NJ: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),

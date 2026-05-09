@@ -38,6 +38,8 @@ const TRUSTED_PROVIDERS = [
   'institute for healthcare improvement', 'ihi',
   // Freedom 4/24 — via Centra (jointly accredited ACCME+ACPE+ANCC), offers AMA PRA Category 1 Credits, verified Apr 25, 2026
   'freedom 4/24', 'freedom424', 'freedom 424',
+  // INTEGRIS Health Continuing Education — OSMA-accredited CME provider, AMA PRA Category 1 Credits verified May 9, 2026
+  'integris health continuing education', 'integris health',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────
@@ -69,21 +71,40 @@ function parseCreditHours(raw) {
 }
 
 function parseCost(raw) {
-  if (!raw) return 0;
+  if (!raw) return Number.POSITIVE_INFINITY;
   const lower = raw.toLowerCase();
+  const explicitDollar = raw.trim().match(/^\$\s*([\d,]+(?:\.\d+)?)/);
+  if (explicitDollar) return parseFloat(explicitDollar[1].replace(',', ''));
+
+  const hasDollarAmount = raw.match(/\$\s*([\d,]+(?:\.\d+)?)/);
+  if (hasDollarAmount) return parseFloat(hasDollarAmount[1].replace(',', ''));
+
+  const variableOrUnknown = [
+    'non-member',
+    'nonmember',
+    'varies',
+    'unconfirmed',
+    'tbd',
+    'pricing not publicly displayed',
+    'cost not publicly displayed',
+  ];
+  if (variableOrUnknown.some(signal => lower.includes(signal))) {
+    return Number.POSITIVE_INFINITY;
+  }
+
   if (lower.includes('free')) return 0;
-  // "Free for AMA Members (varies for non-members)" → treat as 0
-  if (lower.includes('free for')) return 0;
   const m = raw.match(/\$?([\d,]+(?:\.\d+)?)/);
-  return m ? parseFloat(m[1].replace(',', '')) : 0;
+  return m ? parseFloat(m[1].replace(',', '')) : Number.POSITIVE_INFINITY;
 }
 
 function parseCostLabel(raw) {
   if (!raw) return 'Unknown';
   const lower = raw.toLowerCase();
-  if (lower.startsWith('free for')) return raw.trim();
+  const explicitDollar = raw.trim().match(/^\$\s*([\d,]+(?:\.\d+)?)/);
+  if (explicitDollar) return `$${explicitDollar[1]}`;
+  if (lower.includes('free') && (lower.includes('non-member') || lower.includes('nonmember') || lower.includes('varies'))) return raw.trim();
   if (lower.includes('free')) return 'Free';
-  const m = raw.match(/\$?([\d,]+(?:\.\d+)?)/);
+  const m = raw.match(/\$\s*([\d,]+(?:\.\d+)?)/);
   return m ? `$${m[1]}` : raw.trim();
 }
 
