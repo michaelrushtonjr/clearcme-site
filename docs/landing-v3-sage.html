@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClearCME — The CME Guarantee</title>
+  <meta name="description" content="Get fully compliant for your next license renewal — guaranteed. Under 60 seconds of setup, less than a single state filing fee. Built by a physician." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" />
+  <style>
+    /* ===== EDITORIAL SAGE — DESIGN TOKENS ===== */
+    :root {
+      --ink: #1E2920;
+      --ink-2: #3F4A40;
+      --ink-3: #6B7568;
+      --bg: #F4EFE3;
+      --bg-2: #ECE4CF;
+      --paper: #FFFDF6;
+      --line: #DDD4BD;
+      --line-soft: #ECE3CA;
+      --primary: #3F5F33;
+      --primary-2: #2A4123;
+      --pop: #DD6B40;
+      --pop-2: #B85631;
+      --warm: #C9933C;
+      --cool: #4D8C7F;
+      --rose: #B85F5F;
+      --mauve: #8B7AB8;
+      --shadow-sm: 0 1px 2px rgba(30,41,32,.05), 0 1px 3px rgba(30,41,32,.06);
+      --shadow-md: 0 8px 20px -8px rgba(30,41,32,.20), 0 4px 8px rgba(30,41,32,.06);
+      --shadow-lg: 0 24px 60px -20px rgba(30,41,32,.32), 0 8px 18px rgba(30,41,32,.08);
+      --radius: 14px;
+      --radius-lg: 22px;
+      --display: 'Fraunces', Georgia, serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--ink); background: var(--bg);
+      line-height: 1.55; font-size: 16px;
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.16  0 0 0 0 0.12  0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      pointer-events: none; z-index: 0; opacity: .7; mix-blend-mode: multiply;
+    }
+    main, header, footer, section { position: relative; z-index: 1; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    img, svg { display: block; max-width: 100%; }
+
+    h1, h2, h3, h4 { font-family: var(--display); font-weight: 500; letter-spacing: -.012em; line-height: 1.08; margin: 0; color: var(--ink); }
+    h1, h2 { font-weight: 600; }
+    p { margin: 0; }
+
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+    @media (max-width: 640px) { .wrap { padding: 0 20px; } }
+
+    /* ===== NAV ===== */
+    .nav {
+      position: sticky; top: 0; z-index: 30;
+      backdrop-filter: saturate(140%) blur(14px);
+      background: rgba(244, 239, 227, .85);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-row { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 600; font-size: 22px; color: var(--ink); }
+    .brand-mark {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      position: relative; box-shadow: var(--shadow-sm);
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; left: 7px; top: 13px; width: 16px; height: 6px;
+      border-bottom: 2px solid var(--pop); border-right: 2px solid var(--pop);
+      transform: rotate(-45deg); border-radius: 1px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-link { padding: 8px 12px; font-size: 14px; color: var(--ink-2); border-radius: 8px; transition: background .15s, color .15s; }
+    .nav-link:hover { background: var(--bg-2); color: var(--ink); }
+    .nav-cta {
+      padding: 9px 16px; font-size: 14px; font-weight: 600;
+      background: var(--ink); color: var(--bg);
+      border-radius: 999px; border: 1px solid var(--ink);
+      transition: transform .12s ease, background .15s, border-color .15s;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-cta:hover { transform: translateY(-1px); background: var(--primary); border-color: var(--primary); }
+    @media (max-width: 720px) { .nav-link.hide-sm { display: none; } }
+
+    /* ===== TICKER MARQUEE (NEW) ===== */
+    .ticker {
+      background: var(--ink); color: var(--bg);
+      overflow: hidden; padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      font-size: 12.5px; letter-spacing: .03em;
+      position: relative; z-index: 2;
+    }
+    .ticker::before, .ticker::after {
+      content: ""; position: absolute; top: 0; bottom: 0; width: 90px; z-index: 2; pointer-events: none;
+    }
+    .ticker::before { left: 0; background: linear-gradient(90deg, var(--ink), transparent); }
+    .ticker::after { right: 0; background: linear-gradient(270deg, var(--ink), transparent); }
+    .ticker-track {
+      display: flex; gap: 44px; white-space: nowrap;
+      animation: tick 60s linear infinite;
+      width: max-content;
+    }
+    .ticker-item { display: inline-flex; align-items: center; gap: 10px; }
+    .ticker-item::before {
+      content: ""; width: 4px; height: 4px; border-radius: 50%;
+      background: var(--pop); flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(221,107,64,.18);
+    }
+    .ticker-item strong { font-weight: 600; color: var(--bg); margin-right: 4px; font-family: var(--display); font-size: 13px; }
+    .ticker-item span { color: rgba(244,239,227,.65); }
+    @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ===== HERO ===== */
+    .hero { padding: 88px 0 32px; position: relative; }
+    .hero-grid {
+      display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 56px; align-items: center;
+    }
+    @media (max-width: 920px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
+
+    .h1 {
+      font-size: clamp(40px, 5.6vw, 70px);
+      letter-spacing: -.022em; margin: 0;
+    }
+    .h1 .wave { color: var(--pop); position: relative; white-space: nowrap; }
+    .h1 .wave::after {
+      content: ""; position: absolute; left: -2px; right: -2px; bottom: -10px; height: 13px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 12' preserveAspectRatio='none'><path d='M2 7 Q 30 1, 56 6 T 110 6 T 164 6 T 218 6' fill='none' stroke='%23DD6B40' stroke-width='2.6' stroke-linecap='round'/></svg>");
+      background-repeat: no-repeat; background-size: 100% 100%;
+    }
+    .h1 em { font-style: italic; font-weight: 400; color: var(--primary); }
+
+    /* highlighter swash — Kole Jain finishing touch */
+    .swash {
+      position: relative; display: inline-block;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 40' preserveAspectRatio='none'><path d='M4 30 Q 60 4, 130 14 T 236 22 Q 230 36, 170 32 T 30 36 Z' fill='%23C9933C' fill-opacity='0.38'/></svg>");
+      background-repeat: no-repeat; background-position: 0 6px; background-size: 100% 90%;
+      padding: 0 4px;
+    }
+
+    .hero-sub {
+      margin-top: 26px; font-size: 18.5px; line-height: 1.6; color: var(--ink-2);
+      max-width: 540px;
+    }
+    .hero-sub strong { color: var(--ink); font-weight: 600; }
+
+    .hero-cta-row { margin-top: 32px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 22px; border-radius: 999px;
+      font-size: 15px; font-weight: 600; line-height: 1;
+      transition: transform .12s ease, box-shadow .15s, background .2s;
+      border: 1px solid transparent; white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--ink); color: var(--bg);
+      box-shadow: 0 8px 20px -10px rgba(30,41,32,.55), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .btn-primary:hover { transform: translateY(-1px); background: var(--primary); }
+    .btn-primary .arrow { transition: transform .2s ease; }
+    .btn-primary:hover .arrow { transform: translateX(3px); }
+    .btn-ghost { color: var(--ink); background: transparent; border-color: var(--line); }
+    .btn-ghost:hover { background: var(--paper); border-color: var(--ink-3); }
+
+    .trust-row { margin-top: 22px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
+    .trust-row .pip { display: inline-flex; align-items: center; gap: 6px; }
+    .trust-row .pip svg { color: var(--primary); }
+
+    /* dashboard stage */
+    .stage { position: relative; min-height: 480px; }
+    .card-mock {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .dash-main { position: relative; padding: 22px 22px 18px; transform: rotate(-1.4deg); transition: transform .4s ease; }
+    .dash-main:hover { transform: rotate(0deg); }
+    .dash-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px dashed var(--line); gap: 12px; }
+    .dash-head .who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--bg-2), var(--warm)); display: grid; place-items: center; font-weight: 700; font-family: var(--display); color: var(--ink); font-size: 14px; }
+    .dash-head .meta { font-size: 13px; color: var(--ink-3); text-align: right; }
+    .dash-head .meta strong { color: var(--ink); font-weight: 600; }
+
+    .ring-row { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 20px 0 14px; }
+    .ring { position: relative; width: 116px; height: 116px; flex-shrink: 0; }
+    .ring svg { transform: rotate(-90deg); display: block; }
+    .ring .ring-prog { stroke-dasharray: 314.16; stroke-dashoffset: 314.16; transition: stroke-dashoffset 1.4s cubic-bezier(.2,.7,.25,1); }
+    .ring.in .ring-prog { stroke-dashoffset: 75.4; }
+    .ring .pct { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--display); font-size: 28px; font-weight: 600; color: var(--ink); line-height: 1; text-align: center; }
+    .ring .pct small { display: block; font-family: 'Inter', sans-serif; font-size: 9.5px; font-weight: 500; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 5px; }
+    .stat-stack { display: flex; flex-direction: column; gap: 6px; }
+    .stat-stack .label { font-size: 11.5px; color: var(--ink-3); letter-spacing: .04em; text-transform: uppercase; }
+    .stat-stack .val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: -.02em; }
+    .stat-stack .val .of { color: var(--ink-3); font-weight: 500; font-size: 16px; }
+
+    .req-list { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+    .req { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: 12px; }
+    .req .name { font-size: 13.5px; color: var(--ink); font-weight: 500; }
+    .req .hours { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3); }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+      letter-spacing: .02em;
+    }
+    .pill.met { background: rgba(77,140,127,.18); color: #2F665B; }
+    .pill.miss { background: rgba(221,107,64,.18); color: var(--pop-2); }
+    .pill.due { background: rgba(139,122,184,.20); color: #5E4D8C; }
+
+    /* sticky note */
+    .sticky-note {
+      position: absolute; right: -20px; top: -64px;
+      background: #FAE69A;
+      padding: 12px 14px;
+      border-radius: 4px;
+      box-shadow: 0 14px 24px -10px rgba(30,41,32,.28), 0 1px 0 rgba(0,0,0,.04);
+      transform: rotate(5deg);
+      max-width: 176px;
+      font-family: var(--display); font-size: 14px; color: var(--ink);
+      line-height: 1.35; letter-spacing: -.005em;
+      z-index: 5;
+    }
+    .sticky-note::before {
+      content: ""; position: absolute; left: -1px; top: -1px; width: 22px; height: 22px;
+      background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,.06) 50%);
+      border-top-left-radius: 4px;
+    }
+    .sticky-note .pen { color: var(--pop); font-weight: 600; }
+    @media (max-width: 1100px) { .sticky-note { right: 0; top: -60px; } }
+
+    /* floater */
+    .floater {
+      position: absolute; left: -28px; bottom: -14px;
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 14px; padding: 12px 14px;
+      box-shadow: var(--shadow-md);
+      transform: rotate(-3deg);
+      display: flex; align-items: center; gap: 10px; font-size: 13px;
+    }
+    .floater .dot-anim { width: 8px; height: 8px; border-radius: 50%; background: var(--cool); position: relative; }
+    .floater .dot-anim::after {
+      content: ""; position: absolute; inset: -4px; border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(77,140,127,.5);
+      animation: pulse 2.4s infinite;
+    }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(77,140,127,.5); } 70% { box-shadow: 0 0 0 12px rgba(77,140,127,0); } 100% { box-shadow: 0 0 0 0 rgba(77,140,127,0); } }
+
+    /* scattered sparkle decorations */
+    .sparkle {
+      position: absolute; pointer-events: none;
+      font-family: var(--display); color: var(--pop); opacity: .85;
+    }
+
+    /* ===== MATH STRIP ===== */
+    .strip {
+      margin-top: 56px; padding: 22px 28px;
+      background: var(--ink); color: var(--bg);
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+      box-shadow: var(--shadow-md);
+      position: relative; overflow: hidden;
+    }
+    .strip::before {
+      content: ""; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px;
+      background: radial-gradient(closest-side, rgba(201,147,60,.45), transparent 70%);
+    }
+    .strip::after {
+      content: ""; position: absolute; left: 40%; bottom: -100px; width: 180px; height: 180px;
+      background: radial-gradient(closest-side, rgba(221,107,64,.30), transparent 70%);
+    }
+    .strip .left { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
+    .strip .badge { font-family: var(--display); font-size: 14px; padding: 4px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; color: var(--bg); }
+    .strip .num { font-family: var(--display); font-size: 28px; font-weight: 600; }
+    .strip .num .sm { color: rgba(244,239,227,.55); font-weight: 400; }
+    .strip .vs { font-family: var(--display); font-style: italic; color: var(--warm); font-size: 18px; padding: 0 6px; }
+    .strip .tag-r { font-family: var(--display); font-style: italic; color: var(--bg); font-size: 17px; position: relative; z-index: 1; }
+
+    /* ===== SECTION BASE ===== */
+    section { padding: 88px 0; }
+    @media (max-width: 720px) { section { padding: 64px 0; } }
+
+    .sec-head { max-width: 720px; margin-bottom: 44px; position: relative; }
+    .sec-eye { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; display: inline-flex; align-items: center; gap: 10px; }
+    .sec-eye::before { content: "✦"; color: var(--pop); font-size: 14px; }
+    .sec-h2 { font-size: clamp(30px, 3.8vw, 48px); margin-bottom: 14px; letter-spacing: -.018em; }
+    .sec-h2 em { font-style: italic; color: var(--primary); font-weight: 400; }
+    .sec-sub { font-size: 17px; color: var(--ink-2); max-width: 620px; }
+
+    /* ===== STATE PREVIEW (moved up) ===== */
+    .state-card {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md); padding: 28px;
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px;
+      position: relative;
+    }
+    .state-card::before {
+      content: "★"; position: absolute; top: -12px; right: 28px;
+      color: var(--pop); font-size: 24px; font-family: var(--display);
+      background: var(--bg); padding: 0 8px;
+    }
+    @media (max-width: 820px) { .state-card { grid-template-columns: 1fr; padding: 22px; } }
+    .state-form label { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 6px; font-weight: 500; }
+    .state-form select {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+      background: var(--bg); border-radius: 12px; font-family: inherit; font-size: 15px;
+      color: var(--ink); margin-bottom: 14px; appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%231E2920' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .state-form .hint { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+    .state-result { background: var(--bg); border: 1px solid var(--line-soft); border-radius: 14px; padding: 22px; }
+    .state-result .empty { color: var(--ink-3); font-size: 14.5px; line-height: 1.5; }
+    .state-result h4 { font-family: var(--display); font-size: 22px; margin-bottom: 4px; }
+    .state-result .sub { color: var(--ink-3); font-size: 13px; margin-bottom: 16px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat-mini { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px; }
+    .stat-mini .k { font-size: 11px; color: var(--ink-3); letter-spacing: .04em; text-transform: uppercase; }
+    .stat-mini .v { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--ink); font-weight: 600; }
+    .topic-list { display: flex; flex-direction: column; gap: 6px; }
+    .topic { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 10px; font-size: 13.5px; }
+
+    /* ===== FEATURES ===== */
+    .feat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; }
+    .feat { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; position: relative; overflow: hidden; }
+    .feat:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--bg-2); }
+    .feat .icon {
+      width: 40px; height: 40px; border-radius: 11px;
+      display: grid; place-items: center; margin-bottom: 14px;
+      background: var(--bg-2); color: var(--primary);
+    }
+    .feat h3 { font-size: 19.5px; margin-bottom: 8px; font-weight: 600; }
+    .feat p { font-size: 14.5px; color: var(--ink-2); line-height: 1.55; }
+    .feat .tag {
+      position: absolute; top: 18px; right: 18px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .06em;
+      color: var(--ink-3); text-transform: uppercase;
+    }
+    .feat.f1 { grid-column: span 4; }
+    .feat.f2 { grid-column: span 2; }
+    .feat.f3 { grid-column: span 2; }
+    .feat.f4 { grid-column: span 4; }
+    .feat.f5 { grid-column: span 3; }
+    .feat.f6 { grid-column: span 3; }
+    @media (max-width: 920px) {
+      .feat.f1, .feat.f2, .feat.f3, .feat.f4, .feat.f5, .feat.f6 { grid-column: span 6; }
+    }
+    .feat-map { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .feat-map .st { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line-soft); color: var(--ink-2); }
+    .feat-map .st.on { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+
+    .feat-cert { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cert-row { background: var(--bg); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
+    .cert-row .l { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+    .cert-row .h { font-family: 'JetBrains Mono', monospace; color: var(--ink); }
+    .doc-icon { width: 22px; height: 28px; background: var(--paper); border: 1px solid var(--line); border-radius: 3px; position: relative; }
+    .doc-icon::after { content: ""; position: absolute; inset: 6px 4px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+    /* ===== GUARANTEE ===== */
+    .guarantee {
+      background: linear-gradient(155deg, var(--primary-2) 0%, var(--primary) 60%, #4D7341 100%);
+      color: var(--bg);
+      border-radius: 28px;
+      padding: 56px 56px;
+      position: relative; overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .guarantee::before {
+      content: ""; position: absolute; right: -120px; top: -120px; width: 380px; height: 380px;
+      background: radial-gradient(closest-side, rgba(201,147,60,.42), transparent 70%);
+    }
+    .guarantee::after {
+      content: ""; position: absolute; left: -80px; bottom: -80px; width: 280px; height: 280px;
+      background: radial-gradient(closest-side, rgba(221,107,64,.30), transparent 70%);
+    }
+    .g-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: center; position: relative; }
+    @media (max-width: 920px) { .g-grid { grid-template-columns: 1fr; } .guarantee { padding: 40px 28px; } }
+    .g-eye { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--warm); margin-bottom: 18px; display: inline-flex; align-items: center; gap: 10px; }
+    .g-eye::before { content: ""; width: 22px; height: 1px; background: var(--warm); display: inline-block; }
+    .g-h { font-family: var(--display); font-size: clamp(28px, 3.4vw, 42px); line-height: 1.12; color: var(--bg); margin-bottom: 18px; font-weight: 600; }
+    .g-h em { font-style: italic; color: var(--warm); font-weight: 400; }
+    .g-p { font-size: 16.5px; line-height: 1.6; color: rgba(244,239,227,.86); }
+    .g-p strong { color: var(--bg); font-weight: 600; }
+    .g-stamp {
+      position: relative;
+      width: 240px; height: 240px; border-radius: 50%;
+      border: 2px dashed rgba(201,147,60,.55);
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .g-stamp .inner {
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(201,147,60,.5);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 18px;
+      box-sizing: border-box;
+    }
+    .g-stamp .big { font-family: var(--display); font-size: 44px; font-weight: 600; color: var(--warm); line-height: 1; letter-spacing: -.01em; }
+    .g-stamp .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: rgba(244,239,227,.7); margin-top: 8px; }
+    .g-stamp .sm { font-size: 12.5px; color: rgba(244,239,227,.85); margin-top: 14px; line-height: 1.4; }
+
+    /* two-part guarantee — money-back strip */
+    .g-plus {
+      position: relative; z-index: 1;
+      margin-top: 36px;
+      padding: 18px 22px;
+      background: rgba(0,0,0,.20);
+      border-radius: 14px;
+      border: 1px dashed rgba(201,147,60,.40);
+      display: flex; align-items: center; gap: 18px;
+      font-size: 14.5px; color: rgba(244,239,227,.92);
+      line-height: 1.5;
+    }
+    .g-plus .plus-label {
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .14em;
+      color: var(--warm); padding: 4px 10px; border: 1px solid var(--warm); border-radius: 999px;
+    }
+    .g-plus strong { color: var(--bg); font-weight: 600; }
+    @media (max-width: 640px) { .g-plus { flex-direction: column; align-items: flex-start; gap: 10px; } }
+
+    /* ===== BEFORE/WITH COMPARISON (NEW) ===== */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 820px) { .compare { grid-template-columns: 1fr; } }
+    .compare-card {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+      padding: 30px; position: relative; overflow: hidden;
+    }
+    .compare-card.before {
+      background: linear-gradient(160deg, #ECE4CF 0%, var(--bg-2) 100%);
+      transform: rotate(-1deg);
+    }
+    .compare-card.with { transform: rotate(1deg); border-color: var(--primary); border-width: 1.5px; }
+    .compare-card .label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 14px;
+    }
+    .compare-card.with .label { color: var(--primary); }
+    .compare-card.with .label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .compare-card.before .label::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--pop); transform: rotate(45deg); }
+    .compare-card h3 { font-family: var(--display); font-size: 28px; margin-bottom: 18px; line-height: 1.1; font-weight: 600; }
+    .compare-list { display: flex; flex-direction: column; gap: 10px; }
+    .compare-row { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; line-height: 1.5; }
+    .compare-row .mark { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+    .compare-card.before .mark { background: rgba(184,95,95,.18); color: var(--rose); }
+    .compare-card.with .mark { background: rgba(63,95,51,.18); color: var(--primary); }
+    .compare-row .txt { color: var(--ink-2); }
+    .compare-card.before .txt { text-decoration: line-through; text-decoration-color: rgba(184,95,95,.4); text-decoration-thickness: 1px; }
+
+    /* ===== MULTI-STATE ===== */
+    .multi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
+    @media (max-width: 920px) { .multi { grid-template-columns: 1fr; } }
+    .stack-cards { position: relative; height: 360px; }
+    .stack-cards .mini-card {
+      position: absolute; left: 0; right: 0; background: var(--paper);
+      border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px;
+      box-shadow: var(--shadow-md);
+      display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+      transition: transform .25s ease;
+    }
+    .stack-cards .mini-card:hover { transform: rotate(0deg) translateY(-3px) !important; z-index: 10; }
+    .stack-cards .mini-card .flag {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--bg-2); display: grid; place-items: center;
+      font-family: var(--display); font-weight: 600; color: var(--primary);
+    }
+    .stack-cards .mini-card .info .name { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+    .stack-cards .mini-card .info .deet { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+    .stack-cards .mini-card .right { text-align: right; }
+    .stack-cards .mini-card .right .pct { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; }
+    .stack-cards .mini-card .right .day { font-size: 11.5px; color: var(--ink-3); }
+    .stack-cards .mini-card.c1 { top: 0; transform: rotate(-2deg); z-index: 4; }
+    .stack-cards .mini-card.c2 { top: 84px; transform: rotate(1.2deg); z-index: 3; }
+    .stack-cards .mini-card.c3 { top: 168px; transform: rotate(-1.5deg); z-index: 2; }
+    .stack-cards .mini-card.c4 { top: 252px; transform: rotate(2deg); z-index: 1; opacity: .82; }
+
+    /* ===== PRICING ===== */
+    .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 920px) { .price-grid { grid-template-columns: 1fr; } }
+    .plan {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+      padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .plan:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .plan.featured { background: var(--ink); color: var(--bg); border-color: var(--ink); box-shadow: var(--shadow-lg); }
+    .plan.featured .plan-name, .plan.featured .plan-h, .plan.featured .plan-feat { color: var(--bg); }
+    .plan.featured .plan-feat svg { color: var(--warm); }
+    .plan .ribbon {
+      position: absolute; top: -14px; left: 24px;
+      background: var(--pop); color: var(--bg);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 10px; border-radius: 999px; font-weight: 600;
+    }
+    .plan-name { font-family: var(--display); font-size: 22px; font-weight: 600; }
+    .plan-price { display: flex; align-items: baseline; gap: 6px; }
+    .plan-price .h { font-family: var(--display); font-size: 46px; font-weight: 600; line-height: 1; }
+    .plan-price .per { color: var(--ink-3); font-size: 14px; }
+    .plan.featured .plan-price .per { color: rgba(244,239,227,.6); }
+    .plan-h { font-size: 14px; color: var(--ink-2); min-height: 42px; }
+    .plan.featured .plan-h { color: rgba(244,239,227,.78); }
+    .plan-feats { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .plan-feat { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--ink-2); line-height: 1.45; }
+    .plan-feat svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
+    .plan-cta {
+      margin-top: auto;
+      padding: 12px 18px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; text-align: center;
+      background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+      transition: background .15s, transform .12s;
+    }
+    .plan-cta:hover { background: var(--bg-2); transform: translateY(-1px); }
+    .plan.featured .plan-cta { background: var(--pop); border-color: var(--pop); color: var(--bg); }
+    .plan.featured .plan-cta:hover { background: var(--pop-2); }
+
+    /* ===== FAQ (NEW) ===== */
+    .faq-list { display: flex; flex-direction: column; gap: 12px; }
+    .faq-item {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
+      padding: 0; overflow: hidden; transition: border-color .2s;
+    }
+    .faq-item:hover { border-color: var(--bg-2); }
+    .faq-item summary {
+      cursor: pointer; padding: 22px 24px;
+      font-family: var(--display); font-size: 19px; font-weight: 600; color: var(--ink);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      list-style: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: ""; width: 24px; height: 24px; border: 1.5px solid var(--ink-3); border-radius: 50%;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 6h8M6 2v8' fill='none' stroke='%231E2920' stroke-width='1.6' stroke-linecap='round'/></svg>");
+      background-repeat: no-repeat; background-position: center;
+      transition: transform .25s ease, background-image .25s ease;
+      flex-shrink: 0;
+    }
+    .faq-item[open] summary::after {
+      transform: rotate(45deg);
+      border-color: var(--primary);
+    }
+    .faq-item .answer { padding: 0 24px 22px; font-size: 15px; color: var(--ink-2); line-height: 1.6; }
+    .faq-item .answer p + p { margin-top: 10px; }
+
+    /* ===== FOUNDER ===== */
+    .founder {
+      background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+      padding: 44px 48px; box-shadow: var(--shadow-sm);
+      display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 40px; align-items: center;
+      position: relative;
+    }
+    .founder::before {
+      content: "“"; position: absolute; top: -28px; left: 36px;
+      font-family: var(--display); font-size: 120px; color: var(--warm); opacity: .35; line-height: 1;
+    }
+    @media (max-width: 820px) { .founder { padding: 32px 24px; grid-template-columns: 1fr; gap: 28px; } .founder::before { left: 14px; } }
+    .founder blockquote { font-family: var(--display); font-size: 23px; line-height: 1.4; color: var(--ink); margin: 0 0 18px; font-style: italic; font-weight: 400; position: relative; z-index: 1; }
+    .founder .sig { display: flex; align-items: center; gap: 14px; }
+    .founder .sig .av {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--bg-2), var(--warm));
+      display: grid; place-items: center; color: var(--ink);
+      font-family: var(--display); font-weight: 600; font-size: 18px;
+      border: 1px solid var(--line);
+    }
+    .founder .sig .who { font-size: 14.5px; }
+    .founder .sig .who strong { display: block; color: var(--ink); font-weight: 600; }
+    .founder .sig .who span { color: var(--ink-3); font-size: 13px; }
+    .founder-aside {
+      background: var(--bg-2); border-radius: 14px; padding: 22px;
+      font-size: 14px; color: var(--ink-2); line-height: 1.5;
+    }
+    .founder-aside strong { color: var(--ink); display: block; margin-bottom: 6px; font-family: var(--display); font-size: 16px; font-weight: 600; }
+
+    /* ===== FINAL CTA ===== */
+    .final { text-align: center; padding: 96px 0 88px; }
+    .final h2 { font-size: clamp(36px, 5vw, 60px); margin-bottom: 18px; max-width: 760px; margin-left: auto; margin-right: auto; }
+    .final h2 em { font-style: italic; color: var(--primary); font-weight: 400; }
+    .final p { font-size: 17px; color: var(--ink-2); max-width: 540px; margin: 0 auto 28px; }
+    .final .row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .final small { display: block; margin-top: 18px; color: var(--ink-3); font-size: 13px; }
+
+    footer { border-top: 1px solid var(--line); padding: 32px 0 28px; background: var(--bg); }
+    .foot-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+    .foot-links a { font-size: 13px; color: var(--ink-3); }
+    .foot-links a:hover { color: var(--ink); }
+    .copy { font-size: 12.5px; color: var(--ink-3); }
+
+    /* reveal animations */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .stagger > * { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+    .stagger.in > *:nth-child(1) { transition-delay: 0ms; }
+    .stagger.in > *:nth-child(2) { transition-delay: 80ms; }
+    .stagger.in > *:nth-child(3) { transition-delay: 160ms; }
+    .stagger.in > *:nth-child(4) { transition-delay: 240ms; }
+    .stagger.in > *:nth-child(5) { transition-delay: 320ms; }
+    .stagger.in > *:nth-child(6) { transition-delay: 400ms; }
+    .stagger.in > * { opacity: 1; transform: none; }
+
+  </style>
+</head>
+<body>
+
+  <header class="nav">
+    <div class="wrap nav-row">
+      <a href="/" class="brand"><span class="brand-mark"></span> ClearCME</a>
+      <nav class="nav-links">
+        <a href="#guarantee" class="nav-link hide-sm">The Guarantee</a>
+        <a href="#what-you-get" class="nav-link hide-sm">What's included</a>
+        <a href="#pricing" class="nav-link hide-sm">Pricing</a>
+        <a href="#faq" class="nav-link hide-sm">FAQ</a>
+        <a href="https://clearcme.ai/login" class="nav-link">Sign in</a>
+        <a href="https://clearcme.ai/login" class="nav-cta">Start free →</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== TICKER ====== -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item"><strong>CA</strong><span>renews Jan 31 (odd yrs)</span></span>
+      <span class="ticker-item"><strong>NV</strong><span>renews Jul 1</span></span>
+      <span class="ticker-item"><strong>TX</strong><span>renews Aug 31</span></span>
+      <span class="ticker-item"><strong>FL</strong><span>renews Jan 31</span></span>
+      <span class="ticker-item"><strong>NY</strong><span>renews every 2 yrs</span></span>
+      <span class="ticker-item"><strong>IL</strong><span>renews Jul 31</span></span>
+      <span class="ticker-item"><strong>PA</strong><span>renews Dec 31 (even yrs)</span></span>
+      <span class="ticker-item"><strong>OH</strong><span>renews Oct 1 (even yrs)</span></span>
+      <span class="ticker-item"><strong>WA</strong><span>annual · birthday</span></span>
+      <span class="ticker-item"><strong>OR</strong><span>renews on birthday</span></span>
+      <span class="ticker-item"><strong>DEA MATE Act</strong><span>8 hrs · one-time</span></span>
+      <!-- duplicate for seamless loop -->
+      <span class="ticker-item"><strong>CA</strong><span>renews Jan 31 (odd yrs)</span></span>
+      <span class="ticker-item"><strong>NV</strong><span>renews Jul 1</span></span>
+      <span class="ticker-item"><strong>TX</strong><span>renews Aug 31</span></span>
+      <span class="ticker-item"><strong>FL</strong><span>renews Jan 31</span></span>
+      <span class="ticker-item"><strong>NY</strong><span>renews every 2 yrs</span></span>
+      <span class="ticker-item"><strong>IL</strong><span>renews Jul 31</span></span>
+      <span class="ticker-item"><strong>PA</strong><span>renews Dec 31 (even yrs)</span></span>
+      <span class="ticker-item"><strong>OH</strong><span>renews Oct 1 (even yrs)</span></span>
+      <span class="ticker-item"><strong>WA</strong><span>annual · birthday</span></span>
+      <span class="ticker-item"><strong>OR</strong><span>renews on birthday</span></span>
+      <span class="ticker-item"><strong>DEA MATE Act</strong><span>8 hrs · one-time</span></span>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ====== HERO ====== -->
+    <section class="hero">
+      <span class="sparkle" style="top: 40px; left: 8%; font-size: 26px; transform: rotate(15deg);">✦</span>
+      <span class="sparkle" style="top: 120px; right: 4%; font-size: 18px; opacity:.5;">✦</span>
+
+      <div class="wrap hero-grid">
+        <div class="reveal">
+          <h1 class="h1">Compliant for your next renewal — <span class="wave">guaranteed.</span></h1>
+          <p class="hero-sub">
+            <strong>Under 60 seconds of setup.</strong> <span class="swash">Less than what you'd spend</span> on a single state filing fee. ClearCME maps your CME requirements, tracks your hours, and tells you exactly what's missing — for every state you're licensed in.
+          </p>
+          <div class="hero-cta-row">
+            <a href="https://clearcme.ai/login" class="btn btn-primary">See your gaps in 60 seconds <span class="arrow">→</span></a>
+            <a href="#guarantee" class="btn btn-ghost">How the guarantee works</a>
+          </div>
+          <div class="trust-row">
+            <span class="pip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> All 50 states + DC</span>
+            <span class="pip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> MD &amp; DO</span>
+            <span class="pip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Built by a physician</span>
+          </div>
+        </div>
+
+        <div class="stage reveal">
+          <div class="card-mock dash-main">
+            <div class="dash-head">
+              <div class="who">
+                <div class="avatar">DR</div>
+                <div>
+                  <div style="font-size:13.5px; font-weight:600;">Dr. R. Patel</div>
+                  <div style="font-size:11.5px; color: var(--ink-3);">Emergency Medicine · MD</div>
+                </div>
+              </div>
+              <div class="meta"><strong>Nevada</strong> · 87 days to renewal</div>
+            </div>
+
+            <div class="ring-row">
+              <div class="ring" id="ring1">
+                <svg width="116" height="116" viewBox="0 0 116 116">
+                  <circle cx="58" cy="58" r="50" fill="none" stroke="#ECE3CA" stroke-width="9"/>
+                  <circle class="ring-prog" cx="58" cy="58" r="50" fill="none" stroke="#3F5F33" stroke-width="9" stroke-linecap="round"/>
+                </svg>
+                <div class="pct"><span>76%</span><small>complete</small></div>
+              </div>
+              <div class="stat-stack">
+                <div>
+                  <div class="label">Hours earned</div>
+                  <div class="val">30.5<span class="of"> / 40 hrs</span></div>
+                </div>
+                <div>
+                  <div class="label">Hours remaining</div>
+                  <div class="val">9.5<span class="of"> hrs</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="req-list">
+              <div class="req"><span class="name">DEA MATE Act (one-time)</span><span class="hours">0 / 8 hrs</span><span class="pill miss">Missing</span></div>
+              <div class="req"><span class="name">Pain management</span><span class="hours">1 / 2 hrs</span><span class="pill due">In progress</span></div>
+              <div class="req"><span class="name">Medical ethics</span><span class="hours">2 / 2 hrs</span><span class="pill met">Met</span></div>
+              <div class="req"><span class="name">Opioid prescribing</span><span class="hours">2 / 2 hrs</span><span class="pill met">Met</span></div>
+            </div>
+          </div>
+
+          <div class="sticky-note">
+            <span class="pen">↳</span> exactly what's missing,<br/>in plain English.
+          </div>
+
+          <div class="floater">
+            <span class="dot-anim"></span>
+            <span><strong style="color:var(--ink);">Live</strong> — auto-updated when state boards change rules</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap">
+        <div class="strip reveal">
+          <div class="left">
+            <span class="badge">The math</span>
+            <span class="num">$79<span class="sm">/yr</span></span>
+            <span class="vs">vs.</span>
+            <span class="num">$690<span class="sm"> · single CA filing fee</span></span>
+          </div>
+          <div class="tag-r">Less than a tenth the cost of one mistake.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== STATE PREVIEW ====== -->
+    <section style="padding-top: 56px;">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="sec-eye">Try it</span>
+          <h2 class="sec-h2">What does <em>your</em> state actually require?</h2>
+          <p class="sec-sub">Pick your state and license type to see what physicians see inside ClearCME — before they sign up.</p>
+        </div>
+
+        <div class="state-card reveal">
+          <div class="state-form">
+            <label for="state">State</label>
+            <select id="state">
+              <option value="">Select your state…</option>
+              <option value="CA">California</option>
+              <option value="NV">Nevada</option>
+              <option value="TX">Texas</option>
+              <option value="FL">Florida</option>
+              <option value="NY">New York</option>
+              <option value="IL">Illinois</option>
+              <option value="PA">Pennsylvania</option>
+              <option value="OH">Ohio</option>
+              <option value="WA">Washington</option>
+              <option value="OR">Oregon</option>
+            </select>
+            <label for="lic">License type</label>
+            <select id="lic">
+              <option value="MD">MD</option>
+              <option value="DO">DO</option>
+            </select>
+            <p class="hint">Preview is intentionally concise. Full accounts add specialty rules, first-renewal exceptions, and edge cases.</p>
+          </div>
+          <div class="state-result" id="state-result">
+            <p class="empty">Pick a state to see cycle length, total CME hours, and the mandates physicians most often miss when renewal season closes in.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== WHAT YOU GET ====== -->
+    <section id="what-you-get">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="sec-eye">What's included</span>
+          <h2 class="sec-h2">Six things, working together — <em>so you never have to think about CME again.</em></h2>
+          <p class="sec-sub">Worth $300+ if you bought the pieces separately. Yours from $79 a year.</p>
+        </div>
+
+        <div class="feat-grid stagger">
+          <div class="feat f1">
+            <span class="tag">01</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l9-3 9 3v12l-9 3-9-3z"/><path d="M3 6l9 3 9-3"/><path d="M12 9v12"/></svg></div>
+            <h3>Your CME requirements, mapped</h3>
+            <p>Every state you're licensed in — all 50 + DC, MD and DO. Auto-updated when state boards change the rules, so you don't have to.</p>
+            <div class="feat-map">
+              <span class="st">CA</span><span class="st">NV</span><span class="st">TX</span>
+              <span class="st">FL</span><span class="st">NY</span><span class="st">IL</span>
+              <span class="st">PA</span><span class="st">+44 more</span>
+            </div>
+          </div>
+          <div class="feat f2">
+            <span class="tag">02</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <h3>Hours tracked automatically</h3>
+            <p>Upload any certificate — PDF or photo. AI extracts hours, dates, topics. No manual entry.</p>
+          </div>
+          <div class="feat f3">
+            <span class="tag">03</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <h3>Gaps in real time</h3>
+            <p>Exactly what's missing, in plain English, with deadline countdowns. No spreadsheet required.</p>
+          </div>
+          <div class="feat f4">
+            <span class="tag">04</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <h3>The cheapest accredited courses to fill them</h3>
+            <p>Built-in links to free and inexpensive, vetted CME — matched to the exact gaps in your record. No more 2 a.m. panic-Googling.</p>
+            <div class="feat-cert">
+              <div class="cert-row"><span class="l"><div class="doc-icon"></div> DEA MATE Act</span><span class="h">8 hrs · free</span></div>
+              <div class="cert-row"><span class="l"><div class="doc-icon"></div> Pain mgmt</span><span class="h">2 hrs · $19</span></div>
+            </div>
+          </div>
+          <div class="feat f5">
+            <span class="tag">05</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <h3>Audit-ready compliance file</h3>
+            <p>Export a clean PDF for any state, anytime. If your board ever asks for documentation, it's just another Tuesday.</p>
+          </div>
+          <div class="feat f6">
+            <span class="tag">06</span>
+            <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+            <h3>Multi-state, one dashboard</h3>
+            <p>Two licenses? Three? See every state on a single view. No spreadsheets, no panic-Googling.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== GUARANTEE ====== -->
+    <section id="guarantee" style="padding-top: 32px;">
+      <div class="wrap">
+        <div class="guarantee reveal">
+          <div class="g-grid">
+            <div>
+              <div class="g-eye">The Guarantee</div>
+              <h2 class="g-h">If we ever show you compliant when you aren't, <em>we pay.</em></h2>
+              <p class="g-p">
+                We refund your subscription <strong>and</strong> cover your late-renewal fee — up to <strong>$1,000</strong>.
+                <br/><br/>
+                We've never paid this out. Your data is verified twice — once by AI, once by a human physician — before the dashboard ever calls you compliant.
+              </p>
+            </div>
+            <div class="g-stamp">
+              <div class="inner">
+                <div class="big">$1,000</div>
+                <div class="lbl">If we miss · we pay</div>
+                <div class="sm">Subscription refunded + late-renewal fee covered.</div>
+              </div>
+            </div>
+          </div>
+          <div class="g-plus">
+            <span class="plus-label">Plus</span>
+            <span><strong>30-day money-back.</strong> Try it. Not for you? Full refund within 30 days. No questions, no email chase.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== BEFORE / WITH COMPARISON ====== -->
+    <section style="padding-top: 32px;">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="sec-eye">The before &amp; after</span>
+          <h2 class="sec-h2">Same physician. Same renewal. <em>Different Tuesday.</em></h2>
+        </div>
+        <div class="compare">
+          <div class="compare-card before reveal">
+            <span class="label">Without ClearCME</span>
+            <h3>Two weeks before renewal, 11:47 p.m.</h3>
+            <div class="compare-list">
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Open the state board PDF. Realize it's been updated since last cycle.</span></div>
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Hunt through your inbox for certificates from three different platforms.</span></div>
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Tally hours in a spreadsheet. Hope you didn't double-count.</span></div>
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Find out you're missing pain management. Panic-Google "cheap CME."</span></div>
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Pay $89 for a 2-hour course you'll forget the moment it's over.</span></div>
+              <div class="compare-row"><span class="mark">✕</span><span class="txt">Do it again next year. For your second state. From scratch.</span></div>
+            </div>
+          </div>
+          <div class="compare-card with reveal">
+            <span class="label">With ClearCME</span>
+            <h3>Any Tuesday. 60 seconds.</h3>
+            <div class="compare-list">
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">Open ClearCME. See exactly where you stand, every state.</span></div>
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">Certificates already extracted, sorted, and counted.</span></div>
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">"You need 8 hours of DEA MATE Act and 1 hour of pain management."</span></div>
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">Tap the recommended free course. Done in an afternoon.</span></div>
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">Audit-ready PDF exported and saved. Just in case.</span></div>
+              <div class="compare-row"><span class="mark">✓</span><span class="txt">Next year? Already mapped. Just close the loop on what's new.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== MULTI-STATE ====== -->
+    <section>
+      <div class="wrap">
+        <div class="multi">
+          <div class="reveal">
+            <span class="sec-eye">Multi-state physicians</span>
+            <h2 class="sec-h2" style="margin-top:12px;">Two licenses. Three. Ten. <em>One dashboard.</em></h2>
+            <p class="sec-sub" style="margin-top:14px;">
+              Every state has its own renewal date, hour count, mandatory topics, and edge cases. ClearCME tracks all of them at once and shows you what's due first — so you can stop reconciling spreadsheets at midnight.
+            </p>
+            <div style="margin-top: 24px;">
+              <a href="https://clearcme.ai/login" class="btn btn-primary">Add your states <span class="arrow">→</span></a>
+            </div>
+          </div>
+          <div class="stack-cards reveal">
+            <div class="mini-card c1">
+              <div class="flag">CA</div>
+              <div class="info"><div class="name">California · MD</div><div class="deet">12 hrs pain mgmt due · renews Jan 31</div></div>
+              <div class="right"><div class="pct">62%</div><div class="day">214 days</div></div>
+            </div>
+            <div class="mini-card c2">
+              <div class="flag">NV</div>
+              <div class="info"><div class="name">Nevada · MD</div><div class="deet">DEA MATE Act outstanding · renews Jul 1</div></div>
+              <div class="right"><div class="pct">76%</div><div class="day">87 days</div></div>
+            </div>
+            <div class="mini-card c3">
+              <div class="flag">TX</div>
+              <div class="info"><div class="name">Texas · MD</div><div class="deet">Ethics complete · renews Aug 31</div></div>
+              <div class="right"><div class="pct">94%</div><div class="day">142 days</div></div>
+            </div>
+            <div class="mini-card c4">
+              <div class="flag">+1</div>
+              <div class="info"><div class="name">Add another state</div><div class="deet">Same dashboard, same workflow.</div></div>
+              <div class="right"><div class="pct">·</div><div class="day">&nbsp;</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== PRICING ====== -->
+    <section id="pricing">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="sec-eye">Pricing</span>
+          <h2 class="sec-h2">Less than half the cost of one state filing fee.</h2>
+          <p class="sec-sub">Start free. Upgrade only if you need it. The guarantee covers Essential and Pro.</p>
+        </div>
+        <div class="price-grid">
+          <div class="plan reveal">
+            <div class="plan-name">Free</div>
+            <div class="plan-price"><span class="h">$0</span><span class="per">forever</span></div>
+            <p class="plan-h">See your compliance map. No credit card.</p>
+            <ul class="plan-feats">
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> One state mapped</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Manual hour entry</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Course recommendations</li>
+            </ul>
+            <a href="https://clearcme.ai/login" class="plan-cta">Start free</a>
+          </div>
+          <div class="plan featured reveal">
+            <span class="ribbon">Most physicians</span>
+            <div class="plan-name">Essential</div>
+            <div class="plan-price"><span class="h">$79</span><span class="per">/year</span></div>
+            <p class="plan-h">Everything you need for 1–2 state licenses, on autopilot.</p>
+            <ul class="plan-feats">
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Up to 2 state licenses</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> AI certificate extraction</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Audit-ready PDF export</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Renewal &amp; gap reminders</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 30-day money-back</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> The $1,000 Compliance Promise</li>
+            </ul>
+            <a href="https://clearcme.ai/login" class="plan-cta">Start Essential</a>
+          </div>
+          <div class="plan reveal">
+            <div class="plan-name">Pro</div>
+            <div class="plan-price"><span class="h">$149</span><span class="per">/year</span></div>
+            <p class="plan-h">For physicians with 3+ licenses. Every state, one dashboard.</p>
+            <ul class="plan-feats">
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Everything in Essential</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Unlimited state licenses</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Cross-state hour reuse</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> DEA MATE Act tracking</li>
+              <li class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Priority support</li>
+            </ul>
+            <a href="https://clearcme.ai/login" class="plan-cta">Start Pro</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FAQ ====== -->
+    <section id="faq">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <h2 class="sec-h2" style="font-size: clamp(26px, 2.6vw, 32px); font-weight: 500;">Frequently Asked Questions</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary>How does the guarantee actually work?</summary>
+            <div class="answer">
+              <p>It's two parts.</p>
+              <p><strong>30-day money-back.</strong> If ClearCME isn't right for you, request a full refund within 30 days of paying. No questions, no email chase.</p>
+              <p><strong>The $1,000 Compliance Promise.</strong> If our dashboard ever shows your account as compliant for a state — and you turn out not to be — we'll refund your subscription <strong>and</strong> cover your late-renewal fee, up to $1,000.</p>
+              <p>Your data is verified twice: once by AI extracting your certificates, and once by a human physician validating state-specific rules. We've never paid the Compliance Promise out.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>What if my state board updates its requirements mid-cycle?</summary>
+            <div class="answer">
+              <p>That's the most common reason physicians find out they're non-compliant. ClearCME monitors all 50 state board pages and re-runs your compliance check automatically. If a new mandate appears mid-cycle, you'll see the gap on your dashboard within a week and get an email summary.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Does ClearCME work for both MD and DO?</summary>
+            <div class="answer">
+              <p>Yes. ClearCME tracks the state board requirements that apply to your license — MD or DO, plus DEA registration where relevant. Specialty board CME (ABEM, ABIM, ABFM, etc.) isn't ClearCME's focus.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>What does "audit-ready" mean?</summary>
+            <div class="answer">
+              <p>If your state board ever requests proof of compliance, you can export a single PDF showing exactly which hours satisfied which requirement, with course names, dates, and accreditation references. Tap one button. Send. Done.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Is my data private?</summary>
+            <div class="answer">
+              <p>Uploaded certificates are encrypted at rest and in transit. They contain no protected health information — only your name, course names, hours, and dates. They're never shared with state boards, employers, or specialty colleges.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Can I cancel anytime?</summary>
+            <div class="answer">
+              <p>Yes — cancel inside the app, no email or call required. We don't auto-renew without notice; you'll always get a reminder before your annual subscription renews.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FOUNDER ====== -->
+    <section style="padding-top: 24px;">
+      <div class="wrap">
+        <div class="founder reveal">
+          <div>
+            <blockquote>I built ClearCME because I was tired of panic-Googling "cheap CME" two weeks before a renewal. Holding licenses in two states made it worse. Every physician has the same story — different state, same chaos. This exists so that never happens again.</blockquote>
+            <div class="sig">
+              <div class="av">MR</div>
+              <div class="who">
+                <strong>Michael Rushton, MD</strong>
+                <span>Emergency Medicine · Founder, ClearCME</span>
+              </div>
+            </div>
+          </div>
+          <div class="founder-aside">
+            <strong>Why a physician built it</strong>
+            Because the people writing the existing tools weren't the ones being audited. ClearCME is the simplicity I wished I'd had on Year 1.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FINAL CTA ====== -->
+    <section class="final reveal">
+      <div class="wrap">
+        <h2>Your CME compliance, <em>handled.</em></h2>
+        <p>See your gaps in 60 seconds. Free to start. The guarantee comes with every paid plan.</p>
+        <div class="row">
+          <a href="https://clearcme.ai/login" class="btn btn-primary">Start free <span class="arrow">→</span></a>
+          <a href="#pricing" class="btn btn-ghost">See pricing</a>
+        </div>
+        <small>Free · No credit card · Built by a physician</small>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="wrap foot-row">
+      <div class="copy">© 2026 ClearCME · All rights reserved.</div>
+      <nav class="foot-links">
+        <a href="https://clearcme.ai/pricing">Pricing</a>
+        <a href="https://clearcme.ai/mate-act">DEA MATE Act</a>
+        <a href="https://clearcme.ai/methodology">Methodology</a>
+        <a href="https://clearcme.ai/privacy">Privacy</a>
+        <a href="https://clearcme.ai/terms">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    /* reveal on scroll */
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -60px 0px" });
+    document.querySelectorAll('.reveal, .stagger').forEach((el) => io.observe(el));
+
+    /* animate the ring when in view */
+    const ringObs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('in'); ringObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.4 });
+    const ring = document.getElementById('ring1');
+    if (ring) ringObs.observe(ring);
+
+    /* state preview data */
+    const stateData = {
+      CA: { name: "California", cycle: "2 yrs", hrs: 50, renew: "Jan 31", topics: [
+        { name: "Pain management & end-of-life care", hrs: 12, pill: "miss" },
+        { name: "Implicit bias", hrs: 1, pill: "miss" },
+        { name: "Cultural &amp; linguistic competency", hrs: "—", pill: "due" }
+      ]},
+      NV: { name: "Nevada", cycle: "1 yr", hrs: 40, renew: "Jul 1", topics: [
+        { name: "Opioid prescribing", hrs: 2, pill: "met" },
+        { name: "Pain management", hrs: 2, pill: "miss" },
+        { name: "Medical ethics", hrs: 2, pill: "met" }
+      ]},
+      TX: { name: "Texas", cycle: "2 yrs", hrs: 48, renew: "Aug 31", topics: [
+        { name: "Medical ethics", hrs: 2, pill: "met" },
+        { name: "Human trafficking awareness", hrs: 1, pill: "miss" }
+      ]},
+      FL: { name: "Florida", cycle: "2 yrs", hrs: 40, renew: "Jan 31", topics: [
+        { name: "Medical errors", hrs: 2, pill: "miss" },
+        { name: "Domestic violence", hrs: 2, pill: "miss" },
+        { name: "HIV / AIDS", hrs: 1, pill: "due" }
+      ]},
+      NY: { name: "New York", cycle: "3 yrs", hrs: "Varies", renew: "Every 2 yrs", topics: [
+        { name: "Infection control", hrs: 4, pill: "miss" },
+        { name: "Child abuse identification", hrs: 2, pill: "miss" }
+      ]},
+      IL: { name: "Illinois", cycle: "3 yrs", hrs: 150, renew: "Jul 31", topics: [
+        { name: "Sexual harassment prevention", hrs: 1, pill: "miss" },
+        { name: "Implicit bias", hrs: 1, pill: "miss" },
+        { name: "Alzheimer's & dementia", hrs: 1, pill: "due" }
+      ]},
+      PA: { name: "Pennsylvania", cycle: "2 yrs", hrs: 100, renew: "Dec 31 (even yrs)", topics: [
+        { name: "Opioid prescribing & pain mgmt", hrs: 2, pill: "miss" },
+        { name: "Child abuse recognition", hrs: 2, pill: "miss" }
+      ]},
+      OH: { name: "Ohio", cycle: "2 yrs", hrs: 100, renew: "Oct 1 (even yrs)", topics: [
+        { name: "Opioid &amp; controlled substances", hrs: 1, pill: "miss" }
+      ]},
+      WA: { name: "Washington", cycle: "Annual reporting", hrs: 200, renew: "Birthday", topics: [
+        { name: "Suicide assessment, treatment, mgmt", hrs: 6, pill: "miss" },
+        { name: "Health equity (one-time)", hrs: 4, pill: "miss" }
+      ]},
+      OR: { name: "Oregon", cycle: "2 yrs", hrs: 60, renew: "Birthday", topics: [
+        { name: "Pain management", hrs: 6, pill: "miss" },
+        { name: "Cultural competency", hrs: 2, pill: "miss" }
+      ]}
+    };
+    function renderState() {
+      const code = document.getElementById('state').value;
+      const lic = document.getElementById('lic').value;
+      const out = document.getElementById('state-result');
+      if (!code) { out.innerHTML = '<p class="empty">Pick a state to see cycle length, total CME hours, and the mandates physicians most often miss when renewal season closes in.</p>'; return; }
+      const d = stateData[code];
+      out.innerHTML = `
+        <h4>${d.name} · ${lic}</h4>
+        <div class="sub">Renewal cycle: ${d.cycle} · Next renewal: ${d.renew}</div>
+        <div class="stat-row">
+          <div class="stat-mini"><div class="k">Total hours</div><div class="v">${d.hrs}</div></div>
+          <div class="stat-mini"><div class="k">Mandates</div><div class="v">${d.topics.length}</div></div>
+          <div class="stat-mini"><div class="k">Cycle</div><div class="v">${d.cycle}</div></div>
+        </div>
+        <div class="topic-list">
+          ${d.topics.map(t => `<div class="topic"><span>${t.name}${t.hrs!=="—" ? ` <span style="color:var(--ink-3); font-family:'JetBrains Mono', monospace; font-size:12px;">· ${t.hrs} hrs</span>` : ''}</span><span class="pill ${t.pill}">${t.pill==='met'?'Met':t.pill==='miss'?'Required':'Track'}</span></div>`).join('')}
+        </div>
+      `;
+    }
+    document.getElementById('state').addEventListener('change', renderState);
+    document.getElementById('lic').addEventListener('change', renderState);
+  </script>
+
+</body>
+</html>

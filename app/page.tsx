@@ -1,678 +1,948 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { BrandLockup } from "@/components/BrandLockup";
-import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
-import HeroProductPreview from "@/components/HeroProductPreview";
-import CheckYourStateWidget from "@/components/CheckYourStateWidget";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  Clock3,
+  FileText,
+  Grid2X2,
+  Map,
+  Search,
+  Upload,
+  X,
+} from "lucide-react";
+import {
+  STATE_OPTIONS,
+  STATE_REQUIREMENTS,
+  type LicenseType,
+  type MandatoryTopic,
+  type StateCode,
+} from "@/lib/state-requirements";
 
-type DemoState = "NV" | "CA" | "TX" | "FL" | "NY";
+const tickerItems = [
+  ["CA", "renews by birth month"],
+  ["NV", "MD birthday · DO Dec 31"],
+  ["TX", "renews by birth month"],
+  ["FL", "assigned biennium"],
+  ["NY", "every 2 yrs"],
+  ["IL", "renews Jul 31"],
+  ["PA", "MD Dec 31 · DO Oct 31"],
+  ["OH", "renewal date varies"],
+  ["WA", "license-record cycle"],
+  ["OR", "renewal date varies"],
+  ["DEA MATE Act", "8 hrs · one-time"],
+] as const;
 
-const DEMO_STATES: Record<DemoState, {
-  label: string;
-  licenseType: string;
-  totalHours: number;
-  daysToRenewal: number;
-  requirements: { topic: string; hrs: string; note?: string; met: boolean }[];
-}> = {
-  NV: {
-    label: "Nevada",
-    licenseType: "DO · Emergency Medicine",
-    totalHours: 40,
-    daysToRenewal: 267,
-    requirements: [
-      { topic: "Ethics", hrs: "1 hr", met: true },
-      { topic: "Opioid Prescribing", hrs: "2 hrs", met: true },
-      { topic: "Pain Management", hrs: "1 hr", met: false },
+const featureCards = [
+  {
+    className: "f1",
+    tag: "01",
+    icon: Map,
+    title: "Your CME requirements, mapped",
+    body: "Every state you're licensed in - all 50 + DC, MD and DO. Auto-updated when state boards change the rules, so you don't have to.",
+    extra: (
+      <div className="feat-map" aria-label="Example states covered">
+        {["CA", "NV", "TX", "FL", "NY", "IL", "PA", "+44 more"].map((state) => (
+          <span className="st" key={state}>
+            {state}
+          </span>
+        ))}
+      </div>
+    ),
+  },
+  {
+    className: "f2",
+    tag: "02",
+    icon: Upload,
+    title: "Hours tracked automatically",
+    body: "Upload any certificate - PDF or photo. AI extracts hours, dates, topics, and provider details without manual entry.",
+  },
+  {
+    className: "f3",
+    tag: "03",
+    icon: Clock3,
+    title: "Gaps in real time",
+    body: "Exactly what's missing, in plain English, with deadline countdowns. No spreadsheet required.",
+  },
+  {
+    className: "f4",
+    tag: "04",
+    icon: Search,
+    title: "The cheapest accredited courses to fill them",
+    body: "Built-in links to free and inexpensive, vetted CME - matched to the exact gaps in your record. No more midnight panic-searching.",
+    extra: (
+      <div className="feat-cert">
+        <div className="cert-row">
+          <span className="l">
+            <span className="doc-icon" aria-hidden="true" /> DEA MATE Act
+          </span>
+          <span className="h">8 hrs · free</span>
+        </div>
+        <div className="cert-row">
+          <span className="l">
+            <span className="doc-icon" aria-hidden="true" /> Pain mgmt
+          </span>
+          <span className="h">2 hrs · $19</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    className: "f5",
+    tag: "05",
+    icon: FileText,
+    title: "Audit-ready compliance file",
+    body: "Export a clean PDF for any state, anytime. If your board ever asks for documentation, it's just another Tuesday.",
+  },
+  {
+    className: "f6",
+    tag: "06",
+    icon: Grid2X2,
+    title: "Multi-state, one dashboard",
+    body: "Two licenses? Three? See every state on a single view. No spreadsheets, no duplicate tracking.",
+  },
+];
+
+const faqItems = [
+  {
+    q: "How does the guarantee actually work?",
+    a: [
+      "It's two parts.",
+      "30-day money-back. If ClearCME isn't right for you, request a full refund within 30 days of paying. No questions, no email chase.",
+      "The $1,000 Compliance Promise. If our dashboard ever shows your account as compliant for a state - and you turn out not to be - we'll refund your subscription and cover your late-renewal fee, up to $1,000.",
+      "Your data is verified twice: once by AI extracting your certificates, and once by a human physician validating state-specific rules. We've never paid the Compliance Promise out.",
     ],
   },
-  CA: {
-    label: "California",
-    licenseType: "MD · Internal Medicine",
-    totalHours: 50,
-    daysToRenewal: 314,
-    requirements: [
-      { topic: "Pain Management & End-of-Life", hrs: "12 hrs", met: false },
-      { topic: "Implicit Bias", hrs: "4 hrs", met: false },
+  {
+    q: "What if my state board updates its requirements mid-cycle?",
+    a: [
+      "ClearCME monitors state board requirements and re-runs your compliance check automatically. If a new mandate appears mid-cycle, you'll see the gap on your dashboard and get an email summary.",
     ],
   },
-  TX: {
-    label: "Texas",
-    licenseType: "MD · Family Medicine",
-    totalHours: 48,
-    daysToRenewal: 189,
-    requirements: [
-      { topic: "Human Trafficking", hrs: "1 hr", met: true },
-      { topic: "Ethics", hrs: "2 hrs", met: true },
-      { topic: "Opioid Prescribing", hrs: "varies", note: "first 2 renewals", met: false },
+  {
+    q: "Does ClearCME work for both MD and DO?",
+    a: [
+      "Yes. ClearCME tracks the state board requirements that apply to your license - MD or DO, plus DEA registration where relevant. Specialty board CME isn't ClearCME's focus.",
     ],
   },
-  FL: {
-    label: "Florida",
-    licenseType: "DO · Internal Medicine",
-    totalHours: 40,
-    daysToRenewal: 92,
-    requirements: [
-      { topic: "Medical Errors", hrs: "2 hrs", met: true },
-      { topic: "Domestic Violence", hrs: "2 hrs", note: "every 6 yrs", met: false },
-      { topic: "Controlled Substances", hrs: "2 hrs", met: false },
+  {
+    q: 'What does "audit-ready" mean?',
+    a: [
+      "If your state board ever requests proof of compliance, you can export a single PDF showing exactly which hours satisfied which requirement, with course names, dates, and accreditation references. Tap one button. Send. Done.",
     ],
   },
-  NY: {
-    label: "New York",
-    licenseType: "MD · Emergency Medicine",
-    totalHours: 36,
-    daysToRenewal: 441,
-    requirements: [
-      { topic: "Child Abuse", hrs: "2 hrs", note: "one-time", met: true },
-      { topic: "Infection Control", hrs: "varies", note: "every 4 yrs", met: true },
-      { topic: "Opioid Prescribing", hrs: "3 hrs", note: "one-time", met: false },
+  {
+    q: "Is my data private?",
+    a: [
+      "Uploaded certificates are encrypted at rest and in transit. They contain no protected health information - only your name, course names, hours, and dates. They're never shared with state boards, employers, or specialty colleges.",
     ],
   },
+  {
+    q: "Can I cancel anytime?",
+    a: [
+      "Yes - cancel inside the app, no email or call required. We don't auto-renew without notice; you'll always get a reminder before your annual subscription renews.",
+    ],
+  },
+];
+
+const compareRows = {
+  before: [
+    "Open the state board PDF. Realize it's been updated since last cycle.",
+    "Hunt through your inbox for certificates from three different platforms.",
+    "Tally hours in a spreadsheet. Hope you didn't double-count.",
+    'Find out you are missing pain management. Search for "cheap CME."',
+    "Pay $89 for a 2-hour course you'll forget the moment it's over.",
+    "Do it again next year. For your second state. From scratch.",
+  ],
+  with: [
+    "Open ClearCME. See exactly where you stand, every state.",
+    "Certificates already extracted, sorted, and counted.",
+    "You need 8 hours of DEA MATE Act and 1 hour of pain management.",
+    "Tap the recommended free course. Done in an afternoon.",
+    "Audit-ready PDF exported and saved. Just in case.",
+    "Next year? Already mapped. Just close the loop on what's new.",
+  ],
 };
 
-function CheckIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function WarningIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-      />
-    </svg>
-  );
-}
-
-function LockIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-      />
-    </svg>
-  );
-}
-
-function HospitalIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-      />
-    </svg>
-  );
-}
-
-function StarIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-      />
-    </svg>
-  );
-}
-
-function MethodologyAccordion() {
-  const [open, setOpen] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white max-w-2xl mx-auto">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium text-slate-700 hover:text-[#0F766E] transition-colors text-left"
-        aria-expanded={open}
-      >
-        <span>How do we verify CME requirements? →</span>
-        <svg
-          className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open && (
-        <div
-          ref={contentRef}
-          className="px-6 pb-5 text-sm text-slate-600 leading-relaxed border-t border-slate-100"
-        >
-          <p className="mt-4">
-            Every requirement in ClearCME is sourced directly from official state medical board statutes,
-            administrative codes, and renewal guidance — not third-party aggregators. We cross-reference
-            primary sources and update rules each renewal cycle.
-          </p>
-          <p className="mt-2">
-            Mandatory topic hour requirements (opioid prescribing, implicit bias, MATE Act, and others)
-            are verified against each board&apos;s published rules, not peer-sourced data. When a rule is
-            ambiguous, we flag it and default to the conservative interpretation to protect you.
-          </p>
-          <p className="mt-2">
-            Our data covers all 50 states plus DC for MD and DO licenses, continuously maintained as boards
-            update their requirements.
-          </p>
-          <a
-            href="/methodology"
-            className="inline-flex items-center gap-1 mt-4 text-sm font-medium hover:underline"
-            style={{ color: "#0F766E" }}
-          >
-            Read our full methodology →
-          </a>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function InlineTrustLine({ className = "" }: { className?: string }) {
-  return (
-    <p className={`text-xs text-slate-500 ${className}`}>
-      <span className="font-medium text-slate-700">Encrypted uploads</span> · Non-PHI certificates · never sent to boards or employers
-    </p>
-  );
-}
-
-function MobileStickyCta() {
-  const [visible, setVisible] = useState(false);
-
+function useLandingReveal() {
   useEffect(() => {
-    const updateVisibility = () => {
-      const hero = document.getElementById("hero");
-      const finalCta = document.getElementById("final-cta");
-      const heroBottom = hero?.getBoundingClientRect().bottom ?? 0;
-      const finalCtaTop = finalCta?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>(".landing-v3 .reveal, .landing-v3 .stagger"));
+    const rings = Array.from(document.querySelectorAll<HTMLElement>(".landing-v3 .ring"));
 
-      setVisible(heroBottom < 0 && finalCtaTop > window.innerHeight * 0.75);
-    };
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      [...revealTargets, ...rings].forEach((el) => el.classList.add("in"));
+      return;
+    }
 
-    updateVisibility();
-    window.addEventListener("scroll", updateVisibility, { passive: true });
-    window.addEventListener("resize", updateVisibility);
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+    );
+
+    const ringObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            ringObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 },
+    );
+
+    revealTargets.forEach((el) => revealObserver.observe(el));
+    rings.forEach((el) => ringObserver.observe(el));
 
     return () => {
-      window.removeEventListener("scroll", updateVisibility);
-      window.removeEventListener("resize", updateVisibility);
+      revealObserver.disconnect();
+      ringObserver.disconnect();
     };
   }, []);
+}
+
+function BrandMark() {
+  return (
+    <Link href="/" className="brand" aria-label="ClearCME home">
+      <span className="brand-mark" aria-hidden="true" />
+      ClearCME
+    </Link>
+  );
+}
+
+function CtaLink({
+  children,
+  className = "btn btn-primary",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link href="/login" className={className}>
+      {children}
+    </Link>
+  );
+}
+
+function Ticker() {
+  const items = [...tickerItems, ...tickerItems];
 
   return (
-    <div
-      className={`fixed inset-x-0 bottom-0 z-50 sm:hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] transition-transform duration-300 ${
-        visible ? "translate-y-0" : "translate-y-full"
-      }`}
-      aria-hidden={!visible}
-    >
-      <a
-        href="/login"
-        className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-brand-teal px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-teal-light focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2"
-      >
-        See my CME gaps →
-      </a>
-      <p className="mt-1.5 text-center text-[11px] font-medium text-slate-500">
-        Free · no card · under 2 min
-      </p>
+    <div className="ticker" aria-hidden="true">
+      <div className="ticker-track">
+        {items.map(([label, text], index) => (
+          <span className="ticker-item" key={`${label}-${index}`}>
+            <strong>{label}</strong>
+            <span>{text}</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function DemoSection() {
-  const [activeState, setActiveState] = useState<DemoState>("NV");
-  const demo = DEMO_STATES[activeState];
-  const metCount = demo.requirements.filter((r) => r.met).length;
-  const totalCount = demo.requirements.length;
-  const hoursEarned = Math.round(demo.totalHours * 0.85);
-  const hoursLeft = demo.totalHours - hoursEarned;
-  const ringPercent = hoursEarned / demo.totalHours;
-  const stateSummary = (state: DemoState) => {
-    const stateDemo = DEMO_STATES[state];
-    const stateMetCount = stateDemo.requirements.filter((r) => r.met).length;
-    const stateHoursLeft = stateDemo.totalHours - Math.round(stateDemo.totalHours * 0.85);
+function HeroDashboard() {
+  return (
+    <div className="stage reveal">
+      <div className="card-mock dash-main">
+        <div className="dash-head">
+          <div className="who">
+            <div className="avatar">SP</div>
+            <div>
+              <div className="dash-name">Sample physician</div>
+              <div className="dash-role">Emergency Medicine · MD</div>
+            </div>
+          </div>
+          <div className="meta">
+            <strong>Nevada</strong> · 87 days to renewal
+          </div>
+        </div>
 
-    return stateMetCount === stateDemo.requirements.length
-      ? "Met"
-      : `${stateHoursLeft} hrs left · ${stateDemo.daysToRenewal}d`;
-  };
+        <div className="ring-row">
+          <div className="ring" aria-label="76 percent complete">
+            <svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true">
+              <circle cx="58" cy="58" r="50" fill="none" stroke="#ECE3CA" strokeWidth="9" />
+              <circle
+                className="ring-prog"
+                cx="58"
+                cy="58"
+                r="50"
+                fill="none"
+                stroke="#3F5F33"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="pct">
+              <span>76%</span>
+              <small>complete</small>
+            </div>
+          </div>
+          <div className="stat-stack">
+            <div>
+              <div className="label">Hours earned</div>
+              <div className="val">
+                30.5<span className="of"> / 40 hrs</span>
+              </div>
+            </div>
+            <div>
+              <div className="label">Hours remaining</div>
+              <div className="val">
+                9.5<span className="of"> hrs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="req-list">
+          <div className="req">
+            <span className="name">DEA MATE Act (one-time)</span>
+            <span className="hours">0 / 8 hrs</span>
+            <span className="pill miss">Missing</span>
+          </div>
+          <div className="req">
+            <span className="name">Pain management</span>
+            <span className="hours">1 / 2 hrs</span>
+            <span className="pill due">In progress</span>
+          </div>
+          <div className="req">
+            <span className="name">Medical ethics</span>
+            <span className="hours">2 / 2 hrs</span>
+            <span className="pill met">Met</span>
+          </div>
+          <div className="req">
+            <span className="name">Opioid prescribing</span>
+            <span className="hours">2 / 2 hrs</span>
+            <span className="pill met">Met</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky-note">
+        <span className="pen" aria-hidden="true">
+          ↳
+        </span>{" "}
+        exactly what&apos;s missing,
+        <br />
+        in plain English.
+      </div>
+
+      <div className="floater">
+        <span className="dot-anim" aria-hidden="true" />
+        <span>
+          <strong>Live</strong> - auto-updated when state boards change rules
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function TopicRow({ topic, index }: { topic: MandatoryTopic; index: number }) {
+  const pillClass = index === 0 ? "miss" : index === 1 ? "due" : "met";
+  const pillText = index === 0 ? "Required" : index === 1 ? "Track" : "Mapped";
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="text-center mb-10">
-          <h2 className="font-playfair text-3xl font-bold text-[#1E293B] mb-3">See it in action</h2>
-          <p className="text-slate-500 max-w-xl mx-auto">
-            Here&apos;s what your compliance map looks like — live data, instant clarity.
+    <div className="topic">
+      <span>
+        {topic.topic}
+        <span className="topic-hours"> · {topic.hours}</span>
+      </span>
+      <span className={`pill ${pillClass}`}>{pillText}</span>
+    </div>
+  );
+}
+
+function StatePreview() {
+  const [stateCode, setStateCode] = useState<StateCode | "">("NV");
+  const [licenseType, setLicenseType] = useState<LicenseType>("MD");
+  const selectedRequirement = stateCode ? STATE_REQUIREMENTS[stateCode][licenseType] : null;
+  const displayedTopics = useMemo(
+    () => selectedRequirement?.mandatoryTopics.slice(0, 4) ?? [],
+    [selectedRequirement],
+  );
+
+  return (
+    <section className="state-preview-section">
+      <div className="wrap">
+        <div className="sec-head reveal">
+          <span className="sec-eye">Try it</span>
+          <h2 className="sec-h2">
+            What does <em>your</em> state actually require?
+          </h2>
+          <p className="sec-sub">
+            Pick your state and license type to see what physicians see inside ClearCME before they sign up.
           </p>
         </div>
 
-        {/* State switcher pills */}
-        <div className="grid grid-cols-2 gap-2 mb-6 sm:flex sm:justify-center sm:flex-wrap" aria-label="Demo state selector">
-          {(["NV", "CA", "TX", "FL", "NY"] as DemoState[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setActiveState(s)}
-              type="button"
-              aria-pressed={activeState === s}
-              className={`min-h-14 rounded-xl px-3 py-2 text-left text-sm font-semibold transition-all border focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2 sm:min-h-0 sm:rounded-full sm:px-4 sm:py-2 ${
-                activeState === s
-                  ? "bg-brand-teal text-white border-brand-teal shadow-sm ring-2 ring-brand-teal/20"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-brand-teal hover:text-brand-teal"
-              }`}
+        <div className="state-card reveal">
+          <div className="state-form">
+            <label htmlFor="state">State</label>
+            <select
+              id="state"
+              value={stateCode}
+              onChange={(event) => setStateCode(event.target.value as StateCode | "")}
             >
-              <span className="block leading-none">{s}</span>
-              <span className={`mt-1 block text-[10px] font-medium leading-tight ${activeState === s ? "text-white/80" : "text-slate-400"}`}>
-                {stateSummary(s)}
-              </span>
-            </button>
-          ))}
-        </div>
+              <option value="">Select your state...</option>
+              {STATE_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
 
-        <div className="relative bg-white rounded-2xl border-2 border-teal-100 shadow-lg overflow-hidden">
-          {/* Demo banner */}
-          <div className="bg-teal-50 border-b border-teal-100 px-5 py-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#0F766E] tracking-wide uppercase">
-              Demo — based on {demo.label} physician requirements
-            </span>
-            <span className="text-xs text-[#0D9488]">{demo.licenseType} · {activeState}</span>
+            <label htmlFor="lic">License type</label>
+            <select
+              id="lic"
+              value={licenseType}
+              onChange={(event) => setLicenseType(event.target.value as LicenseType)}
+            >
+              <option value="MD">MD</option>
+              <option value="DO">DO</option>
+            </select>
+            <p className="hint">
+              Preview is intentionally concise. Full accounts add personal renewal dates, first-renewal exceptions, and edge cases.
+            </p>
           </div>
 
-          <div className="p-6 sm:p-8">
-            {/* Top stats row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              {[
-                { label: "Hours Earned", value: `${hoursEarned}.0`, sub: "this cycle", color: "text-[#0F766E]" },
-                { label: "Hours Needed", value: `${hoursLeft}.0`, sub: "to complete", color: "text-amber-600" },
-                { label: "Days to Renewal", value: `${demo.daysToRenewal}`, sub: `${activeState} ${demo.licenseType.split("·")[0].trim()}`, color: "text-slate-700" },
-                { label: "Mandatory Topics", value: `${metCount}/${totalCount}`, sub: "complete", color: metCount === totalCount ? "text-green-600" : "text-amber-600" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-slate-50 rounded-2xl border border-slate-200 p-4"
-                >
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-                    {stat.label}
-                  </p>
-                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{stat.sub}</p>
+          <div className="state-result" aria-live="polite">
+            {!selectedRequirement ? (
+              <p className="empty">
+                Pick a state to see cycle length, total CME hours, and the mandates physicians most often miss when renewal season closes in.
+              </p>
+            ) : (
+              <>
+                <h4>
+                  {selectedRequirement.stateName} · {licenseType}
+                </h4>
+                <div className="sub">
+                  {selectedRequirement.cycleLabel} · {selectedRequirement.renewalDeadline}
                 </div>
-              ))}
-            </div>
-
-            {/* Compliance card with ring */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 mb-5">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="font-semibold text-slate-900">{demo.label} — {demo.licenseType.split("·")[0].trim()}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{demo.daysToRenewal} days to renewal</p>
-                  <span
-                    className={`inline-flex items-center gap-1.5 mt-2 text-xs font-medium px-2.5 py-1 rounded-full ${
-                      metCount === totalCount ? "bg-green-100 text-green-700" : "bg-brand-amberTint text-brand-amber"
-                    }`}
-                  >
-                    {metCount === totalCount ? <CheckIcon className="w-3.5 h-3.5" /> : <WarningIcon className="w-3.5 h-3.5" />}
-                    {metCount === totalCount ? "Met" : demo.daysToRenewal < 120 ? "Action needed" : "Missing"}
-                  </span>
-                </div>
-                {/* Ring SVG */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="relative" style={{ width: 80, height: 80 }}>
-                    <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90" aria-label={`${Math.round(ringPercent * 100)}% of CME hours complete`}>
-                      <circle cx="40" cy="40" r="36" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="36"
-                        fill="none"
-                        stroke={metCount === totalCount ? "#22c55e" : "#f59e0b"}
-                        strokeWidth="8"
-                        strokeDasharray={`${2 * Math.PI * 36}`}
-                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - ringPercent)}`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-xs font-bold text-slate-800 leading-none">{hoursLeft}</span>
-                      <span className="text-[9px] text-slate-400 leading-none mt-0.5">hrs left</span>
+                <div className="stat-row">
+                  <div className="stat-mini">
+                    <div className="k">Total hours</div>
+                    <div className="v">{selectedRequirement.totalHours ?? "Varies"}</div>
+                  </div>
+                  <div className="stat-mini">
+                    <div className="k">Mandates</div>
+                    <div className="v">{selectedRequirement.mandatoryTopics.length}</div>
+                  </div>
+                  <div className="stat-mini">
+                    <div className="k">Cycle</div>
+                    <div className="v">
+                      {selectedRequirement.cycleYears ? `${selectedRequirement.cycleYears} yr` : "Varies"}
                     </div>
                   </div>
                 </div>
-              </div>
-              <p className="text-xs text-slate-500">{hoursEarned}.0 / {demo.totalHours} hrs earned</p>
-              {metCount < totalCount && (
-                <p className="inline-flex items-center gap-1 text-xs mt-1.5 font-medium text-brand-amber">
-                  <WarningIcon className="w-3.5 h-3.5" />
-                  {totalCount - metCount} mandatory topic{totalCount - metCount !== 1 ? "s" : ""} pending
-                </p>
-              )}
-            </div>
-
-            {/* Requirements list */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Requirements</h3>
-              {demo.requirements.map((req) => (
-                <div
-                  key={req.topic}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${
-                    !req.met ? "bg-brand-amberTint border-brand-amberRule text-brand-amber" : "bg-slate-50 border-slate-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {!req.met ? (
-                      <WarningIcon className="w-4 h-4 text-brand-amber" />
-                    ) : (
-                      <CheckIcon className="w-4 h-4 text-green-500" />
-                    )}
-                    <span className={!req.met ? "font-medium text-brand-amber" : "text-slate-700"}>
-                      {req.topic}
-                      {req.note && <span className="ml-1 text-xs text-slate-400">({req.note})</span>}
-                      {!req.met && (
-                        <span className="ml-1 text-xs text-brand-amber">— not yet completed</span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{req.hrs}</span>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        req.met ? "bg-green-100 text-green-700" : "bg-white/70 text-brand-amber border border-brand-amberRule"
-                      }`}
-                    >
-                      {req.met ? "Met" : demo.daysToRenewal < 120 ? "Action needed" : "Missing"}
-                    </span>
-                  </div>
+                <div className="topic-list">
+                  {displayedTopics.length > 0 ? (
+                    displayedTopics.map((topic, index) => (
+                      <TopicRow topic={topic} index={index} key={`${topic.topic}-${topic.hours}`} />
+                    ))
+                  ) : (
+                    <p className="empty">No recurring state mandatory topics are currently mapped for this license type.</p>
+                  )}
                 </div>
-              ))}
-            </div>
-
-            {/* Summary line */}
-            <p className="mt-5 text-center text-sm text-slate-500">
-              <span className="font-semibold text-slate-700">{demo.label}: </span>
-              {demo.totalHours} hrs total · {totalCount} mandatory topics · {demo.daysToRenewal} days to renewal
-            </p>
-            <p className="mt-2 text-center text-xs text-slate-400">
-              Built from a 50-state compliance map · updated from board-source rules
-            </p>
+              </>
+            )}
           </div>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center mt-8">
-          <a
-            href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
-          >
-            See your compliance map → Sign in with Google
-          </a>
-          <p className="text-xs text-slate-400 mt-3">
-            Free · Takes under 2 minutes · No certificate upload needed to get started
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            Built by a physician · free to start
-          </p>
         </div>
       </div>
     </section>
   );
 }
 
-export default function Home() {
+function SectionHead({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow?: string;
+  title: React.ReactNode;
+  body?: string;
+}) {
   return (
-    <main className="min-h-screen bg-brand-parchment pb-24 sm:pb-0">
-      <MobileStickyCta />
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-slate-100 bg-brand-parchment/85 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-3">
-          <BrandLockup size="lg" />
-          <div className="flex items-center gap-3 sm:gap-6">
-            <a href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Pricing</a>
-            <a href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">DEA MATE Act</a>
-            <a href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors hidden sm:block">Methodology</a>
-            <a
-              href="/login"
-              className="inline-flex min-h-9 items-center justify-center rounded-full border border-slate-200 bg-white/60 px-3 text-sm font-semibold text-[#475569] shadow-sm transition-colors hover:border-slate-300 hover:bg-white hover:text-[#1E293B] sm:min-h-0 sm:border-0 sm:bg-transparent sm:px-0 sm:shadow-none"
-            >
-              Sign in
-            </a>
-            <a
-              href="/login"
-              className="inline-flex min-h-9 items-center justify-center rounded-full bg-brand-teal px-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-tealDark sm:min-h-0 sm:rounded-lg sm:border sm:border-brand-teal sm:bg-transparent sm:px-4 sm:py-1.5 sm:text-brand-teal sm:shadow-none sm:hover:bg-brand-tealTint"
-            >
-              <span className="sm:hidden">Free Account</span>
-              <span className="hidden sm:inline">Create Free Account →</span>
-            </a>
-          </div>
-        </div>
-      </nav>
+    <div className="sec-head reveal">
+      {eyebrow ? <span className="sec-eye">{eyebrow}</span> : null}
+      <h2 className="sec-h2">{title}</h2>
+      {body ? <p className="sec-sub">{body}</p> : null}
+    </div>
+  );
+}
 
-      {/* Hero */}
-      <section id="hero" className="max-w-6xl mx-auto px-6 pt-20 pb-16">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
-          {/* Left: copy + CTA */}
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-teal-50 text-[#0F766E] text-sm font-medium px-4 py-1.5 rounded-full mb-8">
-              <span className="w-2 h-2 bg-[#0F766E] rounded-full animate-pulse" />
-              All 50 states · MD and DO · Every specialty
-            </div>
+function Features() {
+  return (
+    <section id="what-you-get">
+      <div className="wrap">
+        <SectionHead
+          eyebrow="What's included"
+          title={
+            <>
+              Six things, working together - <em>so you never have to think about CME again.</em>
+            </>
+          }
+          body="Worth $300+ if you bought the pieces separately. Yours from $99 a year."
+        />
 
-            <h1
-              className="font-display text-5xl sm:text-6xl font-bold text-[#1E293B] leading-tight tracking-tight mb-6"
-            >
-              Know what CME
-              <br />
-              you <em className="text-[#0F766E] italic font-bold">actually</em> need.
-            </h1>
+        <div className="feat-grid stagger">
+          {featureCards.map((feature) => {
+            const Icon = feature.icon;
 
-            <p className="text-xl text-slate-500 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-              ClearCME tracks your credits, maps state requirements, and tells you
-              what&apos;s missing — before your renewal deadline.
-              No spreadsheets. No guessing. And if your board ever asks for documentation, it&apos;s just another Tuesday.
-            </p>
-
-            {/* Hero CTA */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start items-center">
-              <a
-                href="/login"
-                className="px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm whitespace-nowrap"
-              >
-                Create Free Account →
-              </a>
-              <a
-                href="/login"
-                className="px-5 py-3 text-sm font-semibold text-[#0F766E] hover:text-[#0D9488] transition-colors"
-              >
-                Already have an account? Log in
-              </a>
-            </div>
-            <p className="text-xs text-slate-400 mt-3">
-              Free · No credit card required · Built by a physician · covering all 50 states + DC
-            </p>
-            <InlineTrustLine className="mt-2" />
-          </div>
-
-          {/* Right: product preview */}
-          <div className="flex-shrink-0 w-full lg:w-auto">
-            <HeroProductPreview />
-          </div>
-        </div>
-
-        {/* Trust badges */}
-        <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-slate-400">
-          <span className="inline-flex items-center gap-2" title="CME certificates are professional credentials, not Protected Health Information.">
-            <LockIcon className="w-4 h-4" />
-            Secure &amp; Private (Non-PHI)
-          </span>
-          <span className="inline-flex items-center gap-2 text-[#0F766E] font-medium">
-            <CheckIcon className="w-4 h-4" />
-            ACCME data verified
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <HospitalIcon className="w-4 h-4" />
-            Built by a physician
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <StarIcon className="w-4 h-4" />
-            All 50 states + DC
-          </span>
-        </div>
-      </section>
-
-      <CheckYourStateWidget />
-
-      {/* Renewal Season Info Strip */}
-      <RenewalSeasonStrip />
-
-      {/* Problem / Value props */}
-      <section className="bg-brand-paperSoft py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2
-            className="font-display text-3xl font-bold text-[#1E293B] text-center mb-4"
-          >
-            CME compliance is a mess.
-          </h2>
-          <p className="text-slate-500 text-center max-w-xl mx-auto mb-14">
-            Every state is different. Requirements change. And you&apos;re busy
-            enough without tracking opioid hours and implicit bias mandates in a
-            spreadsheet.
-          </p>
-
-          <div className="grid sm:grid-cols-3 gap-6">
-            {[
-              {
-                icon: (
-                  <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                ),
-                title: "Upload your certificates",
-                body: "PDF or image. AI extracts credits, categories, and dates automatically.",
-                trust: "Encrypted uploads · Non-PHI · never sent to boards/employers",
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                ),
-                title: "See your compliance map",
-                body: "Real-time gap analysis based on your state, license type, and specialty.",
-                trust: "Built from a 50-state compliance map",
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                ),
-                title: "Fill the gaps in one click",
-                body: "Purchase exactly what you need — accredited courses, state-approved topics.",
-                trust: "Built by a physician · free to start",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm border-l-4 border-l-brand-teal"
-              >
-                <div className="mb-4 w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
-                  {item.icon}
+            return (
+              <div className={`feat ${feature.className}`} key={feature.title}>
+                <span className="tag">{feature.tag}</span>
+                <div className="icon">
+                  <Icon size={20} strokeWidth={2} />
                 </div>
-                <h3 className="font-semibold text-[#1E293B] mb-2">{item.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{item.body}</p>
-                <p className="mt-3 text-xs font-medium text-slate-500">{item.trust}</p>
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+                {feature.extra}
               </div>
-            ))}
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Guarantee() {
+  return (
+    <section id="guarantee" className="guarantee-section">
+      <div className="wrap">
+        <div className="guarantee reveal">
+          <div className="g-grid">
+            <div>
+              <div className="g-eye">The Guarantee</div>
+              <h2 className="g-h">
+                If we ever show you compliant when you aren&apos;t, <em>we pay.</em>
+              </h2>
+              <p className="g-p">
+                We refund your subscription <strong>and</strong> cover your late-renewal fee - up to{" "}
+                <strong>$1,000</strong>.
+                <br />
+                <br />
+                We&apos;ve never paid this out. Your data is verified twice - once by AI, once by a human physician -
+                before the dashboard ever calls you compliant.
+              </p>
+            </div>
+            <div className="g-stamp" aria-label="$1,000 compliance promise">
+              <div className="inner">
+                <div className="big">$1,000</div>
+                <div className="lbl">If we miss · we pay</div>
+                <div className="sm">Subscription refunded + late-renewal fee covered.</div>
+              </div>
+            </div>
+          </div>
+          <div className="g-plus">
+            <span className="plus-label">Plus</span>
+            <span>
+              <strong>30-day money-back.</strong> Try it. Not for you? Full refund within 30 days. No questions,
+              no email chase.
+            </span>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Demo Section with State Switcher */}
-      <DemoSection />
+function Comparison() {
+  return (
+    <section className="comparison-section">
+      <div className="wrap">
+        <SectionHead
+          eyebrow="The before & after"
+          title={
+            <>
+              Same physician. Same renewal. <em>Different Tuesday.</em>
+            </>
+          }
+        />
+        <div className="compare">
+          <div className="compare-card before reveal">
+            <span className="label">Without ClearCME</span>
+            <h3>Two weeks before renewal, 11:47 p.m.</h3>
+            <div className="compare-list">
+              {compareRows.before.map((row) => (
+                <div className="compare-row" key={row}>
+                  <span className="mark">
+                    <X size={13} strokeWidth={3} />
+                  </span>
+                  <span className="txt">{row}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="compare-card with reveal">
+            <span className="label">With ClearCME</span>
+            <h3>Any Tuesday. 60 seconds.</h3>
+            <div className="compare-list">
+              {compareRows.with.map((row) => (
+                <div className="compare-row" key={row}>
+                  <span className="mark">
+                    <Check size={13} strokeWidth={3} />
+                  </span>
+                  <span className="txt">{row}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-      {/* Methodology trust accordion */}
-      <section className="py-10 px-6">
-        <MethodologyAccordion />
-      </section>
-
-      {/* Social proof */}
-      <section className="bg-brand-parchment py-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2
-            className="font-playfair text-3xl font-bold text-[#1E293B] mb-4"
-          >
-            Built by a physician, for physicians.
-          </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-            ClearCME was built by a board-certified physician
-            who got tired of guessing whether their CME was actually compliant.
-            The simplicity we wished we&apos;d had.
-          </p>
-
-          {/* Testimonial */}
-          <div className="mt-12 max-w-xl mx-auto bg-slate-50 rounded-2xl p-6 text-left border border-slate-100">
-            <p className="font-display italic text-slate-700 text-base leading-relaxed">
-              &ldquo;Finally — a tool that actually maps what I need for my state. I had no idea I was missing the DEA MATE Act requirement until ClearCME flagged it. Saved me hours before my renewal.&rdquo;
+function MultiState() {
+  return (
+    <section>
+      <div className="wrap">
+        <div className="multi">
+          <div className="reveal">
+            <span className="sec-eye">Multi-state physicians</span>
+            <h2 className="sec-h2 multi-title">
+              Two licenses. Three. Ten. <em>One dashboard.</em>
+            </h2>
+            <p className="sec-sub multi-copy">
+              Every state has its own renewal date, hour count, mandatory topics, and edge cases. ClearCME tracks
+              all of them at once and shows you what&apos;s due first - so you can stop reconciling spreadsheets at
+              midnight.
             </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-[#0F766E] font-bold text-sm">EM</div>
-              <div>
-                <p className="text-sm font-medium text-[#1E293B]">Emergency Medicine Physician</p>
-                <p className="text-xs text-slate-400">Dr. M.R. — Emergency Medicine, Nevada</p>
+            <div className="multi-cta">
+              <CtaLink>
+                Add your states <ArrowRight size={16} />
+              </CtaLink>
+            </div>
+          </div>
+          <div className="stack-cards reveal" aria-label="Example multi-state dashboard cards">
+            <div className="mini-card c1">
+              <div className="flag">CA</div>
+              <div className="info">
+                <div className="name">California · MD</div>
+                <div className="deet">Pain management due · birth-month renewal</div>
+              </div>
+              <div className="right">
+                <div className="pct">62%</div>
+                <div className="day">214 days</div>
+              </div>
+            </div>
+            <div className="mini-card c2">
+              <div className="flag">NV</div>
+              <div className="info">
+                <div className="name">Nevada · MD</div>
+                <div className="deet">DEA MATE Act outstanding · birthday renewal</div>
+              </div>
+              <div className="right">
+                <div className="pct">76%</div>
+                <div className="day">87 days</div>
+              </div>
+            </div>
+            <div className="mini-card c3">
+              <div className="flag">TX</div>
+              <div className="info">
+                <div className="name">Texas · MD</div>
+                <div className="deet">Ethics complete · birth-month renewal</div>
+              </div>
+              <div className="right">
+                <div className="pct">94%</div>
+                <div className="day">142 days</div>
+              </div>
+            </div>
+            <div className="mini-card c4">
+              <div className="flag">+1</div>
+              <div className="info">
+                <div className="name">Add another state</div>
+                <div className="deet">Same dashboard, same workflow.</div>
+              </div>
+              <div className="right">
+                <div className="pct">·</div>
+                <div className="day">&nbsp;</div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Second CTA */}
-      <section id="final-cta" className="bg-brand-teal py-16">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2
-            className="font-display text-3xl font-bold text-white mb-4"
-          >
-            Start tracking your CME today.
-          </h2>
-          <p className="text-teal-100 mb-8">
-            Free tier available. No credit card required. Built from a 50-state compliance map.
-          </p>
-          <a
-            href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-brand-teal font-semibold rounded-xl hover:bg-brand-tealTint transition-colors text-base shadow-sm"
-          >
-            Create Free Account →
-          </a>
-        </div>
-      </section>
+function Pricing() {
+  const planFeatures = {
+    free: ["One state mapped", "Manual hour entry", "Course recommendations"],
+    essential: [
+      "Up to 2 state licenses",
+      "AI certificate extraction",
+      "Audit-ready PDF export",
+      "Renewal and gap reminders",
+      "30-day money-back",
+      "The $1,000 Compliance Promise",
+    ],
+    pro: [
+      "Everything in Essential",
+      "Unlimited state licenses",
+      "Cross-state hour reuse",
+      "DEA MATE Act tracking",
+      "Priority support",
+    ],
+  };
 
-      {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6 bg-brand-parchment">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <BrandLockup size="sm" href="/" />
-          <div className="flex flex-wrap justify-center gap-5">
-            <a href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</a>
-            <a href="/mate-act" className="hover:text-slate-700 transition-colors">DEA MATE Act</a>
-            <a href="/methodology" className="hover:text-slate-700 transition-colors">Methodology</a>
-            <a href="/privacy" className="hover:text-slate-700 transition-colors">Privacy</a>
-            <a href="/terms" className="hover:text-slate-700 transition-colors">Terms</a>
+  return (
+    <section id="pricing">
+      <div className="wrap">
+        <SectionHead
+          eyebrow="Pricing"
+          title="Less than half the cost of one state filing fee."
+          body="Start free. Upgrade only if you need it. The guarantee covers Essential and Pro."
+        />
+        <div className="price-grid">
+          <div className="plan reveal">
+            <div className="plan-name">Free</div>
+            <div className="plan-price">
+              <span className="h">$0</span>
+              <span className="per">forever</span>
+            </div>
+            <p className="plan-h">See your compliance map. No credit card.</p>
+            <PlanFeatureList items={planFeatures.free} />
+            <CtaLink className="plan-cta">Start free</CtaLink>
           </div>
-          <p className="text-xs">
-            © {new Date().getFullYear()} ClearCME. All rights reserved.
-          </p>
+          <div className="plan featured reveal">
+            <span className="ribbon">Most physicians</span>
+            <div className="plan-name">Essential</div>
+            <div className="plan-price">
+              <span className="h">$99</span>
+              <span className="per">/year</span>
+            </div>
+            <p className="plan-h">Everything you need for 1-2 state licenses, on autopilot.</p>
+            <PlanFeatureList items={planFeatures.essential} />
+            <CtaLink className="plan-cta">Start Essential</CtaLink>
+          </div>
+          <div className="plan reveal">
+            <div className="plan-name">Pro</div>
+            <div className="plan-price">
+              <span className="h">$199</span>
+              <span className="per">/year</span>
+            </div>
+            <p className="plan-h">For physicians with 3+ licenses. Every state, one dashboard.</p>
+            <PlanFeatureList items={planFeatures.pro} />
+            <CtaLink className="plan-cta">Start Pro</CtaLink>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlanFeatureList({ items }: { items: string[] }) {
+  return (
+    <ul className="plan-feats">
+      {items.map((item) => (
+        <li className="plan-feat" key={item}>
+          <Check size={14} strokeWidth={2.6} />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function FAQ() {
+  return (
+    <section id="faq">
+      <div className="wrap">
+        <div className="sec-head reveal faq-head">
+          <h2 className="sec-h2">Frequently Asked Questions</h2>
+        </div>
+        <div className="faq-list">
+          {faqItems.map((item) => (
+            <details className="faq-item reveal" key={item.q}>
+              <summary>{item.q}</summary>
+              <div className="answer">
+                {item.a.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Founder() {
+  return (
+    <section className="founder-section">
+      <div className="wrap">
+        <div className="founder reveal">
+          <div>
+            <blockquote>
+              I built ClearCME because I was tired of searching for cheap CME two weeks before a renewal. Holding
+              licenses in two states made it worse. Every physician has the same story - different state, same
+              chaos. This exists so that never happens again.
+            </blockquote>
+            <div className="sig">
+              <div className="av">MR</div>
+              <div className="who">
+                <strong>Michael Rushton, DO</strong>
+                <span>Emergency Medicine · Founder, ClearCME</span>
+              </div>
+            </div>
+          </div>
+          <div className="founder-aside">
+            <strong>Why a physician built it</strong>
+            Because the people writing the existing tools weren&apos;t the ones being audited. ClearCME is the
+            simplicity I wished I&apos;d had on Year 1.
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCta() {
+  return (
+    <section className="final reveal">
+      <div className="wrap">
+        <h2>
+          Your CME compliance, <em>handled.</em>
+        </h2>
+        <p>See your gaps in 60 seconds. Free to start. The guarantee comes with every paid plan.</p>
+        <div className="row">
+          <CtaLink>
+            Start free <ArrowRight size={16} />
+          </CtaLink>
+          <Link href="#pricing" className="btn btn-ghost">
+            See pricing
+          </Link>
+        </div>
+        <small>Free · No credit card · Built by a physician</small>
+      </div>
+    </section>
+  );
+}
+
+export default function Home() {
+  useLandingReveal();
+
+  return (
+    <div className="landing-v3">
+      <header className="nav">
+        <div className="wrap nav-row">
+          <BrandMark />
+          <nav className="nav-links" aria-label="Primary navigation">
+            <Link href="#guarantee" className="nav-link hide-sm">
+              The Guarantee
+            </Link>
+            <Link href="#what-you-get" className="nav-link hide-sm">
+              What&apos;s included
+            </Link>
+            <Link href="#pricing" className="nav-link hide-sm">
+              Pricing
+            </Link>
+            <Link href="#faq" className="nav-link hide-sm">
+              FAQ
+            </Link>
+            <Link href="/login" className="nav-link">
+              Sign in
+            </Link>
+            <CtaLink className="nav-cta">Start free →</CtaLink>
+          </nav>
+        </div>
+      </header>
+
+      <Ticker />
+
+      <main>
+        <section className="hero">
+          <span className="sparkle sp1" aria-hidden="true">
+            ✦
+          </span>
+          <span className="sparkle sp2" aria-hidden="true">
+            ✦
+          </span>
+
+          <div className="wrap hero-grid">
+            <div className="reveal">
+              <h1 className="h1">
+                Compliant for your next renewal - <span className="wave">guaranteed.</span>
+              </h1>
+              <p className="hero-sub">
+                <strong>Under 60 seconds of setup.</strong>{" "}
+                <span className="swash">Less than what you&apos;d spend</span> on a single state filing fee. ClearCME
+                maps your CME requirements, tracks your hours, and tells you exactly what&apos;s missing - for every
+                state you&apos;re licensed in.
+              </p>
+              <div className="hero-cta-row">
+                <CtaLink>
+                  See your gaps in 60 seconds <ArrowRight size={16} className="arrow" />
+                </CtaLink>
+                <Link href="#guarantee" className="btn btn-ghost">
+                  How the guarantee works
+                </Link>
+              </div>
+              <div className="trust-row">
+                {["All 50 states + DC", "MD & DO", "Built by a physician"].map((item) => (
+                  <span className="pip" key={item}>
+                    <Check size={14} strokeWidth={2.4} />
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <HeroDashboard />
+          </div>
+
+          <div className="wrap">
+            <div className="strip reveal">
+              <div className="left">
+                <span className="badge">The math</span>
+                <span className="num">
+                  $99<span className="sm">/yr</span>
+                </span>
+                <span className="vs">vs.</span>
+                <span className="num">
+                  $690<span className="sm"> · single CA filing fee</span>
+                </span>
+              </div>
+              <div className="tag-r">Less than one-sixth the cost of one mistake.</div>
+            </div>
+          </div>
+        </section>
+
+        <StatePreview />
+        <Features />
+        <Guarantee />
+        <Comparison />
+        <MultiState />
+        <Pricing />
+        <FAQ />
+        <Founder />
+        <FinalCta />
+      </main>
+
+      <footer>
+        <div className="wrap foot-row">
+          <div className="copy">© 2026 ClearCME · All rights reserved.</div>
+          <nav className="foot-links" aria-label="Footer navigation">
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/mate-act">DEA MATE Act</Link>
+            <Link href="/methodology">Methodology</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </nav>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

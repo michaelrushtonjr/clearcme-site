@@ -2,12 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ClearCME — Know Exactly What You Need",
-  description: "AI-powered CME compliance tracking for physicians. Know exactly what credits you need, track your progress, and never miss a renewal deadline.",
+  title: "ClearCME — CME Compliance, Guaranteed",
+  description: "Map state CME requirements, track hours of CME, and see exactly what is missing before renewal. Built by a physician for MD and DO licenses.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "ClearCME — Know Exactly What You Need",
-    description: "AI-powered CME compliance tracking for physicians.",
+    title: "ClearCME — CME Compliance, Guaranteed",
+    description: "Map state CME requirements, track hours of CME, and see exactly what is missing before renewal.",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClearCME — CME Compliance, Guaranteed",
+    description: "Track hours of CME and close state-license gaps before renewal.",
   },
 };
 
