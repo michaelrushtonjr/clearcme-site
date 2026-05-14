@@ -40,6 +40,8 @@ const TRUSTED_PROVIDERS = [
   'freedom 4/24', 'freedom424', 'freedom 424',
   // INTEGRIS Health Continuing Education — OSMA-accredited CME provider, AMA PRA Category 1 Credits verified May 9, 2026
   'integris health continuing education', 'integris health',
+  // Continuing Education Company — ACCME-accredited, AMA PRA Category 1 Credits verified for AchieveCE/CMEList DV course May 10, 2026
+  'continuing education company', 'continuing education company, inc',
 ];
 
 // ── Section → TopicKey map ────────────────────────────────────────────────────
@@ -55,6 +57,8 @@ const HEADING_TO_TOPIC = {
   'suicide prevention':                'SUICIDE_PREVENTION',
   'domestic violence':                 'DOMESTIC_VIOLENCE',
   'human trafficking':                 'HUMAN_TRAFFICKING',
+  'general category 1 cme (no mandatory topic)': 'GENERAL_CATEGORY_1',
+  'general category 1 cme':            'GENERAL_CATEGORY_1',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -167,6 +171,7 @@ function parseCatalog(markdown) {
         title,
         provider: '',
         creditHours: 0,
+        creditHoursLabel: '',
         creditType: '',
         cost: 0,
         costLabel: 'Unknown',
@@ -193,7 +198,11 @@ function parseCatalog(markdown) {
         if (provM) { course.provider = provM[1].trim(); i++; continue; }
 
         const credM = fld.match(/^\*\*Credit hours:\*\*\s*(.+)/);
-        if (credM) { course.creditHours = parseCreditHours(credM[1]); i++; continue; }
+        if (credM) {
+          course.creditHoursLabel = credM[1].trim();
+          course.creditHours = parseCreditHours(credM[1]);
+          i++; continue;
+        }
 
         const typeM = fld.match(/^\*\*Credit type:\*\*\s*(.+)/);
         if (typeM) { course.creditType = typeM[1].trim(); i++; continue; }
@@ -257,7 +266,7 @@ function buildCourseObject(c) {
     name: c.title,
     provider: c.provider,
     providerUrl,
-    credits: `${c.creditHours} ${c.creditType}`.trim(),
+    credits: `${c.creditHoursLabel || c.creditHours} ${c.creditType}`.trim(),
     creditType: 'AMA_PRA_1',
     price: c.costLabel,
     isFree,
@@ -335,11 +344,19 @@ function updateCoursesCatalog(approvedByTopic, timestamp) {
   // Build new COURSE_CATALOG source
   const allTopicKeys = [
     'SUBSTANCE_USE', 'OPIOID_PRESCRIBING', 'ETHICS', 'IMPLICIT_BIAS',
-    'PATIENT_SAFETY', 'SUICIDE_PREVENTION', 'DOMESTIC_VIOLENCE', 'HUMAN_TRAFFICKING'
+    'PATIENT_SAFETY', 'SUICIDE_PREVENTION', 'DOMESTIC_VIOLENCE', 'HUMAN_TRAFFICKING',
+    'GENERAL_CATEGORY_1'
   ];
 
+  const defaultTopicMeta = {
+    GENERAL_CATEGORY_1: {
+      topicLabel: 'General Category 1 CME',
+      requirement: 'General AMA PRA Category 1 hours for states without a mandatory topic restriction',
+    },
+  };
+
   const topicBlocks = allTopicKeys.map(key => {
-    const meta = topicMeta[key] || { topicLabel: key, requirement: 'Varies by state' };
+    const meta = topicMeta[key] || defaultTopicMeta[key] || { topicLabel: key, requirement: 'Varies by state' };
     const scoutCourses = approvedByTopic[key] || [];
     const sorted = sortCourses(scoutCourses);
     const builtCourses = sorted.map(c => buildCourseObject(c));

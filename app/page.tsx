@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
-import UrgencyBanner from "@/components/UrgencyBanner";
 import RenewalSeasonStrip from "@/components/RenewalSeasonStrip";
 import HeroProductPreview from "@/components/HeroProductPreview";
 import CheckYourStateWidget from "@/components/CheckYourStateWidget";
@@ -435,9 +434,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-brand-parchment pb-24 sm:pb-0">
       <MobileStickyCta />
-      {/* Urgency banner */}
-      <UrgencyBanner />
-
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-slate-100 bg-brand-parchment/85 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-3">

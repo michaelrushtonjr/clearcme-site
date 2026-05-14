@@ -236,7 +236,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   PA: variableRenewal("December 31 of your MD renewal year, every 2 years"),
   RI: fixedRenewal("June 1 of even-numbered years", 6, 1, "even"),
   SC: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
-  SD: fixedRenewal("March 1 of odd-numbered years", 3, 1, "odd"),
+  SD: fixedRenewal("March 1 of odd-numbered years (standard MD/DO licenses; IMLC licenses renew annually by March 1)", 3, 1, "odd"),
   TN: birthBasedRenewal("During your birth month, every 2 years"),
   TX: birthBasedRenewal("During your birth month, every 2 years"),
   UT: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
@@ -245,7 +245,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   WA: variableRenewal("Every 4 years; renewal date varies by physician and license record"),
   WI: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
   WV: variableRenewal("Biennial renewal deadline varies by physician and board"),
-  WY: variableRenewal("June 30 of your renewal year, every 3 years"),
+  WY: fixedRenewal("June 30 annually; CME is reported on a separate 3-year cycle", 6, 30),
 };
 
 const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
@@ -261,6 +261,7 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
   UT: fixedRenewal("May 31 of even-numbered years", 5, 31, "even"),
   WA: variableRenewal("Every 3 years; renewal date varies by osteopathic license record"),
   VT: fixedRenewal("September 30 of even-numbered years", 9, 30, "even"),
+  WV: variableRenewal("On or before July 1 of your DO renewal year, every 2 years"),
 };
 
 const topic = (name: string, hours: string, note?: string): MandatoryTopic => ({
@@ -275,7 +276,7 @@ const mateTopic = (note = "If DEA-registered") =>
 const mdRequirements: Record<StateCode, RequirementSeed> = {
   AK: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AMA Category I or board-recognized equivalent)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -285,20 +286,21 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   AL: {
     totalHours: 25,
-    totalHoursLabel: "25 hours",
+    totalHoursLabel: "25 AMA PRA Category 1 / AOA Category 1-A equivalent credits; no Category 2",
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
-      topic("Professional boundaries", "2 hrs one-time", "Current licensees must complete by Dec. 31, 2025"),
-      topic("Controlled Substance Certificate CME", "2 hrs every 2 years", "If Alabama CDS certificate holder"),
+      topic("Professional boundaries", "2 hrs one-time", "Current licensees by Dec. 31, 2025; new licensees within 12 months of licensure"),
+      topic("Collaborative/supervisory practice CME", "Board course every 48 months", "If in a collaborative CRNP/CNM or supervisory PA arrangement; new arrangements must complete within 12 months"),
+      topic("Controlled Substance Certificate CME", "2 hrs every 2 years", "If Alabama ACSC holder"),
     ],
   },
   AR: {
     totalHours: 20,
-    totalHoursLabel: "20 hours",
+    totalHoursLabel: "20 hours annually; at least 10 Category 1 hours in your primary area of practice",
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
-    mandatoryTopics: [topic("Opioid/benzodiazepine prescribing", "1 hr annually")],
+    mandatoryTopics: [topic("Opioid/benzodiazepine prescribing", "1 hr annually", "Counts within the 20-hour annual total; not additional")],
   },
   AZ: {
     totalHours: 40,
@@ -337,24 +339,24 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   CT: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 contact hours per preceding 24 months; first license renewal exempt",
     cycleYears: 2,
     cycleLabel: "Annual renewal, 24-month CME lookback",
     mandatoryTopics: [
-      topic("Infectious diseases / HIV", "1 hr every 6 years"),
-      topic("Risk management", "1 hr every 6 years"),
-      topic("Sexual assault", "1 hr every 6 years"),
-      topic("Domestic violence", "1 hr every 6 years"),
-      topic("Cultural competency", "1 hr every 6 years"),
-      topic("Behavioral health", "1 hr every 6 years"),
+      topic("Infectious diseases / HIV", "1 hr first CME-required renewal, then every 6 years"),
+      topic("Risk management", "1 hr first CME-required renewal, then every 6 years"),
+      topic("Sexual assault", "1 hr first CME-required renewal, then every 6 years"),
+      topic("Domestic violence", "1 hr first CME-required renewal, then every 6 years"),
+      topic("Cultural competency", "1 hr first CME-required renewal, then every 6 years"),
+      topic("Behavioral health", "1 hr first CME-required renewal, then every 6 years"),
       mateTopic(),
     ],
   },
   DC: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 AMA PRA Category 1 hours",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle ending the last day of your birth month",
     mandatoryTopics: [
       topic("LGBTQ cultural competency", "2 hrs per cycle"),
       topic("Pharmacology", "1 course per cycle"),
@@ -402,7 +404,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   HI: {
     totalHours: 100,
-    totalHoursLabel: "100 hours (40 Category 1 + 60 Category 2, or 100 Category 1)",
+    totalHoursLabel: "100 hours (40 Category 1 + 60 Category 2, or 100 Category 1; first-renewal proration may reduce to 50 or 0)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
@@ -473,11 +475,12 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   LA: {
     totalHours: 20,
-    totalHoursLabel: "20 hours",
+    totalHoursLabel: "20 board-approved CME hours annually (Category 1 pathways include ACCME, AAFP, ACOG, AOA, LSMS, ABMS/AOA specialty-board, or other board-recognized providers)",
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
-      topic("CDS prescribing", "3 hrs one-time", "Before first renewal if CDS license holder"),
+      topic("Louisiana laws and rules", "Required before first renewal", "New licensee requirement; credit counts hour-for-hour toward annual CME"),
+      topic("CDS prescribing", "3 hrs one-time", "If authorized prescriber renewing for the first time; board-approved/electronically reported course required; exception if no CDS prescribed/administered/dispensed"),
       mateTopic(),
     ],
   },
@@ -512,11 +515,12 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   ME: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 Category 1 hours (first renewal prorated by month of licensure)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Controlled substance / opioid prescribing", "3 hrs per cycle"),
+      topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "Required each renewal; not generally prorated with first-renewal general hours"),
+      topic("Maine jurisprudence exam", "Every other renewal", "Non-CME renewal requirement; no CME credit awarded"),
       mateTopic(),
     ],
   },
@@ -546,10 +550,13 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   MO: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 hours (or 40 hours with qualifying post-tests)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
-    mandatoryTopics: [mateTopic()],
+    mandatoryTopics: [
+      topic("Health benefits of nutrition", "1 hr per cycle", "Included within the 50-hour requirement"),
+      mateTopic(),
+    ],
   },
   MS: {
     totalHours: 40,
@@ -557,8 +564,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "Annual renewal, 2-year CME reporting window",
     mandatoryTopics: [
-      topic("Controlled substances prescribing", "5 hrs every 2 years", "If DEA-licensed; source marked for follow-up"),
-      mateTopic(),
+      mateTopic("If DEA-registered; satisfies Mississippi controlled-substance training requirement once completed"),
     ],
   },
   MT: {
@@ -580,21 +586,22 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   ND: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (first renewal exempt; 20 hours if licensed >1 year but <2 full years)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Nutrition and metabolic health", "1 hr per renewal cycle"),
+      topic("Abortion instructional course", "Review within prior 2 years before performing an abortion", "Scope-triggered; effective Jan. 1, 2026; medical-emergency exception"),
       mateTopic(),
     ],
   },
   NE: {
     totalHours: 50,
-    totalHoursLabel: "50 hours",
+    totalHoursLabel: "50 hours (up to 25 general Category 1 hours may carry over; first renewal after initial licensure typically exempt)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid prescribing", "3 hrs every 2 years", "Includes 0.5 hr on PDMP; if prescribing controlled substances"),
+      topic("Opioid prescribing", "3 hrs every 2 years", "If prescribing controlled substances; includes 0.5 hr PDMP; requirement sunsets Jan. 1, 2029; topic-specific credit must be fresh each cycle"),
       mateTopic(),
     ],
   },
@@ -709,7 +716,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Alzheimer's disease / cognitive impairment", "1 hr one-time"),
-      topic("Opioid prescribing topics", "8 hrs one-time", "For Schedule II opioid prescribers; enforcement status flagged in source"),
       mateTopic(),
     ],
   },
@@ -804,7 +810,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid and controlled substance prescribing", "2 hrs every renewal", "If authorized to prescribe"),
+      topic("Opioid and controlled substance prescribing", "2 hrs every renewal", "Applies to physicians holding a U.S. DEA registration number; exempt if no DEA number is held at renewal"),
       mateTopic(),
     ],
   },
@@ -821,17 +827,27 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   WY: {
     totalHours: 60,
-    totalHoursLabel: "60 hours",
+    totalHoursLabel: "60 hours over the 3-year CME lookback (AMA Category I/II, AOA, or Board-recognized equivalents)",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "3-year CME reporting lookback; license renewal is annual by June 30",
     mandatoryTopics: [
-      topic("Responsible prescribing / SUD treatment", "1 hr every 2 years", "If authorized to prescribe controlled substances"),
+      topic("Responsible prescribing / SUD treatment", "1 hr every 2 years", "If authorized to prescribe controlled substances; 2-year topic cycle inside the 3-year CME lookback"),
       mateTopic(),
     ],
   },
 };
 
 const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
+  AK: {
+    totalHours: 50,
+    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AOA Category I/II or board-recognized equivalent)",
+    cycleYears: 2,
+    cycleLabel: "2-year renewal cycle",
+    mandatoryTopics: [
+      topic("Pain management and opioid use/addiction", "2 hrs per cycle", "If DEA-registered"),
+      mateTopic(),
+    ],
+  },
   AZ: {
     totalHours: 40,
     totalHoursLabel: "40 hours (at least 24 AOA Category 1A; no more than 16 AMA Category 1)",
@@ -868,10 +884,13 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   ME: {
     totalHours: 100,
-    totalHoursLabel: "100 hours",
+    totalHoursLabel: "100 hours (at least 40 osteopathic medical education)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
-    mandatoryTopics: [mateTopic()],
+    mandatoryTopics: [
+      topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "Confirmed by Roz via Maine Joint Rule Chapter 21"),
+      mateTopic(),
+    ],
   },
   MI: {
     totalHours: 150,
@@ -899,13 +918,24 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
       mateTopic(),
     ],
   },
+  NM: {
+    totalHours: 75,
+    totalHoursLabel: "75 credits (at least 30 AOA Category 1-A or 1-B)",
+    cycleYears: 3,
+    cycleLabel: "3-year renewal cycle; DO audit may include credits earned up to 6 months before the current triennial cycle",
+    mandatoryTopics: [
+      topic("New Mexico Osteopathic Medical Practice Act and Board rules review", "1 credit every renewal"),
+      topic("Pain management", "6 credits every renewal", "If practicing in New Mexico with a NM controlled-substance license / opioid-prescribing authority; board-approved course constraints apply"),
+      mateTopic(),
+    ],
+  },
   OK: {
     totalHours: 16,
     totalHoursLabel: "16 hours",
     cycleYears: 1,
-    cycleLabel: "Annual renewal cycle",
+    cycleLabel: "Annual renewal cycle; renewal fee due on or before July 1",
     mandatoryTopics: [
-      topic("Proper prescribing", "1 hr every year", "If DEA registrant or Oklahoma Bureau of Narcotics permit holder"),
+      topic("Proper prescribing", "1 hr every year", "Exempt if no Oklahoma Bureau of Narcotics and DEA authority to handle controlled dangerous substances; must be board-approved seminar"),
       mateTopic(),
     ],
   },
@@ -946,9 +976,9 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   VT: {
     totalHours: 30,
-    totalHoursLabel: "30 hours",
+    totalHoursLabel: "30 hours (at least 12 hours / 40% osteopathic medical education, AOA Category 1 or 2)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; DO licenses expire September 30 of even-numbered years",
     mandatoryTopics: [
       topic("Safe and effective prescribing of controlled substances", "2 hrs every renewal", "If DEA-registered"),
       mateTopic(),
@@ -970,7 +1000,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     totalHours: 32,
     totalHoursLabel: "32 hours (at least 16 AOA Category 1A/1B)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle; D.O. renewal due June 30",
+    cycleLabel: "2-year renewal cycle; DO renewal due on or before July 1",
     mandatoryTopics: [
       topic("Drug diversion / best-practice prescribing", "3 hrs for 2026 renewal", "Final recurring cycle if prescribing, administering, or dispensing controlled substances in West Virginia; must be WV Board of Osteopathic Medicine-approved; post-2026 shifts to one-time/initial-license logic"),
       topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"),
