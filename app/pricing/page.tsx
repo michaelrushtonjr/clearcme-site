@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { PublicShell } from "@/components/PublicSiteShell";
 
 const faqs: { q: string; a: string; mocCta?: boolean }[] = [
   {
@@ -41,7 +42,7 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
 
 function Check() {
   return (
-    <svg className="w-4 h-4 text-[#0F766E] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+    <svg className="w-4 h-4 text-[#3f5f33] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
     </svg>
   );
@@ -100,7 +101,7 @@ export default function PricingPage() {
       price: { annual: "$0", monthly: "$0" },
       cta: "Get started free",
       ctaHref: "/login",
-      ctaStyle: "border border-slate-300 text-slate-700 hover:bg-slate-50",
+      ctaStyle: "public-btn-secondary",
       features: [
         "Single state requirement lookup",
         "Renewal countdown",
@@ -116,7 +117,7 @@ export default function PricingPage() {
       cta: "Start Essential",
       ctaHref: "/login",
       checkoutTier: "ESSENTIAL" as const,
-      ctaStyle: "border border-[#0F766E] text-[#0F766E] hover:bg-teal-50",
+      ctaStyle: "public-btn-secondary",
       features: [
         "Everything in Free",
         "Multi-state tracking (up to 2 states)",
@@ -135,7 +136,7 @@ export default function PricingPage() {
       cta: "Start Pro",
       ctaHref: "/login",
       checkoutTier: "PRO" as const,
-      ctaStyle: "bg-[#0F766E] text-white hover:bg-[#0D9488]",
+      ctaStyle: "public-btn-primary",
       features: [
         "Everything in Essential",
         "Multi-state tracking (unlimited states)",
@@ -152,7 +153,7 @@ export default function PricingPage() {
       price: { annual: "Contact us", monthly: "Contact us" },
       cta: "Contact sales",
       ctaHref: "mailto:hello@clearcme.ai",
-      ctaStyle: "border border-slate-300 text-slate-700 hover:bg-slate-50",
+      ctaStyle: "public-btn-secondary",
       features: [
         "Hospital / group billing",
         "$149/physician/yr (10+ min.)",
@@ -167,54 +168,35 @@ export default function PricingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#FAFAF7]">
-      {/* Nav */}
-      <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <Link href="/" className="text-2xl font-bold text-[#1E293B] tracking-tight">
-          Clear<span className="text-[#0F766E]">CME</span>
-        </Link>
-        <div className="flex items-center gap-6">
-          <Link href="/mate-act" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
-            DEA MATE Act
-          </Link>
-          <Link href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
-            Methodology
-          </Link>
-          <Link href="/login" className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors">
-            Sign in →
-          </Link>
-        </div>
-      </nav>
-
+    <PublicShell links={[{ href: "/mate-act", label: "DEA MATE Act" }, { href: "/methodology", label: "Methodology" }]}>
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
-        <h1
-          className="font-playfair text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
-        >
+      <section className="public-hero max-w-4xl mx-auto">
+        <div className="public-kicker mb-6">Pricing</div>
+        <h1 className="public-heading text-4xl sm:text-6xl mb-5">
           Know exactly where you stand —<br />
-          <span className="text-[#0F766E]">for less than your renewal application fee.</span>
+          <span className="public-accent">for less than your renewal application fee.</span>
         </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
+        <p className="public-subhead max-w-2xl mx-auto mb-10">
           Nevada physicians pay $250 to renew. California pays $690. ClearCME costs less than a dinner.
         </p>
 
         {/* Annual / Monthly toggle */}
-        <div className="inline-flex items-center gap-1 bg-slate-100 rounded-xl p-1 mb-12">
+        <div className="inline-flex items-center gap-1 bg-[#ece4cf] border border-[#ddd4bd] rounded-full p-1 mb-12">
           <button
             onClick={() => setAnnual(true)}
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              annual ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              annual ? "bg-[#fffdf6] text-[#1e2920] shadow-sm" : "text-[#6b7568] hover:text-[#1e2920]"
             }`}
           >
             Annual
-            <span className="ml-2 text-xs font-medium text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+            <span className="ml-2 text-xs font-medium text-[#3f5f33] bg-[#dde8cf] px-1.5 py-0.5 rounded-full">
               Save ~25%
             </span>
           </button>
           <button
             onClick={() => setAnnual(false)}
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              !annual ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              !annual ? "bg-[#fffdf6] text-[#1e2920] shadow-sm" : "text-[#6b7568] hover:text-[#1e2920]"
             }`}
           >
             Monthly
@@ -229,29 +211,29 @@ export default function PricingPage() {
             return (
             <div
               key={tier.name}
-              className={`relative rounded-2xl border p-6 flex flex-col gap-5 ${
+              className={`relative public-card p-6 flex flex-col gap-5 ${
                 tier.popular
-                  ? "border-[#0F766E] ring-2 ring-[#0F766E] ring-offset-2 bg-white shadow-lg"
-                  : "border-slate-200 bg-white"
+                  ? "border-[#3f5f33] ring-2 ring-[#3f5f33] ring-offset-2 ring-offset-[#f4efe3] bg-[#fffdf6] shadow-lg"
+                  : "border-[#ddd4bd] bg-[#fffdf6]/80"
               }`}
             >
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#0F766E] text-white text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
+                  <span className="bg-[#3f5f33] text-[#fffdf6] text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
                     ⭐ Most Popular
                   </span>
                 </div>
               )}
 
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
+                <p className="text-xs font-semibold text-[#6b7568] uppercase tracking-widest mb-1">
                   {tier.name}
                 </p>
-                <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-slate-500" : "text-[#1E293B]"}`}>
+                <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-[#6b7568]" : "text-[#1e2920]"}`}>
                   {annual ? tier.price.annual : tier.price.monthly}
                 </p>
                 {tier.name !== "Free" && tier.name !== "Group" && (
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-[#6b7568] mt-1">
                     {annual ? "billed annually" : "billed monthly"}
                   </p>
                 )}
@@ -259,7 +241,7 @@ export default function PricingPage() {
 
               <ul className="space-y-2.5 flex-1">
                 {tier.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-2 text-sm text-slate-600">
+                  <li key={feat} className="flex items-start gap-2 text-sm text-[#3f4a40]">
                     <Check />
                     {feat}
                   </li>
@@ -296,20 +278,20 @@ export default function PricingPage() {
 
       {/* FAQ */}
       <section className="max-w-3xl mx-auto px-6 py-16">
-        <h2 className="text-2xl font-bold text-[#1E293B] mb-8 text-center">Frequently asked questions</h2>
+        <h2 className="text-2xl font-bold text-[#1e2920] mb-8 text-center">Frequently asked questions</h2>
         <div className="space-y-3">
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="border border-slate-200 rounded-2xl overflow-hidden"
+              className="public-card public-card-soft overflow-hidden"
             >
               <button
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[#ece4cf]/60 transition-colors"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
               >
-                <span className="font-semibold text-[#1E293B] text-sm pr-4">{faq.q}</span>
+                <span className="font-semibold text-[#1e2920] text-sm pr-4">{faq.q}</span>
                 <svg
-                  className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 text-[#6b7568] flex-shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -319,14 +301,14 @@ export default function PricingPage() {
                 </svg>
               </button>
               {openFaq === i && (
-                <div className="px-5 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                <div className="px-5 pb-4 text-sm text-[#3f4a40] leading-relaxed border-t border-[#ece3ca] pt-3">
                   {faq.a}
                   {faq.mocCta && (
                     <p className="mt-3">
                       Want early access when MOC tracking launches?{" "}
                       <a
                         href="mailto:moc@clearcme.ai"
-                        className="text-[#0F766E] hover:text-[#0D9488] font-medium"
+                        className="text-[#3f5f33] hover:text-[#2a4123] font-medium"
                       >
                         Join the MOC early access list →
                       </a>
@@ -340,40 +322,24 @@ export default function PricingPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="bg-slate-50 border-t border-slate-100 py-16">
+      <section className="bg-[#ece4cf]/45 border-t border-[#ece3ca] py-16">
         <div className="max-w-xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold text-[#1E293B] mb-3">
+          <h2 className="text-2xl font-bold text-[#1e2920] mb-3">
             Start free — no credit card required.
           </h2>
-          <p className="text-slate-500 mb-8">
+          <p className="text-[#6b7568] mb-8">
             See your compliance map in under 2 minutes.
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#3f5f33] text-[#fffdf6] font-semibold rounded-xl hover:bg-[#2a4123] transition-colors text-base shadow-sm"
           >
             Sign in with Google →
           </Link>
-          <p className="text-xs text-slate-400 mt-4">Free · No certificate upload needed to get started</p>
+          <p className="text-xs text-[#6b7568] mt-4">Free · No certificate upload needed to get started</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6 bg-[#FAFAF7]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <span className="font-bold text-[#1E293B] tracking-tight text-base">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
-          <div className="flex gap-6">
-            <Link href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</Link>
-            <Link href="/mate-act" className="hover:text-slate-700 transition-colors">DEA MATE Act</Link>
-            <Link href="/methodology" className="hover:text-slate-700 transition-colors">Methodology</Link>
-            <Link href="/privacy" className="hover:text-slate-700 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-slate-700 transition-colors">Terms</Link>
-          </div>
-          <p>© {new Date().getFullYear()} ClearCME. All rights reserved.</p>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }

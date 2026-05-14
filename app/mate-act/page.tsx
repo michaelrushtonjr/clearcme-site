@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { PublicShell } from "@/components/PublicSiteShell";
 
 function SelfCheckTool() {
   const [deaDate, setDeaDate] = useState("");
@@ -55,10 +56,10 @@ function SelfCheckTool() {
   };
 
   return (
-    <div className="bg-white border-2 border-teal-100 rounded-2xl p-6 space-y-5 shadow-sm">
+    <div className="public-card p-6 space-y-5">
       <div>
-        <h3 className="font-bold text-[#1E293B] text-lg mb-1">Quick self-check</h3>
-        <p className="text-sm text-slate-500">
+        <h3 className="font-bold text-[#1e2920] text-lg mb-1">Quick self-check</h3>
+        <p className="text-sm text-[#6b7568]">
           When did you last register or renew your DEA?
         </p>
       </div>
@@ -72,12 +73,12 @@ function SelfCheckTool() {
             setResult(null);
           }}
           max={new Date().toISOString().split("T")[0]}
-          className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E] focus:border-transparent"
+          className="flex-1 px-4 py-3 rounded-xl border border-[#ddd4bd] text-sm focus:outline-none focus:ring-2 focus:ring-[#3f5f33] focus:border-transparent"
         />
         <button
           onClick={handleCheck}
           disabled={!deaDate}
-          className="px-6 py-3 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+          className="px-6 py-3 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
         >
           Check my status
         </button>
@@ -101,13 +102,13 @@ function SelfCheckTool() {
         </div>
       )}
 
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-[#6b7568]">
         Not sure of your DEA date?{" "}
         <a
           href="https://www.dea.gov/drug-registration"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#0F766E] hover:underline"
+          className="text-[#3f5f33] hover:underline"
         >
           Check DEA.gov →
         </a>
@@ -118,37 +119,15 @@ function SelfCheckTool() {
 
 export default function MateActPage() {
   return (
-    <main className="min-h-screen bg-[#FAFAF7]">
-      {/* Nav */}
-      <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <Link href="/" className="text-2xl font-bold text-[#1E293B] tracking-tight">
-          Clear<span className="text-[#0F766E]">CME</span>
-        </Link>
-        <div className="flex items-center gap-6">
-          <Link href="/pricing" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
-            Pricing
-          </Link>
-          <Link href="/methodology" className="text-sm text-[#475569] hover:text-[#1E293B] transition-colors">
-            Methodology
-          </Link>
-          <Link href="/login" className="text-sm font-medium text-[#0F766E] hover:text-[#0D9488] transition-colors">
-            Sign in →
-          </Link>
-        </div>
-      </nav>
-
+    <PublicShell links={[{ href: "/pricing", label: "Pricing" }, { href: "/methodology", label: "Methodology" }]}>
       {/* Hero */}
-      <section className="max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wide">
-          DEA Requirement · Effective June 27, 2023
-        </div>
-        <h1
-          className="font-playfair text-4xl sm:text-5xl font-bold text-[#1E293B] leading-tight tracking-tight mb-4"
-        >
+      <section className="public-hero mx-auto max-w-3xl">
+        <div className="public-kicker mb-6 text-[#b85631]">DEA Requirement · Effective June 27, 2023</div>
+        <h1 className="public-heading mb-5 text-4xl sm:text-6xl">
           Are you DEA-registered?<br />
-          <span className="text-red-600">You may owe the DEA an 8-hour training.</span>
+          <span className="public-pop-accent">You may owe the DEA an 8-hour training.</span>
         </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+        <p className="public-subhead mx-auto max-w-2xl">
           The DEA MATE Act (effective June 27, 2023) requires all DEA-registered practitioners to complete
           8 hours of training on treating patients with opioid or substance use disorders — one time.
         </p>
@@ -157,14 +136,14 @@ export default function MateActPage() {
       {/* Who it applies to + What it covers */}
       <section className="max-w-4xl mx-auto px-6 pb-12">
         <div className="grid sm:grid-cols-2 gap-6">
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2">
+          <div className="public-card public-card-soft p-6">
+            <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
               <span className="text-xl">👥</span> Who it applies to
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed mb-3">
+            <p className="text-sm text-[#3f4a40] leading-relaxed mb-3">
               Every practitioner with a DEA registration number. No exceptions.
             </p>
-            <ul className="space-y-1.5 text-sm text-slate-700">
+            <ul className="space-y-1.5 text-sm text-[#3f4a40]">
               {["Physicians (MD, DO)", "Physician Assistants (PA)", "Nurse Practitioners (NP)", "Dentists"].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0" />
@@ -174,11 +153,11 @@ export default function MateActPage() {
             </ul>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-bold text-[#1E293B] mb-3 flex items-center gap-2">
+          <div className="public-card public-card-soft p-6">
+            <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
               <span className="text-xl">📋</span> What the 8 hours must cover
             </h2>
-            <ul className="space-y-1.5 text-sm text-slate-700">
+            <ul className="space-y-1.5 text-sm text-[#3f4a40]">
               {[
                 "FDA-approved medications for SUD treatment",
                 "Clinical management of opioid use disorder",
@@ -186,7 +165,7 @@ export default function MateActPage() {
                 "Treating patients with opioid or substance use disorders",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#0F766E] rounded-full flex-shrink-0 mt-1.5" />
+                  <span className="w-1.5 h-1.5 bg-[#3f5f33] rounded-full flex-shrink-0 mt-1.5" />
                   {item}
                 </li>
               ))}
@@ -196,9 +175,9 @@ export default function MateActPage() {
       </section>
 
       {/* Three scenarios */}
-      <section className="bg-slate-50 border-t border-slate-100 py-14">
+      <section className="public-section-band py-14">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-[#1E293B] mb-8 text-center">Are you compliant?</h2>
+          <h2 className="text-2xl font-bold text-[#1e2920] mb-8 text-center">Are you compliant?</h2>
           <div className="space-y-4">
             {[
               {
@@ -293,37 +272,37 @@ export default function MateActPage() {
       </section>
 
       {/* Recommended course */}
-      <section className="bg-teal-50 border-t border-teal-100 py-14">
+      <section className="public-section-band py-14">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-[#1E293B] mb-6 text-center">Recommended course</h2>
-          <div className="bg-white rounded-2xl border border-teal-200 p-6 flex flex-col sm:flex-row gap-5 items-start shadow-sm">
-            <div className="w-12 h-12 rounded-xl bg-[#0F766E] flex items-center justify-center flex-shrink-0">
+          <h2 className="text-2xl font-bold text-[#1e2920] mb-6 text-center">Recommended course</h2>
+          <div className="public-card p-6 flex flex-col sm:flex-row gap-5 items-start">
+            <div className="w-12 h-12 rounded-xl bg-[#3f5f33] flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
             <div className="flex-1">
-              <p className="font-bold text-[#1E293B] text-lg mb-1">Hippo Education: OUD Decoded</p>
-              <p className="text-sm text-slate-600 mb-3 leading-relaxed">
+              <p className="font-bold text-[#1e2920] text-lg mb-1">Hippo Education: OUD Decoded</p>
+              <p className="text-sm text-[#3f4a40] mb-3 leading-relaxed">
                 12.25 AMA PRA Category 1 Credits™ — satisfies the DEA MATE Act 8-hour requirement.
                 Covers opioid use disorder diagnosis, treatment, and clinical management.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">✓ Satisfies MATE Act</span>
-                <span className="text-xs bg-teal-100 text-[#0F766E] font-medium px-2.5 py-1 rounded-full">12.25 AMA PRA Cat 1</span>
-                <span className="text-xs bg-slate-100 text-slate-700 font-medium px-2.5 py-1 rounded-full">On-demand</span>
+                <span className="text-xs bg-[#dde8cf] text-[#3f5f33] font-medium px-2.5 py-1 rounded-full">12.25 AMA PRA Cat 1</span>
+                <span className="text-xs bg-slate-100 text-[#3f4a40] font-medium px-2.5 py-1 rounded-full">On-demand</span>
               </div>
               <a
                 href="https://home.hippoed.com/oud-decoded"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0F766E] text-white text-sm font-semibold rounded-xl hover:bg-[#0D9488] transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors"
               >
                 View OUD Decoded →
               </a>
             </div>
           </div>
-          <p className="text-xs text-slate-400 mt-3 text-center">
+          <p className="text-xs text-[#6b7568] mt-3 text-center">
             ClearCME does not receive compensation from Hippo Education. This is an independent recommendation.
           </p>
         </div>
@@ -331,37 +310,21 @@ export default function MateActPage() {
 
       {/* CTA */}
       <section className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-2xl font-bold text-[#1E293B] mb-3">
+        <h2 className="text-2xl font-bold text-[#1e2920] mb-3">
           Track your DEA MATE Act status in ClearCME
         </h2>
-        <p className="text-slate-500 mb-8">
+        <p className="text-[#6b7568] mb-8">
           ClearCME tracks your DEA MATE Act compliance alongside all your state CME requirements.
           Free. No credit card required.
         </p>
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[#3f5f33] text-white font-semibold rounded-xl hover:bg-[#2a4123] transition-colors text-base shadow-sm"
         >
           Sign in free →
         </Link>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-100 py-8 px-6 bg-[#FAFAF7]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
-          <span className="font-bold text-[#1E293B] tracking-tight text-base">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
-          <div className="flex gap-6">
-            <Link href="/pricing" className="hover:text-slate-700 transition-colors">Pricing</Link>
-            <Link href="/mate-act" className="hover:text-slate-700 transition-colors">DEA MATE Act</Link>
-            <Link href="/methodology" className="hover:text-slate-700 transition-colors">Methodology</Link>
-            <Link href="/privacy" className="hover:text-slate-700 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-slate-700 transition-colors">Terms</Link>
-          </div>
-          <p>© {new Date().getFullYear()} ClearCME. All rights reserved.</p>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }
