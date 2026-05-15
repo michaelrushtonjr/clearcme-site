@@ -9,7 +9,7 @@ const navItems = [
     label: "Dashboard",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -28,7 +28,7 @@ const navItems = [
     label: "Upload",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -47,7 +47,7 @@ const navItems = [
     label: "Gaps",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -66,7 +66,7 @@ const navItems = [
     label: "Profile",
     icon: (active: boolean) => (
       <svg
-        className={`w-6 h-6 ${active ? "text-[#0F766E]" : "text-slate-400"}`}
+        className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -95,7 +95,7 @@ export default function MobileBottomNav({ gapCount = 0 }: MobileBottomNavProps) 
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 safe-area-pb">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[rgba(255,253,246,0.94)] border-t border-[var(--line)] safe-area-pb backdrop-blur-sm">
       <div className="flex items-stretch justify-around">
         {navItems.map((item) => {
           const active = isActive(item.href);
@@ -105,19 +105,19 @@ export default function MobileBottomNav({ gapCount = 0 }: MobileBottomNavProps) 
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] transition-colors ${
-                active ? "text-[#0F766E]" : "text-slate-400 hover:text-slate-600"
+                active ? "text-[var(--primary)]" : "text-[var(--ink-3)] hover:text-[var(--ink-2)]"
               }`}
               aria-current={active ? "page" : undefined}
             >
               <div className="relative">
                 {item.icon(active)}
                 {showBadge && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-[var(--pop)] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
                     {gapCount > 9 ? "9+" : gapCount}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] font-medium leading-none ${active ? "text-[#0F766E]" : "text-slate-400"}`}>
+              <span className={`text-[10px] font-medium leading-none ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}>
                 {item.label}
               </span>
             </Link>

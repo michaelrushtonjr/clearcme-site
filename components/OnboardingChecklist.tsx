@@ -91,14 +91,14 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
   // All complete — show audit-ready card
   if (allDone) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="product-callout-brand p-6 text-center">
+        <div className="w-12 h-12 bg-[var(--status-met-bg)] rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg className="w-6 h-6 text-[var(--status-met)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
-        <h3 className="font-bold text-green-900 text-lg">You&apos;re audit-ready</h3>
-        <p className="text-sm text-green-700 mt-1">All setup steps complete. Your compliance tracking is fully configured.</p>
+        <h3 className="font-display font-semibold text-[var(--ink)] text-lg">You&apos;re audit-ready</h3>
+        <p className="text-sm text-[var(--ink-2)] mt-1">All setup steps complete. Your compliance tracking is fully configured.</p>
       </div>
     );
   }
@@ -106,31 +106,31 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
   const pct = Math.round((completed / steps.length) * 100);
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+    <div className="product-callout-brand p-6">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h3 className="font-semibold text-blue-900 text-base">
+          <h3 className="font-display font-semibold text-[var(--ink)] text-lg">
             Welcome to ClearCME — Let&apos;s get you audit-ready.
           </h3>
-          <p className="text-sm text-blue-700 mt-0.5">
+          <p className="text-sm text-[var(--ink-2)] mt-0.5">
             Complete these steps to unlock your full compliance dashboard.
           </p>
         </div>
-        <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+        <span className="product-pill product-pill-track whitespace-nowrap flex-shrink-0">
           {pct}%
         </span>
       </div>
 
       {/* Progress bar */}
       <div className="mb-2">
-        <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+        <div className="product-progress">
           <div
-            className="h-full bg-blue-600 rounded-full transition-all"
+            className="product-progress-fill transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
-      <p className="text-xs text-blue-500 mb-5">
+      <p className="text-xs text-[var(--ink-3)] mb-5">
         Progress: {completed}/4 complete · ~3-5 min
       </p>
 
@@ -140,20 +140,20 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
           <div
             key={step.key}
             className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 ${
-              step.done ? "bg-blue-100/60" : "bg-white border border-blue-200"
+              step.done ? "bg-[rgba(63,95,51,0.10)]" : "bg-[var(--paper)] border border-[var(--line)]"
             }`}
           >
             <div className="flex items-center gap-3">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                  step.done ? "bg-blue-600 text-white" : "bg-white border-2 border-blue-300 text-blue-500"
+                  step.done ? "bg-[var(--primary)] text-white" : "bg-[var(--paper)] border-2 border-[rgba(63,95,51,0.25)] text-[var(--primary)]"
                 }`}
               >
                 {step.done ? "✓" : ""}
               </span>
               <span
                 className={`text-sm font-medium ${
-                  step.done ? "text-blue-700 line-through opacity-70" : "text-slate-800"
+                  step.done ? "text-[var(--ink-3)] line-through opacity-80" : "text-[var(--ink)]"
                 }`}
               >
                 {step.label}
@@ -162,7 +162,7 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
             {!step.done && (
               <Link
                 href={step.href}
-                className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 bg-[var(--primary)] text-white rounded-full hover:bg-[var(--primary-2)] transition-colors"
               >
                 {step.cta}
               </Link>

@@ -53,18 +53,18 @@ export default class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-4 flex items-center justify-between gap-3">
+        <div className="product-callout-warm px-5 py-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-amber-900">
+            <p className="text-sm font-medium text-[var(--ink)]">
               Couldn&apos;t load {this.props.label}.
             </p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-xs text-[var(--ink-2)] mt-0.5">
               Something went wrong rendering this section.
             </p>
           </div>
           <button
             onClick={this.handleRetry}
-            className="flex-shrink-0 text-sm font-semibold px-4 py-2 rounded-xl bg-amber-600 text-white hover:bg-amber-700 transition-colors min-h-[44px]"
+            className="product-btn product-btn-urgent flex-shrink-0 text-sm px-4 py-2"
           >
             Tap to retry
           </button>

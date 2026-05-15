@@ -212,19 +212,20 @@ export default function SettingsClient({
   return (
     <div className="space-y-8 max-w-2xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-500 mt-1 text-sm">Manage your account and preferences</p>
+      <div className="product-page-head">
+        <p className="product-page-eye">Account controls</p>
+        <h1 className="product-page-title">Settings</h1>
+        <p className="product-page-sub">Manage your account and preferences</p>
       </div>
 
       {/* Profile section */}
-      <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="font-semibold text-slate-900 text-sm">Profile</h2>
+      <section className="product-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Profile</h2>
         </div>
         <form onSubmit={handleSaveProfile} className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="product-label">
               Display Name
             </label>
             <input
@@ -232,12 +233,12 @@ export default function SettingsClient({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Dr. Jane Smith"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="product-input"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="product-label">
               Email
             </label>
             <input
@@ -245,18 +246,18 @@ export default function SettingsClient({
               value={user.email ?? ""}
               readOnly
               disabled
-              className="w-full px-3 py-2 border border-slate-100 rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
+              className="product-input cursor-not-allowed opacity-70"
             />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[var(--ink-3)] mt-1">
               Email is managed by Google Sign-In and cannot be changed here.
             </p>
           </div>
 
           {saveError && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{saveError}</p>
+            <p className="text-sm text-[var(--status-miss)] bg-[var(--status-miss-bg)] px-3 py-2 rounded-[var(--radius-sm)]">{saveError}</p>
           )}
           {saveSuccess && (
-            <p className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+            <p className="text-sm text-[var(--status-met)] bg-[var(--status-met-bg)] px-3 py-2 rounded-[var(--radius-sm)]">
               ✓ Changes saved
             </p>
           )}
@@ -264,7 +265,7 @@ export default function SettingsClient({
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60"
+            className="product-btn product-btn-primary disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save changes"}
           </button>
@@ -272,17 +273,17 @@ export default function SettingsClient({
       </section>
 
       {/* Billing section */}
-      <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="font-semibold text-slate-900 text-sm">Billing</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Upgrade, manage, or verify your ClearCME plan</p>
+      <section className="product-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Billing</h2>
+          <p className="text-xs text-[var(--ink-3)] mt-0.5">Upgrade, manage, or verify your ClearCME plan</p>
         </div>
         <div className="px-6 py-5 space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Current plan</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{planLabel}</p>
+          <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
+            <p className="font-mono text-xs font-medium uppercase tracking-wide text-[var(--ink-3)]">Current plan</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--ink)]">{planLabel}</p>
             {subscription?.currentPeriodEnd && (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[var(--ink-3)]">
                 Current period ends {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                 {subscription.cancelAtPeriodEnd ? " · cancels at period end" : ""}
               </p>
@@ -295,20 +296,20 @@ export default function SettingsClient({
                 type="button"
                 onClick={openBillingPortal}
                 disabled={billingLoading || !subscription?.stripeCustomerId}
-                className="inline-flex items-center justify-center rounded-xl bg-[#0F766E] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0D9488] disabled:cursor-not-allowed disabled:opacity-60"
+                className="product-btn product-btn-brand disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {billingLoading ? "Opening billing…" : "Manage billing"}
               </button>
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                className="product-btn product-btn-secondary"
               >
                 Compare plans
               </Link>
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-[var(--ink-2)]">
                 Upgrade when you are ready to track multiple states, unlock AI extraction, and export board-ready reports.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -316,7 +317,7 @@ export default function SettingsClient({
                   type="button"
                   onClick={() => startCheckout("ESSENTIAL")}
                   disabled={checkoutTier !== null}
-                  className="inline-flex items-center justify-center rounded-xl border border-[#0F766E] px-5 py-2.5 text-sm font-semibold text-[#0F766E] transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="product-btn product-btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {checkoutTier === "ESSENTIAL" ? "Opening checkout…" : "Upgrade to Essential"}
                 </button>
@@ -324,7 +325,7 @@ export default function SettingsClient({
                   type="button"
                   onClick={() => startCheckout("PRO")}
                   disabled={checkoutTier !== null}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#0F766E] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0D9488] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="product-btn product-btn-brand disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {checkoutTier === "PRO" ? "Opening checkout…" : "Upgrade to Pro"}
                 </button>
@@ -334,7 +335,7 @@ export default function SettingsClient({
                   type="button"
                   onClick={openBillingPortal}
                   disabled={billingLoading}
-                  className="text-sm font-medium text-slate-500 underline-offset-4 hover:text-slate-700 hover:underline disabled:opacity-60"
+                  className="text-sm font-medium text-[var(--ink-3)] underline-offset-4 hover:text-[var(--ink)] hover:underline disabled:opacity-60"
                 >
                   {billingLoading ? "Opening billing…" : "Open billing portal"}
                 </button>
@@ -343,31 +344,31 @@ export default function SettingsClient({
           )}
 
           {billingError && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{billingError}</p>
+            <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-sm text-[var(--status-miss)]">{billingError}</p>
           )}
         </div>
       </section>
 
       {/* Requirement history */}
-      <section id="requirement-history" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-blue-50">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Required setup step</p>
-          <h2 className="mt-1 font-semibold text-slate-900 text-sm">Confirm your special requirement history</h2>
-          <p className="text-xs text-slate-600 mt-1">
+      <section id="requirement-history" className="product-card overflow-hidden">
+        <div className="product-callout-brand rounded-none border-x-0 border-t-0 px-6 py-4">
+          <p className="product-callout-eye">Required setup step</p>
+          <h2 className="mt-1 font-display text-xl font-semibold text-[var(--ink)]">Confirm your special requirement history</h2>
+          <p className="text-xs text-[var(--ink-2)] mt-1">
             Some CME topics are one-time or every few years. Confirm what you already completed so ClearCME can calculate your actual remaining hours.
           </p>
         </div>
         <div className="px-6 py-5 space-y-5">
-          <p className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs leading-relaxed text-blue-800">
+          <p className="product-callout-brand px-4 py-3 text-xs leading-relaxed text-[var(--ink-2)]">
             This is a user attestation, not an error state. It helps ClearCME avoid recommending courses for requirements you may already have satisfied. Keep your original CME documentation for your board&apos;s retention period.
           </p>
           {licenseRequirements.every((group) => group.requirements.length === 0) ? (
-            <p className="text-sm text-slate-500">No one-time or long-cycle requirements found for your active licenses.</p>
+            <p className="text-sm text-[var(--ink-3)]">No one-time or long-cycle requirements found for your active licenses.</p>
           ) : (
             licenseRequirements.map((group) => (
               group.requirements.length > 0 && (
                 <div key={group.licenseId} className="space-y-3">
-                  <h3 className="text-sm font-semibold text-slate-800">
+                  <h3 className="text-sm font-semibold text-[var(--ink)]">
                     {group.state} {group.licenseType}
                   </h3>
                   <div className="space-y-3">
@@ -378,25 +379,25 @@ export default function SettingsClient({
                       );
                       const saving = savingRequirement === key;
                       return (
-                        <div key={key} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div key={key} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold text-slate-900">{formatTopic(req.topic)}</p>
-                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                <p className="text-sm font-semibold text-[var(--ink)]">{formatTopic(req.topic)}</p>
+                                <span className="product-pill product-pill-track">
                                   {formatCadence(req)}
                                 </span>
                                 {saved && (
-                                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                  <span className="product-pill product-pill-met">
                                     Recorded{saved.completedYear ? ` · ${saved.completedYear}` : ""}
                                   </span>
                                 )}
                               </div>
                               {req.description && (
-                                <p className="mt-1 text-xs leading-relaxed text-slate-600">{req.description}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{req.description}</p>
                               )}
                               {req.notes && (
-                                <p className="mt-1 text-xs leading-relaxed text-slate-500">{req.notes}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-[var(--ink-3)]">{req.notes}</p>
                               )}
                             </div>
                             <div className="flex flex-col gap-2 sm:w-56">
@@ -408,14 +409,14 @@ export default function SettingsClient({
                                 placeholder="Year completed"
                                 value={requirementYears[key] ?? ""}
                                 onChange={(e) => setRequirementYears((prev) => ({ ...prev, [key]: e.target.value }))}
-                                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-[#0F766E] focus:outline-none focus:ring-2 focus:ring-teal-100"
+                                className="product-input"
                               />
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   onClick={() => saveRequirementCompletion(req, group.licenseId, "complete")}
                                   disabled={saving}
-                                  className="flex-1 rounded-lg bg-[#0F766E] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0D9488] disabled:opacity-60"
+                                  className="flex-1 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-2)] disabled:opacity-60"
                                 >
                                   {saving ? "Saving…" : "I completed this"}
                                 </button>
@@ -424,7 +425,7 @@ export default function SettingsClient({
                                     type="button"
                                     onClick={() => saveRequirementCompletion(req, group.licenseId, "clear")}
                                     disabled={saving}
-                                    className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-white disabled:opacity-60"
+                                    className="rounded-full border border-[var(--line)] px-3 py-2 text-xs font-semibold text-[var(--ink-2)] hover:bg-[var(--paper)] disabled:opacity-60"
                                   >
                                     Clear
                                   </button>
@@ -441,16 +442,16 @@ export default function SettingsClient({
             ))
           )}
           {requirementError && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{requirementError}</p>
+            <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-sm text-[var(--status-miss)]">{requirementError}</p>
           )}
         </div>
       </section>
 
       {/* Notification preferences */}
-      <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h2 className="font-semibold text-slate-900 text-sm">Notifications</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Email reminders — coming soon</p>
+      <section className="product-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Notifications</h2>
+          <p className="text-xs text-[var(--ink-3)] mt-0.5">Email reminders — coming soon</p>
         </div>
         <div className="px-6 py-5 space-y-4">
           <ToggleRow
@@ -467,22 +468,22 @@ export default function SettingsClient({
             onChange={setGapAlerts}
             disabled
           />
-          <p className="text-xs text-slate-400 pt-1">
+          <p className="text-xs text-[var(--ink-3)] pt-1">
             Email notifications are in development. Preferences saved for future use.
           </p>
         </div>
       </section>
 
       {/* License management */}
-      <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+      <section className="product-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)] flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-slate-900 text-sm">Medical Licenses</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{licenses.length} active license{licenses.length !== 1 ? "s" : ""}</p>
+            <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Medical Licenses</h2>
+            <p className="text-xs text-[var(--ink-3)] mt-0.5">{licenses.length} active license{licenses.length !== 1 ? "s" : ""}</p>
           </div>
           <Link
             href="/dashboard/profile"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-[var(--primary)] hover:text-[var(--primary-2)] font-medium"
           >
             + Add license
           </Link>
@@ -490,23 +491,23 @@ export default function SettingsClient({
 
         {licenses.length === 0 ? (
           <div className="px-6 py-8 text-center">
-            <p className="text-sm text-slate-500 mb-4">No licenses added yet.</p>
+            <p className="text-sm text-[var(--ink-3)] mb-4">No licenses added yet.</p>
             <Link
               href="/dashboard/profile"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+              className="product-btn product-btn-primary"
             >
               Add your first license →
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--line-soft)]">
             {licenses.map((license) => (
               <div key={license.id} className="px-6 py-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-medium text-slate-900 text-sm">
+                  <p className="font-medium text-[var(--ink)] text-sm">
                     {license.state} — {license.licenseType}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[var(--ink-3)] mt-0.5">
                     {license.licenseNumber ? `License #${license.licenseNumber}` : "No number on file"}
                     {license.renewalDate && (
                       <>
@@ -523,7 +524,7 @@ export default function SettingsClient({
                 <button
                   onClick={() => handleDeleteLicense(license.id)}
                   disabled={deletingId === license.id}
-                  className="text-xs text-red-500 hover:text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 flex-shrink-0"
+                  className="text-xs text-[var(--status-miss)] hover:text-[var(--pop-2)] font-medium px-3 py-1.5 rounded-full hover:bg-[var(--status-miss-bg)] transition-colors disabled:opacity-50 flex-shrink-0"
                 >
                   {deletingId === license.id ? "Removing..." : "Remove"}
                 </button>
@@ -552,8 +553,8 @@ function ToggleRow({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex-1">
-        <p className="text-sm font-medium text-slate-900">{label}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+        <p className="text-sm font-medium text-[var(--ink)]">{label}</p>
+        <p className="text-xs text-[var(--ink-3)] mt-0.5">{description}</p>
       </div>
       <button
         type="button"
@@ -563,7 +564,7 @@ function ToggleRow({
         disabled={disabled}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 mt-0.5 ${
           disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
-        } ${value ? "bg-blue-600" : "bg-slate-200"}`}
+        } ${value ? "bg-[var(--primary)]" : "bg-[var(--bg-2)]"}`}
       >
         <span
           className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${

@@ -238,7 +238,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
   if (previewSrc && uploadState === "idle") {
     return (
       <div className="space-y-4">
-        <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
+        <div className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--bg-2)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={previewSrc} alt="Certificate preview" className="w-full max-h-72 object-contain" />
           <div className="absolute top-3 right-3">
@@ -253,16 +253,16 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
             </button>
           </div>
         </div>
-        <p className="text-sm text-slate-500 text-center">Looks good? We&apos;ll extract your credits automatically.</p>
+        <p className="text-sm text-[var(--ink-2)] text-center">Looks good? We&apos;ll extract your credits automatically.</p>
         <button
           onClick={confirmAndUpload}
-          className="w-full py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-base shadow-sm"
+          className="product-btn product-btn-brand w-full"
         >
           Upload &amp; Extract Credits →
         </button>
         <button
           onClick={discardCapture}
-          className="w-full py-2 text-slate-500 text-sm hover:text-slate-700 transition-colors"
+          className="w-full py-2 text-[var(--ink-3)] text-sm hover:text-[var(--ink-2)] transition-colors"
         >
           Retake photo
         </button>
@@ -275,12 +275,12 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
     return (
       <div className="space-y-4 py-6 text-center">
         <div className="space-y-3 max-w-xs mx-auto">
-          <div className="h-4 bg-slate-200 rounded-full animate-pulse" />
-          <div className="h-4 bg-slate-200 rounded-full animate-pulse w-3/4 mx-auto" />
-          <div className="h-4 bg-slate-200 rounded-full animate-pulse w-1/2 mx-auto" />
+          <div className="h-4 bg-[var(--bg-2)] rounded-full animate-pulse" />
+          <div className="h-4 bg-[var(--bg-2)] rounded-full animate-pulse w-3/4 mx-auto" />
+          <div className="h-4 bg-[var(--bg-2)] rounded-full animate-pulse w-1/2 mx-auto" />
         </div>
-        <p className="text-sm font-medium text-slate-600 mt-4">Reading your certificate…</p>
-        <p className="text-xs text-slate-400">This usually takes about 10 seconds</p>
+        <p className="text-sm font-medium text-[var(--ink-2)] mt-4">Reading your certificate…</p>
+        <p className="text-xs text-[var(--ink-3)]">This usually takes about 10 seconds</p>
       </div>
     );
   }
@@ -293,12 +293,12 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
     const detectedTopics = Array.from(new Set(uploadResults.flatMap((cert) => cert.topics)));
     const hasReviewNeeded = needsReviewCount > 0;
     const cardTone = hasReviewNeeded
-      ? "border-amber-200 bg-amber-50/85"
-      : "border-teal-100 bg-teal-50/80";
-    const accentText = hasReviewNeeded ? "text-amber-700" : "text-[#0F766E]";
+      ? "border-[rgba(201,147,60,0.34)] bg-[var(--status-pending-bg)]"
+      : "border-[rgba(63,95,51,0.25)] bg-[rgba(63,95,51,0.10)]";
+    const accentText = hasReviewNeeded ? "text-[var(--status-pending)]" : "text-[var(--primary)]";
     const accentButton = hasReviewNeeded
-      ? "bg-amber-600 hover:bg-amber-700"
-      : "bg-[#0F766E] hover:bg-[#0D9488]";
+      ? "bg-[var(--warm)] hover:bg-[var(--warm-2)]"
+      : "bg-[var(--primary)] hover:bg-[var(--primary-2)]";
 
     return (
       <div className={`space-y-4 rounded-2xl border p-4 text-left shadow-sm ${cardTone}`}>
@@ -316,10 +316,10 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
             <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${accentText}`}>
               {hasReviewNeeded ? "Review needed" : "Compliance updated"}
             </p>
-            <h3 className="mt-1 text-lg font-bold text-slate-900">
+            <h3 className="mt-1 font-display text-lg font-semibold text-[var(--ink)]">
               {hasReviewNeeded ? "Confirm the extracted details" : "Your CME record was refreshed"}
             </h3>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-[var(--ink-2)]">
               {hasReviewNeeded
                 ? "We saved the upload, but one or more fields need review before ClearCME relies on it for compliance."
                 : totalCreditsAdded > 0
@@ -331,18 +331,18 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
 
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl bg-white/85 p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Processed</p>
-            <p className="mt-1 text-xl font-black text-slate-900">{processedCount}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-3)]">Processed</p>
+            <p className="mt-1 font-mono text-xl font-semibold text-[var(--ink)]">{processedCount}</p>
           </div>
           <div className="rounded-xl bg-white/85 p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Applied</p>
-            <p className={`mt-1 text-xl font-black ${accentText}`}>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-3)]">Applied</p>
+            <p className={`mt-1 font-mono text-xl font-semibold ${accentText}`}>
               {(complianceImpact?.creditsApplied ?? totalCreditsAdded).toFixed(1)}
             </p>
           </div>
           <div className="rounded-xl bg-white/85 p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Still needed</p>
-            <p className={`mt-1 text-xl font-black ${needsReviewCount > 0 ? "text-amber-700" : "text-emerald-700"}`}>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-3)]">Still needed</p>
+            <p className={`mt-1 font-mono text-xl font-semibold ${needsReviewCount > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-met)]"}`}>
               {complianceImpact?.stillNeededHours !== null && complianceImpact?.stillNeededHours !== undefined
                 ? complianceImpact.stillNeededHours.toFixed(1)
                 : "—"}
@@ -351,8 +351,8 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
         </div>
 
         {complianceImpact?.snapshotAvailable && (
-          <div className="rounded-xl bg-white/75 px-3 py-3 text-xs text-slate-600">
-            <p className="font-semibold text-slate-800">
+          <div className="rounded-xl bg-white/75 px-3 py-3 text-xs text-[var(--ink-2)]">
+            <p className="font-semibold text-[var(--ink)]">
               {complianceImpact.gapReducedHours !== null
                 ? `${complianceImpact.gapReducedHours.toFixed(1)} hour${complianceImpact.gapReducedHours === 1 ? "" : "s"} of your remaining gap changed.`
                 : "Your current compliance gaps are updated below."}
@@ -369,7 +369,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
         )}
 
         {detectedTopics.length > 0 && (
-          <p className="rounded-xl bg-white/70 px-3 py-2 text-xs text-slate-600">
+          <p className="rounded-xl bg-white/70 px-3 py-2 text-xs text-[var(--ink-2)]">
             Mandatory-topic matches detected: {detectedTopics.map(formatTopicLabel).join(", ")}.
           </p>
         )}
@@ -383,7 +383,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
           </button>
           <button
             onClick={resetUpload}
-            className="w-full rounded-xl border border-teal-200 bg-white/80 px-4 py-3 text-sm font-semibold text-[#0F766E] transition-colors hover:bg-white"
+            className="w-full rounded-xl border border-[var(--line)] bg-white/80 px-4 py-3 text-sm font-semibold text-[var(--primary)] transition-colors hover:bg-white"
           >
             Upload another certificate
           </button>
@@ -395,7 +395,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
   return (
     <div className="space-y-3">
       {errorMsg && (
-        <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+        <div className="p-3 bg-[var(--status-miss-bg)] border border-[rgba(221,107,64,0.28)] rounded-xl text-sm text-[var(--status-miss)]">
           {errorMsg}
         </div>
       )}
@@ -403,7 +403,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
       {/* Primary CTA: Camera */}
       <button
         onClick={() => cameraInputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-3 py-4 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] active:bg-[#0D9488] transition-colors text-base shadow-sm"
+        className="product-btn product-btn-brand w-full"
       >
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -421,18 +421,18 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
         onChange={handleCameraCapture}
       />
 
-      <div className="flex items-center gap-3 text-slate-300">
-        <div className="flex-1 h-px bg-slate-200" />
-        <span className="text-xs text-slate-400">or</span>
-        <div className="flex-1 h-px bg-slate-200" />
+      <div className="flex items-center gap-3 text-[var(--ink-4)]">
+        <div className="flex-1 h-px bg-[var(--line)]" />
+        <span className="text-xs text-[var(--ink-3)]">or</span>
+        <div className="flex-1 h-px bg-[var(--line)]" />
       </div>
 
       {/* Secondary: Upload PDF */}
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-colors text-sm"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-[var(--line)] text-[var(--ink-2)] font-medium rounded-xl hover:border-[var(--primary)] hover:bg-[rgba(63,95,51,0.08)] transition-colors text-sm"
       >
-        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <svg className="w-5 h-5 text-[var(--ink-3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
         Upload a PDF
@@ -448,17 +448,17 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
       {/* Tertiary: Forward from email */}
       <button
         disabled
-        className="w-full flex items-center justify-center gap-2 py-3 border border-slate-100 text-slate-400 font-medium rounded-xl text-sm cursor-not-allowed bg-slate-50/50"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-[var(--line-soft)] text-[var(--ink-3)] font-medium rounded-xl text-sm cursor-not-allowed bg-[rgba(236,228,207,0.5)]"
         title="Coming soon"
       >
-        <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <svg className="w-5 h-5 text-[var(--ink-4)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
         Forward from email
-        <span className="text-[10px] bg-slate-200 text-slate-400 rounded-full px-1.5 py-0.5 ml-1">Soon</span>
+        <span className="text-[10px] bg-[var(--bg-2)] text-[var(--ink-3)] rounded-full px-1.5 py-0.5 ml-1">Soon</span>
       </button>
 
-      <p className="text-[10px] text-slate-400 text-center pt-1">
+      <p className="text-[10px] text-[var(--ink-3)] text-center pt-1">
         AI extracts credits automatically · ~10 seconds · Encrypted in transit
       </p>
     </div>

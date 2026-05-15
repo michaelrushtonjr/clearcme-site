@@ -68,12 +68,12 @@ export default function ComplianceDiffNotifications() {
   }
 
   return (
-    <section className="rounded-3xl border border-[#D9ECE9] bg-[#FAFAF7] p-5">
+    <section className="product-callout-brand p-5">
       <div className="mb-4 space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0F766E]">
+        <p className="product-callout-eye">
           Requirement Changes
         </p>
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="font-display text-xl font-semibold text-[var(--ink)]">
           State CME updates that affect your compliance
         </h2>
       </div>

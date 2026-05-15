@@ -79,35 +79,35 @@ function themeClasses(theme: Theme) {
   switch (theme) {
     case "red":
       return {
-        wrapper: "bg-red-50 border-red-300",
-        icon: "bg-red-100 text-red-600",
-        headline: "text-red-900",
-        body: "text-red-800",
-        cta: "bg-red-600 hover:bg-red-700 text-white",
+        wrapper: "bg-[rgba(221,107,64,0.12)] border-[rgba(221,107,64,0.34)]",
+        icon: "bg-[var(--status-miss-bg)] text-[var(--status-miss)]",
+        headline: "text-[var(--ink)]",
+        body: "text-[var(--ink-2)]",
+        cta: "product-btn product-btn-urgent",
       };
     case "amber":
       return {
-        wrapper: "bg-amber-50 border-amber-300",
-        icon: "bg-amber-100 text-amber-600",
-        headline: "text-amber-900",
-        body: "text-amber-800",
-        cta: "bg-amber-600 hover:bg-amber-700 text-white",
+        wrapper: "product-callout-warm",
+        icon: "bg-[var(--status-pending-bg)] text-[var(--status-pending)]",
+        headline: "text-[var(--ink)]",
+        body: "text-[var(--ink-2)]",
+        cta: "product-btn product-btn-urgent",
       };
     case "blue":
       return {
-        wrapper: "bg-teal-50 border-teal-200",
-        icon: "bg-teal-100 text-[#0F766E]",
-        headline: "text-[#1E293B]",
-        body: "text-[#1E293B]",
-        cta: "bg-[#0F766E] hover:bg-[#0D9488] text-white",
+        wrapper: "product-callout-brand",
+        icon: "bg-[rgba(63,95,51,0.12)] text-[var(--primary)]",
+        headline: "text-[var(--ink)]",
+        body: "text-[var(--ink-2)]",
+        cta: "product-btn product-btn-brand",
       };
     case "green":
       return {
-        wrapper: "bg-green-50 border-green-200",
-        icon: "bg-green-100 text-green-600",
-        headline: "text-green-900",
-        body: "text-green-800",
-        cta: "bg-green-600 hover:bg-green-700 text-white",
+        wrapper: "product-callout-brand",
+        icon: "bg-[var(--status-met-bg)] text-[var(--status-met)]",
+        headline: "text-[var(--ink)]",
+        body: "text-[var(--ink-2)]",
+        cta: "product-btn product-btn-brand",
       };
   }
 }
@@ -248,7 +248,7 @@ export default function UrgencyCard(props: NextActionCardProps) {
   const t = themeClasses(rec.theme);
 
   return (
-    <div className={`w-full rounded-2xl border-2 ${t.wrapper} p-5`}>
+    <div className={`w-full rounded-2xl border ${t.wrapper} p-5`}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         {/* Icon */}
         <div
@@ -259,10 +259,10 @@ export default function UrgencyCard(props: NextActionCardProps) {
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium uppercase tracking-wide opacity-60 mb-0.5 ${t.headline}`}>
+          <p className="product-callout-eye mb-1">
             Your Next Action
           </p>
-          <h2 className={`font-bold text-base leading-snug ${t.headline}`}>
+          <h2 className={`font-display font-semibold text-xl leading-snug ${t.headline}`}>
             {rec.headline}
           </h2>
           <p className={`text-sm mt-1 ${t.body} opacity-80`}>{rec.explanation}</p>
@@ -275,14 +275,14 @@ export default function UrgencyCard(props: NextActionCardProps) {
               href={rec.ctaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${t.cta}`}
+              className={t.cta}
             >
               {rec.ctaLabel}
             </a>
           ) : (
             <Link
               href={rec.ctaUrl}
-              className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${t.cta}`}
+              className={t.cta}
             >
               {rec.ctaLabel}
             </Link>

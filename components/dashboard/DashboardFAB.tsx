@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const actionItemClassName =
-  "flex min-w-[13rem] items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-md transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100";
+  "flex min-w-[13rem] items-center gap-2 rounded-[var(--radius)] bg-[var(--paper)] px-4 py-3 text-sm font-medium text-[var(--ink)] shadow-[var(--shadow-md)] border border-[var(--line)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)] active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100";
 
 export default function DashboardFAB() {
   const pathname = usePathname();
@@ -88,7 +88,7 @@ export default function DashboardFAB() {
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span className="flex flex-col items-start leading-tight">
               <span>{isExporting ? "Building audit ZIP…" : "Download audit ZIP"}</span>
-              <span className="text-[11px] font-normal text-slate-500">By year + requirement</span>
+              <span className="text-[11px] font-normal text-[var(--ink-3)]">By year + requirement</span>
             </span>
           </button>
 
@@ -116,7 +116,7 @@ export default function DashboardFAB() {
           aria-expanded={isOpen}
           aria-label={isOpen ? "Close quick actions" : "Open quick actions"}
           onClick={() => setIsOpen((open) => !open)}
-          className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0F766E] text-white shadow-lg transition-transform duration-150 ease-out active:scale-95 ${
+          className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-[var(--shadow-lg)] transition-transform duration-150 ease-out active:scale-95 ${
             isOpen ? "rotate-45" : "rotate-0"
           }`}
         >

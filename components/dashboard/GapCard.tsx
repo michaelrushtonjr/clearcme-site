@@ -26,8 +26,6 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
   if (gaps.length === 0) return null;
 
   const isUrgent = renewalDays !== null && renewalDays <= 90;
-  const borderColor = isUrgent ? "border-red-200" : "border-amber-200";
-  const bgColor = isUrgent ? "bg-red-50" : "bg-amber-50";
 
   // Show max 3 items; compute overflow
   const MAX_VISIBLE = 3;
@@ -43,18 +41,16 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
     !gaps[0].detail.includes("mandatory topic");
 
   return (
-    <div className={`${bgColor} ${borderColor} border rounded-2xl p-5`}>
+    <div className={`${isUrgent ? "border-[rgba(221,107,64,0.32)] bg-[rgba(221,107,64,0.12)]" : "product-callout-warm"} border rounded-2xl p-5`}>
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${isUrgent ? "bg-red-500" : "bg-amber-500"} animate-pulse`} />
-          <h3 className={`font-semibold text-sm ${isUrgent ? "text-red-900" : "text-amber-900"}`}>
+          <span className={`w-2 h-2 rounded-full ${isUrgent ? "bg-[var(--pop)]" : "bg-[var(--warm)]"} animate-pulse`} />
+          <h3 className={`font-display font-semibold text-base ${isUrgent ? "text-[var(--status-miss)]" : "text-[var(--ink)]"}`}>
             What still needs attention
           </h3>
         </div>
         {renewalDays !== null && (
-          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-            isUrgent ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
-          }`}>
+          <span className={`product-pill ${isUrgent ? "product-pill-miss" : "product-pill-pending"}`}>
             {renewalDays <= 0 ? "Renewal overdue" : `${renewalDays} days to renewal`}
           </span>
         )}
@@ -71,20 +67,20 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
           return (
             <div
               key={i}
-              className="flex flex-col gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 bg-[var(--paper)] rounded-[var(--radius)] px-4 py-3 border border-[var(--line-soft)] sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-900 break-words sm:truncate">{gap.label}</p>
-                <p className="text-xs text-slate-500">{gap.detail}</p>
+                <p className="text-sm font-medium text-[var(--ink)] break-words sm:truncate">{gap.label}</p>
+                <p className="text-xs text-[var(--ink-3)]">{gap.detail}</p>
               </div>
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-shrink-0 sm:items-end sm:gap-1">
-                <span className="text-xs text-slate-400 sm:text-right">{contextNote}</span>
+                <span className="text-xs text-[var(--ink-3)] sm:text-right">{contextNote}</span>
                 <Link
                   href={gap.href}
-                  className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 ${
+                  className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 ${
                     isUrgent
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-amber-600 text-white hover:bg-amber-700"
+                      ? "bg-[var(--pop)] text-white hover:bg-[var(--pop-2)]"
+                      : "bg-[var(--warm)] text-white hover:bg-[var(--warm-2)]"
                   }`}
                 >
                   See courses →
@@ -97,7 +93,7 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
 
       {/* Overflow count */}
       {overflowCount > 0 && (
-        <p className="text-sm text-slate-500 italic text-center mt-3">
+        <p className="text-sm text-[var(--ink-3)] italic text-center mt-3">
           {allSameDeadline
             ? `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"} due ${gaps[0].detail}`
             : `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"}`}

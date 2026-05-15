@@ -195,12 +195,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Greeting + status line */}
-      <div>
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-navy">
+      <div className="product-page-head">
+        <h1 className="product-page-title">
           Hello{firstName ? `, ${firstName}` : ""}.
         </h1>
-        <p className="text-sm text-slate-500 mt-1.5">
-          <strong className="text-brand-navy font-semibold">
+        <p className="product-page-sub">
+          <strong className="text-[var(--ink)] font-semibold">
             {licenses.length} active license{licenses.length === 1 ? "" : "s"}
           </strong>{" "}
           · {primaryRenewalDescription} · {totalHours.toFixed(1)} hours logged this cycle
@@ -219,31 +219,31 @@ export default async function DashboardPage() {
       {/* Empty state: no certificates yet */}
       {!hasCertificates ? (
         <div className="space-y-6">
-          <div className="bg-brand-paper rounded-card border border-brand-rule p-10 text-center">
-            <div className="w-16 h-16 bg-brand-tealTint rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <svg className="w-8 h-8 text-brand-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="product-card p-10 text-center">
+            <div className="w-16 h-16 bg-[rgba(63,95,51,0.12)] rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </div>
-            <h2 className="font-display text-xl font-semibold text-brand-navy mb-2">Your Compliance Command Center</h2>
-            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+            <h2 className="font-display text-xl font-semibold text-[var(--ink)] mb-2">Your Compliance Command Center</h2>
+            <p className="text-sm text-[var(--ink-2)] mb-6 max-w-md mx-auto">
               Upload your first CME certificate and ClearCME will automatically track your hours, flag gaps, and keep you audit-ready.
             </p>
             <Link
               href="/dashboard/upload"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-teal text-white font-semibold rounded-xl hover:bg-brand-tealDeep transition-colors text-sm shadow-card-1 min-h-[44px]"
+              className="product-btn product-btn-brand"
             >
               Upload first certificate →
             </Link>
-            <p className="text-xs text-slate-400 mt-4">AI extracts credit info automatically</p>
+            <p className="text-xs text-[var(--ink-3)] mt-4">AI extracts credit info automatically</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {["Renewal Countdown", "Mandatory Topics", "Hours Progress"].map((label) => (
-              <div key={label} className="bg-brand-paper rounded-card border border-dashed border-brand-rule p-5 text-center opacity-75">
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">{label}</p>
-                <p className="text-2xl font-bold text-slate-300">—</p>
-                <p className="text-xs text-slate-400 mt-1">Available after first upload</p>
+              <div key={label} className="product-stat-tile border-dashed p-5 text-center opacity-75">
+                <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">{label}</p>
+                <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
+                <p className="text-xs text-[var(--ink-3)] mt-1">Available after first upload</p>
               </div>
             ))}
           </div>
@@ -285,18 +285,18 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Link
                 href="/dashboard/compliance"
-                className="bg-brand-paper rounded-card border border-brand-rule p-5 hover:border-brand-tealRule hover:shadow-card-1 transition-all min-h-[44px]"
+                className="product-stat-tile p-5 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all min-h-[44px]"
               >
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Hours Earned</p>
+                <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Hours Earned</p>
                 {hasCertificates ? (
                   <>
-                    <p className="text-2xl font-bold text-brand-teal">{totalHours.toFixed(1)}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">this cycle</p>
+                    <p className="font-mono text-2xl font-semibold text-[var(--primary)]">{totalHours.toFixed(1)}</p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">this cycle</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-2xl font-bold text-slate-300">—</p>
-                    <p className="text-xs text-slate-400 mt-0.5">upload a certificate</p>
+                    <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">upload a certificate</p>
                   </>
                 )}
               </Link>
@@ -309,20 +309,20 @@ export default async function DashboardPage() {
 
               <Link
                 href="/dashboard/compliance"
-                className="bg-brand-paper rounded-card border border-brand-rule p-5 hover:border-brand-tealRule hover:shadow-card-1 transition-all min-h-[44px]"
+                className="product-stat-tile p-5 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all min-h-[44px]"
               >
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Mandatory Topics</p>
+                <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Mandatory Topics</p>
                 {totalMandatoryRequired > 0 ? (
                   <>
-                    <p className={`text-2xl font-bold ${totalMandatoryMet === totalMandatoryRequired ? "text-brand-emerald" : "text-brand-amber"}`}>
+                    <p className={`font-mono text-2xl font-semibold ${totalMandatoryMet === totalMandatoryRequired ? "text-[var(--status-met)]" : "text-[var(--status-pending)]"}`}>
                       {totalMandatoryMet}/{totalMandatoryRequired}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5">complete</p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">complete</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-2xl font-bold text-slate-300">—</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{hasLicenses ? "none required" : "add a license"}</p>
+                    <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">{hasLicenses ? "none required" : "add a license"}</p>
                   </>
                 )}
               </Link>
@@ -334,9 +334,9 @@ export default async function DashboardPage() {
 
           {/* Audit trail card */}
           <DashboardSection label="Audit Trail">
-            <div className="bg-brand-tealTint border border-brand-tealRule rounded-card p-4 text-sm">
-              <p className="font-semibold text-brand-navy mb-1">Your audit trail is ready</p>
-              <p className="text-slate-600 text-xs mb-3">
+            <div className="product-callout-brand p-5 text-sm">
+              <p className="font-display text-lg font-semibold text-[var(--ink)] mb-1">Your audit trail is ready</p>
+              <p className="text-[var(--ink-2)] text-xs mb-3">
                 Download a board-ready summary of your CME credits and compliance status at any time.
               </p>
               <AuditExportButton variant="default" />

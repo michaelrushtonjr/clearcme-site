@@ -249,12 +249,12 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
       {/* Existing licenses section */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-slate-900 mb-3">My Medical Licenses</h2>
+        <h2 className="font-display text-2xl font-semibold text-[var(--ink)] mb-3">My Medical Licenses</h2>
 
         {licensesLoading ? (
-          <div className="text-sm text-slate-400 py-4 text-center">Loading licenses…</div>
+          <div className="text-sm text-[var(--ink-3)] py-4 text-center">Loading licenses…</div>
         ) : existingLicenses.length === 0 ? (
-          <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl px-5 py-6 text-center text-sm text-slate-400">
+          <div className="bg-[var(--bg-2)] border border-dashed border-[var(--line)] rounded-[var(--radius)] px-5 py-6 text-center text-sm text-[var(--ink-3)]">
             No licenses added yet
           </div>
         ) : (
@@ -262,20 +262,20 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             {existingLicenses.map((lic) => (
               <div
                 key={lic.id}
-                className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center justify-between"
+                className="product-card px-5 py-4 flex items-center justify-between"
               >
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-[var(--ink)]">
                     {lic.state} — {lic.licenseType}
                   </p>
                   {lic.renewalDate && (
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">
                       Renewal: {new Date(lic.renewalDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                   )}
                 </div>
                 {lic.npiNumber && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-2.5 py-1">
+                  <span className="product-pill product-pill-met">
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -289,9 +289,10 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
       </div>
 
       {/* Add License form */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Add Medical License</h1>
-        <p className="text-slate-500 mt-1">
+      <div className="product-page-head">
+        <p className="product-page-eye">License profile</p>
+        <h1 className="product-page-title">Add Medical License</h1>
+        <p className="product-page-sub">
           Add your state medical license to see personalized CME compliance requirements.
         </p>
       </div>
@@ -299,14 +300,14 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* State */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="product-label">
             State
           </label>
           <select
             value={form.state}
             onChange={(e) => setForm({ ...form, state: e.target.value })}
             required
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="product-select"
           >
             <option value="" disabled>Select your state</option>
             {US_STATES.map((s) => (
@@ -317,20 +318,17 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
         {/* License Type */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="product-label">
             License Type
           </label>
-          <div className="flex gap-3">
+          <div className="product-toggle-group">
             {["MD", "DO"].map((type) => (
               <button
                 key={type}
                 type="button"
+                aria-pressed={form.licenseType === type}
                 onClick={() => setForm({ ...form, licenseType: type })}
-                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  form.licenseType === type
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "border-slate-200 text-slate-700 hover:border-blue-300"
-                }`}
+                className="product-toggle-btn"
               >
                 {type}
               </button>
@@ -341,9 +339,9 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         {/* NPI Verification — shown after state + licenseType selected */}
         {form.state && form.licenseType && (
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="product-label">
               NPPES Verification{" "}
-              <span className="text-slate-400 font-normal">(optional)</span>
+              <span className="text-[var(--ink-4)] font-normal normal-case tracking-normal">(optional)</span>
             </label>
             <NpiVerifier
               firstName={firstName}
@@ -366,13 +364,13 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
         {/* Specialty */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="product-label">
             Specialty
           </label>
           <select
             value={form.specialty}
             onChange={(e) => setForm({ ...form, specialty: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="product-select"
           >
             <option value="" disabled>Select your specialty</option>
             {SPECIALTIES.map((s) => (
@@ -383,24 +381,24 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
         {/* License Number (optional) */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            License Number <span className="text-slate-400 font-normal">(optional)</span>
+          <label className="product-label">
+            License Number <span className="text-[var(--ink-4)] font-normal normal-case tracking-normal">(optional)</span>
           </label>
           <input
             type="text"
             value={form.licenseNumber}
             onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })}
             placeholder="e.g. MD12345"
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="product-input"
           />
         </div>
 
         {/* DEA Registration */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="product-label">
             DEA Registration
           </label>
-          <div className="flex gap-3">
+          <div className="product-toggle-group">
             {[
               { val: "yes", label: "Yes, I have an active DEA registration" },
               { val: "no", label: "No DEA registration" },
@@ -408,6 +406,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
               <button
                 key={val}
                 type="button"
+                aria-pressed={form.hasDeaRegistration === val}
                 onClick={() => {
                   setForm({ ...form, hasDeaRegistration: val as "yes" | "no" });
                   if (val === "no") {
@@ -415,11 +414,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                     setDeaExtracted(null);
                   }
                 }}
-                className={`flex-1 py-2 px-3 rounded-lg border text-xs font-medium transition-colors text-left ${
-                  form.hasDeaRegistration === val
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "border-slate-200 text-slate-700 hover:border-blue-300"
-                }`}
+                className="product-toggle-btn text-left text-xs"
               >
                 {label}
               </button>
@@ -431,12 +426,12 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             <div className="mt-4 space-y-4">
 
               {/* Upload section header */}
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <p className="text-sm font-medium text-blue-900 mb-1">
+              <div className="product-callout-brand p-4">
+                <p className="text-sm font-medium text-[var(--ink)] mb-1">
                   Upload your DEA Registration Certificate
-                  <span className="ml-1 text-xs font-normal text-blue-600">(optional but recommended)</span>
+                  <span className="ml-1 text-xs font-normal text-[var(--primary)]">(optional but recommended)</span>
                 </p>
-                <p className="text-xs text-blue-700 mb-3">
+                <p className="text-xs text-[var(--ink-2)] mb-3">
                   We&apos;ll extract your DEA number, registration date, and expiration automatically. The file is not stored.
                 </p>
 
@@ -447,10 +442,10 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                     onDragLeave={() => setDeaDragging(false)}
                     onDrop={handleDeaDrop}
                     onClick={() => deaFileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center cursor-pointer transition-colors ${
                       deaDragging
-                        ? "border-blue-400 bg-blue-100"
-                        : "border-blue-200 bg-white hover:border-blue-400 hover:bg-blue-50"
+                        ? "border-[var(--primary)] bg-[rgba(63,95,51,0.12)]"
+                        : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--primary)] hover:bg-[rgba(63,95,51,0.08)]"
                     }`}
                   >
                     <input
@@ -461,7 +456,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                       onChange={handleDeaInputChange}
                     />
                     {deaUploading ? (
-                      <div className="flex items-center justify-center gap-2 text-blue-600">
+                      <div className="flex items-center justify-center gap-2 text-[var(--primary)]">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -470,13 +465,13 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                       </div>
                     ) : (
                       <>
-                        <svg className="mx-auto h-8 w-8 text-blue-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="mx-auto h-8 w-8 text-[var(--ink-3)] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p className="text-sm text-slate-600">
-                          <span className="font-medium text-blue-600">Click to upload</span> or drag & drop
+                        <p className="text-sm text-[var(--ink-2)]">
+                          <span className="font-medium text-[var(--primary)]">Click to upload</span> or drag & drop
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">PDF, JPG, or PNG — max 10MB</p>
+                        <p className="text-xs text-[var(--ink-3)] mt-1">PDF, JPG, or PNG — max 10MB</p>
                       </>
                     )}
                   </div>
@@ -484,7 +479,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
                 {/* Upload error */}
                 {deaUploadError && (
-                  <div className="mt-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                  <div className="mt-2 text-xs text-[var(--status-miss)] bg-[var(--status-miss-bg)] rounded-[var(--radius-sm)] px-3 py-2">
                     {deaUploadError}
                     <button
                       type="button"
@@ -498,9 +493,9 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
                 {/* Extracted data card */}
                 {deaExtracted && (
-                  <div className="bg-white border border-blue-200 rounded-lg p-3 space-y-2">
+                  <div className="bg-[var(--paper)] border border-[var(--line)] rounded-[var(--radius)] p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-green-600">
+                      <div className="flex items-center gap-1.5 text-[var(--status-met)]">
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -514,41 +509,41 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                           setDeaUploadMode(null);
                           setForm((f) => ({ ...f, deaRegistrationDate: "" }));
                         }}
-                        className="text-xs text-slate-400 hover:text-slate-600 underline"
+                        className="text-xs text-[var(--ink-3)] hover:text-[var(--ink-2)] underline"
                       >
                         Clear
                       </button>
                     </div>
-                    <p className="text-xs text-slate-400">{deaUploadedFileName}</p>
+                    <p className="text-xs text-[var(--ink-3)]">{deaUploadedFileName}</p>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                       {deaExtracted.deaNumber && (
                         <>
-                          <span className="text-slate-500">DEA Number</span>
-                          <span className="font-mono font-medium text-slate-800">{deaExtracted.deaNumber}</span>
+                          <span className="text-[var(--ink-3)]">DEA Number</span>
+                          <span className="font-mono font-medium text-[var(--ink)]">{deaExtracted.deaNumber}</span>
                         </>
                       )}
                       {deaExtracted.registrantName && (
                         <>
-                          <span className="text-slate-500">Registrant</span>
-                          <span className="text-slate-800">{deaExtracted.registrantName}</span>
+                          <span className="text-[var(--ink-3)]">Registrant</span>
+                          <span className="text-[var(--ink)]">{deaExtracted.registrantName}</span>
                         </>
                       )}
                       {deaExtracted.registrationDate && (
                         <>
-                          <span className="text-slate-500">Registered</span>
-                          <span className="text-slate-800">{deaExtracted.registrationDate}</span>
+                          <span className="text-[var(--ink-3)]">Registered</span>
+                          <span className="text-[var(--ink)]">{deaExtracted.registrationDate}</span>
                         </>
                       )}
                       {deaExtracted.expirationDate && (
                         <>
-                          <span className="text-slate-500">Expires</span>
-                          <span className="text-slate-800">{deaExtracted.expirationDate}</span>
+                          <span className="text-[var(--ink-3)]">Expires</span>
+                          <span className="text-[var(--ink)]">{deaExtracted.expirationDate}</span>
                         </>
                       )}
                       {deaExtracted.schedules && deaExtracted.schedules.length > 0 && (
                         <>
-                          <span className="text-slate-500">Schedules</span>
-                          <span className="text-slate-800">{deaExtracted.schedules.join(", ")}</span>
+                          <span className="text-[var(--ink-3)]">Schedules</span>
+                          <span className="text-[var(--ink)]">{deaExtracted.schedules.join(", ")}</span>
                         </>
                       )}
                     </div>
@@ -560,7 +555,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                   <button
                     type="button"
                     onClick={() => setDeaUploadMode(deaUploadMode === "manual" ? null : "manual")}
-                    className="mt-2 text-xs text-blue-500 underline hover:text-blue-700"
+                    className="mt-2 text-xs text-[var(--primary)] underline hover:text-[var(--primary-2)]"
                   >
                     {deaUploadMode === "manual" ? "Hide date picker" : "Skip upload — enter date manually instead"}
                   </button>
@@ -570,17 +565,17 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
               {/* Option C fallback — manual date picker */}
               {(deaUploadMode === "manual" || deaExtracted) && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                  <label className="product-label">
                     When did you first register or most recently renew with DEA?
-                    <span className="text-slate-400 font-normal"> (approximate)</span>
+                    <span className="text-[var(--ink-4)] font-normal normal-case tracking-normal"> (approximate)</span>
                   </label>
                   <input
                     type="date"
                     value={form.deaRegistrationDate}
                     onChange={(e) => setForm({ ...form, deaRegistrationDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="product-input"
                   />
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-[var(--ink-3)] mt-1">
                     Used to determine if the DEA MATE Act 8-hour requirement applies to you.
                   </p>
                 </div>
@@ -588,22 +583,22 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
               {/* MATE Act notice */}
               {mateActRequired !== null && (
-                <div className={`rounded-xl p-4 border ${mateActRequired ? "bg-amber-50 border-amber-200" : "bg-amber-50 border-amber-200"}`}>
+                <div className="product-callout-warm p-4">
                   <div className="flex items-start gap-2">
-                    <svg className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4 text-[var(--status-pending)] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold text-amber-800">DEA MATE Act Training Required</p>
+                      <p className="text-sm font-semibold text-[var(--ink)]">DEA MATE Act Training Required</p>
                       {mateActRequired ? (
-                        <p className="text-xs text-amber-700 mt-0.5">
+                        <p className="text-xs text-[var(--ink-2)] mt-0.5">
                           Because your DEA registration predates June 27, 2023, you must complete the 8-hour MATE Act training
                           {deaExtracted?.expirationDate
                             ? ` before your next DEA renewal (${deaExtracted.expirationDate}).`
                             : " at your next DEA renewal."}
                         </p>
                       ) : (
-                        <p className="text-xs text-amber-700 mt-0.5">
+                        <p className="text-xs text-[var(--ink-2)] mt-0.5">
                           Your DEA was registered on or after June 27, 2023. The 8-hour MATE Act training is required — complete before your next renewal.
                         </p>
                       )}
@@ -616,9 +611,9 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                       type="checkbox"
                       checked={form.mateActCompleted}
                       onChange={(e) => setForm({ ...form, mateActCompleted: e.target.checked })}
-                      className="rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                      className="rounded border-[var(--line)] text-[var(--warm)] focus:ring-[var(--warm)]"
                     />
-                    <span className="text-xs text-amber-800 font-medium">
+                    <span className="text-xs text-[var(--ink)] font-medium">
                       I have completed the 8-hour DEA MATE Act training
                     </span>
                   </label>
@@ -630,7 +625,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
         {/* Renewal Date */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="product-label">
             License Renewal Date
           </label>
           <input
@@ -638,9 +633,9 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             value={form.renewalDate}
             onChange={(e) => setForm({ ...form, renewalDate: e.target.value })}
             required
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="product-input"
           />
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[var(--ink-3)] mt-1">
             The date your current license expires / needs renewal.
           </p>
         </div>
@@ -648,13 +643,13 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         {/* Additional state licenses */}
         {additionalLicenses.length > 0 && (
           <div className="space-y-4 pt-2">
-            <div className="border-t border-slate-100 pt-4">
-              <p className="text-sm font-semibold text-slate-700 mb-3">Additional State Licenses</p>
+            <div className="border-t border-[var(--line-soft)] pt-4">
+              <p className="font-display text-lg font-semibold text-[var(--ink)] mb-3">Additional State Licenses</p>
               {additionalLicenses.map((lic, idx) => (
-                <div key={lic.id} className="border border-slate-200 rounded-xl overflow-hidden mb-3">
+                <div key={lic.id} className="product-card overflow-hidden mb-3">
                   {/* Collapsible header */}
-                  <div className="flex items-center justify-between px-4 py-3 bg-slate-50 cursor-pointer" onClick={() => updateAdditionalLicense(lic.id, { expanded: !lic.expanded })}>
-                    <p className="text-sm font-medium text-slate-700">
+                  <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-2)] cursor-pointer" onClick={() => updateAdditionalLicense(lic.id, { expanded: !lic.expanded })}>
+                    <p className="text-sm font-medium text-[var(--ink-2)]">
                       {lic.state && lic.licenseType
                         ? `${lic.state} — ${lic.licenseType}`
                         : `License ${idx + 2}`}
@@ -663,7 +658,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); removeAdditionalLicense(lic.id); }}
-                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                        className="text-[var(--ink-3)] hover:text-[var(--status-miss)] transition-colors p-1"
                         aria-label="Remove"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -671,7 +666,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                         </svg>
                       </button>
                       <svg
-                        className={`w-4 h-4 text-slate-400 transition-transform ${lic.expanded ? "rotate-180" : ""}`}
+                        className={`w-4 h-4 text-[var(--ink-3)] transition-transform ${lic.expanded ? "rotate-180" : ""}`}
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -682,11 +677,11 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                   {lic.expanded && (
                     <div className="p-4 space-y-3">
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">State</label>
+                        <label className="product-label">State</label>
                         <select
                           value={lic.state}
                           onChange={(e) => updateAdditionalLicense(lic.id, { state: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="product-select"
                         >
                           <option value="" disabled>Select state…</option>
                           {US_STATES.filter((s) => s !== form.state).map((s) => (
@@ -695,18 +690,15 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">License Type</label>
-                        <div className="flex gap-2">
+                        <label className="product-label">License Type</label>
+                        <div className="product-toggle-group">
                           {["MD", "DO"].map((type) => (
                             <button
                               key={type}
                               type="button"
+                              aria-pressed={lic.licenseType === type}
                               onClick={() => updateAdditionalLicense(lic.id, { licenseType: type })}
-                              className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
-                                lic.licenseType === type
-                                  ? "bg-blue-600 border-blue-600 text-white"
-                                  : "border-slate-200 text-slate-700 hover:border-blue-300"
-                              }`}
+                              className="product-toggle-btn text-xs"
                             >
                               {type}
                             </button>
@@ -714,12 +706,12 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Renewal Date</label>
+                        <label className="product-label">Renewal Date</label>
                         <input
                           type="date"
                           value={lic.renewalDate}
                           onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="product-input"
                         />
                       </div>
                     </div>
@@ -734,13 +726,13 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         <button
           type="button"
           onClick={addAdditionalLicense}
-          className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
+          className="w-full py-3 border-2 border-dashed border-[var(--line)] rounded-[var(--radius)] text-sm font-medium text-[var(--primary)] hover:border-[var(--primary)] hover:bg-[rgba(63,95,51,0.08)] transition-colors"
         >
           + Add another state license
         </button>
 
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
+          <div className="bg-[var(--status-miss-bg)] text-[var(--status-miss)] text-sm px-4 py-3 rounded-[var(--radius-sm)]">
             {error}
           </div>
         )}
@@ -749,14 +741,14 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            className="product-btn product-btn-secondary flex-1"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60"
+            className="product-btn product-btn-primary flex-1 disabled:opacity-60"
           >
             {loading ? "Saving..." : additionalLicenses.length > 0 ? `Add ${additionalLicenses.length + 1} Licenses` : "Add License"}
           </button>

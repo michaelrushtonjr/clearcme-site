@@ -291,32 +291,32 @@ export default function SetupPage() {
               key={n}
               className={`rounded-full transition-all ${
                 n === step
-                  ? "w-6 h-2.5 bg-blue-600"
+                  ? "w-6 h-2.5 bg-[var(--primary)]"
                   : n < step
-                  ? "w-2.5 h-2.5 bg-blue-300"
+                  ? "w-2.5 h-2.5 bg-[rgba(63,95,51,0.35)]"
                   : "w-2.5 h-2.5 bg-slate-200"
               }`}
             />
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+        <div className="product-card p-8">
           {/* Step 1: State */}
           {step === 1 && (
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
                 Step 1 of {totalSteps}
               </p>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 What state do you practice in?
               </h1>
-              <p className="text-sm text-slate-500 mb-6">
+              <p className="text-sm text-[var(--ink-2)] mb-6">
                 We&apos;ll load the exact CME requirements for your state — no guessing.
               </p>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
               >
                 <option value="" disabled>
                   Select your primary state…
@@ -333,7 +333,7 @@ export default function SetupPage() {
               <button
                 onClick={() => setStep(2)}
                 disabled={!canAdvanceStep1}
-                className="mt-6 w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="mt-6 w-full py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
               >
                 Continue →
               </button>
@@ -343,13 +343,13 @@ export default function SetupPage() {
           {/* Step 2: License type + specialty */}
           {step === 2 && (
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
                 Step 2 of {totalSteps}
               </p>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 What&apos;s your license type and specialty?
               </h1>
-              <p className="text-sm text-slate-500 mb-6">
+              <p className="text-sm text-[var(--ink-2)] mb-6">
                 Some mandatory CME topics vary by degree type and specialty.
               </p>
 
@@ -366,8 +366,8 @@ export default function SetupPage() {
                       onClick={() => setLicenseType(type)}
                       className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors ${
                         licenseType === type
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "border-slate-200 text-slate-700 hover:border-blue-300"
+                          ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                          : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                       }`}
                     >
                       {type}
@@ -385,7 +385,7 @@ export default function SetupPage() {
                 <select
                   value={specialty}
                   onChange={(e) => setSpecialty(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
                 >
                   <option value="">Select specialty…</option>
                   {SPECIALTIES.map((s) => (
@@ -406,7 +406,7 @@ export default function SetupPage() {
                 <button
                   onClick={() => setStep(3)}
                   disabled={!canAdvanceStep2}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 >
                   Continue →
                 </button>
@@ -417,18 +417,18 @@ export default function SetupPage() {
           {/* Step 3: Renewal date */}
           {step === 3 && (
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
                 Step 3 of {totalSteps}
               </p>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 When is your next license renewal?
               </h1>
-              <p className="text-sm text-slate-500 mb-6">
+              <p className="text-sm text-[var(--ink-2)] mb-6">
                 This lets us show your countdown and pace your CME plan.
               </p>
 
               {primaryRenewalRule && (
-                <div className="mb-4 bg-teal-50 border border-teal-100 text-[#0F766E] rounded-xl px-4 py-3 text-sm">
+                <div className="mb-4 bg-[rgba(63,95,51,0.08)] border border-[rgba(63,95,51,0.18)] text-[var(--primary)] rounded-xl px-4 py-3 text-sm">
                   Your {selectedStateName} {licenseType} license renews:{" "}
                   <span className="font-semibold">{primaryRenewalRule.renewalDeadline}</span>
                 </div>
@@ -444,7 +444,7 @@ export default function SetupPage() {
                     onChange={(e) => {
                       setBirthMonth(e.target.value ? Number(e.target.value) : null);
                     }}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
                   >
                     <option value="">Select your birth month…</option>
                     {BIRTH_MONTHS.map((month) => (
@@ -465,8 +465,8 @@ export default function SetupPage() {
                       onClick={applyPrimarySuggestedRenewal}
                       className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                         unsureDate && !isEditingSuggestedRenewal
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "border-slate-200 text-slate-700 hover:border-blue-300"
+                          ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                          : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                       }`}
                     >
                       Confirm
@@ -480,7 +480,7 @@ export default function SetupPage() {
                       className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                         !unsureDate || isEditingSuggestedRenewal
                           ? "bg-white border-slate-300 text-slate-900"
-                          : "border-slate-200 text-slate-700 hover:border-blue-300"
+                          : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                       }`}
                     >
                       Edit
@@ -499,7 +499,7 @@ export default function SetupPage() {
                     setIsEditingSuggestedRenewal(true);
                   }}
                   disabled={shouldLockPrimaryRenewalInput}
-                  className={`w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
                     shouldLockPrimaryRenewalInput ? "bg-slate-50 text-slate-500" : ""
                   }`}
                 />
@@ -532,14 +532,14 @@ export default function SetupPage() {
                   !canUsePrimarySmartEstimate
                     ? "border-slate-200 text-slate-300 cursor-not-allowed"
                     : unsureDate && !isEditingSuggestedRenewal
-                    ? "border-blue-300 bg-blue-50 text-blue-700 font-medium"
+                    ? "border-[var(--primary-3)] bg-[rgba(63,95,51,0.10)] text-[var(--primary-2)] font-medium"
                     : "border-slate-200 text-slate-500 hover:border-slate-300"
                 }`}
               >
                 <span
                   className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                     unsureDate && !isEditingSuggestedRenewal
-                      ? "bg-blue-600 border-blue-600"
+                      ? "bg-[var(--primary)] border-[var(--primary)]"
                       : "border-slate-300"
                   }`}
                 >
@@ -580,7 +580,7 @@ export default function SetupPage() {
                 <button
                   onClick={() => setStep(4)}
                   disabled={!canSubmitStep3}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 >
                   Continue →
                 </button>
@@ -591,13 +591,13 @@ export default function SetupPage() {
           {/* Step 4: Multi-state */}
           {step === 4 && (
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
                 Step 4 of {totalSteps}
               </p>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 Are you licensed in more than one state?
               </h1>
-              <p className="text-sm text-slate-500 mb-6">
+              <p className="text-sm text-[var(--ink-2)] mb-6">
                 Many physicians hold licenses in multiple states. We&apos;ll track compliance for each one.
               </p>
 
@@ -607,14 +607,14 @@ export default function SetupPage() {
                   <button
                     type="button"
                     onClick={() => { setIsMultiState(true); addAdditionalLicense(); }}
-                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-[var(--primary-3)] hover:bg-[rgba(63,95,51,0.10)] transition-colors"
                   >
                     Yes
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsMultiState(false)}
-                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                    className="flex-1 py-4 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-700 hover:border-[var(--primary-3)] hover:bg-[rgba(63,95,51,0.10)] transition-colors"
                   >
                     No
                   </button>
@@ -625,11 +625,11 @@ export default function SetupPage() {
               {isMultiState === true && (
                 <div className="space-y-4">
                   {/* Primary license chip */}
-                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                    <span className="text-sm font-medium text-blue-900">
+                  <div className="flex items-center gap-2 bg-[rgba(63,95,51,0.10)] border border-[rgba(63,95,51,0.18)] rounded-xl px-4 py-3">
+                    <span className="text-sm font-medium text-[var(--ink)]">
                       {selectedStateName} — {licenseType}
                     </span>
-                    <span className="text-xs text-blue-500">(primary)</span>
+                    <span className="text-xs text-[var(--primary-3)]">(primary)</span>
                   </div>
 
                   {/* Additional license cards */}
@@ -668,7 +668,7 @@ export default function SetupPage() {
                               unsureDate: false,
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
                         >
                           <option value="" disabled>Select state…</option>
                           {US_STATES.filter((s) => s.code !== state).map((s) => (
@@ -691,8 +691,8 @@ export default function SetupPage() {
                               }
                               className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
                                 lic.licenseType === type
-                                  ? "bg-blue-600 border-blue-600 text-white"
-                                  : "border-slate-200 text-slate-700 hover:border-blue-300"
+                                  ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                                  : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                               }`}
                             >
                               {type}
@@ -706,7 +706,7 @@ export default function SetupPage() {
                             type="date"
                             value={lic.renewalDate}
                             onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                           />
                         )}
 
@@ -730,11 +730,11 @@ export default function SetupPage() {
                             !!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate
                               ? "border-slate-200 text-slate-300 cursor-not-allowed"
                               : lic.unsureDate
-                              ? "border-blue-300 bg-blue-50 text-blue-700"
+                              ? "border-[var(--primary-3)] bg-[rgba(63,95,51,0.10)] text-[var(--primary-2)]"
                               : "border-slate-200 text-slate-400 hover:border-slate-300"
                           }`}
                         >
-                          <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${lic.unsureDate ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
+                          <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${lic.unsureDate ? "bg-[var(--primary)] border-[var(--primary)]" : "border-slate-300"}`}>
                             {lic.unsureDate && (
                               <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -752,7 +752,7 @@ export default function SetupPage() {
                     <button
                       type="button"
                       onClick={addAdditionalLicense}
-                      className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                      className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-[var(--primary-3)] hover:text-[var(--primary)] transition-colors"
                     >
                       + Add another state
                     </button>
@@ -790,7 +790,7 @@ export default function SetupPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || isMultiState === null}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 >
                   {loading ? "Setting up…" : "See my compliance map →"}
                 </button>
@@ -800,7 +800,7 @@ export default function SetupPage() {
         </div>
 
         {/* Reassurance footer */}
-        <p className="text-center text-xs text-slate-400 mt-4">
+        <p className="text-center text-xs text-[var(--ink-3)] mt-4">
           No certificate upload required · Your compliance map is ready instantly
         </p>
       </div>

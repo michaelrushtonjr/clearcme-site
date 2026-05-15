@@ -22,7 +22,7 @@ export default function CreditSummaryCard({ status }: Props) {
 
   return (
     <div
-      className={`bg-white rounded-2xl border p-6 ${
+      className={`product-card p-6 ${
         status.isCompliant
           ? "border-green-200"
           : isUrgent
@@ -64,7 +64,7 @@ export default function CreditSummaryCard({ status }: Props) {
                 ? "bg-green-500"
                 : pct >= 75
                 ? "bg-amber-400"
-                : "bg-blue-500"
+                : "bg-[var(--primary)]"
             }`}
             style={{ width: `${pct}%` }}
           />

@@ -79,7 +79,7 @@ export default function CEBrokerExportButton({
           type="button"
           onClick={handleDownload}
           disabled={loading}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-teal-600 px-4 py-2.5 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="product-btn product-btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? (
             <>
@@ -117,16 +117,16 @@ export default function CEBrokerExportButton({
             </>
           )}
         </button>
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        {error ? <p className="text-xs text-[var(--status-miss)]">{error}</p> : null}
       </div>
 
       {showToast ? (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-4 right-4 z-50 max-w-sm rounded-2xl border border-teal-200 bg-[#FAFAF7] px-4 py-3 text-sm text-slate-800 shadow-lg"
+          className="fixed bottom-4 right-4 z-50 max-w-sm product-card px-4 py-3 text-sm"
         >
-          <p className="font-medium text-teal-800">
+          <p className="font-medium text-[var(--ink)]">
             CE Broker report downloaded — upload it at cebroker.com/self-report
           </p>
         </div>

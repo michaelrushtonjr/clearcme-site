@@ -89,12 +89,12 @@ export default function NpiVerifier({
   // Already verified — show badge
   if (verifiedNpi && verifiedMatch) {
     return (
-      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+      <div className="flex items-center justify-between bg-[var(--status-met-bg)] border border-[rgba(107,142,102,0.34)] rounded-[var(--radius)] px-4 py-3">
         <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 text-[var(--status-met)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-sm font-medium text-green-800">
+          <span className="text-sm font-medium text-[var(--ink)]">
             License verified — {verifiedMatch.name}
             {verifiedMatch.credential ? `, ${verifiedMatch.credential}` : ""}
             {", "}
@@ -104,7 +104,7 @@ export default function NpiVerifier({
         <button
           type="button"
           onClick={handleClear}
-          className="text-xs text-green-600 hover:text-green-800 underline ml-3 shrink-0"
+          className="text-xs text-[var(--status-met)] hover:text-[var(--ink)] underline ml-3 shrink-0"
         >
           Clear
         </button>
@@ -120,11 +120,11 @@ export default function NpiVerifier({
           type="button"
           onClick={handleVerify}
           disabled={!canVerify || loading}
-          className="flex items-center gap-2 text-sm text-blue-600 font-medium px-4 py-2 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 text-sm text-[var(--primary)] font-medium px-4 py-2 border border-[rgba(63,95,51,0.28)] rounded-[var(--radius)] hover:bg-[rgba(63,95,51,0.10)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
-              <svg className="animate-spin h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none">
+              <svg className="animate-spin h-4 w-4 text-[var(--primary)]" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -143,12 +143,12 @@ export default function NpiVerifier({
 
       {/* High confidence — single match auto-confirmed */}
       {result?.confidence === "high" && result.matches.length === 1 && (
-        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+        <div className="flex items-center justify-between bg-[var(--status-met-bg)] border border-[rgba(107,142,102,0.34)] rounded-[var(--radius)] px-4 py-3">
           <div className="flex items-center gap-2">
-            <svg className="h-4 w-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 text-[var(--status-met)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="text-sm font-medium text-green-800">
+            <span className="text-sm font-medium text-[var(--ink)]">
               ✓ License verified — {result.matches[0].name}
               {result.matches[0].credential ? `, ${result.matches[0].credential}` : ""}
               {", "}
@@ -158,7 +158,7 @@ export default function NpiVerifier({
           <button
             type="button"
             onClick={handleClear}
-            className="text-xs text-green-600 hover:text-green-800 underline ml-3 shrink-0"
+            className="text-xs text-[var(--status-met)] hover:text-[var(--ink)] underline ml-3 shrink-0"
           >
             Clear
           </button>
@@ -167,14 +167,14 @@ export default function NpiVerifier({
 
       {/* Medium confidence — multiple matches, show dropdown */}
       {result && result.matches.length >= 2 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 space-y-2">
-          <p className="text-sm font-medium text-blue-800">
+        <div className="bg-[var(--status-track-bg)] border border-[rgba(139,122,184,0.28)] rounded-[var(--radius)] px-4 py-3 space-y-2">
+          <p className="text-sm font-medium text-[var(--ink)]">
             Multiple records found — select yours:
           </p>
           <select
             value={selectedNpi}
             onChange={(e) => handleSelectMatch(e.target.value)}
-            className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="product-select"
           >
             <option value="" disabled>Select your record…</option>
             {result.matches.map((m) => (
@@ -185,7 +185,7 @@ export default function NpiVerifier({
             ))}
           </select>
           {selectedNpi && (
-            <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
+            <div className="flex items-center gap-2 text-sm text-[var(--status-met)] font-medium">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -195,7 +195,7 @@ export default function NpiVerifier({
           <button
             type="button"
             onClick={handleClear}
-            className="text-xs text-blue-500 hover:text-blue-700 underline"
+            className="text-xs text-[var(--primary)] hover:text-[var(--primary-2)] underline"
           >
             Try again
           </button>
@@ -204,21 +204,21 @@ export default function NpiVerifier({
 
       {/* Low confidence — no match */}
       {result && result.matches.length === 0 && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-          <svg className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-start gap-2 bg-[var(--status-pending-bg)] border border-[rgba(201,147,60,0.34)] rounded-[var(--radius)] px-4 py-3">
+          <svg className="h-4 w-4 text-[var(--status-pending)] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
           <div className="flex-1">
-            <p className="text-sm font-medium text-amber-800">
+            <p className="text-sm font-medium text-[var(--ink)]">
               ⚠️ Could not verify automatically — you can still proceed
             </p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-xs text-[var(--ink-2)] mt-0.5">
               NPPES may not have your record yet, or the name may differ. Your license will be saved without NPI verification.
             </p>
             <button
               type="button"
               onClick={handleClear}
-              className="text-xs text-amber-600 hover:text-amber-800 underline mt-1"
+              className="text-xs text-[var(--status-pending)] hover:text-[var(--ink)] underline mt-1"
             >
               Try again
             </button>

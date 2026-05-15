@@ -5,51 +5,49 @@ export default {
     extend: {
       colors: {
         brand: {
-          // ─── existing — do not change ───
-          teal:         "#0F766E",
-          tealLight:    "#0D9488",
-          navy:         "#1E293B",
-          parchment:    "#FAFAF7",
+          teal:         "#3F5F33",
+          tealLight:    "#5A7A4E",
+          navy:         "#1E2920",
+          parchment:    "#F4EFE3",
 
-          // ─── v2 additions ───
-          tealDeep:     "#115E59",
-          tealTint:     "#E0F2EF",
-          tealRule:     "#B5DAD3",
-          tealBand:     "#F0FDFA",
-          tealBandRule: "#CCFBF1",
+          tealDeep:     "#2A4123",
+          tealTint:     "#E7ECD9",
+          tealRule:     "#BFCBAA",
+          tealBand:     "#EEF3E3",
+          tealBandRule: "#D8E1C7",
 
-          paper:        "#FFFFFF",
-          paperSoft:    "#F4F2EA",
+          paper:        "#FFFDF6",
+          paperSoft:    "#ECE4CF",
 
-          rule:         "#E5E1D2",
-          ruleSoft:     "#EFECDD",
+          rule:         "#DDD4BD",
+          ruleSoft:     "#ECE3CA",
 
-          amber:        "#92400E",
-          amberMid:     "#B45309",
-          amberTint:    "#FBF1DC",
-          amberRule:    "#E9D29A",
+          amber:        "#A87729",
+          amberMid:     "#C9933C",
+          amberTint:    "#F4E8CF",
+          amberRule:    "#D9BE87",
 
-          crimson:      "#991B1B",
-          crimsonTint:  "#FBEAEA",
+          crimson:      "#B85631",
+          crimsonTint:  "#F4DDD3",
 
-          emerald:      "#065F46",
-          emeraldTint:  "#DDF1E7",
+          emerald:      "#6B8E66",
+          emeraldTint:  "#E4ECD9",
         },
       },
       fontFamily: {
         // deprecation alias — keep for one release cycle
-        playfair: ["Newsreader", "Georgia", '"Times New Roman"', "serif"],
+        playfair: ["Fraunces", "Newsreader", "Georgia", '"Times New Roman"', "serif"],
         // preferred token going forward
         display:  ["var(--font-display)", "Georgia", '"Times New Roman"', "serif"],
       },
       boxShadow: {
-        "card-1": "0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03)",
-        "card-2": "0 4px 14px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04)",
-        "card-3": "0 16px 40px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04)",
+        "card-1": "0 1px 2px rgba(30, 41, 32, 0.05), 0 1px 3px rgba(30, 41, 32, 0.06)",
+        "card-2": "0 8px 20px -8px rgba(30, 41, 32, 0.18), 0 4px 8px rgba(30, 41, 32, 0.06)",
+        "card-3": "0 24px 60px -20px rgba(30, 41, 32, 0.28), 0 8px 18px rgba(30, 41, 32, 0.08)",
       },
       borderRadius: {
-        card:    "16px",
-        "card-lg": "20px",
+        card:    "22px",
+        "card-lg": "22px",
       },
     },
   },

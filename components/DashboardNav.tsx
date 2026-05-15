@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { BrandLockup } from "@/components/BrandLockup";
 
 interface NavUser {
   name?: string | null;
@@ -20,15 +21,11 @@ export default function DashboardNav({ user }: { user: NavUser }) {
   ];
 
   return (
-    <header className="bg-white border-b border-slate-200">
+    <header className="bg-[rgba(244,239,227,0.94)] border-b border-[var(--line)] backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-[#1E293B] tracking-tight">
-              Clear<span className="text-[#0F766E]">CME</span>
-            </span>
-          </Link>
+          <BrandLockup href="/dashboard" size="md" />
 
           {/* Nav links */}
           <nav className="hidden sm:flex items-center gap-1">
@@ -36,10 +33,10 @@ export default function DashboardNav({ user }: { user: NavUser }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-[var(--radius)] text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? "bg-teal-50 text-[#0F766E]"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    ? "bg-[var(--paper)] text-[var(--primary)] border border-[var(--line)]"
+                    : "text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)]"
                 }`}
               >
                 {item.label}
@@ -49,12 +46,12 @@ export default function DashboardNav({ user }: { user: NavUser }) {
 
           {/* User menu */}
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm text-slate-500 truncate max-w-[180px]">
+            <span className="hidden sm:block text-sm text-[var(--ink-3)] truncate max-w-[180px]">
               {user.name ?? user.email}
             </span>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="text-sm text-slate-500 hover:text-slate-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-100"
+              className="text-sm text-[var(--ink-3)] hover:text-[var(--ink)] transition-colors px-3 py-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--bg-2)]"
             >
               Sign out
             </button>
@@ -67,10 +64,10 @@ export default function DashboardNav({ user }: { user: NavUser }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-4 py-2 rounded-[var(--radius)] text-sm font-medium transition-colors ${
                 pathname === item.href
-                  ? "bg-teal-50 text-[#0F766E]"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-[var(--paper)] text-[var(--primary)] border border-[var(--line)]"
+                  : "text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)]"
               }`}
             >
               {item.label}

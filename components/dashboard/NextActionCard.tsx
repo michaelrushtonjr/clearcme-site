@@ -12,7 +12,7 @@
  */
 
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface NextActionCardProps {
   title: React.ReactNode;
@@ -36,29 +36,25 @@ export function NextActionCard({
   return (
     <section
       aria-labelledby="next-action-title"
-      className="relative overflow-hidden rounded-card border border-brand-tealRule bg-gradient-to-b from-[#FCFBF6] to-brand-paper p-5 shadow-card-2 sm:p-7"
+      className="product-callout-ink p-5 sm:p-7"
     >
-      {/* Teal left rule */}
-      <div className="absolute inset-y-0 left-0 w-1 bg-brand-teal" aria-hidden />
-
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-teal mb-2.5">
-        <Sparkles className="w-3.5 h-3.5" strokeWidth={2} />
+      <div className="product-callout-eye mb-2.5">
         {eyebrow}
       </div>
 
       <h2
         id="next-action-title"
-        className="font-display text-xl font-semibold leading-tight tracking-tight text-brand-navy mb-2 sm:text-2xl"
+        className="font-display text-xl font-semibold leading-tight tracking-tight text-[var(--ink)] mb-2 sm:text-2xl"
       >
         {title}
       </h2>
 
-      <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">{body}</p>
+      <p className="text-sm text-[var(--ink-2)] leading-relaxed max-w-2xl">{body}</p>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
           href={ctaHref}
-          className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-brand-teal px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-tealDeep sm:w-auto"
+          className="product-btn product-btn-brand w-full sm:w-auto"
         >
           {ctaLabel}
           <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
@@ -67,14 +63,14 @@ export function NextActionCard({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="min-h-[44px] rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-brand-paperSoft hover:text-brand-navy"
+            className="product-btn product-btn-secondary px-4"
           >
             Dismiss for today
           </button>
         )}
 
         {source && (
-          <span className="text-xs text-slate-400 sm:ml-auto sm:text-right">{source}</span>
+          <span className="text-xs text-[var(--ink-3)] sm:ml-auto sm:text-right">{source}</span>
         )}
       </div>
     </section>
@@ -85,9 +81,9 @@ export function AuditReadyCard() {
   return (
     <section
       aria-labelledby="audit-ready-title"
-      className="rounded-card border border-brand-tealRule bg-brand-paper p-6 flex items-center gap-5"
+      className="product-callout-brand p-6 flex items-center gap-5"
     >
-      <div className="w-10 h-10 rounded-lg shrink-0 grid place-items-center bg-brand-tealTint text-brand-teal">
+      <div className="w-10 h-10 rounded-[var(--radius)] shrink-0 grid place-items-center bg-[rgba(63,95,51,0.12)] text-[var(--primary)]">
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
           <path
             strokeLinecap="round"
@@ -97,10 +93,10 @@ export function AuditReadyCard() {
         </svg>
       </div>
       <div className="flex-1">
-        <h3 id="audit-ready-title" className="text-sm font-semibold text-brand-navy">
+        <h3 id="audit-ready-title" className="font-display text-lg font-semibold text-[var(--ink)]">
           You&apos;re done for this cycle.
         </h3>
-        <p className="text-sm text-slate-500 mt-0.5 leading-snug">
+        <p className="text-sm text-[var(--ink-2)] mt-0.5 leading-snug">
           Your audit package is ready. We&apos;ll keep watching for rule changes and surface anything that affects you.
         </p>
       </div>

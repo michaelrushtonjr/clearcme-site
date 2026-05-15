@@ -29,17 +29,17 @@ export default function DeleteCertButton({ certId, certTitle }: DeleteCertButton
   if (confirming) {
     return (
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-red-600 whitespace-nowrap">Delete? Cannot be undone.</span>
+        <span className="text-xs text-[var(--status-miss)] whitespace-nowrap">Delete? Cannot be undone.</span>
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="text-xs font-medium px-2.5 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+          className="text-xs font-medium px-2.5 py-1 bg-[var(--pop)] text-white rounded-full hover:bg-[var(--pop-2)] transition-colors disabled:opacity-50"
         >
           {deleting ? "…" : "Yes"}
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1"
+          className="text-xs text-[var(--ink-3)] hover:text-[var(--ink-2)] px-2 py-1"
         >
           Cancel
         </button>
@@ -51,7 +51,7 @@ export default function DeleteCertButton({ certId, certTitle }: DeleteCertButton
     <button
       onClick={() => setConfirming(true)}
       title={`Delete ${certTitle ?? "certificate"}`}
-      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
+      className="p-1.5 text-[var(--ink-3)] hover:text-[var(--status-miss)] rounded-lg hover:bg-[var(--status-miss-bg)] transition-colors flex-shrink-0"
       aria-label="Delete certificate"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

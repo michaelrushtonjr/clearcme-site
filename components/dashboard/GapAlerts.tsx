@@ -20,7 +20,7 @@ export default function GapAlerts({ statuses }: Props) {
   return (
     <section>
       <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+        <span className="w-2 h-2 bg-[var(--status-miss)] rounded-full animate-pulse" />
         Compliance Gaps
       </h2>
 
@@ -35,7 +35,7 @@ export default function GapAlerts({ statuses }: Props) {
           return (
             <div
               key={status.id}
-              className="bg-white rounded-2xl border border-red-100 p-5"
+              className="product-card border-[rgba(221,107,64,0.28)] p-5"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -55,7 +55,7 @@ export default function GapAlerts({ statuses }: Props) {
                 </div>
                 <Link
                   href="/dashboard/upload"
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700 px-3 py-1.5 bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+                  className="text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)] px-3 py-1.5 bg-[rgba(63,95,51,0.10)] rounded-lg transition-colors whitespace-nowrap"
                 >
                   Upload credits →
                 </Link>

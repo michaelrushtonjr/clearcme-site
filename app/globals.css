@@ -1,77 +1,565 @@
 @import "tailwindcss";
 
-/* ─── Brand design tokens (v2 — Deep Teal + Newsreader) ─── */
+/* ─── Brand design tokens (v3 — Editorial Sage) ─── */
 @theme {
-  /* Brand colors — existing */
-  --color-brand-teal:         #0F766E;
-  --color-brand-teal-light:   #0D9488;
-  --color-brand-navy:         #1E293B;
-  --color-brand-parchment:    #FAFAF7;
+  --color-brand-teal:         #3F5F33;
+  --color-brand-teal-light:   #5A7A4E;
+  --color-brand-navy:         #1E2920;
+  --color-brand-parchment:    #F4EFE3;
 
-  /* Brand colors — v2 additions */
-  --color-brand-teal-deep:    #115E59;
-  --color-brand-teal-tint:    #E0F2EF;
-  --color-brand-teal-rule:    #B5DAD3;
-  --color-brand-teal-band:    #F0FDFA;
-  --color-brand-teal-band-rule: #CCFBF1;
+  --color-brand-teal-deep:    #2A4123;
+  --color-brand-teal-tint:    #E7ECD9;
+  --color-brand-teal-rule:    #BFCBAA;
+  --color-brand-teal-band:    #EEF3E3;
+  --color-brand-teal-band-rule: #D8E1C7;
 
-  --color-brand-paper:        #FFFFFF;
-  --color-brand-paper-soft:   #F4F2EA;
+  --color-brand-paper:        #FFFDF6;
+  --color-brand-paper-soft:   #ECE4CF;
 
-  --color-brand-rule:         #E5E1D2;
-  --color-brand-rule-soft:    #EFECDD;
+  --color-brand-rule:         #DDD4BD;
+  --color-brand-rule-soft:    #ECE3CA;
 
-  --color-brand-amber:        #92400E;
-  --color-brand-amber-mid:    #B45309;
-  --color-brand-amber-tint:   #FBF1DC;
-  --color-brand-amber-rule:   #E9D29A;
+  --color-brand-amber:        #A87729;
+  --color-brand-amber-mid:    #C9933C;
+  --color-brand-amber-tint:   #F4E8CF;
+  --color-brand-amber-rule:   #D9BE87;
 
-  --color-brand-crimson:      #991B1B;
-  --color-brand-crimson-tint: #FBEAEA;
+  --color-brand-crimson:      #B85631;
+  --color-brand-crimson-tint: #F4DDD3;
 
-  --color-brand-emerald:      #065F46;
-  --color-brand-emerald-tint: #DDF1E7;
+  --color-brand-emerald:      #6B8E66;
+  --color-brand-emerald-tint: #E4ECD9;
 
   /* Fonts */
-  --font-family-playfair: "Newsreader", Georgia, "Times New Roman", serif;
-  --font-family-display:  "Newsreader", Georgia, "Times New Roman", serif;
+  --font-family-playfair: "Fraunces", "Newsreader", Georgia, "Times New Roman", serif;
+  --font-family-display:  "Fraunces", "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 :root {
-  --background: #FAFAF7;
-  --foreground: #1E293B;
-  --brand-teal:        #0F766E;
-  --brand-teal-deep:   #115E59;
-  --brand-teal-tint:   #E0F2EF;
-  --brand-teal-rule:   #B5DAD3;
-  --brand-navy:        #1E293B;
-  --brand-parchment:   #FAFAF7;
-  --brand-paper:       #FFFFFF;
-  --brand-paper-soft:  #F4F2EA;
-  --brand-rule:        #E5E1D2;
-  --brand-rule-soft:   #EFECDD;
+  --ink:        #1E2920;
+  --ink-2:      #3F4A40;
+  --ink-3:      #6B7568;
+  --ink-4:      #95A092;
+  --bg:         #F4EFE3;
+  --bg-2:       #ECE4CF;
+  --paper:      #FFFDF6;
+  --line:       #DDD4BD;
+  --line-soft:  #ECE3CA;
+  --primary:    #3F5F33;
+  --primary-2:  #2A4123;
+  --primary-3:  #5A7A4E;
+  --pop:        #DD6B40;
+  --pop-2:      #B85631;
+  --warm:       #C9933C;
+  --warm-2:     #A87729;
+  --cool:       #4D8C7F;
+  --rose:       #B85F5F;
+  --mauve:      #8B7AB8;
+  --status-met:        #6B8E66;
+  --status-met-bg:     rgba(107, 142, 102, 0.18);
+  --status-miss:       #B85631;
+  --status-miss-bg:    rgba(221, 107, 64, 0.18);
+  --status-pending:    #A87729;
+  --status-pending-bg: rgba(201, 147, 60, 0.18);
+  --status-track:      #5E4D8C;
+  --status-track-bg:   rgba(139, 122, 184, 0.2);
+  --shadow-sm: 0 1px 2px rgba(30, 41, 32, 0.05), 0 1px 3px rgba(30, 41, 32, 0.06);
+  --shadow-md: 0 8px 20px -8px rgba(30, 41, 32, 0.18), 0 4px 8px rgba(30, 41, 32, 0.06);
+  --shadow-lg: 0 24px 60px -20px rgba(30, 41, 32, 0.28), 0 8px 18px rgba(30, 41, 32, 0.08);
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --font-display: "Fraunces", "Newsreader", Georgia, serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", SFMono-Regular, ui-monospace, monospace;
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --brand-teal:        var(--primary);
+  --brand-teal-deep:   var(--primary-2);
+  --brand-teal-tint:   #E7ECD9;
+  --brand-teal-rule:   #BFCBAA;
+  --brand-navy:        var(--ink);
+  --brand-parchment:   var(--bg);
+  --brand-paper:       var(--paper);
+  --brand-paper-soft:  var(--bg-2);
+  --brand-rule:        var(--line);
+  --brand-rule-soft:   var(--line-soft);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
 }
 
 /* Font utilities */
 .font-playfair {
-  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+  font-family: var(--font-display);
 }
 .font-display {
-  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+  font-family: var(--font-display);
 }
 
 /* Italic teal accent inside display headings */
 .font-display em,
 .font-playfair em {
   font-style: italic;
-  color: var(--brand-teal);
+  color: var(--primary);
   font-weight: inherit;
+}
+
+/* Product app editorial sage primitives */
+.product-app {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.16  0 0 0 0 0.12  0 0 0 0.035 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.product-app h1,
+.product-app h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.012em;
+}
+
+.product-page-head {
+  margin-bottom: 32px;
+}
+
+.product-page-eye,
+.product-callout-eye {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.product-page-title {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.08;
+}
+
+.product-page-sub {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-top: 8px;
+  max-width: 640px;
+}
+
+.product-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-stat-tile {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-callout-brand,
+.product-callout-warm,
+.product-callout-ink {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-callout-brand {
+  background: linear-gradient(135deg, rgba(63, 95, 51, 0.08) 0%, rgba(77, 140, 127, 0.10) 100%);
+  border: 1.5px solid rgba(63, 95, 51, 0.25);
+}
+
+.product-callout-warm {
+  background: linear-gradient(135deg, rgba(201, 147, 60, 0.10) 0%, rgba(221, 107, 64, 0.06) 100%);
+  border: 1.5px solid rgba(201, 147, 60, 0.30);
+}
+
+.product-callout-ink {
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-left-width: 6px;
+  border-left-color: var(--primary);
+}
+
+.product-btn {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 44px;
+  padding: 12px 22px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
+}
+
+.product-btn:hover {
+  transform: translateY(-1px);
+}
+
+.product-btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.product-btn-primary:hover {
+  background: var(--primary);
+}
+
+.product-btn-brand {
+  background: var(--primary);
+  color: var(--bg);
+}
+
+.product-btn-brand:hover {
+  background: var(--primary-2);
+}
+
+.product-btn-secondary {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.product-btn-secondary:hover {
+  background: var(--bg-2);
+  border-color: var(--ink-3);
+}
+
+.product-btn-urgent {
+  background: var(--pop);
+  color: var(--bg);
+}
+
+.product-btn-urgent:hover {
+  background: var(--pop-2);
+}
+
+.product-input,
+.product-select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 12px 14px;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+
+.product-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%231E2920' stroke-width='1.5' stroke-linecap='round'/></svg>");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.product-input:focus,
+.product-select:focus {
+  background: var(--paper);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(63, 95, 51, 0.15);
+  outline: none;
+}
+
+.product-input::placeholder {
+  color: var(--ink-4);
+}
+
+.product-label {
+  color: var(--ink-3);
+  display: block;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.product-toggle-group {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-toggle-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 14px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.product-toggle-btn:hover {
+  background: var(--bg-2);
+}
+
+.product-toggle-btn[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.product-pill {
+  align-items: center;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 600;
+  gap: 5px;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+}
+
+.product-pill-met {
+  background: var(--status-met-bg);
+  color: var(--status-met);
+}
+
+.product-pill-miss {
+  background: var(--status-miss-bg);
+  color: var(--status-miss);
+}
+
+.product-pill-pending {
+  background: var(--status-pending-bg);
+  color: var(--status-pending);
+}
+
+.product-pill-track {
+  background: var(--status-track-bg);
+  color: var(--status-track);
+}
+
+.product-progress {
+  background: var(--bg-2);
+  border-radius: var(--radius-pill);
+  height: 8px;
+  overflow: hidden;
+}
+
+.product-progress-fill {
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+  height: 100%;
+}
+
+/* Product-scoped migration overrides for legacy Tailwind color utilities. */
+.product-app .bg-white {
+  background-color: var(--paper);
+}
+
+.product-app .bg-slate-50,
+.product-app .bg-slate-100,
+.product-app .bg-slate-200,
+.product-app .bg-slate-300 {
+  background-color: var(--bg-2);
+}
+
+.product-app .border-slate-100,
+.product-app .border-slate-200,
+.product-app .border-slate-300 {
+  border-color: var(--line);
+}
+
+.product-app .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--line-soft);
+}
+
+.product-app .text-slate-900,
+.product-app .text-slate-800,
+.product-app [class~="text-[#1E293B]"] {
+  color: var(--ink);
+}
+
+.product-app .text-slate-700,
+.product-app .text-slate-600 {
+  color: var(--ink-2);
+}
+
+.product-app .text-slate-500,
+.product-app .text-slate-400 {
+  color: var(--ink-3);
+}
+
+.product-app .text-slate-300 {
+  color: var(--ink-4);
+}
+
+.product-app .bg-blue-600,
+.product-app [class~="bg-[#0F766E]"] {
+  background-color: var(--primary);
+}
+
+.product-app .hover\:bg-blue-700:hover,
+.product-app [class~="hover:bg-[#0D9488]"]:hover,
+.product-app [class~="active:bg-[#0D9488]"]:active {
+  background-color: var(--primary-2);
+}
+
+.product-app .text-blue-400,
+.product-app .text-blue-500,
+.product-app .text-blue-600,
+.product-app .text-blue-700,
+.product-app .text-blue-800,
+.product-app .text-blue-900,
+.product-app [class~="text-[#0F766E]"] {
+  color: var(--primary);
+}
+
+.product-app .hover\:text-blue-700:hover,
+.product-app [class~="hover:text-[#0D9488]"]:hover,
+.product-app [class~="hover:text-[#0F766E]"]:hover {
+  color: var(--primary-2);
+}
+
+.product-app .bg-blue-50,
+.product-app .bg-blue-100,
+.product-app .bg-teal-50,
+.product-app .bg-teal-100,
+.product-app [class~="bg-blue-50/50"],
+.product-app [class~="bg-teal-50/80"] {
+  background-color: rgba(63, 95, 51, 0.10);
+}
+
+.product-app .border-blue-100,
+.product-app .border-blue-200,
+.product-app .border-blue-300,
+.product-app .border-blue-500,
+.product-app .border-teal-100,
+.product-app .border-teal-200,
+.product-app [class~="border-[#0F766E]"] {
+  border-color: rgba(63, 95, 51, 0.28);
+}
+
+.product-app .hover\:border-blue-300:hover,
+.product-app .hover\:border-blue-400:hover {
+  border-color: var(--primary);
+}
+
+.product-app .focus\:ring-blue-500:focus,
+.product-app .focus\:ring-teal-100:focus {
+  --tw-ring-color: rgba(63, 95, 51, 0.18);
+}
+
+.product-app .focus\:border-\[\#0F766E\]:focus {
+  border-color: var(--primary);
+}
+
+.product-app .bg-red-600 {
+  background-color: var(--pop);
+}
+
+.product-app .hover\:bg-red-700:hover {
+  background-color: var(--pop-2);
+}
+
+.product-app .bg-red-50,
+.product-app .bg-red-100 {
+  background-color: var(--status-miss-bg);
+}
+
+.product-app .border-red-100,
+.product-app .border-red-200 {
+  border-color: rgba(221, 107, 64, 0.28);
+}
+
+.product-app .text-red-500,
+.product-app .text-red-600,
+.product-app .text-red-700,
+.product-app .text-red-800,
+.product-app .text-red-900 {
+  color: var(--status-miss);
+}
+
+.product-app .bg-amber-50,
+.product-app .bg-amber-100 {
+  background-color: var(--status-pending-bg);
+}
+
+.product-app .bg-amber-500,
+.product-app .bg-amber-600 {
+  background-color: var(--warm);
+}
+
+.product-app .hover\:bg-amber-600:hover,
+.product-app .hover\:bg-amber-700:hover {
+  background-color: var(--warm-2);
+}
+
+.product-app .border-amber-100,
+.product-app .border-amber-200,
+.product-app .border-amber-300 {
+  border-color: rgba(201, 147, 60, 0.34);
+}
+
+.product-app .text-amber-400,
+.product-app .text-amber-500,
+.product-app .text-amber-600,
+.product-app .text-amber-700,
+.product-app .text-amber-800,
+.product-app .text-amber-900 {
+  color: var(--status-pending);
+}
+
+.product-app .text-purple-700 {
+  color: var(--mauve);
+}
+
+.product-app .bg-green-50,
+.product-app .bg-green-100,
+.product-app .bg-emerald-50 {
+  background-color: var(--status-met-bg);
+}
+
+.product-app .bg-green-500,
+.product-app .bg-green-600,
+.product-app .bg-emerald-500,
+.product-app .bg-emerald-600 {
+  background-color: var(--status-met);
+}
+
+.product-app .hover\:bg-green-700:hover {
+  background-color: #5B7D57;
+}
+
+.product-app .border-green-200,
+.product-app .border-green-300,
+.product-app .border-emerald-200 {
+  border-color: rgba(107, 142, 102, 0.34);
+}
+
+.product-app .text-green-600,
+.product-app .text-green-700,
+.product-app .text-green-800,
+.product-app .text-green-900,
+.product-app .text-emerald-700 {
+  color: var(--status-met);
 }
 
 

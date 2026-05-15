@@ -116,11 +116,11 @@ function requirementStatusLabel({
 }
 
 function requirementStatusClass(label: string) {
-  if (label === "Met") return "bg-green-100 text-green-700";
-  if (label === "Needs your input") return "bg-blue-100 text-blue-700 border border-blue-200";
-  if (label === "Action needed") return "bg-red-600 text-white";
-  if (label === "At risk") return "bg-amber-100 text-amber-800 border border-amber-200";
-  return "bg-white/70 text-brand-amber border border-brand-amberRule";
+  if (label === "Met") return "product-pill product-pill-met";
+  if (label === "Needs your input") return "product-pill product-pill-track";
+  if (label === "Action needed") return "product-pill product-pill-miss";
+  if (label === "At risk") return "product-pill product-pill-pending";
+  return "product-pill product-pill-miss";
 }
 
 function formatReviewDate(date?: Date) {
@@ -423,11 +423,11 @@ export default async function CompliancePage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="product-page-head flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-teal mb-1">The full record</p>
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-navy">Compliance Map</h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <p className="product-page-eye">The full record</p>
+          <h1 className="product-page-title">Compliance Map</h1>
+          <p className="product-page-sub">
             Live status of your state license compliance — requirement rules cross-checked against state board guidance
           </p>
         </div>
@@ -442,19 +442,19 @@ export default async function CompliancePage() {
 
       {/* No licenses */}
       {licenses.length === 0 && (
-        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
-          <div className="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <div className="product-callout-brand p-8 text-center">
+          <div className="w-12 h-12 bg-[rgba(63,95,51,0.12)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-[#1E293B] mb-2">No licenses configured</h3>
-          <p className="text-sm text-[#0F766E] mb-4">
+          <h3 className="font-display text-xl font-semibold text-[var(--ink)] mb-2">No licenses configured</h3>
+          <p className="text-sm text-[var(--ink-2)] mb-4">
             Add your state medical licenses to see personalized compliance requirements.
           </p>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0F766E] text-white text-sm font-medium rounded-xl hover:bg-[#0D9488] transition-colors"
+            className="product-btn product-btn-brand"
           >
             Add licenses →
           </Link>
@@ -464,29 +464,29 @@ export default async function CompliancePage() {
       {/* Overall summary */}
       {licenses.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Total Hours Earned</p>
-            <p className="text-2xl font-bold text-[#0F766E]">{totalHoursAllCerts.toFixed(1)}</p>
-            <p className="text-xs text-slate-400 mt-0.5">across all certificates</p>
+          <div className="product-stat-tile p-5">
+            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Total Hours Earned</p>
+            <p className="font-mono text-2xl font-semibold text-[var(--primary)]">{totalHoursAllCerts.toFixed(1)}</p>
+            <p className="text-xs text-[var(--ink-3)] mt-0.5">across all certificates</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Licenses Active</p>
-            <p className="text-2xl font-bold text-slate-700">{licenses.length}</p>
-            <p className="text-xs text-slate-400 mt-0.5">states tracked</p>
+          <div className="product-stat-tile p-5">
+            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Licenses Active</p>
+            <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{licenses.length}</p>
+            <p className="text-xs text-[var(--ink-3)] mt-0.5">states tracked</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Certificates</p>
-            <p className="text-2xl font-bold text-slate-700">{certificates.length}</p>
-            <p className="text-xs text-slate-400 mt-0.5">with extracted data</p>
+          <div className="product-stat-tile p-5">
+            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Certificates</p>
+            <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{certificates.length}</p>
+            <p className="text-xs text-[var(--ink-3)] mt-0.5">with extracted data</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Overall Status</p>
+          <div className="product-stat-tile p-5">
+            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Overall Status</p>
             {complianceData.every((d) => d.rule === null) ? (
-              <p className="text-lg font-bold text-slate-400">—</p>
+              <p className="text-lg font-bold text-[var(--ink-4)]">—</p>
             ) : complianceData.filter((d) => d.rule).every((d) => d.isCompliant) ? (
-              <p className="text-2xl font-bold text-green-600">✓ Good</p>
+              <p className="text-2xl font-bold text-[var(--status-met)]">✓ Good</p>
             ) : (
-              <p className="text-2xl font-bold text-amber-600">⚠ Incomplete</p>
+              <p className="text-2xl font-bold text-[var(--status-pending)]">⚠ Incomplete</p>
             )}
           </div>
         </div>
@@ -494,28 +494,28 @@ export default async function CompliancePage() {
 
       {/* Per-license compliance cards */}
       {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => (
-        <section key={license.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <section key={license.id} className="product-card overflow-hidden">
           {/* Card header */}
-          <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="px-6 py-5 border-b border-[var(--line-soft)] flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="font-display text-xl font-semibold text-[var(--ink)]">
                   {license.state} — {license.licenseType}
                 </h2>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`product-pill ${
                     !rule
-                      ? "bg-slate-100 text-slate-500"
+                      ? "bg-[var(--bg-2)] text-[var(--ink-2)]"
                       : isCompliant
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                      ? "product-pill-met"
+                      : "product-pill-pending"
                   }`}
                 >
                   {!rule ? "Rules pending" : isCompliant ? "✓ Compliant" : "⚠ Requirements Pending"}
                 </span>
               </div>
               {license.renewalDate && (
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-sm text-[var(--ink-3)] mt-1">
                   Renewal: {new Date(license.renewalDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                 </p>
               )}
@@ -525,10 +525,10 @@ export default async function CompliancePage() {
 
           {!rule ? (
             <div className="px-6 py-8 text-center">
-              <p className="text-slate-500 text-sm">
+              <p className="text-[var(--ink-2)] text-sm">
                 {blockedMessage ?? "Compliance rules for this license are not yet loaded."}
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-[var(--ink-3)] mt-1">
                 We&apos;re adding state requirements continuously — check back soon.
               </p>
             </div>
@@ -537,26 +537,26 @@ export default async function CompliancePage() {
               {/* Hours progress */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-[var(--ink-2)]">
                     CME Hours This Cycle
                   </span>
-                  <span className="text-sm font-bold text-slate-900">
+                  <span className="font-mono text-sm font-semibold text-[var(--ink)]">
                     {totalHoursEarned.toFixed(1)} / {totalHoursNeeded.toFixed(0)} hrs
                   </span>
                 </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-[var(--bg-2)] rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      isCompliant ? "bg-green-500" : totalHoursEarned > 0 ? "bg-[#0F766E]" : "bg-slate-300"
+                      isCompliant ? "bg-[var(--status-met)]" : totalHoursEarned > 0 ? "bg-[var(--primary)]" : "bg-[var(--ink-4)]"
                     }`}
                     style={{ width: `${Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100)}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[var(--ink-3)]">
                     {isCompliant ? "All hours completed ✓" : `${gapHours.toFixed(1)} hours still needed`}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[var(--ink-3)]">
                     {Math.round((totalHoursEarned / totalHoursNeeded) * 100)}%
                   </span>
                 </div>
@@ -570,7 +570,7 @@ export default async function CompliancePage() {
                     const onTrack = pctDone >= (1 - pctTimeLeft);
                     const critical = daysUntilRenewal < 60 && pctDone < 0.5;
                     return (
-                      <p className={`text-xs mt-1.5 font-medium ${critical ? "text-red-600" : onTrack ? "text-green-600" : "text-amber-600"}`}>
+                      <p className={`text-xs mt-1.5 font-medium ${critical ? "text-[var(--status-miss)]" : onTrack ? "text-[var(--status-met)]" : "text-[var(--status-pending)]"}`}>
                         {critical ? "!" : onTrack ? "✓" : "→"} To finish by renewal, you need {hrsPerMonth.toFixed(1)} hrs/month
                       </p>
                     );
@@ -594,7 +594,7 @@ export default async function CompliancePage() {
               {/* Mandatory topics */}
               {mandatoryGaps.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-700 mb-3">Mandatory Topics</h3>
+                  <h3 className="font-display text-lg font-semibold text-[var(--ink)] mb-3">Mandatory Topics</h3>
                   <div className="space-y-2">
                     {mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
@@ -614,51 +614,51 @@ export default async function CompliancePage() {
                         <div
                           key={gap.topic}
                           {...(isFirstGap ? { "data-gap-card": "true", tabIndex: -1 } : {})}
-                          className={`rounded-xl border p-4 ${topicTone.bg} ${topicTone.border}`}
+                          className={`rounded-[var(--radius)] border p-4 ${topicTone.bg} ${topicTone.border}`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2 flex-1 min-w-0">
                               <span
                                 className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${
                                   gap.isUnknown
-                                    ? "bg-blue-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-blue-700"
+                                    ? "bg-[var(--status-track-bg)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--status-track)]"
                                     : "text-base"
                                 }`}
                               >
                                 {statusIcon}
                               </span>
                               <div className="min-w-0">
-                                <p className="text-sm font-medium text-slate-900">
+                                <p className="text-sm font-medium text-[var(--ink)]">
                                   {formatTopic(gap.topic)}
                                 </p>
                                 {gap.description && (
-                                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{gap.description}</p>
+                                  <p className="text-xs text-[var(--ink-3)] mt-0.5 leading-relaxed">{gap.description}</p>
                                 )}
-                                <p className="mt-1 text-xs font-medium text-slate-500">
+                                <p className="mt-1 text-xs font-medium text-[var(--ink-3)]">
                                   Cadence: {gap.cadenceLabel}
                                   {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
                                 </p>
                                 {gap.isUnknown && (
-                                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                                  <div className="mt-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2 text-xs text-[var(--ink)]">
                                     <p className="font-semibold">Tell ClearCME if you already completed this.</p>
-                                    <p className="mt-1 text-blue-800">
+                                    <p className="mt-1 text-[var(--ink-2)]">
                                       {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
                                     </p>
-                                    <p className="mt-1 text-blue-700">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
+                                    <p className="mt-1 text-[var(--status-track)]">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
                                   </div>
                                 )}
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-bold text-slate-900">
+                              <p className="font-mono text-sm font-semibold text-[var(--ink)]">
                                 {gap.earned.toFixed(1)}/{gap.needed.toFixed(0)} hrs
                               </p>
                               {!gap.isMet && !gap.isUnknown && (
-                                <p className={`text-xs mt-0.5 ${gap.earned > 0 ? "text-amber-700" : "text-red-600"}`}>
+                                <p className={`text-xs mt-0.5 ${gap.earned > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-miss)]"}`}>
                                   {gap.gap.toFixed(1)} hrs short
                                 </p>
                               )}
-                              <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${requirementStatusClass(statusLabel)}`}>
+                              <span className={`mt-1 ${requirementStatusClass(statusLabel)}`}>
                                 {statusLabel}
                               </span>
                             </div>
@@ -668,7 +668,7 @@ export default async function CompliancePage() {
                             <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
-                                  gap.isMet ? "bg-green-500" : gap.earned > 0 ? "bg-amber-500" : "bg-red-400"
+                                  gap.isMet ? "bg-[var(--status-met)]" : gap.earned > 0 ? "bg-[var(--warm)]" : "bg-[var(--pop)]"
                                 }`}
                                 style={{ width: `${pct}%` }}
                               />
@@ -679,25 +679,25 @@ export default async function CompliancePage() {
                                   href={`/courses/${keyToSlug(gap.topic)}`}
                                   className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
                                     gap.earned > 0
-                                      ? "bg-amber-600 text-white hover:bg-amber-700"
-                                      : "bg-red-600 text-white hover:bg-red-700"
+                                      ? "bg-[var(--warm)] text-white hover:bg-[var(--warm-2)]"
+                                      : "bg-[var(--pop)] text-white hover:bg-[var(--pop-2)]"
                                   }`}
                                 >
                                   {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
                                 </Link>
                                 {HIPPO_TOPICS.has(gap.topic) ? (
-                                  <span className="inline-flex items-center gap-1 text-xs text-purple-700 font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs text-[var(--mauve)] font-medium">
                                     via Hippo Education
                                   </span>
                                 ) : (
-                                  <span className="text-xs text-slate-400">ACCME-accredited • Cat 1</span>
+                                  <span className="text-xs text-[var(--ink-3)]">ACCME-accredited • Cat 1</span>
                                 )}
                               </div>
                             )}
                             {gap.isUnknown && (
                               <Link
                                 href="/dashboard/settings#requirement-history"
-                                className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:w-auto sm:min-h-0 sm:py-1"
+                                className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--primary-2)] sm:w-auto sm:min-h-0 sm:py-1"
                               >
                                 Confirm my history →
                               </Link>
@@ -705,21 +705,21 @@ export default async function CompliancePage() {
                           </div>
 
                           {gap.sourceMeta && (
-                            <details className="group mt-3 rounded-lg border border-white/70 bg-white/55 px-3 py-2 text-xs text-slate-600 open:bg-white/80">
-                              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-medium text-slate-700 marker:hidden">
+                            <details className="group mt-3 rounded-[var(--radius-sm)] border border-white/70 bg-white/55 px-3 py-2 text-xs text-[var(--ink-2)] open:bg-white/80">
+                              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-medium text-[var(--ink)] marker:hidden">
                                 <span>Source / reviewed</span>
-                                <span className="text-slate-400 transition-transform group-open:rotate-180">⌄</span>
+                                <span className="text-[var(--ink-3)] transition-transform group-open:rotate-180">⌄</span>
                               </summary>
                               <div className="mt-2 space-y-1.5 leading-relaxed">
                                 {(gap.sourceMeta.sourceUrl || gap.sourceMeta.sourceTitle) && (
                                   <p>
-                                    <span className="font-semibold text-slate-700">Official source: </span>
+                                    <span className="font-semibold text-[var(--ink)]">Official source: </span>
                                     {gap.sourceMeta.sourceUrl ? (
                                       <a
                                         href={gap.sourceMeta.sourceUrl}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="text-brand-teal underline decoration-brand-teal/30 underline-offset-2 hover:text-[#0D9488]"
+                                        className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
                                       >
                                         {gap.sourceMeta.sourceTitle ?? "State board guidance"}
                                       </a>
@@ -730,18 +730,18 @@ export default async function CompliancePage() {
                                 )}
                                 {gap.sourceMeta.lastReviewed && (
                                   <p>
-                                    <span className="font-semibold text-slate-700">Last reviewed: </span>
+                                    <span className="font-semibold text-[var(--ink)]">Last reviewed: </span>
                                     {formatReviewDate(gap.sourceMeta.lastReviewed)}
                                   </p>
                                 )}
                                 {gap.sourceMeta.scopeCaveat && (
                                   <p>
-                                    <span className="font-semibold text-slate-700">Scope / caveat: </span>
+                                    <span className="font-semibold text-[var(--ink)]">Scope / caveat: </span>
                                     {gap.sourceMeta.scopeCaveat}
                                   </p>
                                 )}
                                 <p>
-                                  <span className="font-semibold text-slate-700">Why this applies: </span>
+                                  <span className="font-semibold text-[var(--ink)]">Why this applies: </span>
                                   {gap.sourceMeta.whyThisApplies}
                                 </p>
                               </div>
@@ -764,7 +764,7 @@ export default async function CompliancePage() {
 
               {/* No mandatory topics */}
               {mandatoryGaps.length === 0 && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[var(--ink-3)]">
                   No mandatory topic requirements configured for this license.
                 </p>
               )}
@@ -776,12 +776,12 @@ export default async function CompliancePage() {
       {/* Certificate list */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">
             All Certificates ({certificates.length})
           </h2>
           <Link
             href="/dashboard/upload"
-            className="text-sm text-[#0F766E] hover:text-[#0D9488] font-medium"
+            className="text-sm text-[var(--primary)] hover:text-[var(--primary-2)] font-medium"
           >
             + Upload
           </Link>
@@ -789,9 +789,9 @@ export default async function CompliancePage() {
 
         <CertificateList certs={certificates} totalCount={certificates.length} sharedCredits={sharedCredits} />
         {certificates.length > 0 && (
-          <div className="px-5 py-4 bg-slate-50 border border-slate-200 rounded-b-2xl -mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">Total hours</span>
-            <span className="text-sm font-bold text-[#0F766E]">
+          <div className="px-5 py-4 bg-[var(--bg-2)] border border-[var(--line)] rounded-b-2xl -mt-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-[var(--ink-2)]">Total hours</span>
+            <span className="font-mono text-sm font-semibold text-[var(--primary)]">
               {totalHoursAllCerts.toFixed(1)} hrs
             </span>
           </div>

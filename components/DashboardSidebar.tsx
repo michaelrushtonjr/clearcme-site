@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { BrandLockup } from "@/components/BrandLockup";
 
 interface NavUser {
   name?: string | null;
@@ -81,12 +82,10 @@ function SidebarContent({
   return (
     <>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-100">
-        <Link href="/dashboard" className="flex items-center gap-2" onClick={onNavigate}>
-          <span className="text-xl font-bold text-[#1E293B] tracking-tight">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
-        </Link>
+      <div className="px-5 py-5 border-b border-[var(--line)]">
+        <div onClick={onNavigate}>
+          <BrandLockup href="/dashboard" size="lg" />
+        </div>
       </div>
 
       {/* Nav */}
@@ -96,13 +95,13 @@ function SidebarContent({
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all ${
               isActive(item.href)
-                ? "bg-teal-50 text-[#0F766E]"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                ? "bg-[var(--paper)] text-[var(--primary)] border border-[var(--line)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)]"
             }`}
           >
-            <span className={isActive(item.href) ? "text-[#0F766E]" : "text-slate-400"}>
+            <span className={isActive(item.href) ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}>
               {item.icon}
             </span>
             {item.label}
@@ -111,23 +110,23 @@ function SidebarContent({
       </nav>
 
       {/* User footer */}
-      <div className="px-3 py-4 border-t border-slate-100">
+      <div className="px-3 py-4 border-t border-[var(--line)]">
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-[#0F766E]">
+          <div className="w-8 h-8 rounded-full bg-[rgba(63,95,51,0.12)] flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-semibold text-[var(--primary)]">
               {(user.name ?? user.email ?? "U")[0].toUpperCase()}
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[#1E293B] truncate">
+            <p className="text-sm font-medium text-[var(--ink)] truncate">
               {user.name ?? "Physician"}
             </p>
-            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+            <p className="text-xs text-[var(--ink-3)] truncate">{user.email}</p>
           </div>
         </div>
         <Link
           href="/methodology"
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-[#0F766E] hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-[var(--radius)] text-xs text-[var(--ink-3)] hover:text-[var(--primary)] hover:bg-[var(--bg-2)] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -136,9 +135,9 @@ function SidebarContent({
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-sm font-medium text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)] transition-colors"
         >
-          <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <svg className="w-5 h-5 text-[var(--ink-3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           Sign out
@@ -160,20 +159,16 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-200 min-h-screen fixed left-0 top-0 z-30">
+      <aside className="hidden lg:flex flex-col w-64 bg-[rgba(244,239,227,0.92)] border-r border-[var(--line)] min-h-screen fixed left-0 top-0 z-30 backdrop-blur-sm">
         <SidebarContent user={user} isActive={isActive} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-lg font-bold text-[#1E293B] tracking-tight">
-            Clear<span className="text-[#0F766E]">CME</span>
-          </span>
-        </Link>
+      <header className="lg:hidden bg-[rgba(244,239,227,0.94)] border-b border-[var(--line)] px-4 py-3 flex items-center justify-between sticky top-0 z-30 backdrop-blur-sm">
+        <BrandLockup href="/dashboard" size="md" />
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          className="p-2 rounded-[var(--radius-sm)] text-[var(--ink-2)] hover:bg-[var(--bg-2)] transition-colors"
           aria-label="Open menu"
         >
           {mobileOpen ? (
@@ -195,7 +190,7 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
             className="fixed inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative flex flex-col w-72 bg-white h-full">
+          <aside className="relative flex flex-col w-72 bg-[var(--bg)] h-full border-r border-[var(--line)]">
             <SidebarContent user={user} isActive={isActive} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>

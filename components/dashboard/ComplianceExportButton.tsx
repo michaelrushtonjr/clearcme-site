@@ -111,34 +111,34 @@ function buildHtml(data: ExportData): string {
   <title>ClearCME Compliance Report</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; padding: 40px; font-size: 13px; }
-    h1 { font-size: 22px; font-weight: 800; color: #1e293b; }
-    h2 { font-size: 15px; font-weight: 700; color: #334155; margin: 28px 0 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #2563eb; padding-bottom: 16px; }
-    .brand { font-size: 24px; font-weight: 900; color: #1e293b; }
-    .brand span { color: #2563eb; }
-    .meta { text-align: right; color: #64748b; font-size: 12px; }
-    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1E2920; padding: 40px; font-size: 13px; background: #FFFDF6; }
+    h1 { font-size: 22px; font-weight: 800; color: #1E2920; }
+    h2 { font-size: 15px; font-weight: 700; color: #3F4A40; margin: 28px 0 12px; border-bottom: 2px solid #DDD4BD; padding-bottom: 6px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #3F5F33; padding-bottom: 16px; }
+    .brand { font-family: Fraunces, Georgia, serif; font-size: 24px; font-weight: 900; color: #1E2920; }
+    .brand span { color: #3F5F33; }
+    .meta { text-align: right; color: #6B7568; font-size: 12px; }
+    .card { background: #F4EFE3; border: 1px solid #DDD4BD; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
     .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-    .badge-green { background: #dcfce7; color: #15803d; }
-    .badge-amber { background: #fef9c3; color: #a16207; }
+    .badge-green { background: rgba(107,142,102,.18); color: #6B8E66; }
+    .badge-amber { background: rgba(201,147,60,.18); color: #A87729; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     table td { padding: 4px 8px; }
-    table td:first-child { color: #64748b; width: 40%; }
+    table td:first-child { color: #6B7568; width: 40%; }
     .topics { margin-top: 12px; }
-    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px; }
-    .topic-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
-    .topic-row.gap { color: #b45309; }
-    .topic-row.met { color: #15803d; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6B7568; margin-bottom: 6px; }
+    .topic-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid #ECE3CA; }
+    .topic-row.gap { color: #A87729; }
+    .topic-row.met { color: #6B8E66; }
     .certs-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .certs-table th { text-align: left; padding: 6px 8px; background: #f1f5f9; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; }
-    .certs-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+    .certs-table th { text-align: left; padding: 6px 8px; background: #ECE4CF; font-weight: 600; color: #6B7568; font-size: 11px; text-transform: uppercase; }
+    .certs-table td { padding: 6px 8px; border-bottom: 1px solid #ECE3CA; }
     .summary-row { display: flex; gap: 16px; margin-bottom: 24px; }
-    .summary-tile { flex: 1; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; text-align: center; }
-    .summary-tile .val { font-size: 22px; font-weight: 800; color: #0369a1; }
-    .summary-tile .lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
-    .footer { margin-top: 32px; color: #94a3b8; font-size: 11px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+    .summary-tile { flex: 1; background: #F4EFE3; border: 1px solid #DDD4BD; border-radius: 8px; padding: 12px; text-align: center; }
+    .summary-tile .val { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px; font-weight: 800; color: #3F5F33; }
+    .summary-tile .lbl { font-size: 11px; color: #6B7568; margin-top: 2px; }
+    .footer { margin-top: 32px; color: #95A092; font-size: 11px; text-align: center; border-top: 1px solid #DDD4BD; padding-top: 12px; }
     @media print { body { padding: 20px; } }
   </style>
 </head>
@@ -146,11 +146,11 @@ function buildHtml(data: ExportData): string {
   <div class="header">
     <div>
       <div class="brand">Clear<span>CME</span></div>
-      <div style="color:#64748b;font-size:12px;margin-top:4px;">Physician CME Compliance Report</div>
+      <div style="color:#6B7568;font-size:12px;margin-top:4px;">Physician CME Compliance Report</div>
     </div>
     <div class="meta">
       <div>Generated: ${now}</div>
-      <div style="margin-top:2px;font-style:italic;color:#94a3b8;">AI-extracted data — verify before relying on for compliance</div>
+      <div style="margin-top:2px;font-style:italic;color:#95A092;">AI-extracted data — verify before relying on for compliance</div>
     </div>
   </div>
 
@@ -174,7 +174,7 @@ function buildHtml(data: ExportData): string {
   </div>
 
   <h2>License Compliance</h2>
-  ${licenseRows || '<p style="color:#94a3b8;font-size:12px;">No licenses configured.</p>'}
+  ${licenseRows || '<p style="color:#95A092;font-size:12px;">No licenses configured.</p>'}
 
   <h2>Uploaded Certificates (${data.certificates.length})</h2>
   ${
@@ -187,7 +187,7 @@ function buildHtml(data: ExportData): string {
     </thead>
     <tbody>${certRows}</tbody>
   </table>`
-      : '<p style="color:#94a3b8;font-size:12px;">No certificates on file.</p>'
+      : '<p style="color:#95A092;font-size:12px;">No certificates on file.</p>'
   }
 
   <div class="footer">
@@ -227,7 +227,7 @@ export default function ComplianceExportButton({ exportData }: { exportData: Exp
     <button
       onClick={handleExport}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-60 shadow-sm"
+      className="product-btn product-btn-secondary px-4 py-2.5 text-sm disabled:opacity-60"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
