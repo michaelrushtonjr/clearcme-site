@@ -41,23 +41,13 @@ export function ComplianceForecast({
   totalHours,
   renewalDate,
   certDates,
-  licenseId,
 }: ComplianceForecastProps) {
   if (!renewalDate || totalHours === 0) return null;
 
   const now = new Date();
-  const daysUntilRenewal = Math.ceil((renewalDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   // Already compliant
   if (hoursEarned >= totalHours) return null;
-
-  // Compute pace: avg hours/month over last 3 months of uploads
-  const threeMonthsAgo = new Date(now);
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-  const recentDates = certDates
-    .map((d) => new Date(d))
-    .filter((d) => d >= threeMonthsAgo && d <= now);
 
   // We don't have per-cert hours here, so approximate: hoursEarned spread over months active
   const firstCertDate = certDates.length > 0 ? new Date(certDates[certDates.length - 1]) : now;
@@ -74,15 +64,6 @@ export function ComplianceForecast({
   const isOnTrack = bufferMonths !== null && bufferMonths >= 0;
   const isBehind = bufferMonths !== null && bufferMonths < 0;
   const hoursPerMonthNeeded = monthsUntilRenewal > 0 ? (hoursRemaining / monthsUntilRenewal).toFixed(1) : null;
-
-  // Build a simple 5-point timeline for visualization
-  // Points: now, 25%, 50%, 75%, renewal
-  const timelinePoints = [0, 0.25, 0.5, 0.75, 1].map((frac) => {
-    const d = new Date(now.getTime() + frac * (renewalDate.getTime() - now.getTime()));
-    const expectedHoursAtPoint = pacePerMonth * (frac * monthsUntilRenewal);
-    const pctDone = Math.min(100, (expectedHoursAtPoint / totalHours) * 100);
-    return { d, pctDone, frac };
-  });
 
   const actualPct = Math.min(100, (hoursEarned / totalHours) * 100);
 

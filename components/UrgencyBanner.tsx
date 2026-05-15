@@ -22,19 +22,26 @@ export default function UrgencyBanner() {
 
   // Check localStorage on mount (client-side only)
   useEffect(() => {
+    let shouldShow = true;
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const dismissed = JSON.parse(raw) as { ts: number };
         if (Date.now() - dismissed.ts < DISMISS_DURATION_MS) {
-          return; // still within 24h window
+          shouldShow = false; // still within 24h window
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
         }
-        localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
       // ignore parse errors
     }
-    setVisible(true);
+
+    if (!shouldShow) return;
+
+    const timer = window.setTimeout(() => setVisible(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Rotate messages every 4 seconds with a fade

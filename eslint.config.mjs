@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Legacy operational Node scripts use CommonJS and are not part of the
+    // Next.js production bundle.
+    "prisma/seed.js",
+    "scripts/*.js",
   ]),
 ]);
 

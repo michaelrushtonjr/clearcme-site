@@ -24,14 +24,21 @@ export default function AhaMomentModal({
   useEffect(() => {
     // Only show if there's real data and it hasn't been shown before
     if (requirementCount === 0) return;
+    let shouldShow = false;
+
     try {
       const shown = localStorage.getItem(AHA_KEY);
       if (!shown) {
-        setVisible(true);
+        shouldShow = true;
       }
     } catch {
       // localStorage unavailable (SSR/private browsing) — skip
     }
+
+    if (!shouldShow) return;
+
+    const timer = window.setTimeout(() => setVisible(true), 0);
+    return () => window.clearTimeout(timer);
   }, [requirementCount]);
 
   function dismiss() {

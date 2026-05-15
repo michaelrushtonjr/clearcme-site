@@ -43,7 +43,7 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedPr
   return (
     <div className="mt-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-        Recommended courses
+        Recommended courses · {hoursNeeded.toFixed(1)} hrs needed
       </p>
       <div className="space-y-2">
         {visible.map((course, i) => (

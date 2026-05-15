@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useEffectEvent, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import ComplianceDiffCard from "@/components/dashboard/ComplianceDiffCard";
 import type { UserComplianceDiffPayload } from "@/lib/compliance-diffs";
 
@@ -10,7 +10,7 @@ export default function ComplianceDiffNotifications() {
   const [hasError, setHasError] = useState(false);
   const [dismissingIds, setDismissingIds] = useState<Record<string, boolean>>({});
 
-  const loadDiffs = useEffectEvent(async () => {
+  const loadDiffs = useCallback(async () => {
     try {
       const response = await fetch("/api/compliance-diffs", {
         cache: "no-store",
@@ -31,9 +31,9 @@ export default function ComplianceDiffNotifications() {
     } finally {
       setIsLoading(false);
     }
-  });
+  }, []);
 
-  const dismissDiff = useEffectEvent(async (diffId: string) => {
+  const dismissDiff = useCallback(async (diffId: string) => {
     setDismissingIds((current) => ({ ...current, [diffId]: true }));
 
     try {
@@ -57,11 +57,11 @@ export default function ComplianceDiffNotifications() {
         return next;
       });
     }
-  });
+  }, []);
 
   useEffect(() => {
     void loadDiffs();
-  }, []);
+  }, [loadDiffs]);
 
   if (isLoading || hasError || diffs.length === 0) {
     return null;

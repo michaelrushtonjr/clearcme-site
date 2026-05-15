@@ -14,6 +14,8 @@ interface Props {
   statuses: ComplianceStatus[];
 }
 
+const getCurrentTimeMs = () => Date.now();
+
 export default function GapAlerts({ statuses }: Props) {
   return (
     <section>
@@ -25,7 +27,7 @@ export default function GapAlerts({ statuses }: Props) {
       <div className="space-y-3">
         {statuses.map((status) => {
           const daysLeft = Math.ceil(
-            (new Date(status.cycleEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            (new Date(status.cycleEnd).getTime() - getCurrentTimeMs()) / (1000 * 60 * 60 * 24)
           );
           const mandatoryGaps = (status.mandatoryGaps as MandatoryGap[] | null) ?? [];
           const unmetTopics = mandatoryGaps.filter((g) => !g.isMet);

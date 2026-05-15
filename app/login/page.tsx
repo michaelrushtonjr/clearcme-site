@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -17,11 +18,11 @@ const TRUST_BULLETS = [
 function TrustBlock() {
   return (
     <div className="flex flex-col justify-center h-full">
-      <a href="/" className="inline-block mb-8">
+      <Link href="/" className="inline-block mb-8">
         <span className="text-3xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
           Clear<span style={{ color: "#0F766E" }}>CME</span>
         </span>
-      </a>
+      </Link>
 
       <h2 className="text-2xl font-bold mb-2" style={{ color: "#1E293B" }}>
         CME compliance,{" "}
@@ -87,11 +88,11 @@ function LoginPageInner() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#FAFAF7" }}>
       {/* Mobile value line — shown only below lg */}
       <div className="w-full max-w-sm lg:hidden">
-        <a href="/" className="block text-center mb-6">
+        <Link href="/" className="block text-center mb-6">
           <span className="text-2xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
             Clear<span style={{ color: "#0F766E" }}>CME</span>
           </span>
-        </a>
+        </Link>
         <p className="text-center text-sm text-slate-600 mb-1">Sign in to your account</p>
         <p className="text-center text-xs text-slate-400 mb-4">
           Built by a board-certified physician · All 50 states + DC

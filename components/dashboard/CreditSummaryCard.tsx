@@ -4,6 +4,8 @@ interface Props {
   status: ComplianceStatus;
 }
 
+const getCurrentTimeMs = () => Date.now();
+
 export default function CreditSummaryCard({ status }: Props) {
   const pct = Math.min(
     100,
@@ -13,7 +15,7 @@ export default function CreditSummaryCard({ status }: Props) {
   );
 
   const daysUntilRenewal = Math.ceil(
-    (new Date(status.cycleEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(status.cycleEnd).getTime() - getCurrentTimeMs()) / (1000 * 60 * 60 * 24)
   );
 
   const isUrgent = !status.isCompliant && daysUntilRenewal <= 90;

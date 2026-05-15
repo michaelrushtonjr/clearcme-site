@@ -37,15 +37,19 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
   const [stored, setStored] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    setMounted(true);
-    const saved = loadSteps();
-    // Sync real progress into stored state
-    const merged = { ...saved };
-    if (hasLicense) merged.license = true;
-    if (hasCertificate) merged.certificate = true;
-    if (hasComplianceData) merged.compliance = true;
-    setStored(merged);
-    saveSteps(merged);
+    const timer = window.setTimeout(() => {
+      setMounted(true);
+      const saved = loadSteps();
+      // Sync real progress into stored state
+      const merged = { ...saved };
+      if (hasLicense) merged.license = true;
+      if (hasCertificate) merged.certificate = true;
+      if (hasComplianceData) merged.compliance = true;
+      setStored(merged);
+      saveSteps(merged);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [hasLicense, hasCertificate, hasComplianceData]);
 
   if (!mounted) return null;

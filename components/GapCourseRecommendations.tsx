@@ -60,7 +60,6 @@ function CourseCard({ course, onSelect }: { course: Course; onSelect: (c: Course
 }
 
 export default function GapCourseRecommendations({
-  topic,
   topicLabel,
   requiredHours,
   courses,
@@ -73,7 +72,11 @@ export default function GapCourseRecommendations({
   const toggleFilter = (f: FilterKey) => {
     setActiveFilters((prev) => {
       const next = new Set(prev);
-      next.has(f) ? next.delete(f) : next.add(f);
+      if (next.has(f)) {
+        next.delete(f);
+      } else {
+        next.add(f);
+      }
       return next;
     });
   };

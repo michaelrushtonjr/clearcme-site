@@ -26,10 +26,14 @@ export default function ComplianceCelebration({
   const [dismissed, setDismissed] = useState(true); // start hidden to avoid hydration flash
 
   useEffect(() => {
-    const alreadyDismissed = localStorage.getItem(storageKey) === "1";
-    if (!alreadyDismissed) {
-      setDismissed(false);
-    }
+    const timer = window.setTimeout(() => {
+      const alreadyDismissed = localStorage.getItem(storageKey) === "1";
+      if (!alreadyDismissed) {
+        setDismissed(false);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [storageKey]);
 
   const handleDismiss = () => {

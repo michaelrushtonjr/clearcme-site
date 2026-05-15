@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { firstName, lastName, state, licenseType } = body as {
+  const { firstName, lastName, state } = body as {
     firstName?: string;
     lastName?: string;
     state?: string;
@@ -57,9 +57,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Map DO → MD for NPPES (both are NPI-1 individual providers)
   // NPPES doesn't filter by credential type, just search by name + state
-  const _ = licenseType; // acknowledged, not used in NPPES query
 
   const url = new URL("https://npiregistry.cms.hhs.gov/api/");
   url.searchParams.set("version", "2.1");

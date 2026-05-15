@@ -10,6 +10,7 @@ interface ReturnBannerProps {
 }
 
 const DISMISS_KEY = "clearcme_return_banner_dismissed";
+const getCurrentTimeMs = () => Date.now();
 
 function getDismissedUntil(): number | null {
   if (typeof window === "undefined") return null;
@@ -39,23 +40,27 @@ export default function ReturnBanner({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (!lastLoginAt) return; // first visit — skip
-    if (isBannerDismissed()) return;
+    const timer = window.setTimeout(() => {
+      setMounted(true);
+      if (!lastLoginAt) return; // first visit — skip
+      if (isBannerDismissed()) return;
 
-    const last = new Date(lastLoginAt).getTime();
-    const now = Date.now();
-    const hoursAgo = (now - last) / (1000 * 60 * 60);
+      const last = new Date(lastLoginAt).getTime();
+      const now = Date.now();
+      const hoursAgo = (now - last) / (1000 * 60 * 60);
 
-    if (hoursAgo < 24) return; // same session — skip
+      if (hoursAgo < 24) return; // same session — skip
 
-    setVisible(true);
+      setVisible(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [lastLoginAt]);
 
   if (!mounted || !visible || !lastLoginAt) return null;
 
   const last = new Date(lastLoginAt);
-  const now = Date.now();
+  const now = getCurrentTimeMs();
   const daysAgo = (now - last.getTime()) / (1000 * 60 * 60 * 24);
 
   const dateLabel = last.toLocaleDateString("en-US", {
