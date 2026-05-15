@@ -713,8 +713,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 40,
     totalHoursLabel: "40 hours",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; 2026 RIDOH guidance allows any ACCME-accredited topic area",
     mandatoryTopics: [
+      topic("Opioid prescribing", "8 hrs one-time", "Rhode Island state mandate is not a recurring renewal topic; keep federal DEA MATE separate if DEA-registered"),
       topic("Alzheimer's disease / cognitive impairment", "1 hr one-time"),
       mateTopic(),
     ],
@@ -733,7 +734,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 0,
     totalHoursLabel: "No state CME hours required",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; standard licenses renew March 1 of odd-numbered years; IMLC-pathway physicians renew annually by March 1",
     mandatoryTopics: [mateTopic()],
   },
   TN: {
