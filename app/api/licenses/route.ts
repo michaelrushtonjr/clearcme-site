@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
     mateActRequired,
     mateActCompleted,
     npiNumber,
+    specialty,
+    practiceArea,
   } = body;
 
   if (!state || !licenseType || !renewalDate) {
@@ -55,6 +57,10 @@ export async function POST(req: NextRequest) {
 
   const npiFields: Record<string, unknown> = {};
   if (npiNumber !== undefined) npiFields.npiNumber = npiNumber || null;
+
+  const userFields: Record<string, unknown> = {};
+  if (specialty !== undefined) userFields.specialty = specialty || null;
+  if (practiceArea !== undefined) userFields.practiceArea = practiceArea || null;
 
   const license = await prisma.physicianLicense.upsert({
     where: {
@@ -82,6 +88,13 @@ export async function POST(req: NextRequest) {
       ...npiFields,
     },
   });
+
+  if (Object.keys(userFields).length > 0) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: userFields,
+    });
+  }
 
   return NextResponse.json(license, { status: 201 });
 }

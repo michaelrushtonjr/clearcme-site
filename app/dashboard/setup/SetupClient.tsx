@@ -75,6 +75,19 @@ const SPECIALTIES = [
   "Other",
 ];
 
+const PRACTICE_AREAS = [
+  "Emergency Department / Hospital-based emergency care",
+  "Primary care",
+  "Psychiatry / behavioral health",
+  "Pain management",
+  "Addiction medicine",
+  "Hospital medicine / inpatient care",
+  "Outpatient specialty practice",
+  "Telemedicine",
+  "Administrative / non-clinical",
+  "Other",
+];
+
 function estimateRenewalDate(stateCode: string): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() + 2);
@@ -111,6 +124,7 @@ export default function SetupClient({ userName }: SetupClientProps) {
   const [state, setState] = useState("");
   const [licenseType, setLicenseType] = useState("");
   const [specialty, setSpecialty] = useState("");
+  const [practiceArea, setPracticeArea] = useState("");
   const [renewalDate, setRenewalDate] = useState("");
   const [unsureDate, setUnsureDate] = useState(false);
 
@@ -139,6 +153,7 @@ export default function SetupClient({ userName }: SetupClientProps) {
           state,
           licenseType,
           specialty: specialty || undefined,
+          practiceArea: practiceArea || undefined,
           renewalDate: finalRenewalDate,
           npiNumber: verifiedNpi || null,
         }),
@@ -226,7 +241,7 @@ export default function SetupClient({ userName }: SetupClientProps) {
                 What&apos;s your license type and specialty?
               </h1>
               <p className="text-sm text-[var(--ink-2)] mb-6">
-                Some mandatory CME topics vary by degree type and specialty.
+                Some mandatory CME topics vary by degree type, specialty, and practice setting.
               </p>
 
               {/* MD / DO toggle */}
@@ -272,6 +287,25 @@ export default function SetupClient({ userName }: SetupClientProps) {
                   {SPECIALTIES.map((s) => (
                     <option key={s} value={s}>
                       {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Main practice area{" "}
+                  <span className="text-slate-400 font-normal">(recommended)</span>
+                </label>
+                <select
+                  value={practiceArea}
+                  onChange={(e) => setPracticeArea(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+                >
+                  <option value="">Select practice area…</option>
+                  {PRACTICE_AREAS.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
                     </option>
                   ))}
                 </select>

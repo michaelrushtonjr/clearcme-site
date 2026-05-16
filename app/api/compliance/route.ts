@@ -35,6 +35,10 @@ export async function GET(req: NextRequest) {
   const requirementCompletions = await prisma.userRequirementCompletion.findMany({
     where: { userId },
   });
+  const userProfile = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { specialty: true, practiceArea: true },
+  });
   const completionByRequirementAndLicense = new Map(
     requirementCompletions.map((completion) => [
       `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
@@ -90,7 +94,20 @@ export async function GET(req: NextRequest) {
     const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
 
     // Check mandatory topics
-    const mandatoryGaps = rule.mandatoryRequirements.map((req: MandatoryRequirement) => {
+    const isPsychiatry = `${userProfile?.specialty ?? ""} ${userProfile?.practiceArea ?? ""}`
+      .toLowerCase()
+      .includes("psychiat");
+    const applicableMandatoryRequirements = rule.mandatoryRequirements.filter((req: MandatoryRequirement) => {
+      const text = `${req.description ?? ""} ${req.notes ?? ""}`.toLowerCase();
+      const isNvDoPsychiatryCulturalCompetency =
+        license.state === "NV" &&
+        license.licenseType === "DO" &&
+        req.topic === "CULTURAL_COMPETENCY" &&
+        text.includes("psychiat");
+      return !isNvDoPsychiatryCulturalCompetency || isPsychiatry;
+    });
+
+    const mandatoryGaps = applicableMandatoryRequirements.map((req: MandatoryRequirement) => {
       const earnedForTopic = cycleCerts
         .filter((c: Certificate) => c.specialTopics.includes(req.topic))
         .reduce((sum: number, c: Certificate) => sum + (c.creditHours ?? 0), 0);

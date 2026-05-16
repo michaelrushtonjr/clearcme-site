@@ -62,6 +62,7 @@ model User {
   // Physician profile
   licenseType   LicenseType?
   specialty     String?
+  practiceArea  String?
   npi           String?       @unique // National Provider Identifier
 
   // Mobile push notifications

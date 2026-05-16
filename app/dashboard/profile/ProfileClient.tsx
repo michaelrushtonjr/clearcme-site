@@ -17,6 +17,19 @@ const SPECIALTIES = [
   "Radiology","Cardiology","Neurology","Orthopedics","Dermatology","Other"
 ];
 
+const PRACTICE_AREAS = [
+  "Emergency Department / Hospital-based emergency care",
+  "Primary care",
+  "Psychiatry / behavioral health",
+  "Pain management",
+  "Addiction medicine",
+  "Hospital medicine / inpatient care",
+  "Outpatient specialty practice",
+  "Telemedicine",
+  "Administrative / non-clinical",
+  "Other",
+];
+
 const MATE_ACT_CUTOFF = new Date("2023-06-27");
 
 interface DeaExtracted {
@@ -103,6 +116,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
     state: "",
     licenseType: "",
     specialty: "",
+    practiceArea: "",
     licenseNumber: "",
     renewalDate: "",
     hasDeaRegistration: "" as "" | "yes" | "no",
@@ -189,6 +203,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         state: form.state,
         licenseType: form.licenseType,
         specialty: form.specialty,
+        practiceArea: form.practiceArea,
         licenseNumber: form.licenseNumber,
         renewalDate: form.renewalDate,
         hasDeaRegistration: form.hasDeaRegistration,
@@ -230,6 +245,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             state: lic.state,
             licenseType: lic.licenseType,
             specialty: form.specialty,
+            practiceArea: form.practiceArea,
             renewalDate: lic.renewalDate,
           }),
         });
@@ -377,6 +393,25 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="product-label">
+            Main Practice Area <span className="text-[var(--ink-4)] font-normal normal-case tracking-normal">(recommended)</span>
+          </label>
+          <select
+            value={form.practiceArea}
+            onChange={(e) => setForm({ ...form, practiceArea: e.target.value })}
+            className="product-select"
+          >
+            <option value="">Select practice area</option>
+            {PRACTICE_AREAS.map((area) => (
+              <option key={area} value={area}>{area}</option>
+            ))}
+          </select>
+          <p className="mt-2 text-xs text-[var(--ink-4)]">
+            This lets ClearCME apply conditional rules accurately, like psychiatrist-only, primary-care, hospital, DEA, or pain-practice requirements.
+          </p>
         </div>
 
         {/* License Number (optional) */}

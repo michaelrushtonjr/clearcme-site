@@ -80,6 +80,19 @@ const SPECIALTIES = [
   "Other",
 ];
 
+const PRACTICE_AREAS = [
+  "Emergency Department / Hospital-based emergency care",
+  "Primary care",
+  "Psychiatry / behavioral health",
+  "Pain management",
+  "Addiction medicine",
+  "Hospital medicine / inpatient care",
+  "Outpatient specialty practice",
+  "Telemedicine",
+  "Administrative / non-clinical",
+  "Other",
+];
+
 const BIRTH_MONTHS = [
   { value: 1, label: "January" },
   { value: 2, label: "February" },
@@ -113,6 +126,7 @@ export default function SetupPage() {
   const [state, setState] = useState("");
   const [licenseType, setLicenseType] = useState("");
   const [specialty, setSpecialty] = useState("");
+  const [practiceArea, setPracticeArea] = useState("");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
   const [renewalDate, setRenewalDate] = useState("");
   const [unsureDate, setUnsureDate] = useState(false);
@@ -238,6 +252,7 @@ export default function SetupPage() {
           state,
           licenseType,
           specialty: specialty || undefined,
+          practiceArea: practiceArea || undefined,
           renewalDate: finalRenewalDate,
         }),
       });
@@ -262,6 +277,7 @@ export default function SetupPage() {
             state: lic.state,
             licenseType: lic.licenseType,
             specialty: specialty || undefined,
+            practiceArea: practiceArea || undefined,
             renewalDate: licRenewalDate,
           }),
         });
@@ -350,7 +366,7 @@ export default function SetupPage() {
                 What&apos;s your license type and specialty?
               </h1>
               <p className="text-sm text-[var(--ink-2)] mb-6">
-                Some mandatory CME topics vary by degree type and specialty.
+                Some mandatory CME topics vary by degree type, specialty, and practice setting.
               </p>
 
               {/* MD / DO toggle */}
@@ -394,6 +410,29 @@ export default function SetupPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Practice area */}
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Main practice area{" "}
+                  <span className="text-slate-400 font-normal">(recommended)</span>
+                </label>
+                <select
+                  value={practiceArea}
+                  onChange={(e) => setPracticeArea(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+                >
+                  <option value="">Select practice area…</option>
+                  {PRACTICE_AREAS.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-2">
+                  Used for conditional rules like psychiatrist-only, primary-care, hospital, DEA, or pain-practice requirements.
+                </p>
               </div>
 
               <div className="flex gap-3 mt-6">

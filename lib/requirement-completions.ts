@@ -2,7 +2,7 @@ import type { MandatoryRequirement, UserRequirementCompletion } from "@prisma/cl
 
 type RequirementLike = Pick<
   MandatoryRequirement,
-  "cadence" | "firstRenewalOnly" | "intervalYears" | "lookbackYears" | "topic"
+  "cadence" | "firstRenewalOnly" | "intervalYears" | "lookbackYears" | "topic" | "description" | "notes"
 >;
 
 type CompletionLike = Pick<UserRequirementCompletion, "completedAt" | "completedYear"> | null | undefined;
@@ -66,6 +66,22 @@ export function evaluateRequirementFulfillment({
     licenseState === "WV" &&
     requirement.topic === "OPIOID_PRESCRIBING" &&
     cycleEnd <= new Date("2026-06-30T23:59:59.999Z");
+  const isNevadaDoEvenYearEthicsBucket =
+    licenseState === "NV" &&
+    requirement.topic === "ETHICS" &&
+    `${requirement.description ?? ""} ${requirement.notes ?? ""}`.toLowerCase().includes("even");
+
+  if (isNevadaDoEvenYearEthicsBucket && cycleEnd.getFullYear() % 2 !== 0) {
+    return {
+      status: "not_applicable",
+      isSatisfied: true,
+      isUnknown: false,
+      isRecurring: true,
+      isAttestable: false,
+      satisfiedUntil: null,
+      prompt: "Nevada DO ethics/pain/addiction/SBIRT CME is only due in even-numbered renewal years.",
+    };
+  }
 
   if (isWestVirginiaFinalCsCycle) {
     return {

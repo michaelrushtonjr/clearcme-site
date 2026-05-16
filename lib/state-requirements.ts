@@ -913,9 +913,12 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
-      topic("Opioid / controlled substance education", "2 hrs every year"),
+      topic("Opioid / controlled substance education", "2 hrs every year", "Misuse/abuse of controlled substances, prescribing of opioids, or addiction; applies annually to all NV DOs"),
+      topic("Ethics, pain management, addiction care, or SBIRT", "2 hrs in even-numbered years", "Separate recurring even-year NSBOM requirement; SBIRT can satisfy this bucket when taken in an even-year cycle"),
+      topic("SBIRT", "2 hrs one-time", "Screening, Brief Intervention, and Referral to Treatment approach to substance use disorder; within 2 years of initial licensure"),
       topic("Suicide prevention and awareness", "Required every 4 years"),
       topic("HIV stigma / bias training", "2 hrs one-time", "If providing hospital emergency or primary care services"),
+      topic("Cultural competency / DEI", "6 hrs every 2 years", "Psychiatrists only; not required for non-psychiatry NV DOs"),
       mateTopic(),
     ],
   },
