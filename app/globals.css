@@ -2975,17 +2975,36 @@ body {
   }
 
   .landing-v3 .stack-cards {
-    height: 395px;
+    display: grid;
+    height: auto;
+    gap: 12px;
   }
 
   .landing-v3 .stack-cards .mini-card {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
     grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 16px;
+    transform: none !important;
+  }
+
+  .landing-v3 .stack-cards .mini-card.c1,
+  .landing-v3 .stack-cards .mini-card.c2,
+  .landing-v3 .stack-cards .mini-card.c3,
+  .landing-v3 .stack-cards .mini-card.c4 {
+    top: auto;
+    opacity: 1;
+    transform: none !important;
   }
 
   .landing-v3 .stack-cards .mini-card .right {
     grid-column: 2;
     text-align: left;
   }
+
 
   .landing-v3 .final .row,
   .landing-v3 .hero-cta-row {

@@ -8,8 +8,12 @@ const defaultLinks = [
 
 export function PublicNav({
   links = defaultLinks,
+  ctaHref = "/login",
+  ctaLabel = "Sign in →",
 }: {
   links?: { href: string; label: string }[];
+  ctaHref?: string;
+  ctaLabel?: string;
 }) {
   return (
     <nav className="public-nav" aria-label="Main navigation">
@@ -24,8 +28,8 @@ export function PublicNav({
               {link.label}
             </Link>
           ))}
-          <Link href="/login" className="public-nav-cta">
-            Sign in →
+          <Link href={ctaHref} className="public-nav-cta">
+            {ctaLabel}
           </Link>
         </div>
       </div>
@@ -58,14 +62,18 @@ export function PublicShell({
   children,
   links,
   className = "",
+  ctaHref,
+  ctaLabel,
 }: {
   children: React.ReactNode;
   links?: { href: string; label: string }[];
   className?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }) {
   return (
     <main className={`public-site min-h-screen ${className}`.trim()}>
-      <PublicNav links={links} />
+      <PublicNav links={links} ctaHref={ctaHref} ctaLabel={ctaLabel} />
       {children}
       <PublicFooter />
     </main>

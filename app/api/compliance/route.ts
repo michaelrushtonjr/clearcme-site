@@ -87,8 +87,7 @@ export async function GET(req: NextRequest) {
       (sum: number, c: Certificate) => sum + (c.creditHours ?? 0),
       0
     );
-    const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
-    const isCompliant = gapHours === 0;
+    const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
 
     // Check mandatory topics
     const mandatoryGaps = rule.mandatoryRequirements.map((req: MandatoryRequirement) => {
@@ -128,6 +127,14 @@ export async function GET(req: NextRequest) {
         satisfiedUntil: fulfillment.satisfiedUntil,
       };
     });
+
+    const mandatoryHoursGap = mandatoryGaps.reduce(
+      (sum: number, gap: { gap: number }) => sum + Math.max(0, gap.gap),
+      0
+    );
+    const allMandatoryMet = mandatoryGaps.every((gap: { isMet: boolean }) => gap.isMet);
+    const gapHours = Math.max(generalGapHours, mandatoryHoursGap);
+    const isCompliant = generalGapHours === 0 && allMandatoryMet;
 
     // Upsert compliance status record
     await prisma.complianceStatus.upsert({

@@ -132,6 +132,30 @@ function formatReviewDate(date?: Date) {
   });
 }
 
+function remainingHoursLabel({
+  generalGapHours,
+  mandatoryGaps,
+  isCompliant,
+}: {
+  generalGapHours: number;
+  mandatoryGaps: MandatoryGap[];
+  isCompliant: boolean;
+}) {
+  if (isCompliant) return "All hours completed ✓";
+
+  const mandatoryHoursGap = mandatoryGaps.reduce((sum, gap) => sum + Math.max(0, gap.gap), 0);
+  const parts: string[] = [];
+
+  if (generalGapHours > 0) {
+    parts.push(`${generalGapHours.toFixed(1)} general hr${generalGapHours === 1 ? "" : "s"}`);
+  }
+  if (mandatoryHoursGap > 0) {
+    parts.push(`${mandatoryHoursGap.toFixed(1)} topic hr${mandatoryHoursGap === 1 ? "" : "s"}`);
+  }
+
+  return parts.length > 0 ? `${parts.join(" + ")} remaining` : "Mandatory topics still need confirmation";
+}
+
 function buildRequirementSourceMeta({
   state,
   licenseType,
@@ -554,7 +578,11 @@ export default async function CompliancePage() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs text-[var(--ink-3)]">
-                    {isCompliant ? "All hours completed ✓" : `${gapHours.toFixed(1)} hours still needed`}
+                    {remainingHoursLabel({
+                      generalGapHours: Math.max(0, totalHoursNeeded - totalHoursEarned),
+                      mandatoryGaps,
+                      isCompliant,
+                    })}
                   </span>
                   <span className="text-xs text-[var(--ink-3)]">
                     {Math.round((totalHoursEarned / totalHoursNeeded) * 100)}%
