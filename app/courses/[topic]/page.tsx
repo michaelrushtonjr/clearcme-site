@@ -34,7 +34,12 @@ function buildEnrollUrl(course: Course, topicKey: string): string {
 }
 
 function hasExactActivityUrl(course: Course): boolean {
-  return /^https?:\/\/\S+$/i.test(course.url) && !course.url.includes("(") && !course.url.includes("navigate");
+  return (
+    /^https?:\/\/\S+$/i.test(course.url) &&
+    !course.url.includes("(") &&
+    !course.url.includes("navigate") &&
+    !course.url.includes("/topic/")
+  );
 }
 
 function courseSummary(course: Course): string {
