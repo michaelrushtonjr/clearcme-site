@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { NOT_COMPLETED_REQUIREMENT_NOTE } from "@/lib/requirement-completions";
 
 function yearToDate(year: number | null) {
   return year ? new Date(Date.UTC(year, 0, 1)) : null;
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   const physicianLicenseId = typeof body.physicianLicenseId === "string" ? body.physicianLicenseId : null;
   const completedYear = Number.isInteger(body.completedYear) ? Number(body.completedYear) : null;
   const notes = typeof body.notes === "string" ? body.notes.slice(0, 500) : null;
-  const action = body.action === "clear" ? "clear" : "complete";
+  const action = body.action === "clear" || body.action === "not_completed" ? body.action : "complete";
 
   if (!mandatoryRequirementId || !physicianLicenseId) {
     return NextResponse.json({ error: "Missing requirement or license" }, { status: 400 });
@@ -59,11 +60,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, completion: null });
   }
 
-  if (completedYear !== null) {
+  if (action === "complete" && completedYear !== null) {
     const currentYear = new Date().getUTCFullYear();
     if (completedYear < 1950 || completedYear > currentYear + 1) {
       return NextResponse.json({ error: "Invalid completion year" }, { status: 400 });
     }
+  }
+
+  if (action === "not_completed") {
+    const completion = await prisma.userRequirementCompletion.upsert({
+      where: {
+        userId_mandatoryRequirementId_physicianLicenseId: {
+          userId,
+          mandatoryRequirementId,
+          physicianLicenseId,
+        },
+      },
+      create: {
+        userId,
+        physicianLicenseId,
+        mandatoryRequirementId,
+        topic: requirement.topic,
+        completedYear: null,
+        completedAt: null,
+        notes: NOT_COMPLETED_REQUIREMENT_NOTE,
+      },
+      update: {
+        completedYear: null,
+        completedAt: null,
+        notes: NOT_COMPLETED_REQUIREMENT_NOTE,
+        source: "SELF_ATTESTED",
+      },
+    });
+
+    return NextResponse.json({ ok: true, completion });
   }
 
   const completion = await prisma.userRequirementCompletion.upsert({

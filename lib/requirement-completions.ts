@@ -6,6 +6,12 @@ type RequirementLike = Pick<
 >;
 
 type CompletionLike = Pick<UserRequirementCompletion, "completedAt" | "completedYear"> | null | undefined;
+type CompletionWithStatusLike =
+  | (Pick<UserRequirementCompletion, "completedAt" | "completedYear" | "notes">)
+  | null
+  | undefined;
+
+export const NOT_COMPLETED_REQUIREMENT_NOTE = "__CLEARCME_NOT_COMPLETED__";
 
 export type RequirementFulfillmentStatus = "satisfied" | "due" | "unknown" | "not_applicable";
 
@@ -24,6 +30,10 @@ function completionDate(completion: CompletionLike): Date | null {
   if (completion.completedAt) return completion.completedAt;
   if (completion.completedYear) return new Date(Date.UTC(completion.completedYear, 0, 1));
   return null;
+}
+
+function explicitlyNotCompleted(completion: CompletionWithStatusLike): boolean {
+  return completion?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
 }
 
 function addYears(date: Date, years: number) {
@@ -51,7 +61,7 @@ export function evaluateRequirementFulfillment({
   daysUntilRenewal,
 }: {
   requirement: RequirementLike;
-  completion: CompletionLike;
+  completion: CompletionWithStatusLike;
   cycleEnd: Date;
   licenseState?: string;
   licenseIssueDate?: Date | null;
@@ -61,6 +71,7 @@ export function evaluateRequirementFulfillment({
     ? "ONE_TIME"
     : requirement.cadence;
   const completedOn = completionDate(completion);
+  const isExplicitlyNotCompleted = explicitlyNotCompleted(completion);
   const isNearRenewal = daysUntilRenewal !== null && daysUntilRenewal !== undefined && daysUntilRenewal <= 90;
   const isWestVirginiaFinalCsCycle =
     licenseState === "WV" &&
@@ -100,6 +111,17 @@ export function evaluateRequirementFulfillment({
     : false;
 
   if (cadence === "ONE_TIME" || cadence === "FIRST_RENEWAL_ONLY" || cadence === "INITIAL_LICENSE_ONLY") {
+    if (isExplicitlyNotCompleted) {
+      return {
+        status: "due",
+        isSatisfied: false,
+        isUnknown: false,
+        isRecurring: false,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: "Marked as not completed yet. ClearCME will keep this as an actionable requirement until you upload or attest completion.",
+      };
+    }
     if (completedOn || completion) {
       return {
         status: "satisfied",
@@ -136,6 +158,17 @@ export function evaluateRequirementFulfillment({
   }
 
   if (cadence === "CONDITIONAL") {
+    if (isExplicitlyNotCompleted) {
+      return {
+        status: "due",
+        isSatisfied: false,
+        isUnknown: false,
+        isRecurring: false,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: "Marked as applicable and not completed yet. ClearCME will track this as an actionable requirement.",
+      };
+    }
     if (completedOn || completion) {
       return {
         status: "satisfied",
@@ -160,6 +193,19 @@ export function evaluateRequirementFulfillment({
 
   if (cadence === "EVERY_N_YEARS") {
     const intervalYears = requirement.intervalYears ?? requirement.lookbackYears;
+    if (isExplicitlyNotCompleted) {
+      return {
+        status: "due",
+        isSatisfied: false,
+        isUnknown: false,
+        isRecurring: true,
+        isAttestable: true,
+        satisfiedUntil: null,
+        prompt: intervalYears
+          ? `Marked as not completed within the last ${intervalYears} years. ClearCME will keep this as an actionable requirement.`
+          : "Marked as not completed. ClearCME will keep this as an actionable requirement.",
+      };
+    }
     if (completedOn && intervalYears) {
       const satisfiedUntil = addYears(completedOn, intervalYears);
       const isSatisfied = satisfiedUntil >= cycleEnd;
