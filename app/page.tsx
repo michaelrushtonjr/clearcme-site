@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { BrandLockup } from "@/components/BrandLockup";
 import {
   ArrowRight,
   Check,
@@ -212,12 +213,7 @@ function useLandingReveal() {
 }
 
 function BrandMark() {
-  return (
-    <Link href="/" className="brand" aria-label="ClearCME home">
-      <span className="brand-mark" aria-hidden="true" />
-      ClearCME
-    </Link>
-  );
+  return <BrandLockup href="/" size="lg" />;
 }
 
 function CtaLink({
