@@ -132,6 +132,77 @@ function formatReviewDate(date?: Date) {
   });
 }
 
+function parseSourceUrls(sourceUrl?: string) {
+  return (sourceUrl ?? "")
+    .split(/;\s*/)
+    .map((url) => url.trim())
+    .filter((url) => /^https?:\/\//i.test(url));
+}
+
+function RequirementSourceDisclosure({ sourceMeta }: { sourceMeta: RequirementSourceMeta }) {
+  const sourceUrls = parseSourceUrls(sourceMeta.sourceUrl);
+
+  return (
+    <details className="group mt-2 rounded-[var(--radius-sm)] border border-[rgba(63,95,51,0.18)] bg-[rgba(63,95,51,0.07)] px-3 py-2 text-xs text-[var(--ink-2)] open:bg-[rgba(63,95,51,0.10)]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-[var(--primary)] marker:hidden">
+        <span>Source / reviewed</span>
+        <span className="text-[var(--primary-2)] transition-transform group-open:rotate-180">⌄</span>
+      </summary>
+      <div className="mt-2 space-y-1.5 leading-relaxed">
+        {(sourceMeta.sourceUrl || sourceMeta.sourceTitle) && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">
+              Official source{sourceUrls.length > 1 ? "s" : ""}: {" "}
+            </span>
+            {sourceUrls.length === 1 ? (
+              <a
+                href={sourceUrls[0]}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
+              >
+                {sourceMeta.sourceTitle ?? "State board guidance"}
+              </a>
+            ) : sourceUrls.length > 1 ? (
+              <span className="inline-flex flex-wrap gap-x-2 gap-y-1">
+                {sourceUrls.map((url, index) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
+                  >
+                    {index === 0 ? sourceMeta.sourceTitle ?? "State board guidance" : `Primary source ${index + 1}`}
+                  </a>
+                ))}
+              </span>
+            ) : (
+              <span>{sourceMeta.sourceTitle}</span>
+            )}
+          </p>
+        )}
+        {sourceMeta.lastReviewed && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">Last reviewed: </span>
+            {formatReviewDate(sourceMeta.lastReviewed)}
+          </p>
+        )}
+        {sourceMeta.scopeCaveat && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">Scope / caveat: </span>
+            {sourceMeta.scopeCaveat}
+          </p>
+        )}
+        <p>
+          <span className="font-semibold text-[var(--ink)]">Why this applies: </span>
+          {sourceMeta.whyThisApplies}
+        </p>
+      </div>
+    </details>
+  );
+}
+
 function remainingHoursLabel({
   generalGapHours,
   mandatoryGaps,
@@ -691,6 +762,11 @@ export default async function CompliancePage() {
                               </span>
                             </div>
                           </div>
+
+                          {gap.sourceMeta && (
+                            <RequirementSourceDisclosure sourceMeta={gap.sourceMeta} />
+                          )}
+
                           {/* Progress bar */}
                           <div className="mt-3 flex items-center gap-3">
                             <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
@@ -731,50 +807,6 @@ export default async function CompliancePage() {
                               </Link>
                             )}
                           </div>
-
-                          {gap.sourceMeta && (
-                            <details className="group mt-3 rounded-[var(--radius-sm)] border border-white/70 bg-white/55 px-3 py-2 text-xs text-[var(--ink-2)] open:bg-white/80">
-                              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-medium text-[var(--ink)] marker:hidden">
-                                <span>Source / reviewed</span>
-                                <span className="text-[var(--ink-3)] transition-transform group-open:rotate-180">⌄</span>
-                              </summary>
-                              <div className="mt-2 space-y-1.5 leading-relaxed">
-                                {(gap.sourceMeta.sourceUrl || gap.sourceMeta.sourceTitle) && (
-                                  <p>
-                                    <span className="font-semibold text-[var(--ink)]">Official source: </span>
-                                    {gap.sourceMeta.sourceUrl ? (
-                                      <a
-                                        href={gap.sourceMeta.sourceUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
-                                      >
-                                        {gap.sourceMeta.sourceTitle ?? "State board guidance"}
-                                      </a>
-                                    ) : (
-                                      <span>{gap.sourceMeta.sourceTitle}</span>
-                                    )}
-                                  </p>
-                                )}
-                                {gap.sourceMeta.lastReviewed && (
-                                  <p>
-                                    <span className="font-semibold text-[var(--ink)]">Last reviewed: </span>
-                                    {formatReviewDate(gap.sourceMeta.lastReviewed)}
-                                  </p>
-                                )}
-                                {gap.sourceMeta.scopeCaveat && (
-                                  <p>
-                                    <span className="font-semibold text-[var(--ink)]">Scope / caveat: </span>
-                                    {gap.sourceMeta.scopeCaveat}
-                                  </p>
-                                )}
-                                <p>
-                                  <span className="font-semibold text-[var(--ink)]">Why this applies: </span>
-                                  {gap.sourceMeta.whyThisApplies}
-                                </p>
-                              </div>
-                            </details>
-                          )}
 
                           {/* Gap-specific course feed — Pixel rec #4 */}
                           {!gap.isMet && !gap.isUnknown && (

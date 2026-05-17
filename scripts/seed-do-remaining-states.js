@@ -57,7 +57,7 @@ const DO_RULES = [
   {
     state: 'CO', renewalCycle: 24, totalHours: 30,
     notes: 'New requirement per HB24-1153 (effective 2024; first compliance cycle 2027). All 30 hours AMA PRA Category 1. Exemption from SUD requirement if no opioid prescribing or equivalent board certification training.',
-    sourceUrl: 'https://www.leg.colorado.gov/bills/hb24-1153',
+    sourceUrl: 'https://leg.colorado.gov/bills/hb24-1153',
     mandatories: [
       { topic: 'SUBSTANCE_USE', hoursRequired: 2, description: 'Substance use disorder training (per HB24-1153)', firstRenewalOnly: false, notes: 'Per cycle. Exempt if physician holds board certification requiring equivalent SUD training or attests they do not prescribe opioids.' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -199,7 +199,7 @@ const DO_RULES = [
   {
     state: 'ME', renewalCycle: 24, totalHours: 40,
     notes: 'DO physicians regulated by Maine Board of Osteopathic Licensure. 40+ hrs Category 1 (AOA). Renewal tied to birth month. Jurisprudence exam required every ~4 years (separate from CME).',
-    sourceUrl: 'https://maine.gov/osteopathic',
+    sourceUrl: 'https://www.maine.gov/osteo/sites/maine.gov.osteo/files/inline-files/Chapter%2014%20-%20Continuing%20Medical%20Education.pdf',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 3, description: 'Controlled substance/opioid prescribing education', firstRenewalOnly: false, notes: 'Required per cycle for physicians who prescribe controlled substances' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -278,7 +278,7 @@ const DO_RULES = [
   {
     state: 'NE', renewalCycle: 24, totalHours: 50,
     notes: 'All 50 hours AMA PRA Category 1. Nebraska DHHS. Opioid CME 3hrs for controlled substance prescribers with unique 0.5hr PDMP sub-requirement.',
-    sourceUrl: 'https://dhhs.ne.gov/licensure/Pages/Medical-Doctor-Licensing.aspx',
+    sourceUrl: 'https://dhhs.ne.gov/licensure/Pages/Medicine-and-Surgery.aspx',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 3, description: 'Opioid prescribing education including 0.5 hour on Prescription Drug Monitoring Program (PDMP) use', firstRenewalOnly: false, notes: 'Required every cycle for physicians who prescribe controlled substances. Must include 0.5hr PDMP-specific content.' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -288,7 +288,7 @@ const DO_RULES = [
   {
     state: 'NH', renewalCycle: 24, totalHours: 100,
     notes: '40 of 100 hours must be AMA PRA Category 1. New Hampshire State Board of Medicine. One of the highest biennial totals nationally.',
-    sourceUrl: 'https://www.oplc.nh.gov/medicine',
+    sourceUrl: 'https://www.oplc.nh.gov/board-medicine',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 3, description: 'Opioid prescribing for pain management or opioid use disorder treatment', firstRenewalOnly: false, notes: 'Required every 2-year cycle for DEA-licensed physicians' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -310,7 +310,7 @@ const DO_RULES = [
   {
     state: 'NM', renewalCycle: 36, totalHours: 75,
     notes: 'All 75 hours AMA PRA Category 1. CE Broker reporting required. NM Board of Osteopathic Medical Examiners for DOs. Practice Act review 1hr per cycle unique requirement.',
-    sourceUrl: 'https://www.nmbome.com',
+    sourceUrl: 'https://www.srca.nm.gov/parts/title16/16.017.0003.html',
     mandatories: [
       { topic: 'OTHER_MANDATORY', hoursRequired: 1, description: 'New Mexico Medical/Osteopathic Practice Act review', firstRenewalOnly: false, notes: 'Required every renewal cycle for all licensees' },
       { topic: 'PAIN_MANAGEMENT', hoursRequired: 5, description: 'Pain management and prescribing controlled substances', firstRenewalOnly: false, notes: 'Required every cycle for physicians holding both DEA registration and NM controlled substance registration' },
@@ -362,7 +362,7 @@ const DO_RULES = [
   {
     state: 'SD', renewalCycle: 24, totalHours: 0,
     notes: 'No CME requirement for South Dakota physician license renewal. SD State Board of Medical and Osteopathic Examiners. DEA MATE Act still applies.',
-    sourceUrl: 'https://doh.sd.gov/boards/medicine',
+    sourceUrl: 'https://sdbmoe.gov/',
     mandatories: [
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023). Applies even though SD has no state CME requirement.' },
     ]
@@ -371,7 +371,7 @@ const DO_RULES = [
   {
     state: 'TN', renewalCycle: 24, totalHours: 40,
     notes: 'Biennial; renewal tied to birth month. CE Broker reporting. Controlled substance mandate covers opioids, benzos, barbiturates, carisoprodol — broader than most states.',
-    sourceUrl: 'https://www.tn.gov/health/health-program-areas/health-professional-boards/me-board.html',
+    sourceUrl: 'https://publications.tnsosfiles.com/rules/1050/1050-02.20250812.pdf',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 2, description: 'Controlled substance prescribing: opioids, benzodiazepines, barbiturates, carisoprodol, addiction medicine, and risk management tools', firstRenewalOnly: false, notes: 'Required per cycle for all physicians with DEA registration. Broader scope than most states.' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -392,7 +392,7 @@ const DO_RULES = [
   {
     state: 'VA', renewalCycle: 24, totalHours: 30,
     notes: '18VAC85-20-235 effective Feb 27, 2025 — reduced from 60 to 30 hours. All 30 hours Type 1 (AMA PRA Category 1). No mandatory topic areas. First biennial renewal exempt. 6-year record retention.',
-    sourceUrl: 'https://dhp.virginia.gov/medicine',
+    sourceUrl: 'https://www.dhp.virginia.gov/Boards/Medicine/',
     mandatories: [
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
     ]
@@ -422,7 +422,7 @@ const DO_RULES = [
   {
     state: 'WV', renewalCycle: 24, totalHours: 32,
     notes: 'DO: WV Board of Osteopathy. 32 hrs/2yr, 16 must be AOA Category 1. New 2024 CS prescribing mandate (3hrs) effective July 1, 2024 — applies regardless of DEA status.',
-    sourceUrl: 'https://wvboo.us',
+    sourceUrl: 'https://www.wvbdosteo.org/cme/Requirements.asp',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 3, description: 'Risk assessment and responsible prescribing of controlled substances (effective July 1, 2024)', firstRenewalOnly: false, notes: 'Required every cycle for all physicians (regardless of DEA status). New 2024 mandate.' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
@@ -432,7 +432,7 @@ const DO_RULES = [
   {
     state: 'WY', renewalCycle: 36, totalHours: 60,
     notes: 'All 60 hours AMA PRA Category 1. Wyoming Board of Medicine. Mismatched requirement: responsible prescribing 1hr on 2-year cycle within 3-year license (tracking complexity).',
-    sourceUrl: 'https://wyomingboard.state.wy.us',
+    sourceUrl: 'https://wyomedboard.wyo.gov/physicians/renew-license',
     mandatories: [
       { topic: 'OPIOID_PRESCRIBING', hoursRequired: 1, description: 'Responsible prescribing of controlled substances or SUD treatment', firstRenewalOnly: false, notes: 'Required on a 2-year sub-cycle within the 3-year license period for DEA-registered practitioners. Tracking complexity: not aligned with license renewal cycle.' },
       { topic: 'SUBSTANCE_USE', hoursRequired: 8, description: 'DEA MATE Act: treating/managing opioid and other substance use disorders', firstRenewalOnly: true, notes: 'One-time federal DEA MATE Act requirement (effective June 27, 2023) for DEA-registered practitioners' },
