@@ -5,11 +5,41 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NOT_COMPLETED_REQUIREMENT_NOTE } from "@/lib/requirement-completions";
 
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
+  "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
+  "VA","WA","WV","WI","WY","DC",
+];
+
+const LICENSE_TYPES = ["MD", "DO", "PA", "NP", "OTHER"];
+
+const SPECIALTIES = [
+  "Emergency Medicine","Family Medicine","Internal Medicine","Pediatrics",
+  "Surgery","Obstetrics & Gynecology","Psychiatry","Anesthesiology",
+  "Radiology","Cardiology","Neurology","Orthopedics","Dermatology","Other",
+];
+
+const PRACTICE_AREAS = [
+  "Emergency Department / Hospital-based emergency care",
+  "Primary care",
+  "Psychiatry / behavioral health",
+  "Pain management",
+  "Addiction medicine",
+  "Hospital medicine / inpatient care",
+  "Outpatient specialty practice",
+  "Telemedicine",
+  "Administrative / non-clinical",
+  "Other",
+];
+
 interface User {
   id: string;
   name: string | null;
   email: string | null;
   image: string | null;
+  specialty: string | null;
+  practiceArea: string | null;
 }
 
 interface License {
@@ -57,6 +87,20 @@ interface RequirementCompletion {
   notes: string | null;
 }
 
+interface LicenseEditForm {
+  state: string;
+  licenseType: string;
+  licenseNumber: string;
+  renewalDate: string;
+  specialty: string;
+  practiceArea: string;
+}
+
+function toDateInputValue(date: Date | string | null) {
+  if (!date) return "";
+  return new Date(date).toISOString().slice(0, 10);
+}
+
 export default function SettingsClient({
   user,
   licenses,
@@ -94,6 +138,10 @@ export default function SettingsClient({
   const [gapAlerts, setGapAlerts] = useState(true);
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingLicenseId, setEditingLicenseId] = useState<string | null>(null);
+  const [licenseEditForm, setLicenseEditForm] = useState<LicenseEditForm | null>(null);
+  const [savingLicenseId, setSavingLicenseId] = useState<string | null>(null);
+  const [licenseEditError, setLicenseEditError] = useState("");
 
   const isPaidPlan = subscription?.tier === "ESSENTIAL" || subscription?.tier === "PRO";
   const planLabel = subscription ? `${subscription.tier} · ${subscription.status}` : "FREE";
@@ -211,6 +259,55 @@ export default function SettingsClient({
       router.refresh();
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const startEditingLicense = (license: License) => {
+    setEditingLicenseId(license.id);
+    setLicenseEditError("");
+    setLicenseEditForm({
+      state: license.state,
+      licenseType: license.licenseType,
+      licenseNumber: license.licenseNumber ?? "",
+      renewalDate: toDateInputValue(license.renewalDate),
+      specialty: user.specialty ?? "",
+      practiceArea: user.practiceArea ?? "",
+    });
+  };
+
+  const cancelEditingLicense = () => {
+    setEditingLicenseId(null);
+    setLicenseEditForm(null);
+    setLicenseEditError("");
+  };
+
+  const updateLicenseEditForm = (patch: Partial<LicenseEditForm>) => {
+    setLicenseEditForm((current) => current ? { ...current, ...patch } : current);
+  };
+
+  const handleSaveLicense = async (id: string) => {
+    if (!licenseEditForm) return;
+    if (!licenseEditForm.state || !licenseEditForm.licenseType || !licenseEditForm.renewalDate) {
+      setLicenseEditError("State, license type, and renewal date are required.");
+      return;
+    }
+
+    setSavingLicenseId(id);
+    setLicenseEditError("");
+    try {
+      const res = await fetch("/api/licenses", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...licenseEditForm }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Unable to save license");
+      cancelEditingLicense();
+      router.refresh();
+    } catch (err) {
+      setLicenseEditError(err instanceof Error ? err.message : "Unable to save license");
+    } finally {
+      setSavingLicenseId(null);
     }
   };
 
@@ -520,8 +617,12 @@ export default function SettingsClient({
           </div>
         ) : (
           <div className="divide-y divide-[var(--line-soft)]">
-            {licenses.map((license) => (
-              <div key={license.id} className="px-6 py-4 flex items-center justify-between gap-3">
+            {licenses.map((license) => {
+              const isEditing = editingLicenseId === license.id && licenseEditForm;
+
+              return (
+              <div key={license.id} className="px-6 py-4">
+                <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium text-[var(--ink)] text-sm">
                     {license.state} — {license.licenseType}
@@ -540,15 +641,117 @@ export default function SettingsClient({
                     )}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleDeleteLicense(license.id)}
-                  disabled={deletingId === license.id}
-                  className="text-xs text-[var(--status-miss)] hover:text-[var(--pop-2)] font-medium px-3 py-1.5 rounded-full hover:bg-[var(--status-miss-bg)] transition-colors disabled:opacity-50 flex-shrink-0"
-                >
-                  {deletingId === license.id ? "Removing..." : "Remove"}
-                </button>
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEditingLicense(license)}
+                    className="text-xs text-[var(--primary)] hover:text-[var(--primary-2)] font-semibold px-3 py-1.5 rounded-full bg-[rgba(63,95,51,0.08)] hover:bg-[rgba(63,95,51,0.14)] transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteLicense(license.id)}
+                    disabled={deletingId === license.id}
+                    className="text-xs text-[var(--status-miss)] hover:text-[var(--pop-2)] font-medium px-3 py-1.5 rounded-full hover:bg-[var(--status-miss-bg)] transition-colors disabled:opacity-50"
+                  >
+                    {deletingId === license.id ? "Removing..." : "Remove"}
+                  </button>
+                </div>
+                </div>
+
+                {isEditing && (
+                  <div className="mt-4 rounded-[var(--radius)] border border-[rgba(63,95,51,0.18)] bg-[rgba(63,95,51,0.05)] p-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="product-label">State</span>
+                        <select
+                          value={licenseEditForm.state}
+                          onChange={(e) => updateLicenseEditForm({ state: e.target.value })}
+                          className="product-input"
+                        >
+                          {US_STATES.map((state) => <option key={state} value={state}>{state}</option>)}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className="product-label">License type</span>
+                        <select
+                          value={licenseEditForm.licenseType}
+                          onChange={(e) => updateLicenseEditForm({ licenseType: e.target.value })}
+                          className="product-input"
+                        >
+                          {LICENSE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className="product-label">License number</span>
+                        <input
+                          type="text"
+                          value={licenseEditForm.licenseNumber}
+                          onChange={(e) => updateLicenseEditForm({ licenseNumber: e.target.value })}
+                          placeholder="Optional"
+                          className="product-input"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="product-label">Renewal date</span>
+                        <input
+                          type="date"
+                          value={licenseEditForm.renewalDate}
+                          onChange={(e) => updateLicenseEditForm({ renewalDate: e.target.value })}
+                          className="product-input"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="product-label">Specialty</span>
+                        <select
+                          value={licenseEditForm.specialty}
+                          onChange={(e) => updateLicenseEditForm({ specialty: e.target.value })}
+                          className="product-input"
+                        >
+                          <option value="">Select specialty…</option>
+                          {SPECIALTIES.map((specialty) => <option key={specialty} value={specialty}>{specialty}</option>)}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className="product-label">Practice area</span>
+                        <select
+                          value={licenseEditForm.practiceArea}
+                          onChange={(e) => updateLicenseEditForm({ practiceArea: e.target.value })}
+                          className="product-input"
+                        >
+                          <option value="">Select practice area…</option>
+                          {PRACTICE_AREAS.map((area) => <option key={area} value={area}>{area}</option>)}
+                        </select>
+                      </label>
+                    </div>
+                    {licenseEditError && (
+                      <p className="mt-3 text-xs font-medium text-[var(--status-miss)]">{licenseEditError}</p>
+                    )}
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveLicense(license.id)}
+                        disabled={savingLicenseId === license.id}
+                        className="product-btn product-btn-primary disabled:opacity-60"
+                      >
+                        {savingLicenseId === license.id ? "Saving…" : "Save changes"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditingLicense}
+                        className="product-btn product-btn-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <p className="mt-3 text-xs text-[var(--ink-3)]">
+                      Specialty and practice area affect conditional rules like psychiatry-only, pain-practice, or setting-specific requirements.
+                    </p>
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

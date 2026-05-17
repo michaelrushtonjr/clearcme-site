@@ -99,6 +99,80 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(license, { status: 201 });
 }
 
+export async function PATCH(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const {
+    id,
+    state,
+    licenseType,
+    licenseNumber,
+    renewalDate,
+    npiNumber,
+    specialty,
+    practiceArea,
+  } = body;
+
+  if (!id || !state || !licenseType || !renewalDate) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const existing = await prisma.physicianLicense.findFirst({
+    where: { id, userId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: "License not found" }, { status: 404 });
+  }
+
+  const duplicate = await prisma.physicianLicense.findFirst({
+    where: {
+      userId,
+      state,
+      licenseType,
+      NOT: { id },
+    },
+    select: { id: true },
+  });
+
+  if (duplicate) {
+    return NextResponse.json({ error: "You already have that state/license type on file." }, { status: 409 });
+  }
+
+  const npiFields: Record<string, unknown> = {};
+  if (npiNumber !== undefined) npiFields.npiNumber = npiNumber || null;
+
+  const userFields: Record<string, unknown> = {};
+  if (specialty !== undefined) userFields.specialty = specialty || null;
+  if (practiceArea !== undefined) userFields.practiceArea = practiceArea || null;
+
+  const [license] = await prisma.$transaction([
+    prisma.physicianLicense.update({
+      where: { id },
+      data: {
+        state,
+        licenseType,
+        licenseNumber: licenseNumber || null,
+        renewalDate: new Date(renewalDate),
+        ...npiFields,
+      },
+    }),
+    ...(Object.keys(userFields).length > 0
+      ? [prisma.user.update({ where: { id: userId }, data: userFields })]
+      : []),
+  ]);
+
+  return NextResponse.json(license);
+}
+
 export async function DELETE(req: NextRequest) {
   const mobileUserId = await getMobileUserId(req);
   const session = mobileUserId ? null : await auth();

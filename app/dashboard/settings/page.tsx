@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const [user, licenses, subscription, requirementCompletions] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, image: true },
+      select: { id: true, name: true, email: true, image: true, specialty: true, practiceArea: true },
     }),
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
@@ -59,7 +59,7 @@ export default async function SettingsPage() {
   const sessionEmail = session?.user?.email ?? null;
   return (
     <SettingsClient
-      user={user ?? { id: userId, name: null, email: sessionEmail, image: null }}
+      user={user ?? { id: userId, name: null, email: sessionEmail, image: null, specialty: null, practiceArea: null }}
       licenses={licenses}
       subscription={subscription}
       licenseRequirements={licenseRequirements}
