@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLockup } from "@/components/BrandLockup";
 
 const defaultLinks = [
   { href: "/pricing", label: "Pricing" },
@@ -18,10 +19,7 @@ export function PublicNav({
   return (
     <nav className="public-nav" aria-label="Main navigation">
       <div className="public-wrap public-nav-row">
-        <Link href="/" className="public-brand" aria-label="ClearCME home">
-          <span className="public-brand-mark" aria-hidden="true" />
-          ClearCME
-        </Link>
+        <BrandLockup href="/" size="md" className="public-brand" />
         <div className="public-nav-links">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="public-nav-link">
@@ -41,10 +39,7 @@ export function PublicFooter() {
   return (
     <footer className="public-footer">
       <div className="public-wrap public-footer-row">
-        <Link href="/" className="public-brand public-footer-brand" aria-label="ClearCME home">
-          <span className="public-brand-mark" aria-hidden="true" />
-          ClearCME
-        </Link>
+        <BrandLockup href="/" size="sm" className="public-brand public-footer-brand" />
         <div className="public-footer-links">
           <Link href="/pricing">Pricing</Link>
           <Link href="/mate-act">DEA MATE Act</Link>

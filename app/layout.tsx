@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "ClearCME — CME Compliance, Guaranteed",
     description: "Map state CME requirements, track hours of CME, and see exactly what is missing before renewal.",
