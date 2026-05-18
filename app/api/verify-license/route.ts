@@ -57,18 +57,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // NPPES doesn't filter by credential type, just search by name + state
+  const normalizedFirstName = firstName.trim();
+  const normalizedLastName = lastName.trim();
+  const normalizedState = state.trim();
 
-  const url = new URL("https://npiregistry.cms.hhs.gov/api/");
-  url.searchParams.set("version", "2.1");
-  url.searchParams.set("first_name", firstName.trim());
-  url.searchParams.set("last_name", lastName.trim());
-  url.searchParams.set("state", state.trim());
-  url.searchParams.set("enumeration_type", "NPI-1");
-  url.searchParams.set("limit", "5");
+  // NPPES doesn't filter by credential type. We first search name + selected
+  // license state, then fall back to name-only because NPPES state reflects the
+  // provider's NPI practice/mailing address, not every state license they hold.
+  async function queryNppes(searchState?: string): Promise<NPPESResponse> {
+    const url = new URL("https://npiregistry.cms.hhs.gov/api/");
+    url.searchParams.set("version", "2.1");
+    url.searchParams.set("first_name", normalizedFirstName);
+    url.searchParams.set("last_name", normalizedLastName);
+    if (searchState) url.searchParams.set("state", searchState.trim());
+    url.searchParams.set("enumeration_type", "NPI-1");
+    url.searchParams.set("limit", "5");
 
-  let data: NPPESResponse;
-  try {
     const res = await fetch(url.toString(), {
       headers: { "Accept": "application/json" },
       next: { revalidate: 0 },
@@ -76,7 +80,15 @@ export async function POST(req: Request) {
     if (!res.ok) {
       throw new Error(`NPPES returned ${res.status}`);
     }
-    data = await res.json();
+    return res.json();
+  }
+
+  let data: NPPESResponse;
+  try {
+    data = await queryNppes(normalizedState);
+    if ((data.results ?? []).length === 0) {
+      data = await queryNppes();
+    }
   } catch (err) {
     console.error("NPPES fetch error:", err);
     return NextResponse.json(
@@ -91,14 +103,14 @@ export async function POST(req: Request) {
     const firstName = r.basic?.first_name ?? "";
     const lastName = r.basic?.last_name ?? "";
     const credential = r.basic?.credential ?? "";
-    const primaryAddress = r.addresses?.find((a) => a.state === state) ?? r.addresses?.[0];
+    const primaryAddress = r.addresses?.find((a) => a.state === normalizedState) ?? r.addresses?.[0];
     const primaryTaxonomy = r.taxonomies?.find((t) => t.primary) ?? r.taxonomies?.[0];
 
     return {
       npi: r.number,
       name: [firstName, lastName].filter(Boolean).join(" "),
       credential,
-      state: primaryAddress?.state ?? state,
+      state: primaryAddress?.state ?? normalizedState,
       specialty: primaryTaxonomy?.desc ?? "",
       city: primaryAddress?.city ?? "",
     };
