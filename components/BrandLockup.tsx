@@ -22,9 +22,9 @@ interface BrandLockupProps {
 }
 
 const SIZE_MAP: Record<Size, { glyph: number; text: string; gap: string }> = {
-  sm: { glyph: 18, text: "text-base", gap: "gap-2"   },
-  md: { glyph: 22, text: "text-lg",   gap: "gap-2.5" },
-  lg: { glyph: 28, text: "text-2xl",  gap: "gap-3"   },
+  sm: { glyph: 24, text: "text-base", gap: "gap-2"   },
+  md: { glyph: 32, text: "text-lg",   gap: "gap-2.5" },
+  lg: { glyph: 40, text: "text-2xl",  gap: "gap-3"   },
 };
 
 export function BrandLockup({
