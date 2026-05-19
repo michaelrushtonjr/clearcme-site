@@ -105,7 +105,8 @@ export default function PricingPage() {
       features: [
         "Single state requirement lookup",
         "Renewal countdown",
-        "Up to 3 certificate uploads",
+        "Manual CME entry",
+        "One best course match per gap/topic",
         "Basic compliance dashboard",
       ],
       popular: false,
@@ -121,11 +122,13 @@ export default function PricingPage() {
       features: [
         "Everything in Free",
         "Multi-state tracking (up to 2 states)",
-        "AI certificate extraction",
+        "AI-supported certificate extraction",
+        "Full course recommendation list",
+        "Sort by price, time, topic, accreditation",
         "Full gap analysis",
         "Deadline alerts",
         "DEA MATE Act tracking",
-        "PDF compliance report",
+        "Audit-ready PDF export",
       ],
       popular: false,
       muted: false,
@@ -174,10 +177,10 @@ export default function PricingPage() {
         <div className="public-kicker mb-6">Pricing</div>
         <h1 className="public-heading text-4xl sm:text-6xl mb-5">
           Know exactly where you stand —<br />
-          <span className="public-accent">for less than your renewal application fee.</span>
+          <span className="public-accent">without the audit scramble.</span>
         </h1>
         <p className="public-subhead max-w-2xl mx-auto mb-10">
-          Nevada physicians pay $250 to renew. California pays $690. ClearCME costs less than a dinner.
+          Start free with a useful compliance map and one best course match per gap. Upgrade when you want AI extraction, full course choice, reminders, and audit-ready exports.
         </p>
 
         {/* Annual / Monthly toggle */}
@@ -336,7 +339,7 @@ export default function PricingPage() {
           >
             Sign in with Google →
           </Link>
-          <p className="text-xs text-[#6b7568] mt-4">Free · No certificate upload needed to get started</p>
+          <p className="text-xs text-[#6b7568] mt-4">Free · No credit card · One helpful course match included</p>
         </div>
       </section>
 

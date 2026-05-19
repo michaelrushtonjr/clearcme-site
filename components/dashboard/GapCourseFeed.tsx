@@ -14,6 +14,7 @@ interface GapCourseFeedProps {
   hoursNeeded: number;
   /** Max courses to show. Default 3. */
   limit?: number;
+  showUpgradePrompt?: boolean;
 }
 
 function ExternalLinkIcon() {
@@ -24,7 +25,7 @@ function ExternalLinkIcon() {
   );
 }
 
-export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedProps) {
+export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt = false }: GapCourseFeedProps) {
   const catalog = COURSE_CATALOG[topic];
   if (!catalog || catalog.courses.length === 0) return null;
 
@@ -44,6 +45,7 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedPr
     <div className="mt-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
         Recommended courses · {hoursNeeded.toFixed(1)} hrs needed
+        {showUpgradePrompt ? " · top match shown" : ""}
       </p>
       <div className="space-y-2">
         {visible.map((course, i) => (
@@ -74,12 +76,27 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedPr
       </div>
 
       {catalog.courses.length > limit && (
-        <Link
-          href={`/courses/${slug}`}
-          className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-teal hover:text-brand-tealDeep"
-        >
-          Browse all {catalog.courses.length} {catalog.topicLabel} courses →
-        </Link>
+        showUpgradePrompt ? (
+          <div className="mt-3 rounded-xl border border-brand-rule bg-brand-cream px-4 py-3">
+            <p className="text-xs font-semibold text-brand-navy">Free includes one strong course match.</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Upgrade to Essential to compare all {catalog.courses.length} verified options, sort by price/time, and export your audit-ready record.
+            </p>
+            <Link
+              href="/pricing?checkout=essential"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-teal hover:text-brand-tealDeep"
+            >
+              Unlock full course choice →
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href={`/courses/${slug}`}
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-teal hover:text-brand-tealDeep"
+          >
+            Browse all {catalog.courses.length} {catalog.topicLabel} courses →
+          </Link>
+        )
       )}
     </div>
   );

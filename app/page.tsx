@@ -674,13 +674,19 @@ function MultiState() {
 
 function Pricing() {
   const planFeatures = {
-    free: ["One state mapped", "Manual hour entry", "Course recommendations"],
+    free: [
+      "One state mapped",
+      "Manual hour entry",
+      "One best course match per gap",
+      "Basic progress view",
+    ],
     essential: [
       "Up to 2 state licenses",
-      "AI certificate extraction",
+      "AI-supported certificate extraction",
+      "Full course recommendation list",
+      "Sort by price, time, topic, accreditation",
       "Audit-ready PDF export",
       "Renewal and gap reminders",
-      "30-day money-back",
       "The $1,000 Compliance Promise",
     ],
     pro: [
@@ -698,7 +704,7 @@ function Pricing() {
         <SectionHead
           eyebrow="Pricing"
           title="Less than the cost of one compliance scramble."
-          body="Start free. Upgrade only if you need audit-ready exports, reminders, and the $1,000 Compliance Promise."
+          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, reminders, and the $1,000 Compliance Promise."
         />
         <div className="price-grid">
           <div className="plan reveal">
@@ -707,7 +713,7 @@ function Pricing() {
               <span className="h">$0</span>
               <span className="per">forever</span>
             </div>
-            <p className="plan-h">See your compliance map. No credit card.</p>
+            <p className="plan-h">See your gaps and one recommended course per topic. No credit card.</p>
             <PlanFeatureList items={planFeatures.free} />
             <CtaLink className="plan-cta">Start free</CtaLink>
           </div>
@@ -718,7 +724,7 @@ function Pricing() {
               <span className="h">$99</span>
               <span className="per">/year</span>
             </div>
-            <p className="plan-h">Everything you need for 1-2 state licenses, on autopilot.</p>
+            <p className="plan-h">AI extraction, full course choice, exports, and reminders for 1-2 state licenses.</p>
             <PlanFeatureList items={planFeatures.essential} />
             <CtaLink className="plan-cta">Start Essential</CtaLink>
           </div>

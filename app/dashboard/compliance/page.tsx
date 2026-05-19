@@ -283,7 +283,7 @@ export default async function CompliancePage() {
   const userId = session!.user!.id!;
 
   // Fetch compliance data + licenses with their rules
-  const [licenses, certificates, requirementCompletions] = await Promise.all([
+  const [licenses, certificates, requirementCompletions, subscription] = await Promise.all([
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
@@ -295,7 +295,12 @@ export default async function CompliancePage() {
     prisma.userRequirementCompletion.findMany({
       where: { userId },
     }),
+    prisma.subscription.findUnique({
+      where: { userId },
+    }),
   ]);
+
+  const hasFullCourseChoice = subscription?.tier === "ESSENTIAL" || subscription?.tier === "PRO";
 
   const completionByRequirementAndLicense = new Map(
     requirementCompletions.map((completion) => [
@@ -813,6 +818,8 @@ export default async function CompliancePage() {
                             <GapCourseFeed
                               topic={gap.topic}
                               hoursNeeded={gap.gap}
+                              limit={hasFullCourseChoice ? 3 : 1}
+                              showUpgradePrompt={!hasFullCourseChoice}
                             />
                           )}
                         </div>
