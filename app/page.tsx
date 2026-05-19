@@ -697,8 +697,8 @@ function Pricing() {
       <div className="wrap">
         <SectionHead
           eyebrow="Pricing"
-          title="Less than half the cost of one state filing fee."
-          body="Start free. Upgrade only if you need it. The guarantee covers Essential and Pro."
+          title="Less than the cost of one compliance scramble."
+          body="Start free. Upgrade only if you need audit-ready exports, reminders, and the $1,000 Compliance Promise."
         />
         <div className="price-grid">
           <div className="plan reveal">
@@ -874,9 +874,9 @@ export default function Home() {
               </h1>
               <p className="hero-sub">
                 <strong>Under 60 seconds of setup.</strong>{" "}
-                <span className="swash">Less than what you&apos;d spend</span> on a single state filing fee. ClearCME
-                maps your CME requirements, tracks your hours, and tells you exactly what&apos;s missing - for every
-                state you&apos;re licensed in.
+                <span className="swash">Less than one missed-requirement headache.</span> ClearCME maps your CME
+                requirements, tracks your hours, and tells you exactly what&apos;s missing - before a renewal deadline or
+                board audit makes it urgent.
               </p>
               <div className="hero-cta-row">
                 <CtaLink>
@@ -908,10 +908,10 @@ export default function Home() {
                 </span>
                 <span className="vs">vs.</span>
                 <span className="num">
-                  $690<span className="sm"> · single CA filing fee</span>
+                  Audit scramble<span className="sm"> · hours of certificate hunting</span>
                 </span>
               </div>
-              <div className="tag-r">Less than one-sixth the cost of one mistake.</div>
+              <div className="tag-r">Less painful than reconstructing CME after the board asks.</div>
             </div>
           </div>
         </section>
