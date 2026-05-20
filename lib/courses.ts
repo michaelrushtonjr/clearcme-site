@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -242,7 +242,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -585,7 +585,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -896,7 +896,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "5 Minute Moment for Racial Justice in Healthcare Series",
         provider: "Stanford Center for Continuing Medical Education",
@@ -1079,7 +1079,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -1182,7 +1182,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -1269,7 +1269,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -1388,7 +1388,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
@@ -1523,7 +1523,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
+    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
       {
         name: "Pri-Med — Free Online Primary Care CME/CE Library (Platform Note)",
         provider: "Pri-Med Institute (accredited division of Pri-Med)",
@@ -1571,6 +1571,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-27",
+      },
+      {
+        name: "Journal Club Spotlights: Current Advancements in Non-Small Cell Lung Cancer",
+        provider: "FreeCME / Annenberg Center for Health Sciences at Eisenhower",
+        providerUrl: "https://www.freecme.com",
+        credits: "Up to 2.5 hours AMA PRA Category 1 / ANCC / ACPE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Ten-part NSCLC journal-club series for medical oncologists, clinical researchers, and the multidisciplinary cancer-care team. Public page verifies release Apr 21, 2026; credit expiration Apr 30, 2027; 45-minute listed completion time; hematology/oncology, primary care, and pulmonology specialties; explicit physician credit up to 2.5 AMA PRA Category 1 Credits; Annenberg joint accreditation; and instructions to claim credit after viewing selected series content.",
+        url: "https://www.freecme.com/products/journal-club-spotlights-current-advancements-in-non-small-cell-lung-cancer",
+        accreditation: "Annenberg Center for Health Sciences at Eisenhower (jointly accredited by ACCME / ACPE / ANCC)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-20 heartbeat",
       },
       {
         name: "Breaking the Hold: Identification and Treatment of Cervical Dystonia",
@@ -2019,6 +2035,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-05-19 heartbeat",
+      },
+      {
+        name: "Practice Change for Patient Response: Emerging Frontline and Sequencing Strategies for EGFR-mutated NSCLC",
+        provider: "FreeCME / Partners for Advancing Clinical Education / MedliveCME",
+        providerUrl: "https://www.freecme.com",
+        credits: "0.5 hour AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "On-demand NSCLC/EGFR-mutated lung cancer activity for oncology clinicians covering biomarker testing, advanced/metastatic treatment pathways, adjuvant therapy options, and shared decision-making. Released Feb 12, 2026; credit expires Feb 12, 2027. Public page verifies freeCME activity details, 30-minute completion time, physician target audience, joint accreditation, 0.5 AMA PRA Category 1 Credit, and post-test/evaluation workflow with 75% passing score.",
+        url: "https://www.freecme.com/products/practice-change-for-patient-response-emerging-frontline-and-sequencing-strategies-for-egfr-mutated-nsclc",
+        accreditation: "Partners for Advancing Clinical Education (jointly accredited by ACCME / ACPE / ANCC), jointly provided with MedliveCME",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-20 heartbeat",
       },
       {
         name: "FreeCME.com — Free CME Aggregator Platform (Platform Note)",
