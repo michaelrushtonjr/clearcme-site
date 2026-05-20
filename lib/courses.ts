@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -242,7 +242,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -585,7 +585,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -896,7 +896,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "5 Minute Moment for Racial Justice in Healthcare Series",
         provider: "Stanford Center for Continuing Medical Education",
@@ -1079,7 +1079,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -1182,7 +1182,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -1269,7 +1269,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -1388,7 +1388,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
@@ -1523,7 +1523,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-19T22:49:36.900Z
+    // Auto-synced from Scout catalog — 2026-05-20T04:49:53.541Z
       {
         name: "Pri-Med — Free Online Primary Care CME/CE Library (Platform Note)",
         provider: "Pri-Med Institute (accredited division of Pri-Med)",
@@ -1587,6 +1587,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-21",
+      },
+      {
+        name: "Exploring the Therapeutic Potential of Emerging Therapies in Pulmonary Fibrosis",
+        provider: "FreeCME.com / Rush University Medical Center / Academy for Continued Healthcare Learning (ACHL)",
+        providerUrl: "https://www.freecme.com",
+        credits: "1.25 hours AMA PRA Category 1 / ANCC",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet CrossMED activity for pulmonologists and pulmonary APPs on idiopathic pulmonary fibrosis/progressive pulmonary fibrosis, current and emerging antifibrotic therapies, adverse-event considerations, and patient-centered care planning. Released Apr 10, 2026; credit expires Apr 10, 2027. Public page verifies 1.25 AMA PRA Category 1 Credits, Rush joint accreditation, no-fee participation/certificate statement, 67% post-test requirement, and immediate certificate availability.",
+        url: "https://www.freecme.com/products/exploring-the-therapeutic-potential-of-emerging-therapies-in-pulmonary-fibrosis",
+        accreditation: "ACCME / ACPE / ANCC joint accreditation (Rush University Medical Center; collaboration with ACHL)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-19 21:46 PT heartbeat",
       },
       {
         name: "One Team, One Plan: Shared Care for People Living with HIV",
@@ -1813,6 +1829,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-05-19 heartbeat",
       },
       {
+        name: "Precision Medicine in Lung Cancer: Optimizing Care for HER2 (ERBB2) Mutations",
+        provider: "FreeCME.com / The France Foundation",
+        providerUrl: "https://www.freecme.com",
+        credits: "1.0 hour AMA PRA Category 1 / AAPA Category 1 / ANCC",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet activity for oncology clinicians plus pathology/pulmonary clinicians on HER2 (ERBB2) mutations in metastatic NSCLC, NGS testing, interpretation of biomarker results, and current/emerging HER2-directed therapies. Released May 8, 2026; credit expires Apr 29, 2027. Public page verifies 1.0 AMA PRA Category 1 Credit, The France Foundation joint accreditation, no-fee participation/credit, 67% post-test requirement, and physician/PA/nursing credit availability.",
+        url: "https://www.freecme.com/products/precision-medicine-in-lung-cancer-optimizing-care-for-her2-erbb2-mutations",
+        accreditation: "ACCME / ACPE / ANCC joint accreditation (The France Foundation)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-19 21:46 PT heartbeat",
+      },
+      {
         name: "Partnering for Success – Patient Engagement and PrEP Adherence Strategies",
         provider: "CME Outfitters",
         providerUrl: "https://www.cmeoutfitters.com",
@@ -1923,6 +1955,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-05-19 heartbeat",
+      },
+      {
+        name: "Future Directions in Multiple Myeloma: The Impact of CELMoDs, MRD as a Clinical Endpoint, and the Importance of Shared Decision-Making",
+        provider: "FreeCME.com / Postgraduate Institute for Medicine / Postgraduate Healthcare Education",
+        providerUrl: "https://www.freecme.com",
+        credits: "0.75 hour AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet Expert Roundtable for hematology/oncology clinicians on CELMoDs, MRD as a clinical endpoint, treatment sequencing, shared decision-making, and adverse-event management in multiple myeloma. Released Apr 22, 2026; credit expires Oct 22, 2026. Public page verifies 0.75 AMA PRA Category 1 Credit, joint ACCME/ACPE/ANCC accreditation, no-fee participation/credit, evaluation workflow, and downloadable certificate.",
+        url: "https://www.freecme.com/products/future-directions-in-multiple-myeloma-the-impact-of-celmods-mrd-as-a-clinical-endpoint-and-the-importance-of-shared-decision-making",
+        accreditation: "ACCME / ACPE / ANCC joint accreditation (Postgraduate Institute for Medicine; planned/implemented with Postgraduate Healthcare Education)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-19 21:46 PT heartbeat",
       },
       {
         name: "Spotlight on LN: Early Detection Meets Personalized Care",
