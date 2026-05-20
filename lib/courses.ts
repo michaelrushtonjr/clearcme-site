@@ -27,7 +27,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "DEA MATE Act / SUD Treatment",
     requirement: "8 hours, one-time (DEA-registered physicians)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
         provider: "FreeCME (by Relias)",
@@ -242,7 +242,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Opioid Prescribing",
     requirement: "Varies by state (2-3 hrs, recurring)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "PCSS-MOUD Pain Core Curriculum (14 Modules — Pain, Opioids & OUD)",
         provider: "PCSS-MOUD (Providers Clinical Support System for Medications for Opioid Use Disorder), funded by SAMHSA",
@@ -585,7 +585,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Medical Ethics",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
@@ -896,7 +896,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Implicit Bias / Cultural Competency",
     requirement: "1-2 hours, recurring",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "5 Minute Moment for Racial Justice in Healthcare Series",
         provider: "Stanford Center for Continuing Medical Education",
@@ -1079,7 +1079,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Patient Safety / Medical Error Prevention",
     requirement: "2 hours, recurring (FL, MA, CT)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "High-Value Care Cases",
         provider: "American College of Physicians (ACP)",
@@ -1182,7 +1182,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Suicide Prevention & Awareness",
     requirement: "2 hours (initial, then every 4 years)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "Mental Health as a Vital Sign: Addressing Health Professionals' Suicide Risk and Enhancing Mental Health",
         provider: "AAFP (American Academy of Family Physicians)",
@@ -1269,7 +1269,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Domestic Violence",
     requirement: "1-2 hours (varies by state)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "ENDURING: Domestic Violence Prevention (2026)",
         provider: "Memorial Healthcare System CME (South Florida)",
@@ -1388,7 +1388,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "Human Trafficking",
     requirement: "1 hour (TX, MI, DC)",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "Identifying Human Trafficking: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
@@ -1523,7 +1523,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
     courses: [
-    // Auto-synced from Scout catalog — 2026-05-20T10:49:03.078Z
+    // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
         name: "Pri-Med — Free Online Primary Care CME/CE Library (Platform Note)",
         provider: "Pri-Med Institute (accredited division of Pri-Med)",
@@ -2067,6 +2067,54 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-20 (homepage loaded; 15+ active courses confirmed; account required for credit claim)",
+      },
+      {
+        name: "Compassionate Communication in HIV Care: Sharing Test Results and Guiding Patients Toward Treatment",
+        provider: "FreeCME / Talem Health / RME Collaborative",
+        providerUrl: "https://www.freecme.com",
+        credits: "0.25 hour AMA PRA Category 1 / ANCC / ACPE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet micro-course for primary care clinicians caring for patients with HIV in rural/underserved communities, focused on compassionate communication at diagnosis, prompt treatment, partner notification, and U=U counseling. Released Sep 30, 2025; credit expires Sep 30, 2026. Public page verifies 0.25 AMA PRA Category 1 Credit, joint ACCME/ACPE/ANCC accreditation, no-fee participation, pre-test/post-test/evaluation workflow, 100% post-test requirement, and immediate certificate download.",
+        url: "https://www.freecme.com/products/compassionate-communication-in-hiv-care-sharing-test-results-and-guiding-patients-toward-treatment-2",
+        accreditation: "Talem Health (jointly accredited by ACCME / ACPE / ANCC)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-20 heartbeat",
+      },
+      {
+        name: "Supporting Individuals With HIV: Addressing Common Treatment Barriers and Expanding Access to Resources",
+        provider: "FreeCME / Talem Health / RME Collaborative",
+        providerUrl: "https://www.freecme.com",
+        credits: "0.25 hour AMA PRA Category 1 / ANCC / ACPE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet micro-course for primary care clinicians on reviewing HIV laboratory results, U=U counseling, adherence support, mental health/substance-use barriers, community resources, and follow-up options including telehealth. Released Sep 30, 2025; credit expires Sep 30, 2026. Public page verifies 0.25 AMA PRA Category 1 Credit, joint ACCME/ACPE/ANCC accreditation, no-fee participation, pre-test/post-test/evaluation workflow, 100% post-test requirement, and immediate certificate download.",
+        url: "https://www.freecme.com/products/supporting-individuals-with-hiv",
+        accreditation: "Talem Health (jointly accredited by ACCME / ACPE / ANCC)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-20 heartbeat",
+      },
+      {
+        name: "HIV Care and Support: Best Practices for Creating a Welcoming and Inclusive Clinic Environment",
+        provider: "FreeCME / Talem Health / RME Collaborative",
+        providerUrl: "https://www.freecme.com",
+        credits: "0.25 hour AMA PRA Category 1 / ANCC / ACPE",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring internet micro-course for primary care and multidisciplinary HIV care teams on stigma, culturally sensitive communication, empathy, and creating a welcoming clinic environment for patients in rural/underserved communities. Released May 30, 2025; credit expires May 30, 2026. Public page verifies 0.25 AMA PRA Category 1 Credit, joint ACCME/ACPE/ANCC accreditation, no-fee participation, pre-test/post-test/evaluation workflow, 100% post-test requirement, and immediate certificate download.",
+        url: "https://www.freecme.com/products/hiv-care-and-support-best-practices-for-creating-a-welcoming-and-inclusive-clinic-environment-2",
+        accreditation: "Talem Health (jointly accredited by ACCME / ACPE / ANCC)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-05-20 heartbeat",
       },
       {
         name: "ERcast: Clinical Perspectives (Podcast CME)",
