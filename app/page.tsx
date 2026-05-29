@@ -880,9 +880,9 @@ export default function Home() {
               </h1>
               <p className="hero-sub">
                 <strong>Under 60 seconds of setup.</strong>{" "}
-                <span className="swash">Less than one missed-requirement headache.</span> ClearCME maps your CME
-                requirements, tracks your hours, and tells you exactly what&apos;s missing - before a renewal deadline or
-                board audit makes it urgent.
+                <span className="swash">Less than the cost of one missed-requirement headache.</span> ClearCME maps your
+                CME requirements, tracks your hours, tells you exactly what&apos;s missing, and where to find it. Simply,
+                without stress, your CME is handled.
               </p>
               <div className="hero-cta-row">
                 <CtaLink>
@@ -910,14 +910,14 @@ export default function Home() {
               <div className="left">
                 <span className="badge">The math</span>
                 <span className="num">
-                  $99<span className="sm">/yr</span>
+                  $8.25<span className="sm">/mo</span>
                 </span>
                 <span className="vs">vs.</span>
                 <span className="num">
-                  Audit scramble<span className="sm"> · hours of certificate hunting</span>
+                  One missed CME mistake<span className="sm"> · $500+ penalties, late fees, urgent make-up CME</span>
                 </span>
               </div>
-              <div className="tag-r">Less painful than reconstructing CME after the board asks.</div>
+              <div className="tag-r">One preventable miss can cost more than a year of ClearCME, not counting the time, stress, and cleanup.</div>
             </div>
           </div>
         </section>
