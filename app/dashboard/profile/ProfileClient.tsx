@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import NpiVerifier from "@/components/NpiVerifier";
 
 const US_STATES = [
@@ -70,6 +71,8 @@ interface ExistingLicense {
   licenseType: string;
   renewalDate: string | null;
   npiNumber: string | null;
+  specialty: string | null;
+  practiceArea: string | null;
 }
 
 interface ProfileClientProps {
@@ -289,15 +292,23 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                       Renewal: {new Date(lic.renewalDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                   )}
+                  <p className="text-xs text-[var(--ink-3)] mt-0.5">
+                    {[lic.specialty, lic.practiceArea].filter(Boolean).join(" · ") || "No specialty/practice context on file"}
+                  </p>
                 </div>
-                {lic.npiNumber && (
-                  <span className="product-pill product-pill-met">
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    NPI Verified
-                  </span>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                  {lic.npiNumber && (
+                    <span className="product-pill product-pill-met">
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      NPI Verified
+                    </span>
+                  )}
+                  <Link href="/dashboard/settings" className="text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-2)]">
+                    Edit license →
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

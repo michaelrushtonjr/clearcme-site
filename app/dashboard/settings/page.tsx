@@ -7,6 +7,25 @@ export const metadata = {
   title: "Settings — ClearCME",
 };
 
+function isRequirementApplicableToLicense(
+  requirement: { topic: string; description: string | null; notes: string | null },
+  license: { state: string; licenseType: string; specialty: string | null; practiceArea: string | null },
+  user: { specialty: string | null; practiceArea: string | null } | null,
+) {
+  const text = `${requirement.description ?? ""} ${requirement.notes ?? ""}`.toLowerCase();
+  const isNvDoPsychiatryCulturalCompetency =
+    license.state === "NV" &&
+    license.licenseType === "DO" &&
+    requirement.topic === "CULTURAL_COMPETENCY" &&
+    text.includes("psychiat");
+
+  if (!isNvDoPsychiatryCulturalCompetency) return true;
+
+  const specialty = license.specialty ?? user?.specialty ?? "";
+  const practiceArea = license.practiceArea ?? user?.practiceArea ?? "";
+  return `${specialty} ${practiceArea}`.toLowerCase().includes("psychiat");
+}
+
 export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
@@ -50,7 +69,8 @@ export default async function SettingsPage() {
         state: license.state,
         licenseType: license.licenseType,
         requirements: (rule?.mandatoryRequirements ?? []).filter((req) =>
-          req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL"
+          (req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL") &&
+          isRequirementApplicableToLicense(req, license, user)
         ),
       };
     })

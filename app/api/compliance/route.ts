@@ -94,7 +94,9 @@ export async function GET(req: NextRequest) {
     const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
 
     // Check mandatory topics
-    const isPsychiatry = `${userProfile?.specialty ?? ""} ${userProfile?.practiceArea ?? ""}`
+    const specialty = license.specialty ?? userProfile?.specialty ?? "";
+    const practiceArea = license.practiceArea ?? userProfile?.practiceArea ?? "";
+    const isPsychiatry = `${specialty} ${practiceArea}`
       .toLowerCase()
       .includes("psychiat");
     const applicableMandatoryRequirements = rule.mandatoryRequirements.filter((req: MandatoryRequirement) => {

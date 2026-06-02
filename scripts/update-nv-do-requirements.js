@@ -81,13 +81,13 @@ const requirements = [
   },
   {
     topic: 'CULTURAL_COMPETENCY',
-    hoursRequired: 6,
+    hoursRequired: 2,
     description: 'Cultural competency and DEI training for psychiatrists',
     firstRenewalOnly: false,
     cadence: 'CONDITIONAL',
     intervalYears: 2,
     lookbackYears: 2,
-    notes: 'Nevada DO specialty-specific requirement: applies to psychiatrists only; 6 hours biennially. Do not apply to non-psychiatry DOs.'
+    notes: 'Nevada DO specialty-specific requirement: applies to psychiatrists only; 2 hours biennially. Do not apply to non-psychiatry DOs.'
   },
   {
     topic: 'SUBSTANCE_USE',

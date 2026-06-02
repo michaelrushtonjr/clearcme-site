@@ -49,6 +49,8 @@ interface License {
   licenseNumber: string | null;
   renewalDate: Date | null;
   isActive: boolean;
+  specialty: string | null;
+  practiceArea: string | null;
 }
 
 interface Subscription {
@@ -270,8 +272,8 @@ export default function SettingsClient({
       licenseType: license.licenseType,
       licenseNumber: license.licenseNumber ?? "",
       renewalDate: toDateInputValue(license.renewalDate),
-      specialty: user.specialty ?? "",
-      practiceArea: user.practiceArea ?? "",
+      specialty: license.specialty ?? user.specialty ?? "",
+      practiceArea: license.practiceArea ?? user.practiceArea ?? "",
     });
   };
 
@@ -640,6 +642,10 @@ export default function SettingsClient({
                       </>
                     )}
                   </p>
+                  <p className="text-xs text-[var(--ink-3)] mt-0.5">
+                    {[license.specialty, license.practiceArea].filter(Boolean).join(" · ") ||
+                      "No specialty/practice context on file"}
+                  </p>
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-2">
                   <button
@@ -745,7 +751,7 @@ export default function SettingsClient({
                       </button>
                     </div>
                     <p className="mt-3 text-xs text-[var(--ink-3)]">
-                      Specialty and practice area affect conditional rules like psychiatry-only, pain-practice, or setting-specific requirements.
+                      Specialty and practice area are saved for this license and affect conditional rules like psychiatry-only, pain-practice, or setting-specific requirements.
                     </p>
                   </div>
                 )}

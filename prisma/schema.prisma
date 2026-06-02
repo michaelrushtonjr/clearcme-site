@@ -113,6 +113,10 @@ model PhysicianLicense {
   // NPPES verification
   npiNumber        String?    // NPI from NPPES verification
 
+  // Per-license clinical context for conditional CME rules
+  specialty        String?
+  practiceArea     String?
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   requirementCompletions UserRequirementCompletion[]
 
