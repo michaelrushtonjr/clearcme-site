@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
+import { inflateSync } from "zlib";
+import type { CreditType, SpecialTopic } from "@prisma/client";
 
 // Extend Vercel function timeout for AI processing
 export const maxDuration = 60;
@@ -87,8 +89,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // AI extraction using Claude vision
-    const extractionResult = await extractCertificateWithClaude(file);
+    const extractionResult = await extractCertificate(file);
 
     if (extractionResult.success && extractionResult.data) {
       const extracted = extractionResult.data;
@@ -109,9 +110,10 @@ export async function POST(req: NextRequest) {
           provider: extracted.provider,
           activityDate: extracted.date ? new Date(extracted.date) : null,
           creditHours: extracted.creditHours,
-          creditType: extracted.creditType as never,
+          creditType: normalizeCreditType(extracted.creditType),
           accreditation: extracted.accreditation,
           topics: extracted.topics,
+          specialTopics: inferSpecialTopics(extracted),
         },
       });
 
@@ -142,6 +144,10 @@ export async function POST(req: NextRequest) {
             provider: partial.provider,
             activityDate: partial.date ? new Date(partial.date) : null,
             creditHours: partial.creditHours,
+            creditType: normalizeCreditType(partial.creditType),
+            accreditation: partial.accreditation,
+            topics: partial.topics ?? [],
+            specialTopics: inferSpecialTopics(partial),
           },
         });
 
@@ -182,7 +188,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ─── AI Certificate Extraction via Claude Vision ───────────────────────────────
+// ─── Certificate Extraction ───────────────────────────────────────────────────
 
 interface ExtractedCredit {
   title: string | null;
@@ -212,6 +218,20 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
   "accreditation": "full accreditation statement"
 }
 If a field cannot be determined, use null. Do not include any text outside the JSON.`;
+
+async function extractCertificate(file: File): Promise<ExtractionResult> {
+  const deterministic = await extractCertificateFromTextPdf(file);
+  if (deterministic.success || deterministic.partialData) {
+    return deterministic;
+  }
+
+  const aiResult = await extractCertificateWithClaude(file);
+  if (aiResult.success || aiResult.partialData) {
+    return aiResult;
+  }
+
+  return deterministic.error ? { ...aiResult, error: aiResult.error ?? deterministic.error } : aiResult;
+}
 
 async function extractCertificateWithClaude(file: File): Promise<ExtractionResult> {
   const apiKey = process.env.ANTHROPIC_CME;
@@ -322,4 +342,215 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
       error: error instanceof Error ? error.message : "Unknown extraction error",
     };
   }
+}
+
+async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResult> {
+  if (file.type !== "application/pdf") {
+    return { success: false, error: "No deterministic extractor for this file type" };
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const text = normalizeWhitespace(extractPdfText(buffer));
+    if (text.length < 40) {
+      return { success: false, error: "No text layer found in PDF" };
+    }
+
+    const extracted = parseCertificateText(text);
+    const hasCriticalFields = Boolean(extracted.title && extracted.provider && extracted.date && extracted.creditHours !== null);
+
+    if (hasCriticalFields) {
+      return { success: true, data: extracted };
+    }
+
+    const partialFields = Object.fromEntries(
+      Object.entries(extracted).filter(([, value]) => {
+        if (Array.isArray(value)) return value.length > 0;
+        return value !== null && value !== undefined;
+      }),
+    ) as Partial<ExtractedCredit>;
+
+    if (Object.keys(partialFields).length > 0) {
+      return { success: false, partialData: partialFields, error: "Partial deterministic PDF extraction" };
+    }
+
+    return { success: false, error: "No certificate fields found in PDF text" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "PDF text extraction failed",
+    };
+  }
+}
+
+function extractPdfText(buffer: Buffer): string {
+  const chunks = [buffer.toString("utf8")];
+  const source = buffer.toString("latin1");
+  const streamPattern = /(<<[\s\S]*?>>)\s*stream\r?\n([\s\S]*?)\r?\nendstream/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = streamPattern.exec(source)) !== null) {
+    const dict = match[1];
+    const stream = Buffer.from(match[2], "latin1");
+    let data = stream;
+
+    if (/\/FlateDecode\b/.test(dict)) {
+      try {
+        data = inflateSync(stream);
+      } catch {
+        // Keep the raw stream; some PDFs include plain text despite filter metadata.
+      }
+    }
+
+    chunks.push(data.toString("utf8"));
+    chunks.push(extractPdfDrawingText(data.toString("latin1")));
+  }
+
+  return chunks.join(" ");
+}
+
+function extractPdfDrawingText(source: string): string {
+  const chunks: string[] = [];
+  const literalPattern = /\((?:\\.|[^\\()])*\)/g;
+  const hexPattern = /<([0-9A-Fa-f\s]{4,})>/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = literalPattern.exec(source)) !== null) {
+    chunks.push(decodePdfLiteral(match[0].slice(1, -1)));
+  }
+
+  while ((match = hexPattern.exec(source)) !== null) {
+    chunks.push(decodePdfHex(match[1]));
+  }
+
+  return chunks.join(" ");
+}
+
+function decodePdfLiteral(value: string): string {
+  return value
+    .replace(/\\([\\()])/g, "$1")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\r")
+    .replace(/\\t/g, "\t")
+    .replace(/\\([0-7]{1,3})/g, (_, octal: string) => String.fromCharCode(parseInt(octal, 8)));
+}
+
+function decodePdfHex(value: string): string {
+  const clean = value.replace(/\s/g, "");
+  if (clean.length < 2) return "";
+  const bytes = Buffer.from(clean.length % 2 === 0 ? clean : `${clean}0`, "hex");
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+    const chars: string[] = [];
+    for (let i = 2; i + 1 < bytes.length; i += 2) {
+      chars.push(String.fromCharCode(bytes.readUInt16BE(i)));
+    }
+    return chars.join("");
+  }
+  return bytes.toString("utf8");
+}
+
+function normalizeWhitespace(text: string) {
+  return text
+    .replace(/\u0000/g, "")
+    .replace(/[ \t\r\n]+/g, " ")
+    .replace(/\s+([,.;:])/g, "$1")
+    .trim();
+}
+
+function parseCertificateText(text: string): ExtractedCredit {
+  const title =
+    matchFirst(text, /CE activity titled\s+(.+?)\s+and is awarded/i) ??
+    matchFirst(text, /activity titled\s+(.+?)\s+and is awarded/i);
+  const provider = /American Society of Addiction Medicine|ASAM/i.test(text)
+    ? "American Society of Addiction Medicine"
+    : matchFirst(text, /(.*?)\s+certifies that/i);
+  const creditHours = parseNumber(matchFirst(text, /awarded\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
+    parseNumber(matchFirst(text, /maximum of\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i));
+  const date = parseCertificateDate(
+    matchFirst(text, /([A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s+Date of Completion/i) ??
+      matchFirst(text, /Date of Completion\s+([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i)
+  );
+  const accreditation = matchFirst(
+    text,
+    /(In support of improving patient care, .*?to provide continuing education for the healthcare team\.)/i
+  ) ?? matchFirst(text, /(jointly accredited .*?healthcare team\.)/i);
+  const creditType = /AMA PRA Category 1/i.test(text) ? "AMA_PRA_1" : null;
+  const topics = inferTopicLabels(`${title ?? ""} ${text}`);
+
+  return {
+    title,
+    provider,
+    date,
+    creditHours,
+    creditType,
+    topics,
+    accreditation,
+  };
+}
+
+function matchFirst(text: string, pattern: RegExp) {
+  const match = text.match(pattern);
+  return match?.[1]?.trim() ?? null;
+}
+
+function parseNumber(value: string | null) {
+  if (!value) return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseCertificateDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
+function normalizeCreditType(value?: string | null): CreditType | null {
+  if (!value) return null;
+  const normalized = value.toUpperCase().replace(/[\s-]+/g, "_");
+  if (normalized.includes("AMA_PRA_1")) return "AMA_PRA_1";
+  if (normalized.includes("AMA_PRA_2")) return "AMA_PRA_2";
+  if (normalized.includes("AAFP") && normalized.includes("PRESCRIBED")) return "AAFP_PRESCRIBED";
+  if (normalized === "AAFP") return "AAFP_PRESCRIBED";
+  if (normalized.includes("AOA_1A") || normalized.includes("AOA_1_A")) return "AOA_1_A";
+  if (normalized.includes("AOA_1B") || normalized.includes("AOA_1_B")) return "AOA_1_B";
+  if (normalized.includes("AOA_2A") || normalized.includes("AOA_2_A")) return "AOA_2_A";
+  if (normalized.includes("AOA_2B") || normalized.includes("AOA_2_B")) return "AOA_2_B";
+  return "OTHER";
+}
+
+function inferTopicLabels(text: string) {
+  const topics = new Set<string>();
+  const lower = text.toLowerCase();
+
+  if (/opioid|buprenorphine|controlled substance|pain management|oud\b|substance use disorder|addiction/.test(lower)) {
+    topics.add("opioid prescribing");
+  }
+  if (/substance use disorder|sud\b|oud\b|buprenorphine|mate act|dea requirement|addiction/.test(lower)) {
+    topics.add("substance use");
+  }
+  if (/pain management|pain assessment|opioid prescribing/.test(lower)) {
+    topics.add("pain management");
+  }
+
+  return Array.from(topics);
+}
+
+function inferSpecialTopics(extracted: Partial<ExtractedCredit>): SpecialTopic[] {
+  const text = [
+    extracted.title,
+    extracted.provider,
+    extracted.accreditation,
+    ...(extracted.topics ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const topics = new Set<SpecialTopic>();
+
+  if (/opioid|controlled substance|prescribing/.test(text)) topics.add("OPIOID_PRESCRIBING");
+  if (/pain management|pain assessment/.test(text)) topics.add("PAIN_MANAGEMENT");
+  if (/substance use|sud\b|oud\b|buprenorphine|addiction|mate act|dea requirement/.test(text)) topics.add("SUBSTANCE_USE");
+
+  return Array.from(topics);
 }
