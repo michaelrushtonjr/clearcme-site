@@ -460,21 +460,37 @@ function normalizeWhitespace(text: string) {
 function parseCertificateText(text: string): ExtractedCredit {
   const title =
     matchFirst(text, /CE activity titled\s+(.+?)\s+and is awarded/i) ??
-    matchFirst(text, /activity titled\s+(.+?)\s+and is awarded/i);
+    matchFirst(text, /activity titled\s+(.+?)\s+and is awarded/i) ??
+    matchFirst(text, /(?:course|activity)\s+title\s*:\s*(.+?)(?:\s+(?:provider|date|completion|credit|hours)\s*:|$)/i) ??
+    matchFirst(text, /\bcompleted\s+(.+?)\s+for\s+\d+(?:\.\d+)?\s+(?:AMA PRA Category 1\s+)?(?:credits?|hours?)/i) ??
+    matchFirst(text, /(?:has|have)\s+(?:successfully\s+)?completed\s+(?:the\s+)?(?:course|activity|program)?\s*(?:titled|entitled)?\s*[":]?\s*(.+?)(?:\s+(?:and\s+)?(?:is|are)\s+(?:awarded|granted)|\s+for\s+\d+(?:\.\d+)?|\s+on\s+[A-Z][a-z]+|\s+completion date|$)/i) ??
+    matchFirst(text, /(?:course|activity)\s*:\s*(.+?)(?:\s+(?:provider|date|completion|credit|hours)\s*:|$)/i);
   const provider = /American Society of Addiction Medicine|ASAM/i.test(text)
     ? "American Society of Addiction Medicine"
-    : matchFirst(text, /(.*?)\s+certifies that/i);
-  const creditHours = parseNumber(matchFirst(text, /awarded\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
-    parseNumber(matchFirst(text, /maximum of\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i));
+    : cleanProvider(
+        matchFirst(text, /(?:provider|accredited provider|provided by)\s*:\s*(.+?)(?:\s+(?:course|activity|date|completion|credit|hours)\s*:|$)/i) ??
+        matchFirst(text, /(.*?)\s+certifies that/i) ??
+        matchFirst(text, /(.*?)\s+(?:awards|designates|grants)\s+this/i)
+      );
+  const creditHours =
+    parseNumber(matchFirst(text, /awarded\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
+    parseNumber(matchFirst(text, /maximum of\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
+    parseNumber(matchFirst(text, /(?:credit hours|credits?|hours awarded|total hours)\s*:\s*(\d+(?:\.\d+)?)/i)) ??
+    parseNumber(matchFirst(text, /(?:is|are)\s+(?:awarded|granted)\s+(\d+(?:\.\d+)?)\s+(?:credit|hour)/i)) ??
+    parseNumber(matchFirst(text, /(?:for|awards?)\s+(\d+(?:\.\d+)?)\s+(?:AMA PRA Category 1\s+)?(?:credit|hour)/i));
   const date = parseCertificateDate(
     matchFirst(text, /([A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s+Date of Completion/i) ??
-      matchFirst(text, /Date of Completion\s+([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i)
+      matchFirst(text, /(?:Date of Completion|Completion Date|Completed on|Activity Date|Date)\s*:?\s*([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i) ??
+      matchFirst(text, /(?:Date of Completion|Completion Date|Completed on|Activity Date|Date)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i) ??
+      matchFirst(text, /(?:Date of Completion|Completion Date|Completed on|Activity Date|Date)\s*:?\s*(\d{4}-\d{2}-\d{2})/i) ??
+      matchFirst(text, /\bon\s+([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i)
   );
   const accreditation = matchFirst(
     text,
     /(In support of improving patient care, .*?to provide continuing education for the healthcare team\.)/i
-  ) ?? matchFirst(text, /(jointly accredited .*?healthcare team\.)/i);
-  const creditType = /AMA PRA Category 1/i.test(text) ? "AMA_PRA_1" : null;
+  ) ?? matchFirst(text, /(jointly accredited .*?healthcare team\.)/i) ??
+    matchFirst(text, /((?:ACCME|AOA|AAFP|ANCC|AAPA).*?(?:accredited|credit|designation).*?)(?:\.|$)/i);
+  const creditType = inferCreditType(text);
   const topics = inferTopicLabels(`${title ?? ""} ${text}`);
 
   return {
@@ -493,6 +509,13 @@ function matchFirst(text: string, pattern: RegExp) {
   return match?.[1]?.trim() ?? null;
 }
 
+function cleanProvider(value: string | null) {
+  if (!value) return null;
+  return value
+    .replace(/^(?:certificate of completion|this certifies that)\s+/i, "")
+    .trim() || null;
+}
+
 function parseNumber(value: string | null) {
   if (!value) return null;
   const parsed = Number.parseFloat(value);
@@ -503,6 +526,19 @@ function parseCertificateDate(value: string | null) {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
+function inferCreditType(text: string) {
+  if (/AMA PRA Category 1/i.test(text)) return "AMA_PRA_1";
+  if (/AMA PRA Category 2/i.test(text)) return "AMA_PRA_2";
+  if (/AAFP Prescribed/i.test(text)) return "AAFP_PRESCRIBED";
+  if (/AAFP Elective/i.test(text)) return "AAFP_ELECTIVE";
+  if (/AOA Category 1[-\s]?A/i.test(text)) return "AOA_1_A";
+  if (/AOA Category 1[-\s]?B/i.test(text)) return "AOA_1_B";
+  if (/AOA Category 2[-\s]?A/i.test(text)) return "AOA_2_A";
+  if (/AOA Category 2[-\s]?B/i.test(text)) return "AOA_2_B";
+  if (/\b(?:ANCC|AAPA|ACPE)\b/i.test(text)) return "OTHER";
+  return null;
 }
 
 function normalizeCreditType(value?: string | null): CreditType | null {
@@ -532,6 +568,17 @@ function inferTopicLabels(text: string) {
   if (/pain management|pain assessment|opioid prescribing/.test(lower)) {
     topics.add("pain management");
   }
+  if (/implicit bias|unconscious bias|health equity/.test(lower)) topics.add("implicit bias");
+  if (/end[- ]of[- ]life|palliative care|hospice/.test(lower)) topics.add("end-of-life care");
+  if (/domestic violence|intimate partner violence/.test(lower)) topics.add("domestic violence");
+  if (/child abuse|child maltreatment|mandated reporting/.test(lower)) topics.add("child abuse");
+  if (/elder abuse|older adult abuse/.test(lower)) topics.add("elder abuse");
+  if (/human trafficking|trafficking victim/.test(lower)) topics.add("human trafficking");
+  if (/infection control|infectious disease prevention|bloodborne pathogen/.test(lower)) topics.add("infection control");
+  if (/patient safety|medical error|risk management|root cause analysis/.test(lower)) topics.add("patient safety");
+  if (/ethics|professional responsibility|jurisprudence/.test(lower)) topics.add("ethics");
+  if (/cultural competency|cultural competence|cultural humility/.test(lower)) topics.add("cultural competency");
+  if (/suicide prevention|suicide assessment|suicide treatment/.test(lower)) topics.add("suicide prevention");
 
   return Array.from(topics);
 }
@@ -551,6 +598,17 @@ function inferSpecialTopics(extracted: Partial<ExtractedCredit>): SpecialTopic[]
   if (/opioid|controlled substance|prescribing/.test(text)) topics.add("OPIOID_PRESCRIBING");
   if (/pain management|pain assessment/.test(text)) topics.add("PAIN_MANAGEMENT");
   if (/substance use|sud\b|oud\b|buprenorphine|addiction|mate act|dea requirement/.test(text)) topics.add("SUBSTANCE_USE");
+  if (/implicit bias|unconscious bias|health equity/.test(text)) topics.add("IMPLICIT_BIAS");
+  if (/end[- ]of[- ]life|palliative care|hospice/.test(text)) topics.add("END_OF_LIFE_CARE");
+  if (/domestic violence|intimate partner violence/.test(text)) topics.add("DOMESTIC_VIOLENCE");
+  if (/child abuse|child maltreatment|mandated reporting/.test(text)) topics.add("CHILD_ABUSE");
+  if (/elder abuse|older adult abuse/.test(text)) topics.add("ELDER_ABUSE");
+  if (/human trafficking|trafficking victim/.test(text)) topics.add("HUMAN_TRAFFICKING");
+  if (/infection control|infectious disease prevention|bloodborne pathogen/.test(text)) topics.add("INFECTION_CONTROL");
+  if (/patient safety|medical error|risk management|root cause analysis/.test(text)) topics.add("PATIENT_SAFETY");
+  if (/ethics|professional responsibility|jurisprudence/.test(text)) topics.add("ETHICS");
+  if (/cultural competency|cultural competence|cultural humility/.test(text)) topics.add("CULTURAL_COMPETENCY");
+  if (/suicide prevention|suicide assessment|suicide treatment/.test(text)) topics.add("SUICIDE_PREVENTION");
 
   return Array.from(topics);
 }
