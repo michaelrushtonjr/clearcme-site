@@ -91,7 +91,9 @@ function themeClasses(theme: Theme) {
         icon: "bg-[var(--status-pending-bg)] text-[var(--status-pending)]",
         headline: "text-[var(--ink)]",
         body: "text-[var(--ink-2)]",
-        cta: "product-btn product-btn-urgent",
+        // Brand CTA: one-time requirements are important but not deadline-urgent.
+        // Orange is reserved for renewal <90 days (red theme).
+        cta: "product-btn product-btn-brand",
       };
     case "blue":
       return {
@@ -144,7 +146,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
       explanation:
         "All CME requirements are met for this cycle. Keep uploading certificates as you earn them.",
       ctaLabel: "View your certificates",
-      ctaUrl: "/dashboard/compliance",
+      ctaUrl: "/dashboard/certificates",
       ctaExternal: false,
     };
   }
@@ -188,7 +190,7 @@ function buildRecommendation(props: NextActionCardProps): Recommendation {
     const ctaExternal = !INTERNAL_COURSE_TOPICS.has(req.topic);
     return {
       theme: "amber",
-      icon: "·",
+      icon: "📋",
       headline: `Complete your ${label} requirement — it's a one-time task`,
       explanation: `This is a mandatory one-time requirement for your ${props.licenseState} license. You only have to do it once — best to knock it out now.`,
       ctaLabel: `Find ${label} CME →`,

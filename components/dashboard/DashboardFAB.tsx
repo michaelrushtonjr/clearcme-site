@@ -12,6 +12,10 @@ export default function DashboardFAB() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  // The upload page IS the FAB's primary action — showing it there is
+  // redundant and it covers the "What we accept" notes.
+  const hidden = pathname.startsWith("/dashboard/upload");
+
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
@@ -28,6 +32,8 @@ export default function DashboardFAB() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
+
+  if (hidden) return null;
 
   const handleExportAudit = async () => {
     setIsExporting(true);

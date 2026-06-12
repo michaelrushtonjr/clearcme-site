@@ -10,6 +10,7 @@ import ComplianceExportButton from "@/components/dashboard/ComplianceExportButto
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { keyToSlug } from "@/lib/courses";
+import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
@@ -42,13 +43,6 @@ interface MandatoryGap {
   prompt: string | null;
   satisfiedUntil: Date | null;
   sourceMeta?: RequirementSourceMeta;
-}
-
-function daysUntil(date: Date | null): number | null {
-  if (!date) return null;
-  const now = new Date();
-  const diff = date.getTime() - now.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function formatTopic(topic: string): string {
@@ -449,11 +443,7 @@ export default async function CompliancePage() {
 
     const d = sorted[0];
     const renewalDateLabel = d.license.renewalDate
-      ? new Date(d.license.renewalDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
+      ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
       : "your renewal date";
 
     return {
@@ -506,11 +496,7 @@ export default async function CompliancePage() {
         requirementCount: ahaSource.rule!.mandatoryRequirements.length,
         gapCount: ahaSource.mandatoryGaps.filter((g) => !g.isMet).length,
         renewalDate: ahaSource.license.renewalDate
-          ? new Date(ahaSource.license.renewalDate).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })
+          ? formatDateUTC(ahaSource.license.renewalDate)
           : null,
       }
     : null;
@@ -574,11 +560,14 @@ export default async function CompliancePage() {
             <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{licenses.length}</p>
             <p className="text-xs text-[var(--ink-3)] mt-0.5">states tracked</p>
           </div>
-          <div className="product-stat-tile p-5">
+          <Link
+            href="/dashboard/certificates"
+            className="product-stat-tile p-5 block hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all"
+          >
             <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Certificates</p>
             <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{certificates.length}</p>
-            <p className="text-xs text-[var(--ink-3)] mt-0.5">with extracted data</p>
-          </div>
+            <p className="text-xs text-[var(--primary)] font-medium mt-0.5">view all →</p>
+          </Link>
           <div className="product-stat-tile p-5">
             <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Overall Status</p>
             {complianceData.every((d) => d.rule === null) ? (
@@ -616,7 +605,7 @@ export default async function CompliancePage() {
               </div>
               {license.renewalDate && (
                 <p className="text-sm text-[var(--ink-3)] mt-1">
-                  Renewal: {new Date(license.renewalDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  Renewal: {formatDateUTC(license.renewalDate)}
                 </p>
               )}
             </div>
@@ -786,11 +775,7 @@ export default async function CompliancePage() {
                               <div className="flex flex-col items-end gap-0.5">
                                 <Link
                                   href={`/courses/${keyToSlug(gap.topic)}`}
-                                  className={`flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors ${
-                                    gap.earned > 0
-                                      ? "bg-[var(--warm)] text-white hover:bg-[var(--warm-2)]"
-                                      : "bg-[var(--pop)] text-white hover:bg-[var(--pop-2)]"
-                                  }`}
+                                  className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
                                 >
                                   {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
                                 </Link>

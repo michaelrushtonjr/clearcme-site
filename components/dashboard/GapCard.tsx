@@ -80,7 +80,7 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
                   className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 ${
                     isUrgent
                       ? "bg-[var(--pop)] text-white hover:bg-[var(--pop-2)]"
-                      : "bg-[var(--warm)] text-white hover:bg-[var(--warm-2)]"
+                      : "bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
                   }`}
                 >
                   See courses →
@@ -91,13 +91,19 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
         })}
       </div>
 
-      {/* Overflow count */}
+      {/* Overflow count — link to the full list so the count is actionable */}
       {overflowCount > 0 && (
-        <p className="text-sm text-[var(--ink-3)] italic text-center mt-3">
-          {allSameDeadline
-            ? `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"} due ${gaps[0].detail}`
-            : `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"}`}
-        </p>
+        <div className="text-center mt-3">
+          <Link
+            href="/dashboard/compliance"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-2)] underline underline-offset-2"
+          >
+            {allSameDeadline
+              ? `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"} due ${gaps[0].detail}`
+              : `+ ${overflowCount} more item${overflowCount === 1 ? "" : "s"}`}
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       )}
     </div>
   );

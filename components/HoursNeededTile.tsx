@@ -62,8 +62,26 @@ export default function HoursNeededTile({
               {totalHoursStillNeeded.toFixed(1)}
             </p>
             <p className="text-xs text-[var(--ink-3)] mt-0.5">
-              {totalHoursStillNeeded === 0 ? "all clear ✓" : "tap for breakdown ↓"}
+              {totalHoursStillNeeded === 0
+                ? "all clear ✓"
+                : licenses.length > 1
+                ? `across ${licenses.length} licenses, all cycles`
+                : "this cycle"}
             </p>
+            {totalHoursStillNeeded > 0 && (
+              <p className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] mt-1">
+                See breakdown
+                <svg
+                  className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </p>
+            )}
           </>
         ) : (
           <>

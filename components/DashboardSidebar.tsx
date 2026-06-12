@@ -24,10 +24,19 @@ const navItems = [
   },
   {
     href: "/dashboard/upload",
-    label: "My Certificates",
+    label: "Upload",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/certificates",
+    label: "My Certificates",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
   },
@@ -109,8 +118,8 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* User footer */}
-      <div className="px-3 py-4 border-t border-[var(--line)]">
+      {/* User footer — extra bottom padding keeps Sign out clear of the iOS home indicator */}
+      <div className="px-3 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-[var(--line)]">
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
           <div className="w-8 h-8 rounded-full bg-[rgba(63,95,51,0.12)] flex items-center justify-center flex-shrink-0">
             <span className="text-xs font-semibold text-[var(--primary)]">
@@ -183,9 +192,9 @@ export default function DashboardSidebar({ user }: { user: NavUser }) {
         </button>
       </header>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — z-[60] so it layers above the bottom tab bar (z-40) and FAB (z-50) */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
+        <div className="lg:hidden fixed inset-0 z-[60] flex">
           <div
             className="fixed inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}

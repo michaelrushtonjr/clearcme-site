@@ -24,8 +24,9 @@ export default async function DashboardLayout({
       <DashboardSidebar user={session.user} />
       {/* Desktop: offset for sidebar; mobile: full width below top bar */}
       <div className="lg:pl-64">
-        {/* pb-20 on mobile to clear the bottom nav bar */}
-        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-24 lg:pb-8">
+        {/* Mobile bottom padding clears the tab bar (56px + safe area) plus the
+            floating action button that sits above it, so neither covers content. */}
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-44 lg:pb-8">
           {children}
         </main>
       </div>

@@ -14,6 +14,7 @@ import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { keyToSlug } from "@/lib/courses";
+import { daysUntil } from "@/lib/dates";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
@@ -89,9 +90,7 @@ export default async function DashboardPage() {
           cycleEnd,
           licenseState: license.state,
           licenseIssueDate: license.issueDate,
-          daysUntilRenewal: license.renewalDate
-            ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-            : null,
+          daysUntilRenewal: daysUntil(license.renewalDate),
         });
         const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
         const hoursSatisfied = req.hoursRequired > 0 && earned >= req.hoursRequired;
@@ -113,11 +112,7 @@ export default async function DashboardPage() {
       const effectiveHoursNeeded = Math.max(hoursNeeded, mandatoryGapHours);
       const isCompliant = hoursNeeded === 0 && mandatoryResults.every((r) => r.isMet || r.isUnknown);
 
-      const daysUntilRenewal = license.renewalDate
-        // Server-rendered dashboard snapshot; intentionally computed at request time.
-        // eslint-disable-next-line react-hooks/purity
-        ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-        : null;
+      const daysUntilRenewal = daysUntil(license.renewalDate);
 
       const mandatoryTopics = mandatoryResults
         .filter((r) => !r.isMet && !r.isUnknown)

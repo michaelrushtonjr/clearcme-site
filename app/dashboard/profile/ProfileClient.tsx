@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NpiVerifier from "@/components/NpiVerifier";
+import { formatDateUTC } from "@/lib/dates";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -88,11 +89,18 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
   const [existingLicenses, setExistingLicenses] = useState<ExistingLicense[]>([]);
   const [licensesLoading, setLicensesLoading] = useState(true);
 
+  // The add-license form stays collapsed when licenses already exist;
+  // first-time users (no licenses) see it expanded immediately.
+  const [showAddForm, setShowAddForm] = useState(false);
+
   useEffect(() => {
     fetch("/api/licenses")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setExistingLicenses(data);
+        if (Array.isArray(data)) {
+          setExistingLicenses(data);
+          if (data.length === 0) setShowAddForm(true);
+        }
       })
       .catch(() => {})
       .finally(() => setLicensesLoading(false));
@@ -289,7 +297,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                   </p>
                   {lic.renewalDate && (
                     <p className="text-xs text-[var(--ink-3)] mt-0.5">
-                      Renewal: {new Date(lic.renewalDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                      Renewal: {formatDateUTC(lic.renewalDate, { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                   )}
                   <p className="text-xs text-[var(--ink-3)] mt-0.5">
@@ -315,7 +323,20 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         )}
       </div>
 
+      {/* Collapsed: a single affordance instead of a permanently expanded form */}
+      {!showAddForm && !licensesLoading && (
+        <button
+          type="button"
+          onClick={() => setShowAddForm(true)}
+          className="w-full py-4 border-2 border-dashed border-[var(--line)] rounded-[var(--radius)] text-sm font-semibold text-[var(--primary)] hover:border-[var(--primary)] hover:bg-[rgba(63,95,51,0.08)] transition-colors"
+        >
+          + Add Medical License
+        </button>
+      )}
+
       {/* Add License form */}
+      {showAddForm && (
+      <>
       <div className="product-page-head">
         <p className="product-page-eye">License profile</p>
         <h1 className="product-page-title">Add Medical License</h1>
@@ -786,7 +807,15 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => {
+              // With existing licenses, "Cancel" just collapses the form;
+              // for first-time setup there's nothing to collapse back to.
+              if (existingLicenses.length > 0) {
+                setShowAddForm(false);
+              } else {
+                router.back();
+              }
+            }}
             className="product-btn product-btn-secondary flex-1"
           >
             Cancel
@@ -800,6 +829,8 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
           </button>
         </div>
       </form>
+      </>
+      )}
     </div>
   );
 }

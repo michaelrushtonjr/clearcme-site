@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
 import { isComputedComplianceBlocked, computedComplianceBlockedMessage } from "@/lib/compliance-rule-availability";
+import { daysUntil } from "@/lib/dates";
 import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
 // GET /api/compliance — compute and return compliance status for the current user
@@ -122,9 +123,7 @@ export async function GET(req: NextRequest) {
         cycleEnd,
         licenseState: license.state,
         licenseIssueDate: license.issueDate,
-        daysUntilRenewal: license.renewalDate
-          ? Math.ceil((license.renewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-          : null,
+        daysUntilRenewal: daysUntil(license.renewalDate),
       });
       const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
       const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;

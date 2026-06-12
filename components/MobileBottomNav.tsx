@@ -44,7 +44,7 @@ const navItems = [
   },
   {
     href: "/dashboard/compliance",
-    label: "Gaps",
+    label: "Compliance",
     icon: (active: boolean) => (
       <svg
         className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
@@ -63,7 +63,7 @@ const navItems = [
   },
   {
     href: "/dashboard/profile",
-    label: "Profile",
+    label: "Licenses",
     icon: (active: boolean) => (
       <svg
         className={`w-6 h-6 ${active ? "text-[var(--primary)]" : "text-[var(--ink-3)]"}`}
