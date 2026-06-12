@@ -435,9 +435,11 @@ export default async function CompliancePage() {
           gap: g.gap,
           isMet: g.isMet,
           isUnknown: g.isUnknown,
-          // firstRenewalOnly is surfaced via the rule's mandatoryRequirements
+          // Match by requirement id, not topic — a license can have multiple
+          // rows for the same topic (e.g. NV's 2-hr state Substance Use rule
+          // alongside the 8-hr federal DEA MATE one-time requirement).
           isOneTime:
-            d.rule?.mandatoryRequirements.find((r) => r.topic === g.topic)
+            d.rule?.mandatoryRequirements.find((r) => r.id === g.requirementId)
               ?.firstRenewalOnly ?? false,
         })),
       }))
@@ -682,12 +684,15 @@ export default async function CompliancePage() {
                       const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
                       return {
-                        key: gap.topic,
+                        // requirementId, not topic — duplicate topics per license
+                        // (state rule + federal one-time) would collide as keys
+                        key: gap.requirementId,
                         isScrollTarget: isFirstGap,
                         toneClassName: `${topicTone.bg} ${topicTone.border}`,
                         defaultOpen:
                           nextAction?.topic === gap.topic &&
-                          nextAction?.licenseState === license.state,
+                          nextAction?.licenseState === license.state &&
+                          !gap.isMet,
                         summary: (
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2 min-w-0">
