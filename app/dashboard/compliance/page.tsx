@@ -4,8 +4,9 @@ export const revalidate = 0;
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import CertificateList from "@/components/CertificateList";
-import UrgencyCard, { NextActionCardProps } from "@/components/dashboard/UrgencyCard";
+import UrgencyCard from "@/components/dashboard/UrgencyCard";
+import MandatoryTopicAccordion from "@/components/dashboard/MandatoryTopicAccordion";
+import { buildNextAction } from "@/lib/next-action";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
@@ -416,54 +417,31 @@ export default async function CompliancePage() {
 
   const totalHoursAllCerts = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
-  // Shared credit detection: AMA_PRA_1 certs count toward all license states
-  const licenseStates = licenses.map((l) => l.state);
-  const sharedCredits: Record<string, string[]> = {};
-  if (licenseStates.length >= 2) {
-    for (const cert of certificates) {
-      if (cert.creditType === "AMA_PRA_1") {
-        sharedCredits[cert.id] = licenseStates;
-      }
-    }
-  }
-
-  // Build "Your Next Action" card props — pick the most urgent license with a rule
-  // Priority: soonest renewal with a gap; fallback to first license with a rule
-  const nextActionProps: NextActionCardProps | null = (() => {
-    // Find the most actionable license: soonest renewal that has a rule
-    const withRules = complianceData.filter((d) => d.rule !== null);
-    if (withRules.length === 0) return null;
-
-    // Sort by days until renewal ascending (nulls last), then pick first
-    const sorted = [...withRules].sort((a, b) => {
-      if (a.daysUntilRenewal === null) return 1;
-      if (b.daysUntilRenewal === null) return -1;
-      return a.daysUntilRenewal - b.daysUntilRenewal;
-    });
-
-    const d = sorted[0];
-    const renewalDateLabel = d.license.renewalDate
-      ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
-      : "your renewal date";
-
-    return {
-      daysUntilRenewal: d.daysUntilRenewal,
-      renewalDateLabel,
-      generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
-      mandatoryGaps: d.mandatoryGaps.map((g) => ({
-        topic: g.topic,
-        gap: g.gap,
-        isMet: g.isMet,
-        isUnknown: g.isUnknown,
-        // firstRenewalOnly is surfaced via the rule's mandatoryRequirements
-        isOneTime:
-          d.rule?.mandatoryRequirements.find((r) => r.topic === g.topic)
-            ?.firstRenewalOnly ?? false,
-      })),
-      isFullyCompliant: d.isCompliant,
-      licenseState: d.license.state,
-    };
-  })();
+  // Shared next-action engine — same recommendation as the dashboard hero card
+  const nextAction = buildNextAction(
+    complianceData
+      .filter((d) => d.rule !== null)
+      .map((d) => ({
+        state: d.license.state,
+        licenseType: d.license.licenseType,
+        daysUntilRenewal: d.daysUntilRenewal,
+        renewalDateLabel: d.license.renewalDate
+          ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
+          : "your renewal date",
+        generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
+        isCompliant: d.isCompliant,
+        mandatoryGaps: d.mandatoryGaps.map((g) => ({
+          topic: g.topic,
+          gap: g.gap,
+          isMet: g.isMet,
+          isUnknown: g.isUnknown,
+          // firstRenewalOnly is surfaced via the rule's mandatoryRequirements
+          isOneTime:
+            d.rule?.mandatoryRequirements.find((r) => r.topic === g.topic)
+              ?.firstRenewalOnly ?? false,
+        })),
+      }))
+  );
 
   // Build export data for client component
   const exportData = {
@@ -523,8 +501,8 @@ export default async function CompliancePage() {
         </div>
       </div>
 
-      {/* Your Next Action card */}
-      {nextActionProps && <UrgencyCard {...nextActionProps} />}
+      {/* Your Next Action card — rendered from the shared engine */}
+      {nextAction && <UrgencyCard rec={nextAction} />}
 
       {/* No licenses */}
       {licenses.length === 0 && (
@@ -684,12 +662,12 @@ export default async function CompliancePage() {
                 />
               )}
 
-              {/* Mandatory topics */}
+              {/* Mandatory topics — collapsed accordion; the next-action topic starts open */}
               {mandatoryGaps.length > 0 && (
                 <div>
                   <h3 className="font-display text-lg font-semibold text-[var(--ink)] mb-3">Mandatory Topics</h3>
-                  <div className="space-y-2">
-                    {mandatoryGaps.map((gap, gapIdx) => {
+                  <MandatoryTopicAccordion
+                    rows={mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
                       const topicToneKey = gap.isMet ? "met" : gap.isUnknown ? "open" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
                       const topicTone = TONE[topicToneKey];
@@ -703,16 +681,18 @@ export default async function CompliancePage() {
                       // Mark the first unmet gap for aha-moment scroll target
                       const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
-                      return (
-                        <div
-                          key={gap.topic}
-                          {...(isFirstGap ? { "data-gap-card": "true", tabIndex: -1 } : {})}
-                          className={`rounded-[var(--radius)] border p-4 ${topicTone.bg} ${topicTone.border}`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-2 flex-1 min-w-0">
+                      return {
+                        key: gap.topic,
+                        isScrollTarget: isFirstGap,
+                        toneClassName: `${topicTone.bg} ${topicTone.border}`,
+                        defaultOpen:
+                          nextAction?.topic === gap.topic &&
+                          nextAction?.licenseState === license.state,
+                        summary: (
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
                               <span
-                                className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${
+                                className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${
                                   gap.isUnknown
                                     ? "bg-[var(--status-track-bg)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--status-track)]"
                                     : "text-base"
@@ -720,97 +700,99 @@ export default async function CompliancePage() {
                               >
                                 {statusIcon}
                               </span>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-[var(--ink)]">
-                                  {formatTopic(gap.topic)}
-                                </p>
-                                {gap.description && (
-                                  <p className="text-xs text-[var(--ink-3)] mt-0.5 leading-relaxed">{gap.description}</p>
-                                )}
-                                <p className="mt-1 text-xs font-medium text-[var(--ink-3)]">
-                                  Cadence: {gap.cadenceLabel}
-                                  {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
-                                </p>
-                                {gap.isUnknown && (
-                                  <div className="mt-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2 text-xs text-[var(--ink)]">
-                                    <p className="font-semibold">Tell ClearCME if you already completed this.</p>
-                                    <p className="mt-1 text-[var(--ink-2)]">
-                                      {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
-                                    </p>
-                                    <p className="mt-1 text-[var(--status-track)]">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="font-mono text-sm font-semibold text-[var(--ink)]">
-                                {gap.earned.toFixed(1)}/{gap.needed.toFixed(0)} hrs
+                              <p className="text-sm font-medium text-[var(--ink)] truncate">
+                                {formatTopic(gap.topic)}
                               </p>
-                              {!gap.isMet && !gap.isUnknown && (
-                                <p className={`text-xs mt-0.5 ${gap.earned > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-miss)]"}`}>
-                                  {gap.gap.toFixed(1)} hrs short
-                                </p>
-                              )}
-                              <span className={`mt-1 ${requirementStatusClass(statusLabel)}`}>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="font-mono text-xs font-semibold text-[var(--ink)]">
+                                {gap.earned.toFixed(1)}/{gap.needed.toFixed(0)} hrs
+                              </span>
+                              <span className={requirementStatusClass(statusLabel)}>
                                 {statusLabel}
                               </span>
                             </div>
                           </div>
-
-                          {gap.sourceMeta && (
-                            <RequirementSourceDisclosure sourceMeta={gap.sourceMeta} />
-                          )}
-
-                          {/* Progress bar */}
-                          <div className="mt-3 flex items-center gap-3">
-                            <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${
-                                  gap.isMet ? "bg-[var(--status-met)]" : gap.earned > 0 ? "bg-[var(--warm)]" : "bg-[var(--pop)]"
-                                }`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
+                        ),
+                        details: (
+                          <div>
+                            {gap.description && (
+                              <p className="text-xs text-[var(--ink-3)] leading-relaxed">{gap.description}</p>
+                            )}
+                            <p className="mt-1 text-xs font-medium text-[var(--ink-3)]">
+                              Cadence: {gap.cadenceLabel}
+                              {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
+                            </p>
                             {!gap.isMet && !gap.isUnknown && (
-                              <div className="flex flex-col items-end gap-0.5">
-                                <Link
-                                  href={`/courses/${keyToSlug(gap.topic)}`}
-                                  className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
-                                >
-                                  {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
-                                </Link>
-                                {HIPPO_TOPICS.has(gap.topic) ? (
-                                  <span className="inline-flex items-center gap-1 text-xs text-[var(--mauve)] font-medium">
-                                    via Hippo Education
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-[var(--ink-3)]">ACCME-accredited • Cat 1</span>
-                                )}
-                              </div>
+                              <p className={`mt-1 text-xs ${gap.earned > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-miss)]"}`}>
+                                {gap.gap.toFixed(1)} hrs short
+                              </p>
                             )}
                             {gap.isUnknown && (
-                              <Link
-                                href="/dashboard/settings#requirement-history"
-                                className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--primary-2)] sm:w-auto sm:min-h-0 sm:py-1"
-                              >
-                                Confirm my history →
-                              </Link>
+                              <div className="mt-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2 text-xs text-[var(--ink)]">
+                                <p className="font-semibold">Tell ClearCME if you already completed this.</p>
+                                <p className="mt-1 text-[var(--ink-2)]">
+                                  {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
+                                </p>
+                                <p className="mt-1 text-[var(--status-track)]">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
+                              </div>
+                            )}
+
+                            {gap.sourceMeta && (
+                              <RequirementSourceDisclosure sourceMeta={gap.sourceMeta} />
+                            )}
+
+                            {/* Progress bar */}
+                            <div className="mt-3 flex items-center gap-3">
+                              <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    gap.isMet ? "bg-[var(--status-met)]" : gap.earned > 0 ? "bg-[var(--warm)]" : "bg-[var(--pop)]"
+                                  }`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              {!gap.isMet && !gap.isUnknown && (
+                                <div className="flex flex-col items-end gap-0.5">
+                                  <Link
+                                    href={`/courses/${keyToSlug(gap.topic)}`}
+                                    className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
+                                  >
+                                    {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
+                                  </Link>
+                                  {HIPPO_TOPICS.has(gap.topic) ? (
+                                    <span className="inline-flex items-center gap-1 text-xs text-[var(--mauve)] font-medium">
+                                      via Hippo Education
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-[var(--ink-3)]">ACCME-accredited • Cat 1</span>
+                                  )}
+                                </div>
+                              )}
+                              {gap.isUnknown && (
+                                <Link
+                                  href="/dashboard/settings#requirement-history"
+                                  className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--primary-2)] sm:w-auto sm:min-h-0 sm:py-1"
+                                >
+                                  Confirm my history →
+                                </Link>
+                              )}
+                            </div>
+
+                            {/* Gap-specific course feed — Pixel rec #4 */}
+                            {!gap.isMet && !gap.isUnknown && (
+                              <GapCourseFeed
+                                topic={gap.topic}
+                                hoursNeeded={gap.gap}
+                                limit={hasFullCourseChoice ? 3 : 1}
+                                showUpgradePrompt={!hasFullCourseChoice}
+                              />
                             )}
                           </div>
-
-                          {/* Gap-specific course feed — Pixel rec #4 */}
-                          {!gap.isMet && !gap.isUnknown && (
-                            <GapCourseFeed
-                              topic={gap.topic}
-                              hoursNeeded={gap.gap}
-                              limit={hasFullCourseChoice ? 3 : 1}
-                              showUpgradePrompt={!hasFullCourseChoice}
-                            />
-                          )}
-                        </div>
-                      );
+                        ),
+                      };
                     })}
-                  </div>
+                  />
                 </div>
               )}
 
@@ -825,30 +807,28 @@ export default async function CompliancePage() {
         </section>
       ))}
 
-      {/* Certificate list */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">
-            All Certificates ({certificates.length})
-          </h2>
-          <Link
-            href="/dashboard/upload"
-            className="text-sm text-[var(--primary)] hover:text-[var(--primary-2)] font-medium"
-          >
-            + Upload
-          </Link>
-        </div>
-
-        <CertificateList certs={certificates} totalCount={certificates.length} sharedCredits={sharedCredits} />
-        {certificates.length > 0 && (
-          <div className="px-5 py-4 bg-[var(--bg-2)] border border-[var(--line)] rounded-b-2xl -mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--ink-2)]">Total hours</span>
-            <span className="font-mono text-sm font-semibold text-[var(--primary)]">
-              {totalHoursAllCerts.toFixed(1)} hrs
-            </span>
+      {/* Certificates — full list lives on its own page now */}
+      <Link
+        href="/dashboard/certificates"
+        className="product-card px-5 py-4 flex items-center justify-between gap-3 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[rgba(63,95,51,0.12)] flex items-center justify-center flex-shrink-0">
+            <svg className="w-4.5 h-4.5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
           </div>
-        )}
-      </section>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              {certificates.length} certificate{certificates.length === 1 ? "" : "s"} on file
+            </p>
+            <p className="text-xs text-[var(--ink-3)]">
+              {totalHoursAllCerts.toFixed(1)} hrs total · AI-extracted credit details
+            </p>
+          </div>
+        </div>
+        <span className="text-sm font-medium text-[var(--primary)] flex-shrink-0">View all →</span>
+      </Link>
     </div>
   );
 }

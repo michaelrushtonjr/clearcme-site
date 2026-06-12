@@ -14,7 +14,8 @@ import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { keyToSlug } from "@/lib/courses";
-import { daysUntil } from "@/lib/dates";
+import { daysUntil, formatDateUTC } from "@/lib/dates";
+import { buildNextAction } from "@/lib/next-action";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
 
@@ -101,6 +102,7 @@ export default async function DashboardPage() {
           needed: req.hoursRequired,
           isMet: hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0),
           isUnknown,
+          isOneTime: req.firstRenewalOnly,
         };
       });
 
@@ -131,6 +133,7 @@ export default async function DashboardPage() {
         mandatoryPendingCount,
         mandatoryGapHours,
         mandatoryTopics,
+        mandatoryResults,
         effectiveHoursNeeded,
         daysUntilRenewal,
         isCompliant,
@@ -158,8 +161,30 @@ export default async function DashboardPage() {
   const hasLicenses = licenses.length > 0;
   const hasCertificates = certificates.length > 0;
 
-  // Build top 3 compliance gaps for the attention card (ordered by urgency)
-  const allGaps: { label: string; detail: string; href: string; urgency: number }[] = [];
+  // Shared next-action engine — same recommendation as the Compliance Map
+  const nextAction = buildNextAction(
+    validCompliance.map((d) => ({
+      state: d.license.state,
+      licenseType: d.license.licenseType,
+      daysUntilRenewal: d.daysUntilRenewal,
+      renewalDateLabel: d.license.renewalDate
+        ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
+        : "your renewal date",
+      generalGapHours: d.hoursNeeded,
+      isCompliant: d.isCompliant,
+      mandatoryGaps: d.mandatoryResults.map((r) => ({
+        topic: r.topic,
+        gap: Math.max(0, r.needed - r.earned),
+        isMet: r.isMet,
+        isUnknown: r.isUnknown,
+        isOneTime: r.isOneTime,
+      })),
+    }))
+  );
+
+  // Build top 3 compliance gaps for the attention card (ordered by urgency,
+  // with the engine's pick promoted to the top so the list matches the hero)
+  const allGaps: { label: string; detail: string; href: string; urgency: number; topic?: string; state?: string }[] = [];
   for (const d of validCompliance) {
     if (d.hoursNeeded > 0) {
       allGaps.push({
@@ -167,6 +192,7 @@ export default async function DashboardPage() {
         detail: d.daysUntilRenewal != null ? `${d.daysUntilRenewal} days to renewal` : "No renewal date set",
         href: "/dashboard/compliance",
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal : 0,
+        state: d.license.state,
       });
     }
     for (const t of d.mandatoryTopics) {
@@ -175,10 +201,17 @@ export default async function DashboardPage() {
         detail: `${t.hoursNeeded.toFixed(1)} hrs short · mandatory topic`,
         href: `/courses/${encodeURIComponent(keyToSlug(t.topic))}`,
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
+        topic: t.topic,
+        state: d.license.state,
       });
     }
   }
-  allGaps.sort((a, b) => b.urgency - a.urgency);
+  allGaps.sort((a, b) => {
+    const aIsPick = a.topic === nextAction?.topic && a.state === nextAction?.licenseState;
+    const bIsPick = b.topic === nextAction?.topic && b.state === nextAction?.licenseState;
+    if (aIsPick !== bIsPick) return aIsPick ? -1 : 1;
+    return b.urgency - a.urgency;
+  });
   const topGaps = allGaps.slice(0, 3);
   const allGapsCount = allGaps.length;
 
@@ -245,17 +278,17 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* NextActionCard or AuditReadyCard */}
+          {/* NextActionCard or AuditReadyCard — driven by the shared engine */}
           {allCompliant ? (
             <AuditReadyCard />
-          ) : topGaps.length > 0 ? (
+          ) : nextAction ? (
             <NextActionCard
               eyebrow="Next best action"
-              title={<>Finish this next: <em>{topGaps[0].label}</em></>}
-              body={<>This is the highest-priority CME gap based on your renewal date and mandatory-topic requirements. Complete it first, then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
-              ctaHref={topGaps[0].href}
-              ctaLabel={topGaps[0].href.startsWith("/courses/") ? "Find matching CME" : "Upload certificate"}
-              source={topGaps[0].detail}
+              title={nextAction.headline}
+              body={<>{nextAction.explanation} Then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
+              ctaHref={nextAction.ctaUrl}
+              ctaLabel={nextAction.ctaLabel}
+              source={nextAction.sourceNote ?? undefined}
             />
           ) : null}
 
