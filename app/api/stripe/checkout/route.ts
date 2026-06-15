@@ -68,6 +68,7 @@ export async function POST(req: Request) {
     customer: stripeCustomerId,
     line_items: [{ price: getPriceIdForTier(tier), quantity: 1 }],
     allow_promotion_codes: true,
+    payment_method_collection: "if_required",
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url: `${baseUrl}/pricing?checkout=cancelled`,
     client_reference_id: user.id,
