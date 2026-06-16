@@ -1,10 +1,19 @@
 import NextAuth from "next-auth";
+import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
 const providers = [
+  ...(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
+    ? [
+        Apple({
+          clientId: process.env.AUTH_APPLE_ID,
+          clientSecret: process.env.AUTH_APPLE_SECRET,
+        }),
+      ]
+    : []),
   Google({
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,

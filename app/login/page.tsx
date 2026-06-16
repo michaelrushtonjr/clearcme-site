@@ -8,6 +8,7 @@ import { signIn } from "next-auth/react";
 // Email magic link is only available when RESEND_API_KEY is configured.
 // On production without the key, we show Google-only sign-in.
 const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
+const APPLE_ENABLED = !!process.env.NEXT_PUBLIC_APPLE_SIGNIN_ENABLED;
 
 const TRUST_BULLETS = [
   { icon: "✓", text: "Free to start" },
@@ -84,6 +85,10 @@ function LoginPageInner() {
     signIn("google", { callbackUrl: "/dashboard" });
   };
 
+  const handleAppleSignIn = () => {
+    signIn("apple", { callbackUrl: "/dashboard" });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#FAFAF7" }}>
       {/* Mobile value line — shown only below lg */}
@@ -113,6 +118,7 @@ function LoginPageInner() {
           emailSent={emailSent}
           loading={loading}
           handleGoogleSignIn={handleGoogleSignIn}
+          handleAppleSignIn={handleAppleSignIn}
           handleEmailSignIn={handleEmailSignIn}
         />
       </div>
@@ -137,6 +143,7 @@ function LoginPageInner() {
             emailSent={emailSent}
             loading={loading}
             handleGoogleSignIn={handleGoogleSignIn}
+            handleAppleSignIn={handleAppleSignIn}
             handleEmailSignIn={handleEmailSignIn}
           />
         </div>
@@ -159,6 +166,7 @@ interface AuthFormProps {
   emailSent: boolean;
   loading: boolean;
   handleGoogleSignIn: () => void;
+  handleAppleSignIn: () => void;
   handleEmailSignIn: (e: React.FormEvent) => void;
 }
 
@@ -168,6 +176,7 @@ function AuthForm({
   emailSent,
   loading,
   handleGoogleSignIn,
+  handleAppleSignIn,
   handleEmailSignIn,
 }: AuthFormProps) {
   return (
@@ -203,6 +212,18 @@ function AuthForm({
           </div>
         ) : (
           <>
+            {APPLE_ENABLED && (
+              <button
+                onClick={handleAppleSignIn}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-900 rounded-xl text-sm font-semibold text-white bg-slate-950 hover:bg-slate-800 transition-colors mb-3"
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-950">
+                  A
+                </span>
+                Continue with Apple
+              </button>
+            )}
+
             {/* Google Sign In */}
             <button
               onClick={handleGoogleSignIn}
