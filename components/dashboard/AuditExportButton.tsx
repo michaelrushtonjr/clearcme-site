@@ -63,7 +63,7 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-start gap-1">
       <button
         onClick={handleDownload}
         disabled={loading}
@@ -94,7 +94,7 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
           </>
         )}
       </button>
-      <p className="max-w-[16rem] text-right text-[11px] leading-snug text-[var(--ink-3)]">
+      <p className="max-w-[16rem] text-left text-[11px] leading-snug text-[var(--ink-3)]">
         ZIP organized by license, requirement, and year.
       </p>
       {error && (
