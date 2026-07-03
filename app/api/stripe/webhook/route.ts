@@ -42,11 +42,20 @@ function invoiceSubscriptionId(invoice: Stripe.Invoice) {
   return typeof withLegacySubscription.subscription === "string" ? withLegacySubscription.subscription : null;
 }
 
+// Statuses that should grant paid access. A canceled/unpaid/expired
+// subscription still carries its price ID, so we must NOT derive the stored
+// tier from price alone — otherwise tier-based gates (compliance course choice,
+// settings "paid plan") keep granting access after a cancellation. past_due is
+// intentionally kept as a grace state while Stripe dunning retries.
+const ENTITLING_STATUSES = new Set<StripeSubStatus>(["active", "trialing", "past_due"]);
+
 async function syncSubscription(subscription: Stripe.Subscription) {
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
   const firstItem = subscription.items.data[0];
   const priceId = firstItem?.price.id ?? null;
-  const tier = getTierForPriceId(priceId);
+  // Effective tier: the priced tier only while the subscription is entitling,
+  // otherwise FREE so access is revoked on cancel/unpaid/expiry.
+  const tier = ENTITLING_STATUSES.has(subscription.status) ? getTierForPriceId(priceId) : "FREE";
   const userId = subscription.metadata.userId;
 
   if (!userId) {
