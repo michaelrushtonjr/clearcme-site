@@ -23,8 +23,8 @@ import {
 } from "@/lib/state-requirements";
 
 const tickerItems = [
-  ["CA", "renews by birth month"],
-  ["NV", "MD birthday · DO Dec 31"],
+  ["CA", "renews by issue month"],
+  ["NV", "MD Jun 30 odd yrs · DO Dec 31 even yrs"],
   ["TX", "renews by birth month"],
   ["FL", "assigned biennium"],
   ["NY", "every 2 yrs"],

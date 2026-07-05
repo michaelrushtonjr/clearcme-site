@@ -105,12 +105,12 @@ function SelfCheckTool() {
       <p className="text-xs text-[#6b7568]">
         Not sure of your DEA date?{" "}
         <a
-          href="https://www.dea.gov/drug-registration"
+          href="https://www.deadiversion.usdoj.gov/drugreg/registration.html"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#3f5f33] hover:underline"
         >
-          Check DEA.gov →
+          Check DEA Diversion Control →
         </a>
       </p>
     </div>
