@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/:path*",
+        // Exclude /api: cross-origin redirects strip Authorization headers
+        // (fetch spec), which broke Bearer-token calls from iOS app builds
+        // that still target www. Bearer auth is host-agnostic, so serving
+        // API calls on www directly is safe; pages still canonicalize.
+        source: "/:path((?!api/).*)",
         has: [{ type: "host" as const, value: "www.clearcme.ai" }],
         destination: "https://clearcme.ai/:path*",
         permanent: true,
