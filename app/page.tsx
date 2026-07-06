@@ -625,7 +625,7 @@ function MultiState() {
               <div className="flag">CA</div>
               <div className="info">
                 <div className="name">California · MD</div>
-                <div className="deet">Pain management due · birth-month renewal</div>
+                <div className="deet">Pain management due · issue-month renewal</div>
               </div>
               <div className="right">
                 <div className="pct">62%</div>
@@ -636,7 +636,7 @@ function MultiState() {
               <div className="flag">NV</div>
               <div className="info">
                 <div className="name">Nevada · MD</div>
-                <div className="deet">DEA MATE Act outstanding · birthday renewal</div>
+                <div className="deet">DEA MATE Act outstanding · Jun 30 renewal</div>
               </div>
               <div className="right">
                 <div className="pct">76%</div>
