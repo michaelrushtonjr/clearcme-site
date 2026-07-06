@@ -54,6 +54,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           state: crossSiteCheckCookie("__Secure-authjs.state"),
           pkceCodeVerifier: crossSiteCheckCookie("__Secure-authjs.pkce.code_verifier"),
           nonce: crossSiteCheckCookie("__Secure-authjs.nonce"),
+          // Also needed at Apple's cross-site form_post callback: without it,
+          // Auth.js forgets the post-login destination and dumps users on "/".
+          callbackUrl: {
+            name: "__Secure-authjs.callback-url",
+            options: { sameSite: "none" as const, secure: true, path: "/" },
+          },
         },
       }
     : {}),
