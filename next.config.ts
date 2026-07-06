@@ -3,6 +3,20 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Needed to bundle Prisma correctly on Vercel Edge
   serverExternalPackages: ["@prisma/client"],
+  // One canonical origin. Both clearcme.ai and www.clearcme.ai serve the app
+  // on Vercel; host-scoped auth cookies set on one host are invisible on the
+  // other, which broke OAuth (Apple especially — its form_post callback).
+  // 308 preserves method+body, so even a POST callback survives the hop.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host" as const, value: "www.clearcme.ai" }],
+        destination: "https://clearcme.ai/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
