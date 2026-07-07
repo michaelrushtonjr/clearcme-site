@@ -529,6 +529,9 @@ export default function SetupPage() {
               )}
 
               <div className="mb-4">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Next renewal date
+                </label>
                 <input
                   type="date"
                   value={renewalDate}
@@ -549,10 +552,14 @@ export default function SetupPage() {
               )}
 
               {isPrimaryVariableRenewal && primaryRenewalRule && (
-                <p className="text-xs text-slate-500 mb-4 px-1">
-                  Renewal timing is individualized for this license. Use the date listed on your
-                  board record: {primaryRenewalRule.renewalDeadline}.
-                </p>
+                <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+                  <p className="font-semibold text-slate-700">Why can&apos;t we estimate this one?</p>
+                  <p className="mt-1">
+                    {selectedStateName} sets renewal dates individually per physician —{" "}
+                    {primaryRenewalRule.renewalDeadline}. Enter the date from your license or your
+                    board profile; you can update it anytime.
+                  </p>
+                </div>
               )}
 
               <button
@@ -678,6 +685,12 @@ export default function SetupPage() {
                       lic.licenseType,
                     );
                     const canUseAdditionalSmartEstimate = !!additionalSuggestedRenewal.date;
+                    const additionalRenewalRule =
+                      lic.state && lic.licenseType
+                        ? getRenewalRuleConfig(lic.state as StateCode, lic.licenseType as LicenseType)
+                        : null;
+                    const additionalStateName =
+                      US_STATES.find((s) => s.code === lic.state)?.name ?? lic.state;
 
                     return (
                       <div key={lic.id} className="border border-slate-200 rounded-xl p-4 space-y-3 relative">
@@ -739,14 +752,27 @@ export default function SetupPage() {
                           ))}
                         </div>
 
+                        {/* Renewal schedule context */}
+                        {additionalRenewalRule && (
+                          <p className="text-xs text-slate-500">
+                            {additionalStateName} {lic.licenseType} renews:{" "}
+                            <span className="font-medium text-slate-600">{additionalRenewalRule.renewalDeadline}</span>
+                          </p>
+                        )}
+
                         {/* Renewal date */}
                         {!lic.unsureDate && (
-                          <input
-                            type="date"
-                            value={lic.renewalDate}
-                            onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                          />
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              Next renewal date
+                            </label>
+                            <input
+                              type="date"
+                              value={lic.renewalDate}
+                              onChange={(e) => updateAdditionalLicense(lic.id, { renewalDate: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                            />
+                          </div>
                         )}
 
                         <button
@@ -782,6 +808,45 @@ export default function SetupPage() {
                           </span>
                           Estimate renewal date
                         </button>
+
+                        {/* Why estimates aren't available for some states */}
+                        {!!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate && (
+                          <p className="text-xs text-slate-500">
+                            {additionalRenewalRule?.renewalType === "variable" ? (
+                              <>
+                                We can&apos;t auto-estimate {additionalStateName} — renewal dates there are
+                                set individually per physician (based on your license record). Enter the
+                                date from your board profile; you can update it anytime.
+                              </>
+                            ) : additionalRenewalRule?.renewalType === "birth-based" ? (
+                              <>
+                                {additionalStateName} renews based on your birth month — select it to
+                                unlock the estimate, or enter the date from your license.
+                              </>
+                            ) : (
+                              <>Enter the renewal date from your license or board profile.</>
+                            )}
+                          </p>
+                        )}
+
+                        {/* Birth month unlock for birth-based additional states */}
+                        {!!lic.state &&
+                          !!lic.licenseType &&
+                          additionalRenewalRule?.renewalType === "birth-based" &&
+                          !birthMonth && (
+                            <select
+                              value={birthMonth ?? ""}
+                              onChange={(e) => setBirthMonth(e.target.value ? Number(e.target.value) : null)}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+                            >
+                              <option value="">Select your birth month…</option>
+                              {BIRTH_MONTHS.map((month) => (
+                                <option key={month.value} value={month.value}>
+                                  {month.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                       </div>
                     );
                   })}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NOT_COMPLETED_REQUIREMENT_NOTE } from "@/lib/requirement-completions";
+import RequirementAttestation from "@/components/dashboard/RequirementAttestation";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -124,17 +125,6 @@ export default function SettingsClient({
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState("");
-  const [savingRequirement, setSavingRequirement] = useState<string | null>(null);
-  const [requirementYears, setRequirementYears] = useState<Record<string, string>>(() => {
-    const initial: Record<string, string> = {};
-    for (const completion of requirementCompletions) {
-      if (!completion.physicianLicenseId) continue;
-      initial[`${completion.mandatoryRequirementId}:${completion.physicianLicenseId}`] = completion.completedYear?.toString() ?? "";
-    }
-    return initial;
-  });
-  const [requirementError, setRequirementError] = useState("");
-
   // Notification preferences (stub — no backend yet)
   const [renewalReminders, setRenewalReminders] = useState(true);
   const [gapAlerts, setGapAlerts] = useState(true);
@@ -196,40 +186,6 @@ export default function SettingsClient({
     }
     if (req.cadence === "CONDITIONAL") return "Conditional";
     return "Every renewal";
-  };
-
-  const saveRequirementCompletion = async (
-    req: RequirementSummary,
-    licenseId: string,
-    action: "complete" | "not_completed" | "clear",
-  ) => {
-    const key = `${req.id}:${licenseId}`;
-    setSavingRequirement(key);
-    setRequirementError("");
-    try {
-      const yearRaw = requirementYears[key]?.trim();
-      const completedYear = yearRaw ? Number(yearRaw) : null;
-      if (action === "complete" && yearRaw && (completedYear === null || !Number.isInteger(completedYear) || completedYear < 1950)) {
-        throw new Error("Enter a valid completion year, or leave it blank if you only know it was completed.");
-      }
-      const res = await fetch("/api/requirement-completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mandatoryRequirementId: req.id,
-          physicianLicenseId: licenseId,
-          completedYear,
-          action,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Unable to save requirement history");
-      router.refresh();
-    } catch (err) {
-      setRequirementError(err instanceof Error ? err.message : "Unable to save requirement history");
-    } finally {
-      setSavingRequirement(null);
-    }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -482,7 +438,6 @@ export default function SettingsClient({
                         (completion) => completion.mandatoryRequirementId === req.id && completion.physicianLicenseId === group.licenseId
                       );
                       const markedNotCompleted = saved?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
-                      const saving = savingRequirement === key;
                       return (
                         <div key={key} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -492,16 +447,6 @@ export default function SettingsClient({
                                 <span className="product-pill product-pill-track">
                                   {formatCadence(req)}
                                 </span>
-                                {saved && !markedNotCompleted && (
-                                  <span className="product-pill product-pill-met">
-                                    Recorded{saved.completedYear ? ` · ${saved.completedYear}` : ""}
-                                  </span>
-                                )}
-                                {markedNotCompleted && (
-                                  <span className="product-pill product-pill-miss">
-                                    Still needed
-                                  </span>
-                                )}
                               </div>
                               {req.description && (
                                 <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{req.description}</p>
@@ -510,45 +455,14 @@ export default function SettingsClient({
                                 <p className="mt-1 text-xs leading-relaxed text-[var(--ink-3)]">{req.notes}</p>
                               )}
                             </div>
-                            <div className="flex flex-col gap-2 sm:w-56">
-                              <input
-                                type="number"
-                                inputMode="numeric"
-                                min={1950}
-                                max={new Date().getFullYear() + 1}
-                                placeholder="Year completed"
-                                value={requirementYears[key] ?? ""}
-                                onChange={(e) => setRequirementYears((prev) => ({ ...prev, [key]: e.target.value }))}
-                                className="product-input"
+                            <div className="sm:w-56">
+                              <RequirementAttestation
+                                requirementId={req.id}
+                                licenseId={group.licenseId}
+                                status={saved ? (markedNotCompleted ? "not_completed" : "completed") : "none"}
+                                completedYear={saved?.completedYear ?? null}
+                                compact
                               />
-                              <div className="flex flex-col gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => saveRequirementCompletion(req, group.licenseId, "complete")}
-                                  disabled={saving}
-                                  className="rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-2)] disabled:opacity-60"
-                                >
-                                  {saving ? "Saving…" : "I completed this"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => saveRequirementCompletion(req, group.licenseId, "not_completed")}
-                                  disabled={saving}
-                                  className="rounded-full border border-[var(--status-miss)] bg-[var(--status-miss-bg)] px-3 py-2 text-xs font-semibold text-[var(--status-miss)] hover:bg-white disabled:opacity-60"
-                                >
-                                  I still need this
-                                </button>
-                                {saved && (
-                                  <button
-                                    type="button"
-                                    onClick={() => saveRequirementCompletion(req, group.licenseId, "clear")}
-                                    disabled={saving}
-                                    className="rounded-full border border-[var(--line)] px-3 py-2 text-xs font-semibold text-[var(--ink-2)] hover:bg-[var(--paper)] disabled:opacity-60"
-                                  >
-                                    Clear
-                                  </button>
-                                )}
-                              </div>
                             </div>
                           </div>
                         </div>
@@ -558,9 +472,6 @@ export default function SettingsClient({
                 </div>
               )
             ))
-          )}
-          {requirementError && (
-            <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-sm text-[var(--status-miss)]">{requirementError}</p>
           )}
         </div>
       </section>

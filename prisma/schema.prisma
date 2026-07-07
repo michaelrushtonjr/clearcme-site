@@ -253,6 +253,8 @@ model MandatoryRequirement {
   lookbackYears    Int?
   attestationAllowed Boolean    @default(true)
   notes            String?
+  effectiveDate    DateTime?    // when this requirement first became mandatory (populate via Vera/Roz-verified sources only)
+  sourceUrl        String?      // requirement-specific primary source; falls back to ComplianceRule.sourceUrl when null
 
   complianceRule ComplianceRule @relation(fields: [complianceRuleId], references: [id], onDelete: Cascade)
   completions    UserRequirementCompletion[]

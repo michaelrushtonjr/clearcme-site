@@ -16,7 +16,13 @@ import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { formatStateName } from "@/lib/state-names";
-import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
+import {
+  NOT_COMPLETED_REQUIREMENT_NOTE,
+  cadenceLabel,
+  evaluateRequirementFulfillment,
+} from "@/lib/requirement-completions";
+import InfoTip from "@/components/ui/InfoTip";
+import RequirementAttestation, { type AttestationStatus } from "@/components/dashboard/RequirementAttestation";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -26,6 +32,7 @@ interface RequirementSourceMeta {
   sourceTitle?: string;
   sourceUrl?: string;
   lastReviewed?: Date;
+  effectiveDate?: Date | null;
   scopeCaveat?: string;
   whyThisApplies: string;
 }
@@ -44,6 +51,8 @@ interface MandatoryGap {
   prompt: string | null;
   satisfiedUntil: Date | null;
   sourceMeta?: RequirementSourceMeta;
+  completionStatus: AttestationStatus;
+  completedYear: number | null;
 }
 
 function formatTopic(topic: string): string {
@@ -177,6 +186,12 @@ function RequirementSourceDisclosure({ sourceMeta }: { sourceMeta: RequirementSo
             )}
           </p>
         )}
+        {sourceMeta.effectiveDate && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">Required since: </span>
+            {formatReviewDate(sourceMeta.effectiveDate)}
+          </p>
+        )}
         {sourceMeta.lastReviewed && (
           <p>
             <span className="font-semibold text-[var(--ink)]">Last reviewed: </span>
@@ -232,6 +247,7 @@ function buildRequirementSourceMeta({
   hoursRequired,
   firstRenewalOnly,
   requirementNotes,
+  effectiveDate,
 }: {
   state: string;
   licenseType: string;
@@ -242,6 +258,7 @@ function buildRequirementSourceMeta({
   hoursRequired: number;
   firstRenewalOnly: boolean;
   requirementNotes?: string | null;
+  effectiveDate?: Date | null;
 }): RequirementSourceMeta {
   const stateName = formatStateName(state);
   const scopeParts = [
@@ -254,6 +271,7 @@ function buildRequirementSourceMeta({
     sourceTitle: `${stateName} ${licenseType} licensing requirements`,
     sourceUrl: sourceUrl ?? undefined,
     lastReviewed: ruleUpdatedAt,
+    effectiveDate: effectiveDate ?? null,
     scopeCaveat: scopeParts.length > 0 ? scopeParts.join(" ") : undefined,
     whyThisApplies: `This appears because your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${formatTopic(topic)}${firstRenewalOnly ? " as a one-time requirement" : " in this renewal cycle"}.`,
   };
@@ -368,6 +386,11 @@ export default async function CompliancePage() {
         const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
         const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
         const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
+        const completionStatus: AttestationStatus = completion
+          ? completion.notes === NOT_COMPLETED_REQUIREMENT_NOTE
+            ? "not_completed"
+            : "completed"
+          : "none";
         return {
           requirementId: req.id,
           topic: req.topic,
@@ -384,14 +407,17 @@ export default async function CompliancePage() {
           sourceMeta: buildRequirementSourceMeta({
             state: license.state,
             licenseType: license.licenseType,
-            sourceUrl: rule.sourceUrl,
+            sourceUrl: req.sourceUrl ?? rule.sourceUrl,
             ruleUpdatedAt: rule.updatedAt,
             ruleNotes: rule.notes,
             topic: req.topic,
             hoursRequired: req.hoursRequired,
             firstRenewalOnly: req.firstRenewalOnly,
             requirementNotes: req.notes,
+            effectiveDate: req.effectiveDate,
           }),
+          completionStatus,
+          completedYear: completion?.completedYear ?? null,
         };
       });
       const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet);
@@ -588,6 +614,18 @@ export default async function CompliancePage() {
                   Renewal: {formatDateUTC(license.renewalDate)}
                 </p>
               )}
+              {rule?.sourceUrl && parseSourceUrls(rule.sourceUrl).length > 0 && (
+                <p className="text-xs mt-1">
+                  <a
+                    href={parseSourceUrls(rule.sourceUrl)[0]}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
+                  >
+                    Verify at the official {formatStateName(license.state)} board source ↗
+                  </a>
+                </p>
+              )}
             </div>
             <RenewalCountdown days={daysUntilRenewal} percentComplete={totalHoursNeeded > 0 ? Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100) : (isCompliant ? 100 : 0)} />
           </div>
@@ -683,10 +721,54 @@ export default async function CompliancePage() {
                       // Mark the first unmet gap for aha-moment scroll target
                       const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
 
+                      const sourceMeta = gap.sourceMeta;
+                      const infoTipUrls = parseSourceUrls(sourceMeta?.sourceUrl);
+
                       return {
                         // requirementId, not topic — duplicate topics per license
                         // (state rule + federal one-time) would collide as keys
                         key: gap.requirementId,
+                        infoTip: sourceMeta ? (
+                          <InfoTip label={`Source details for ${formatTopic(gap.topic)}`}>
+                            <span className="block space-y-1">
+                              <span className="block font-semibold text-[var(--ink)]">
+                                {formatTopic(gap.topic)} · {gap.cadenceLabel}
+                              </span>
+                              {sourceMeta.effectiveDate && (
+                                <span className="block">
+                                  <span className="font-semibold text-[var(--ink)]">Required since: </span>
+                                  {formatReviewDate(sourceMeta.effectiveDate)}
+                                </span>
+                              )}
+                              {infoTipUrls.length > 0 ? (
+                                <span className="block">
+                                  <span className="font-semibold text-[var(--ink)]">Primary source: </span>
+                                  {infoTipUrls.map((url, index) => (
+                                    <a
+                                      key={url}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
+                                    >
+                                      {index === 0
+                                        ? sourceMeta.sourceTitle ?? "State board guidance"
+                                        : ` · Source ${index + 1}`}
+                                    </a>
+                                  ))}
+                                </span>
+                              ) : (
+                                <span className="block">{sourceMeta.sourceTitle}</span>
+                              )}
+                              {sourceMeta.lastReviewed && (
+                                <span className="block">
+                                  <span className="font-semibold text-[var(--ink)]">Last reviewed by ClearCME: </span>
+                                  {formatReviewDate(sourceMeta.lastReviewed)}
+                                </span>
+                              )}
+                            </span>
+                          </InfoTip>
+                        ) : undefined,
                         isScrollTarget: isFirstGap,
                         toneClassName: `${topicTone.bg} ${topicTone.border}`,
                         defaultOpen:
@@ -740,7 +822,25 @@ export default async function CompliancePage() {
                                   {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
                                 </p>
                                 <p className="mt-1 text-[var(--status-track)]">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
+                                <RequirementAttestation
+                                  requirementId={gap.requirementId}
+                                  licenseId={license.id}
+                                  status={gap.completionStatus}
+                                  completedYear={gap.completedYear}
+                                  compact
+                                />
                               </div>
+                            )}
+
+                            {/* Answered history — single status card + clear response */}
+                            {!gap.isUnknown && gap.isAttestable && gap.completionStatus !== "none" && (
+                              <RequirementAttestation
+                                requirementId={gap.requirementId}
+                                licenseId={license.id}
+                                status={gap.completionStatus}
+                                completedYear={gap.completedYear}
+                                compact
+                              />
                             )}
 
                             {gap.sourceMeta && (
@@ -773,14 +873,6 @@ export default async function CompliancePage() {
                                     <span className="text-xs text-[var(--ink-3)]">ACCME-accredited • Cat 1</span>
                                   )}
                                 </div>
-                              )}
-                              {gap.isUnknown && (
-                                <Link
-                                  href="/dashboard/settings#requirement-history"
-                                  className="inline-flex min-h-[44px] w-full flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--primary-2)] sm:w-auto sm:min-h-0 sm:py-1"
-                                >
-                                  Confirm my history →
-                                </Link>
                               )}
                             </div>
 

@@ -148,6 +148,10 @@ export default async function DashboardPage() {
   const totalMandatoryRequired = validCompliance.reduce((sum, d) => sum + d.mandatoryTotal, 0);
   const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.effectiveHoursNeeded, 0);
   const allCompliant = validCompliance.length > 0 && validCompliance.every((d) => d.isCompliant);
+  const unansweredHistoryCount = validCompliance.reduce(
+    (sum, d) => sum + d.mandatoryResults.filter((r) => r.isUnknown).length,
+    0
+  );
 
   const licenseBreakdowns = validCompliance.map((d) => ({
     state: d.license.state,
@@ -244,39 +248,29 @@ export default async function DashboardPage() {
         />
       </DashboardSection>
 
-      {/* Empty state: no certificates yet */}
-      {!hasCertificates ? (
-        <div className="space-y-6">
-          <div className="product-card p-10 text-center">
-            <div className="w-16 h-16 bg-[rgba(63,95,51,0.12)] rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <svg className="w-8 h-8 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
-            </div>
-            <h2 className="font-display text-xl font-semibold text-[var(--ink)] mb-2">Your Compliance Command Center</h2>
-            <p className="text-sm text-[var(--ink-2)] mb-6 max-w-md mx-auto">
-              Upload your first CME certificate and ClearCME will automatically track your hours, flag gaps, and keep you audit-ready.
-            </p>
-            <Link
-              href="/dashboard/upload"
-              className="product-btn product-btn-brand"
-            >
-              Upload first certificate →
-            </Link>
-            <p className="text-xs text-[var(--ink-3)] mt-4">AI extracts credit info automatically</p>
+      {/* No certificates yet: upload CTA (compliance data below still renders from license + state rules) */}
+      {!hasCertificates && (
+        <div className="product-card p-8 text-center">
+          <div className="w-14 h-14 bg-[rgba(63,95,51,0.12)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {["Renewal Countdown", "Mandatory Topics", "Hours Progress"].map((label) => (
-              <div key={label} className="product-stat-tile border-dashed p-5 text-center opacity-75">
-                <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">{label}</p>
-                <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
-                <p className="text-xs text-[var(--ink-3)] mt-1">Available after first upload</p>
-              </div>
-            ))}
-          </div>
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)] mb-2">Your Compliance Command Center</h2>
+          <p className="text-sm text-[var(--ink-2)] mb-5 max-w-md mx-auto">
+            Your state requirements are already mapped below. Upload your first CME certificate and ClearCME will count your hours against them automatically.
+          </p>
+          <Link
+            href="/dashboard/upload"
+            className="product-btn product-btn-brand"
+          >
+            Upload first certificate →
+          </Link>
+          <p className="text-xs text-[var(--ink-3)] mt-4">AI extracts credit info automatically</p>
         </div>
-      ) : (
+      )}
+
+      {(validCompliance.length > 0 || hasCertificates) && (
         <>
           {/* NextActionCard or AuditReadyCard — driven by the shared engine */}
           {allCompliant ? (
@@ -291,6 +285,33 @@ export default async function DashboardPage() {
               source={nextAction.sourceNote ?? undefined}
             />
           ) : null}
+
+          {/* Confirm-history prompt — surfaces one-time / long-cycle questions right on the dashboard */}
+          {unansweredHistoryCount > 0 && (
+            <DashboardSection label="Confirm History Prompt">
+              <Link
+                href="/dashboard/compliance"
+                className="product-card px-5 py-4 flex items-center justify-between gap-3 border-[rgba(139,122,184,0.4)] hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--status-track-bg)] flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4.5 h-4.5 text-[var(--status-track)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--ink)]">
+                      Tell us what you&apos;ve already completed
+                    </p>
+                    <p className="text-xs text-[var(--ink-3)]">
+                      {unansweredHistoryCount} one-time or long-cycle requirement{unansweredHistoryCount === 1 ? "" : "s"} need{unansweredHistoryCount === 1 ? "s" : ""} your answer — it takes under a minute and keeps your plan accurate
+                    </p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-[var(--primary)] flex-shrink-0">Answer now →</span>
+              </Link>
+            </DashboardSection>
+          )}
 
           {/* Plan to finish — gap summary (compressed) */}
           {topGaps.length > 0 && (
@@ -308,25 +329,49 @@ export default async function DashboardPage() {
             <ComplianceDiffNotifications />
           </DashboardSection>
 
-          {/* KPI strip — 3 cells (no Days to Renewal) */}
+          {/* KPI strip — 4 cells */}
           <DashboardSection label="Stats Overview">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <Link
+                href="/dashboard/compliance"
+                className="product-stat-tile p-5 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all min-h-[44px]"
+              >
+                <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Renewal Countdown</p>
+                {nextRenewal?.daysUntilRenewal != null ? (
+                  <>
+                    <p className={`font-mono text-2xl font-semibold ${
+                      nextRenewal.daysUntilRenewal < 60
+                        ? "text-[var(--status-miss)]"
+                        : nextRenewal.daysUntilRenewal < 180
+                        ? "text-[var(--status-pending)]"
+                        : "text-[var(--primary)]"
+                    }`}>
+                      {nextRenewal.daysUntilRenewal <= 0 ? "Due" : `${nextRenewal.daysUntilRenewal}d`}
+                    </p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">
+                      {nextRenewal.license.state} ·{" "}
+                      {nextRenewal.license.renewalDate
+                        ? formatDateUTC(nextRenewal.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
+                        : "renewal"}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">set a renewal date</p>
+                  </>
+                )}
+              </Link>
+
               <Link
                 href="/dashboard/compliance"
                 className="product-stat-tile p-5 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all min-h-[44px]"
               >
                 <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Hours Earned</p>
-                {hasCertificates ? (
-                  <>
-                    <p className="font-mono text-2xl font-semibold text-[var(--primary)]">{totalHours.toFixed(1)}</p>
-                    <p className="text-xs text-[var(--ink-3)] mt-0.5">this cycle</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-2xl font-bold text-[var(--ink-4)]">—</p>
-                    <p className="text-xs text-[var(--ink-3)] mt-0.5">upload a certificate</p>
-                  </>
-                )}
+                <p className="font-mono text-2xl font-semibold text-[var(--primary)]">{totalHours.toFixed(1)}</p>
+                <p className="text-xs text-[var(--ink-3)] mt-0.5">
+                  {hasCertificates ? "this cycle" : "upload certificates to add hours"}
+                </p>
               </Link>
 
               <HoursNeededTile
@@ -358,18 +403,20 @@ export default async function DashboardPage() {
           </DashboardSection>
 
           {/* Activity feed */}
-          <ActivityFeed items={[]} />
+          {hasCertificates && <ActivityFeed items={[]} />}
 
           {/* Audit trail card */}
-          <DashboardSection label="Audit Trail">
-            <div className="product-callout-brand p-5 text-sm">
-              <p className="font-display text-lg font-semibold text-[var(--ink)] mb-1">Your audit trail is ready</p>
-              <p className="text-[var(--ink-2)] text-xs mb-3">
-                Download a board-ready summary of your CME credits and compliance status at any time.
-              </p>
-              <AuditExportButton variant="default" />
-            </div>
-          </DashboardSection>
+          {hasCertificates && (
+            <DashboardSection label="Audit Trail">
+              <div className="product-callout-brand p-5 text-sm">
+                <p className="font-display text-lg font-semibold text-[var(--ink)] mb-1">Your audit trail is ready</p>
+                <p className="text-[var(--ink-2)] text-xs mb-3">
+                  Download a board-ready summary of your CME credits and compliance status at any time.
+                </p>
+                <AuditExportButton variant="default" />
+              </div>
+            </DashboardSection>
+          )}
         </>
       )}
     </div>
