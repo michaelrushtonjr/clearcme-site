@@ -37,9 +37,15 @@ async function sendExpoBatch(messages: ExpoMessage[]): Promise<void> {
   }
 }
 
-// POST /api/cron/renewal-reminders
-// Called by Vercel Cron daily at 09:00 UTC.
+// GET/POST /api/cron/renewal-reminders
+// Called by Vercel Cron daily at 09:00 UTC. NOTE: Vercel Cron invokes with
+// GET (and attaches `Authorization: Bearer ${CRON_SECRET}` automatically), so
+// this route must accept GET — POST is kept for manual triggering.
 // Secured with Bearer token (CRON_SECRET env var).
+
+export async function GET(req: NextRequest) {
+  return POST(req);
+}
 
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────────────

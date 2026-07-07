@@ -30,7 +30,7 @@ export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [user, licenses, subscription, requirementCompletions] = await Promise.all([
+  const [user, licenses, subscription, requirementCompletions, emailPreference] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, image: true, specialty: true, practiceArea: true },
@@ -51,6 +51,10 @@ export default async function SettingsPage() {
     }),
     prisma.userRequirementCompletion.findMany({
       where: { userId },
+    }),
+    prisma.emailPreference.findUnique({
+      where: { userId },
+      select: { renewalReminders: true, monthlyDigest: true },
     }),
   ]);
 
@@ -84,6 +88,7 @@ export default async function SettingsPage() {
       subscription={subscription}
       licenseRequirements={licenseRequirements}
       requirementCompletions={requirementCompletions}
+      emailPreference={emailPreference ?? { renewalReminders: true, monthlyDigest: true }}
     />
   );
 }

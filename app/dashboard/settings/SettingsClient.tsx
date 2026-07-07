@@ -104,18 +104,25 @@ function toDateInputValue(date: Date | string | null) {
   return new Date(date).toISOString().slice(0, 10);
 }
 
+interface EmailPreferenceState {
+  renewalReminders: boolean;
+  monthlyDigest: boolean;
+}
+
 export default function SettingsClient({
   user,
   licenses,
   subscription,
   licenseRequirements,
   requirementCompletions,
+  emailPreference,
 }: {
   user: User;
   licenses: License[];
   subscription: Subscription | null;
   licenseRequirements: LicenseRequirementGroup[];
   requirementCompletions: RequirementCompletion[];
+  emailPreference: EmailPreferenceState;
 }) {
   const router = useRouter();
   const [name, setName] = useState(user.name ?? "");
@@ -125,9 +132,26 @@ export default function SettingsClient({
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState("");
-  // Notification preferences (stub — no backend yet)
-  const [renewalReminders, setRenewalReminders] = useState(true);
-  const [gapAlerts, setGapAlerts] = useState(true);
+  // Email notification preferences
+  const [emailPrefs, setEmailPrefs] = useState<EmailPreferenceState>(emailPreference);
+  const [emailPrefsError, setEmailPrefsError] = useState("");
+
+  const updateEmailPref = async (patch: Partial<EmailPreferenceState>) => {
+    const previous = emailPrefs;
+    setEmailPrefs((current) => ({ ...current, ...patch }));
+    setEmailPrefsError("");
+    try {
+      const res = await fetch("/api/email-preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) throw new Error("Unable to save notification preferences");
+    } catch {
+      setEmailPrefs(previous);
+      setEmailPrefsError("Unable to save notification preferences. Try again.");
+    }
+  };
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingLicenseId, setEditingLicenseId] = useState<string | null>(null);
@@ -479,27 +503,25 @@ export default function SettingsClient({
       {/* Notification preferences */}
       <section className="product-card overflow-hidden">
         <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Notifications</h2>
-          <p className="text-xs text-[var(--ink-3)] mt-0.5">Email reminders — coming soon</p>
+          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Email Notifications</h2>
+          <p className="text-xs text-[var(--ink-3)] mt-0.5">Sent to {user.email ?? "your account email"}</p>
         </div>
         <div className="px-6 py-5 space-y-4">
           <ToggleRow
             label="Renewal reminders"
-            description="Get notified 90, 60, and 30 days before license renewal"
-            value={renewalReminders}
-            onChange={setRenewalReminders}
-            disabled
+            description="90, 60, 30, and 7 days before each license renewal, with your current hours and remaining requirements"
+            value={emailPrefs.renewalReminders}
+            onChange={(v) => updateEmailPref({ renewalReminders: v })}
           />
           <ToggleRow
-            label="Compliance gap alerts"
-            description="Alerts when mandatory topic hours fall behind"
-            value={gapAlerts}
-            onChange={setGapAlerts}
-            disabled
+            label="Monthly compliance digest"
+            description="A monthly check-in per license: hours completed, required CME done and still open, and the pace that finishes everything before renewal"
+            value={emailPrefs.monthlyDigest}
+            onChange={(v) => updateEmailPref({ monthlyDigest: v })}
           />
-          <p className="text-xs text-[var(--ink-3)] pt-1">
-            Email notifications are in development. Preferences saved for future use.
-          </p>
+          {emailPrefsError && (
+            <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-sm text-[var(--status-miss)]">{emailPrefsError}</p>
+          )}
         </div>
       </section>
 

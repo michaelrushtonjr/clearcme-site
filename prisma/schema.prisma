@@ -75,6 +75,8 @@ model User {
   licenses        PhysicianLicense[]
   certificates    Certificate[]
   complianceStatus ComplianceStatus[]
+  emailPreference EmailPreference?
+  emailLogs       EmailLog[]
   complianceDiffs  UserComplianceDiff[]
   subscription    Subscription?
   requirementCompletions UserRequirementCompletion[]
@@ -260,6 +262,32 @@ model MandatoryRequirement {
   completions    UserRequirementCompletion[]
 
   @@index([complianceRuleId])
+}
+
+// ── Email notifications ──────────────────────────────────────────────────────
+
+model EmailPreference {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  renewalReminders Boolean  @default(true)  // 90/60/30/7-day renewal reminder emails
+  monthlyDigest    Boolean  @default(true)  // monthly compliance digest + pacing plan
+  unsubscribeToken String   @unique @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // RENEWAL_REMINDER | MONTHLY_DIGEST
+  dedupeKey String   @unique // e.g. "renewal:<licenseId>:90:2026-10-01" or "digest:<userId>:2026-07"
+  sentAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
 }
 
 enum RequirementCadence {
