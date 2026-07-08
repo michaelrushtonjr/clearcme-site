@@ -251,7 +251,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
 };
 
 const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
-  AZ: fixedRenewal("December 31 of odd-numbered years", 12, 31, "odd"),
+  AZ: variableRenewal("December 31 of your assigned even- or odd-numbered renewal year (check your azdo.gov profile)"),
   CA: variableRenewal("California DO renewal deadline varies by osteopathic board cohort"),
   FL: fixedRenewal("March 31 of even-numbered years", 3, 31, "even"),
   HI: variableRenewal("June 30 of your DO renewal year, every 2 years"),
