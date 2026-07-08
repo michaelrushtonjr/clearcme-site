@@ -1017,22 +1017,6 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "High-Value Care Cases",
-        provider: "American College of Physicians (ACP)",
-        providerUrl: "https://www.acponline.org",
-        credits: "Up to 5.0 hours AMA PRA Category 1 + ABIM MOC Points (13 MOC points)",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description: "ACP's High Value Care initiative — case-based learning covering benefits, harms, and costs of common diagnostic tests and treatment options. Interactive audio/video format. Mobile-friendly. Earns 5 AMA PRA Cat 1 credits and 13 ABIM MOC points. Free to all — no ACP membership required. Accessed at ACP Online Learning Center. High-value care principles directly support patient safety competencies required in many states.",
-        url: "https://www.acponline.org/cme-moc/online-learning-center/high-value-care-cases",
-        accreditation: "ACCME (ACP)",
-        deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1; meets FL and PA patient safety requirements",
-        verified: "2026-04-18",
-      },
-      {
         name: "Prevention of Medical Errors 2024-2026 (National)",
         provider: "The Doctors Company (medical liability insurer)",
         providerUrl: "https://thedoctors.cloud-cme.com",
