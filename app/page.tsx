@@ -112,8 +112,8 @@ const faqItems = [
     a: [
       "It's two parts.",
       "30-day money-back. If ClearCME isn't right for you, request a full refund within 30 days of paying. No questions, no email chase.",
-      "The $1,000 Compliance Promise. If our dashboard ever shows your account as compliant for a state - and you turn out not to be - we'll refund your subscription and cover your late-renewal fee, up to $1,000.",
-      "Your data is verified twice: once by AI extracting your certificates, and once by a human physician validating state-specific rules. We've never paid the Compliance Promise out.",
+      "The $1,000 Compliance Promise. If an error in ClearCME's requirement data causes you to miss a requirement for a state license renewal, we'll refund your subscription and cover your late-renewal fee, up to $1,000.",
+      "Every state requirement is verified twice: once by AI, and once by a human physician validating state-specific rules. We've never paid the Compliance Promise out.",
     ],
   },
   {
@@ -520,15 +520,15 @@ function Guarantee() {
             <div>
               <div className="g-eye">The Guarantee</div>
               <h2 className="g-h">
-                If we ever show you compliant when you aren&apos;t, <em>we pay.</em>
+                If our data is wrong and it costs you, <em>we pay.</em>
               </h2>
               <p className="g-p">
-                We refund your subscription <strong>and</strong> cover your late-renewal fee - up to{" "}
-                <strong>$1,000</strong>.
+                If an error in ClearCME&apos;s requirement data causes you to miss a requirement, we refund your
+                subscription <strong>and</strong> cover your late-renewal fee - up to <strong>$1,000</strong>.
                 <br />
                 <br />
-                We&apos;ve never paid this out. Your data is verified twice - once by AI, once by a human physician -
-                before the dashboard ever calls you compliant.
+                We&apos;ve never paid this out. Every state requirement is verified twice - once by AI, once by a human
+                physician - before it enters your dashboard.
               </p>
             </div>
             <div className="g-stamp" aria-label="$1,000 compliance promise">
@@ -876,7 +876,7 @@ export default function Home() {
           <div className="wrap hero-grid">
             <div className="reveal">
               <h1 className="h1">
-                Compliant for your next renewal - <span className="wave">guaranteed.</span>
+                Compliant for your next renewal - <span className="wave">or your money back.</span>
               </h1>
               <p className="hero-sub">
                 <strong>Under 60 seconds of setup.</strong>{" "}
@@ -910,7 +910,7 @@ export default function Home() {
               <div className="left">
                 <span className="badge">The math</span>
                 <span className="num">
-                  $8.25<span className="sm">/mo</span>
+                  $99<span className="sm">/yr</span>
                 </span>
                 <span className="vs">vs.</span>
                 <span className="num">
