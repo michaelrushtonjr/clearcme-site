@@ -366,7 +366,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("LGBTQ cultural competency", "2 hrs per cycle"),
       topic("Pharmacology", "1 course per cycle"),
       topic("Public health priority topics", "5 hrs per cycle"),
-      topic("Controlled substance prescribing", "3 hrs per cycle", "If DC CDS license holder"),
       mateTopic(),
     ],
   },
