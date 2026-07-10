@@ -227,7 +227,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   }),
   ND: variableRenewal("Biennial renewal deadline varies by physician and license record"),
   NE: fixedRenewal("October 1 of even-numbered years", 10, 1, "even"),
-  NH: variableRenewal("Last day of the month your license was issued, every 2 years (RSA 310-A:1-h, effective Feb. 2023)"),
+  NH: variableRenewal("June 30 of your renewal year, every 2 years"),
   NJ: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
   NM: variableRenewal("July 1 of your renewal year, every 3 years"),
   NV: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
