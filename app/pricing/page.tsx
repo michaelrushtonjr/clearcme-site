@@ -49,7 +49,6 @@ function Check() {
 }
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -98,7 +97,7 @@ export default function PricingPage() {
   const tiers = [
     {
       name: "Free",
-      price: { annual: "$0", monthly: "$0" },
+      price: "$0",
       cta: "Get started free",
       ctaHref: "/login",
       ctaStyle: "public-btn-secondary",
@@ -114,7 +113,7 @@ export default function PricingPage() {
     },
     {
       name: "Essential",
-      price: { annual: "$99/yr", monthly: "$9/mo" },
+      price: "$99/yr",
       cta: "Start Essential",
       ctaHref: "/login",
       checkoutTier: "ESSENTIAL" as const,
@@ -135,7 +134,7 @@ export default function PricingPage() {
     },
     {
       name: "Pro",
-      price: { annual: "$199/yr", monthly: "$19/mo" },
+      price: "$199/yr",
       cta: "Start Pro",
       ctaHref: "/login",
       checkoutTier: "PRO" as const,
@@ -153,7 +152,7 @@ export default function PricingPage() {
     },
     {
       name: "Group",
-      price: { annual: "Contact us", monthly: "Contact us" },
+      price: "Contact us",
       cta: "Contact sales",
       ctaHref: "mailto:hello@clearcme.ai",
       ctaStyle: "public-btn-secondary",
@@ -183,29 +182,6 @@ export default function PricingPage() {
           Start free with a useful compliance map and one best course match per gap. Upgrade when you want AI extraction, full course choice, reminders, and audit-ready exports.
         </p>
 
-        {/* Annual / Monthly toggle */}
-        <div className="inline-flex items-center gap-1 bg-[#ece4cf] border border-[#ddd4bd] rounded-full p-1 mb-12">
-          <button
-            onClick={() => setAnnual(true)}
-            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              annual ? "bg-[#fffdf6] text-[#1e2920] shadow-sm" : "text-[#6b7568] hover:text-[#1e2920]"
-            }`}
-          >
-            Annual
-            <span className="ml-2 text-xs font-medium text-[#3f5f33] bg-[#dde8cf] px-1.5 py-0.5 rounded-full">
-              Save ~25%
-            </span>
-          </button>
-          <button
-            onClick={() => setAnnual(false)}
-            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-              !annual ? "bg-[#fffdf6] text-[#1e2920] shadow-sm" : "text-[#6b7568] hover:text-[#1e2920]"
-            }`}
-          >
-            Monthly
-          </button>
-        </div>
-
         {/* Tier cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 text-left">
           {tiers.map((tier) => {
@@ -233,12 +209,10 @@ export default function PricingPage() {
                   {tier.name}
                 </p>
                 <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-[#6b7568]" : "text-[#1e2920]"}`}>
-                  {annual ? tier.price.annual : tier.price.monthly}
+                  {tier.price}
                 </p>
                 {tier.name !== "Free" && tier.name !== "Group" && (
-                  <p className="text-xs text-[#6b7568] mt-1">
-                    {annual ? "billed annually" : "billed monthly"}
-                  </p>
+                  <p className="text-xs text-[#6b7568] mt-1">billed annually</p>
                 )}
               </div>
 
