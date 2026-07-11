@@ -560,7 +560,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Health benefits of nutrition", "1 hr per cycle", "Included within the 50-hour requirement"),
       mateTopic(),
     ],
   },
