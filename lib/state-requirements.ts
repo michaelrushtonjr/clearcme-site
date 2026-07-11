@@ -254,7 +254,7 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
   AZ: variableRenewal("December 31 of your assigned even- or odd-numbered renewal year (check your azdo.gov profile)"),
   CA: variableRenewal("California DO renewal deadline varies by osteopathic board cohort"),
   FL: fixedRenewal("March 31 of even-numbered years", 3, 31, "even"),
-  HI: variableRenewal("June 30 of your DO renewal year, every 2 years"),
+  HI: fixedRenewal("June 30 of even-numbered years", 6, 30, "even"),
   KS: fixedRenewal("October 31 annually", 10, 31),
   ME: variableRenewal("Maine DO renewal deadline varies by osteopathic board cohort"),
   NV: fixedRenewal("December 31 of even-numbered years (biennial under AB 56; the Dec. 31, 2026 renewal is the first even-year cycle)", 12, 31, "even"),
