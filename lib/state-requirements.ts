@@ -892,7 +892,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "Confirmed by Roz via Maine Joint Rule Chapter 21"),
+      topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "If prescribing opioid medication (Maine Joint Rule Ch. 21 §5.3, Board of Osteopathic Licensure)"),
       mateTopic(),
     ],
   },
