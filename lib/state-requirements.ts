@@ -221,7 +221,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   MN: birthBasedRenewal("During your birth month, every 3 years"),
   MO: variableRenewal("Biennial renewal deadline varies by physician and license record"),
   MS: fixedRenewal("June 30 annually", 6, 30),
-  MT: variableRenewal("Biennial renewal deadline varies by physician and license record"),
+  MT: variableRenewal("March 31 of your renewal year, every 2 years"),
   NC: birthBasedRenewal("On or before your birthday each year", {
     usesExactBirthday: true,
   }),
