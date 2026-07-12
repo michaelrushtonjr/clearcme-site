@@ -304,7 +304,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
       topic("Opioid/benzodiazepine prescribing", "1 hr annually", "Counts within the 20-hour annual total; not additional"),
-      topic("Prescribing education", "3 hrs one-time", "If prescriber licensed after Dec. 31, 2015; due within first 2 years of licensure (ASMB Rule No. 2)"),
     ],
   },
   AZ: {
