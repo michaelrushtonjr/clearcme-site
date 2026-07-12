@@ -3048,3 +3048,26 @@ body {
     stroke-dashoffset: 75.4;
   }
 }
+
+/* Mobile overflow fix (2026-07-12): hero rendered "pushed wide" on phones.
+   Cause: .h1 .wave is white-space:nowrap and the h1 clamp() floor was 40px,
+   making the hero's min-content ~404px; the stacked 1fr grid column honored
+   that min-content, pushing layout wider than small viewports, and
+   .landing-v3{overflow:hidden} clipped it. Fix: stacked grids ignore child
+   min-content via minmax(0,1fr); h1 scales down on small screens; .wave may
+   wrap as a last resort. Verified at 390px: no overflow, underline intact. */
+@media (max-width: 920px) {
+  .landing-v3 .hero-grid,
+  .landing-v3 .g-grid,
+  .landing-v3 .multi {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .landing-v3 .h1 {
+    font-size: clamp(30px, 8.6vw, 40px);
+  }
+  .landing-v3 .h1 .wave {
+    white-space: normal;
+  }
+}
