@@ -403,7 +403,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("Controlled substance prescribing", "3 hrs one-time", "If active DEA registrant and prescriber"),
       topic("Professional boundaries / sexual misconduct", "2 hrs one-time"),
-      topic("Pain management / palliative medicine", "20 hrs per cycle", "If not pain/palliative-certified and either practicing in a pain management clinic or opioid pain-management patients are at least 50% of patient population"),
+      topic("Pain management / palliative medicine", "20 hrs per cycle", "If not pain/palliative-certified and opioid pain-management patients are 50% or more of patient population"),
     ],
   },
   HI: {
