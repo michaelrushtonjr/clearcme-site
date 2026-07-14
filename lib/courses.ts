@@ -1198,20 +1198,20 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "Identifying Human Trafficking: What Physicians Need to Know",
+        name: "Identifying Human Trafficking in Texas: What Physicians Need to Know",
         provider: "Texas Medical Association (TMA)",
         providerUrl: "https://www.texmed.org",
         credits: "1.0 hour AMA PRA Category 1 / Ethics Credit",
         creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
+        price: "$0 for TMA members / $349 for non-members",
+        isFree: false,
         isHippo: false,
-        description: "Fulfills both Ethics and Human Trafficking requirements for many states.",
-        url: "https://www.texmed.org/Education/",
+        description: "Fulfills both Ethics and Human Trafficking requirements for many states. HHSC-approved (HB 2059); access through 8/19/2027.",
+        url: "https://texmed.inreachce.com/Details/Information/3c151699-825f-4cbf-8119-a243d650f677",
         accreditation: "ACCME",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1. Specifically meets Texas mandatory requirement.",
-        verified: "2026-04-15",
+        verified: "2026-07-14 (COO confirmed specific-activity page and exact title; credit/price/access details are JS-gated to automated readers — per Michael's live-browser read 2026-07-11: 1.0 AMA PRA Cat 1 + 1.0 Ethics, $0 TMA members / $349 non-members, access through 8/19/2027)",
       },
       {
         name: "Signs of Human Trafficking and Response: A Physician's Guide",
