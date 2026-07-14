@@ -244,7 +244,9 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   UT: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   VA: birthBasedRenewal("During your birth month, every 2 years"),
   VT: fixedRenewal("November 30 of even-numbered years", 11, 30, "even"),
-  WA: variableRenewal("Every 4 years; renewal date varies by physician and license record"),
+  WA: birthBasedRenewal("On or before your birthday, every 2 years", {
+    usesExactBirthday: true,
+  }),
   WI: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
   WV: variableRenewal("Biennial renewal deadline varies by physician and board"),
   WY: fixedRenewal("June 30 annually; CME is reported on a separate 3-year cycle", 6, 30),
@@ -798,7 +800,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 200,
     totalHoursLabel: "200 hours (Category I allowed for all hours; Category II-V limits apply)",
     cycleYears: 4,
-    cycleLabel: "4-year renewal cycle",
+    cycleLabel: "4-year CME reporting cycle; license renews every 2 years on your birthday",
     mandatoryTopics: [
       topic("Suicide assessment, treatment, and management", "6 hrs one-time", "During first full CME reporting period"),
       topic("Health equity", "2 hrs every 4 years", "Counts toward CME"),
