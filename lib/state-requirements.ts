@@ -218,7 +218,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   MD: variableRenewal("September 30 of your renewal year, every 2 years"),
   ME: birthBasedRenewal("Last day of your birth month, every 2 years"),
   MI: variableRenewal("Every 3 years; renewal date varies by physician and license record"),
-  MN: birthBasedRenewal("During your birth month, every 3 years"),
+  MN: birthBasedRenewal("Last day of your birth month each year"),
   MO: fixedRenewal("January 31 annually", 1, 31),
   MS: fixedRenewal("June 30 annually", 6, 30),
   MT: variableRenewal("March 31 of your renewal year, every 2 years"),
@@ -551,7 +551,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 75,
     totalHoursLabel: "75 hours",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "Annual renewal; 75 hours per 3-year CME reporting cycle",
     mandatoryTopics: [
       mateTopic(),
     ],
