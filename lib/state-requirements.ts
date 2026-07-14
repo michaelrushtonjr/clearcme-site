@@ -263,7 +263,9 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
   OK: fixedRenewal("June 30 annually", 6, 30),
   PA: fixedRenewal("October 31 of even-numbered years", 10, 31, "even"),
   UT: fixedRenewal("May 31 of even-numbered years", 5, 31, "even"),
-  WA: variableRenewal("Every 3 years; renewal date varies by osteopathic license record"),
+  WA: birthBasedRenewal("On or before your birthday each year", {
+    usesExactBirthday: true,
+  }),
   VT: fixedRenewal("September 30 of even-numbered years", 9, 30, "even"),
   WV: variableRenewal("On or before July 1 of your DO renewal year, every 2 years"),
 };
@@ -995,7 +997,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     totalHours: 150,
     totalHoursLabel: "150 hours (at least 60 Category 1A per WA DOH; WAC 246-853-070 uses broader Category 1 wording)",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "3-year CE reporting cycle; license renews every year on your birthday",
     mandatoryTopics: [
       topic("Suicide assessment, treatment, and management", "6 hrs one-time", "By first full CE reporting period after initial licensure"),
       topic("Health equity", "2 hrs every 4 years", "Counts toward CE"),
