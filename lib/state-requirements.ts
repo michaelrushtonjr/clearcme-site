@@ -240,7 +240,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   SC: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
   SD: fixedRenewal("March 1 of odd-numbered years (standard MD/DO licenses; IMLC licenses renew annually by March 1)", 3, 1, "odd"),
   TN: birthBasedRenewal("During your birth month, every 2 years"),
-  TX: birthBasedRenewal("During your birth month, every 2 years"),
+  TX: variableRenewal("TMB-assigned expiration date (Feb. 28, May 31, Aug. 31, or Nov. 30), every 2 years; even-numbered licenses expire in even years, odd in odd"),
   UT: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   VA: birthBasedRenewal("During your birth month, every 2 years"),
   VT: fixedRenewal("November 30 of even-numbered years", 11, 30, "even"),
