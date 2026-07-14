@@ -549,7 +549,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 3,
     cycleLabel: "3-year renewal cycle",
     mandatoryTopics: [
-      topic("Fetal alcohol spectrum disorders", "Required for applicable specialties", "Family medicine, pediatrics, OB/GYN, and similar roles"),
       mateTopic(),
     ],
   },
