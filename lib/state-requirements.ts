@@ -246,7 +246,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
     usesExactBirthday: true,
   }),
   WI: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
-  WV: variableRenewal("Biennial renewal deadline varies by physician and board"),
+  WV: variableRenewal("June 30, every 2 years; renewal year set by last-name cohort (A–L even years, M–Z odd years)"),
   WY: fixedRenewal("June 30 annually; CME is reported on a separate 3-year cycle", 6, 30),
 };
 
