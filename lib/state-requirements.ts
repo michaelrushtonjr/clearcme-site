@@ -265,7 +265,7 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
     usesExactBirthday: true,
   }),
   VT: fixedRenewal("September 30 of even-numbered years", 9, 30, "even"),
-  WV: variableRenewal("On or before July 1 of your DO renewal year, every 2 years"),
+  WV: variableRenewal("License expires June 30 of your renewal year (renew on or before July 1), every 2 years; renewal year varies by licensee"),
 };
 
 const topic = (name: string, hours: string, note?: string): MandatoryTopic => ({
