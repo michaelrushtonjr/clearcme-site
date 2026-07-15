@@ -759,7 +759,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Medical ethics / professional responsibility", "2 hrs per cycle"),
       topic("Safe prescribing / pain management", "2 hrs front-loaded, then every 8 years", "2 hrs within first year of licensure and again at the next renewal, then 2 hrs every fourth renewal; direct patient care"),
       topic("Human trafficking prevention", "1 hr at first renewal and every third renewal after", "HHSC-approved course required"),
-      topic("Life of the Mother Act emergency care CE", "One-time training", "TMB applies by specialty (OB/GYN-related, Emergency Medicine, Family Medicine); ONLY the free TMB course via MyTMB satisfies it — outside CME does not"),
+      topic("Life of the Mother Act emergency care CE", "At least 1 hr, one-time", "Due before initial licensure, or before your first license renewal after Jan. 1, 2026 (SB 31 §19(e)); TMB applies by specialty (OB/GYN-related, Emergency Medicine, Family Medicine); ONLY the free TMB course via MyTMB satisfies it — outside CME does not"),
       mateTopic(),
     ],
   },
