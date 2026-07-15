@@ -207,7 +207,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles effective April 1, 2026)", {
     usesExactBirthday: true,
   }),
-  IL: variableRenewal("July 31 of your renewal year, every 3 years"),
+  IL: variableRenewal("July 31, statewide triennial cycle (2026, 2029, and every 3 years after)"),
   IN: fixedRenewal("October 31 of odd-numbered years", 10, 31, "odd"),
   KS: fixedRenewal("June 30 annually (license expiration and CME deadline; late renewal accepted through July 31 with late fees)", 6, 30),
   KY: fixedRenewal("March 1 annually; CME is reported on a separate 3-year cycle", 3, 1),
