@@ -201,9 +201,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   DC: birthBasedRenewal("Last day of your birth month, every 2 years"),
   DE: fixedRenewal("March 31 of odd-numbered years", 3, 31, "odd"),
   FL: variableRenewal("January 31 of your assigned odd- or even-year biennium"),
-  GA: birthBasedRenewal("On or before your birthday, every 2 years", {
-    usesExactBirthday: true,
-  }),
+  GA: birthBasedRenewal("Last day of your birth month, every 2 years"),
   HI: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   IA: birthBasedRenewal("During your birth month, every 2 years"),
   ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles effective April 1, 2026)", {
