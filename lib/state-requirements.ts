@@ -234,7 +234,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   OK: variableRenewal("Triennial MD renewal date varies by board cohort"),
   OR: variableRenewal("License expiration varies by physician; Oregon renewals are not on one statewide fixed date"),
   PA: fixedRenewal("December 31 of even-numbered years", 12, 31, "even"),
-  RI: fixedRenewal("June 30 of even-numbered years", 6, 30, "even"),
+  RI: fixedRenewal("June 1 of even-numbered years (CME-earning deadline, 216-RICR-40-05-1 §1.5.5; renewal application filing is due before July 1)", 6, 1, "even"),
   SC: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
   SD: fixedRenewal("March 1 of odd-numbered years (standard MD/DO licenses; IMLC licenses renew annually by March 1)", 3, 1, "odd"),
   TN: birthBasedRenewal("During your birth month, every 2 years"),
