@@ -560,6 +560,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "Annual renewal; 2-year CME reporting window (Jan. 1 of an even year through Dec. 31 of the following odd year)",
     mandatoryTopics: [
+      topic("Health benefits of nutrition", "At least 1 hr per cycle", "Counts within the required 50 hours, not additional; 20 CSR 2150-2.125(1), effective June 30, 2026"),
       mateTopic(),
     ],
   },
