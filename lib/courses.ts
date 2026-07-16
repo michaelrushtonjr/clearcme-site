@@ -211,7 +211,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         credits: "4.0 hours AMA PRA Category 1-equivalent physician medical credits / ABIM MOC / ABP MOC / ABS Continuing Certification / ABA MOCA 2.0",
         creditType: "AMA_PRA_1",
         price: "Free (non-members and ASAM members)",
-        isFree: false,
+        isFree: true,
         isHippo: false,
         description: "Free three-part live-virtual course on July 31, August 7, and August 14, 2026 (12:00–1:30 pm ET each day). Designed for physicians, PAs, nurses, and NPs engaging with treatment-court systems. Covers diagnosis/treatment when patients first engage with treatment courts, court structure/effectiveness, team roles, evidence-based addiction-treatment advocacy, non-stigmatizing communication about legal involvement, release-of-information considerations, and case-based partnership practices for SUD treatment. Open registration 2/23/2026–8/21/2026; close access date 12/31/2026. Funded via ASAM/All Rise ONDCP grant initiative.",
         url: "https://elearning.asam.org/products/integrating-addiction-medicine-with-treatment-courts-course-all-rise-july-31-august-7-14-2026",
