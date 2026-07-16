@@ -204,7 +204,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   GA: birthBasedRenewal("Last day of your birth month, every 2 years"),
   HI: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   IA: birthBasedRenewal("During your birth month, every 2 years"),
-  ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles effective April 1, 2026)", {
+  ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles in effect since April 1, 2026; existing licensees phase in by birth year)", {
     usesExactBirthday: true,
   }),
   IL: variableRenewal("July 31, statewide triennial cycle (2026, 2029, and every 3 years after)"),
@@ -294,7 +294,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
-      topic("Professional boundaries", "2 hrs one-time", "Current licensees by Dec. 31, 2025; new licensees within 12 months of licensure; limited licensees in a residency or clinical fellowship and licensees with an active retirement waiver are exempt"),
+      topic("Professional boundaries", "2 hrs one-time", "In effect — licensees active in 2025 were due by Dec. 31, 2025; new licensees within 12 months of licensure; limited licensees in a residency or clinical fellowship and licensees with an active retirement waiver are exempt"),
       topic("Collaborative/supervisory practice CME", "Board course every 60 months", "If in a collaborative CRNP/CNM or supervisory PA arrangement; compliance date extended to Jan. 1, 2025; new arrangements must complete within 12 months (look-back extended 48 to 60 months)"),
       topic("Controlled Substance Certificate CME", "2 hrs every 2 years", "If Alabama ACSC holder"),
     ],
@@ -625,7 +625,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Cultural competency", "6 hrs one-time/conditional", "Required if not completed in medical school or post-secondary education; not a recurring per-cycle requirement"),
       topic("End-of-life care", "2 hrs per cycle"),
       topic("Opioid prescribing", "1 hr per cycle"),
-      topic("Sexual misconduct prevention", "2 hrs per cycle", "Commences with the biennial renewal period beginning July 1, 2025"),
+      topic("Sexual misconduct prevention", "2 hrs per cycle", "In effect for biennial renewal periods beginning on or after July 1, 2025"),
       topic("Implicit bias in perinatal care", "1 hr per cycle", "If providing perinatal care"),
       mateTopic(),
     ],
@@ -705,7 +705,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
       topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA MD prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
       topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
-      topic("Organ and tissue donation / recovery", "2 hrs one-time", "Effective May 1, 2026; due within 5 years of initial licensure or of a renewal, whichever first (49 Pa. Code 16.19(b))"),
+      topic("Organ and tissue donation / recovery", "2 hrs one-time", "In effect since May 1, 2026; due within 5 years of initial licensure or of a renewal, whichever first (49 Pa. Code 16.19(b))"),
       mateTopic(),
     ],
   },
