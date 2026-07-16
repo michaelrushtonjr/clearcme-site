@@ -335,11 +335,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; new CME framework begins with 2027 renewal",
     mandatoryTopics: [
-      topic(
-        "Substance use prevention / treatment competency",
-        "2 cumulative hrs per cycle",
-        "Exemptions may apply under C.R.S. 12-30-114(1)(b); qualifying training may include CE, self-study, peer review, relevant service, conferences, teaching, or presentations",
-      ),
       mateTopic(),
     ],
   },
