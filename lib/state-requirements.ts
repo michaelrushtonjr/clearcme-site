@@ -717,7 +717,8 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle; 2026 RIDOH guidance allows any ACCME-accredited topic area",
     mandatoryTopics: [
       topic("Alzheimer's disease / cognitive impairment", "Not required under the current codified rule", "The current CME rule (216-RICR-40-05-1 §1.5.5, amended 2022) mandates no topic-specific hours; some RIDOH guidance still describes a one-time 1-hr requirement from Aug. 2019 — the codified rule controls"),
-      mateTopic("If DEA-registered (federal requirement; RIDOH currently lists no state-specific renewal topics)"),
+      topic("Opioid prescribing best practices", "8 hrs one-time (Category 1)", "RI-specific rule for prescribers of Schedule II opioids, due before controlled-substance registration renewal or within 2 years, whichever is longer (216-RICR-20-20-4 §4.4(N)); largely overlaps the federal MATE 8 hrs; exempt with completed DATA 2000 waiver training and an active DEA 'X' designation"),
+      mateTopic(),
     ],
   },
   SC: {
