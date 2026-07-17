@@ -608,7 +608,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   NH: {
     totalHours: 100,
-    totalHoursLabel: "100 hours",
+    totalHoursLabel: "100 hours (at least 40 Category I; no more than 60 Category II)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
