@@ -232,7 +232,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   NY: variableRenewal("Every 2 years; deadline is tied to your NYSED registration cycle"),
   OH: variableRenewal("Biennial registration date varies by physician and license record"),
   OK: variableRenewal("Triennial MD renewal date varies by board cohort"),
-  OR: variableRenewal("License expiration varies by physician; Oregon renewals are not on one statewide fixed date"),
+  OR: fixedRenewal("December 31 of odd-numbered years", 12, 31, "odd"),
   PA: fixedRenewal("December 31 of even-numbered years", 12, 31, "even"),
   RI: fixedRenewal("June 1 of even-numbered years (CME-earning deadline, 216-RICR-40-05-1 §1.5.5; renewal application filing is due before July 1)", 6, 1, "even"),
   SC: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
