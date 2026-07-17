@@ -652,6 +652,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("SBIRT", "2 hrs one-time", "Within 2 years of initial licensure"),
       topic("HIV stigma / bias training", "2 hrs one-time", "If providing or supervising hospital emergency services, or practicing primary care"),
       topic("Controlled substances / opioid CE", "2 hrs per cycle", "If registered to dispense controlled substances in Nevada"),
+      topic("Cultural competency / DEI", "2 hrs every 2 years", "Psychiatrists only; not required for non-psychiatry NV MDs (NRS 630.253; also applies to PAs supervised by a psychiatrist)"),
       mateTopic(),
     ],
   },
