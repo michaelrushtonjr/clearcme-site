@@ -725,7 +725,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 40,
     totalHoursLabel: "40 hours (minimum 30 specialty; includes 2 hours controlled-substance training)",
     cycleYears: 2,
-    cycleLabel: "2-year CME window: July 1 of even year through June 30 of odd renewal year",
+    cycleLabel: "2-year CME window: July 1 of an odd year through June 30 of the odd renewal year two years later",
     mandatoryTopics: [
       topic("Prescribing and monitoring controlled substances", "2 hrs every renewal"),
       mateTopic(),
