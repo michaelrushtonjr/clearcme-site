@@ -745,7 +745,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; for 2025+ use 24 months preceding renewal, not two calendar years",
     mandatoryTopics: [
-      topic("Controlled substance prescribing", "2 hrs per cycle", "Applies to all licensees unless exempted by statute"),
+      topic("Controlled substance prescribing", "2 hrs per cycle", "Applies to all licensees unless exempt under T.C.A. 63-1-402(c): board certified (ABMS/AOA/ABPS) in pain management, anesthesiology, physical medicine and rehabilitation, neurology, or rheumatology, or practicing at a registered pain management clinic"),
       mateTopic(),
     ],
   },
