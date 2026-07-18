@@ -758,6 +758,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Medical ethics / professional responsibility", "2 hrs per cycle"),
       topic("Safe prescribing / pain management", "2 hrs front-loaded, then every 8 years", "2 hrs within first year of licensure and again at the next renewal, then 2 hrs every fourth renewal; direct patient care"),
       topic("Human trafficking prevention", "1 hr at first renewal and every third renewal after", "HHSC-approved course required"),
+      topic("Forensic evidence collection / sexual assault survivor care", "At least 2 hrs", "Effective for renewal applications filed on or after Sept. 1, 2026 (HB 47, 2025; Occ. Code 156.057) — not yet in force; if your practice includes treating patients in an emergency room setting; covers trauma-informed care for sexual assault survivors, community referrals and prophylactic medications, survivor rights under Code of Criminal Procedure Ch. 56A, forensic evidence collection, and evidence custody law"),
       topic("Life of the Mother Act emergency care CE", "At least 1 hr, one-time", "Due before initial licensure, or before your first license renewal after Jan. 1, 2026 (SB 31 §19(e)); TMB applies by specialty (OB/GYN-related, Emergency Medicine, Family Medicine); ONLY the free TMB course via MyTMB satisfies it — outside CME does not"),
       mateTopic(),
     ],
