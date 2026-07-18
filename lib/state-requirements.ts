@@ -295,7 +295,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
       topic("Professional boundaries", "2 hrs one-time", "In effect — licensees active in 2025 were due by Dec. 31, 2025; new licensees within 12 months of licensure; limited licensees in a residency or clinical fellowship and licensees with an active retirement waiver are exempt"),
-      topic("Collaborative/supervisory practice CME", "Board course every 60 months", "If in a collaborative CRNP/CNM or supervisory PA arrangement; compliance date extended to Jan. 1, 2025; new arrangements must complete within 12 months (look-back extended 48 to 60 months)"),
+      topic("Collaborative/supervisory practice CME", "Board course every 48 months", "If in a collaborative CRNP/CNM or supervisory PA arrangement; recurring every 48 months following commencement (540-X-8-.04(6)); new arrangements: course taken not more than 48 months before or within 12 months of commencement; the 60-month look-back was a one-time transitional accommodation for the extended Jan. 1, 2025 compliance date"),
       topic("Controlled Substance Certificate CME", "2 hrs every 2 years", "If Alabama ACSC holder"),
     ],
   },
