@@ -322,7 +322,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 50,
     totalHoursLabel: "50 hours (initial license issued for <13 months: 25 hours for first renewal)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; initial licenses issued on or after Jan. 1, 2025 run 26 months (B&P 2097.5; MBC's website says Jan. 1, 2024, but the statute controls)",
     mandatoryTopics: [
       topic("Pain management and end-of-life care", "12 hrs one-time", "Due by second renewal / within 4 years"),
       topic("Geriatric medicine", "10 hrs per cycle", "If general internist or family physician with >25% elderly patients"),
