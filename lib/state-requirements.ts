@@ -728,6 +728,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year CME window: July 1 of an odd year through June 30 of the odd renewal year two years later",
     mandatoryTopics: [
       topic("Prescribing and monitoring controlled substances", "2 hrs every renewal"),
+      topic("Human trafficking awareness and prevention", "1 hr every 6 years", "If practicing emergency medicine, primary care, internal medicine, family medicine, pediatrics, OB/GYN, or as a hospitalist, or in a public health clinic, emergency department, urgent care center, or community-based center; licensed before Jan. 1, 2026: first course due by Jan. 1, 2028; licensed on/after Jan. 1, 2026: within 2 years of licensure; counts as part of required CE hours but is a distinct requirement (S.C. Code 40-47-39, in effect since Mar. 9, 2026)"),
       mateTopic(),
     ],
   },
