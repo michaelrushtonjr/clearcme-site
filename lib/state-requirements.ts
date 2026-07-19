@@ -959,7 +959,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
       topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA DO prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
       topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
-      topic("Organ and tissue donation / recovery", "2 hrs one-time", "Effective May 1, 2026; due within 5 years of initial licensure or of a renewal, whichever first (49 Pa. Code 25.271(c))"),
+      topic("Organ and tissue donation / recovery", "2 hrs one-time", "Effective May 1, 2026; due within 5 years of initial licensure or of a renewal, whichever first (49 Pa. Code 25.271(c)(6)(i))"),
       mateTopic(),
     ],
   },
