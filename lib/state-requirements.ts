@@ -439,7 +439,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("Opioid prescribing", "1 hr every 6 years", "Tied to the Illinois controlled-substance registration (cadence relaxed from 3 to 6 years in 2023)"),
       topic("Sexual harassment prevention", "1 hr per cycle"),
-      topic("Implicit bias in health care", "1 hr per cycle", "Maternal-health content added for renewals from July 1, 2026"),
+      topic("Implicit bias in health care", "1 hr per cycle", "For renewals from July 1, 2026, the 1-hour course must include maternal-health risk content if you report to IDFPR that you provide maternal health care services; no extra hours"),
       topic("Alzheimer's disease and dementia", "1 hr once, then every 6 years", "If directly treating adults 26+"),
       topic("Cultural competency", "1 hr once, then every 6 years"),
       topic("Child abuse / mandated reporter training", "Training every 6 years", "If working with children"),
