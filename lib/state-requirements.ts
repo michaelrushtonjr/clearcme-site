@@ -458,7 +458,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: null,
     cycleLabel: "18-, 30-, or 42-month CE path",
     mandatoryTopics: [
-      topic("Category III credits", "1, 2, or 3 credits", "Depends on chosen CE path"),
+      topic("Category III credits", "1, 2, or 3 credits", "Depends on chosen CE path; content must cover acute or chronic pain management, appropriate opioid prescribing, or prescription drug monitoring program use (K.A.R. 100-15-4)"),
       mateTopic(),
     ],
   },
