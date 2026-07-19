@@ -674,7 +674,10 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHoursLabel: "50 hours",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
-    mandatoryTopics: [topic("Duty to report misconduct", "1 hr every cycle")],
+    mandatoryTopics: [
+      topic("Duty to report misconduct", "1 hr every cycle"),
+      mateTopic(),
+    ],
   },
   OK: {
     totalHours: 60,
