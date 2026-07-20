@@ -477,11 +477,11 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   LA: {
     totalHours: 20,
-    totalHoursLabel: "20 board-approved CME hours annually (Category 1 pathways include ACCME, AAFP, ACOG, AOA, LSMS, ABMS/AOA specialty-board, or other board-recognized providers)",
+    totalHoursLabel: "20 board-approved CME hours annually (Category 1 pathways include ACCME, AAFP, ACOG, AOA, LSMS, ABMS/AOA specialty-board, or other board-recognized providers); new licensees are exempt from the 20 annual hours at their first renewal (per LSBME)",
     cycleYears: 1,
     cycleLabel: "Annual renewal cycle",
     mandatoryTopics: [
-      topic("Louisiana laws and rules", "Required before first renewal", "New licensee requirement; credit counts hour-for-hour toward annual CME"),
+      topic("Louisiana laws and rules", "Required before first renewal", "New licensee requirement (LAC 46:XLV.449); still required at the first renewal even though new licensees are exempt from the 20 annual CME hours"),
       topic("CDS prescribing", "3 hrs one-time", "If authorized prescriber renewing for the first time; board-approved/electronically reported course required; exception if no CDS prescribed/administered/dispensed"),
       mateTopic(),
     ],
