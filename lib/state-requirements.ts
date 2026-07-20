@@ -231,7 +231,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   NV: fixedRenewal("June 30 of odd-numbered years", 6, 30, "odd"),
   NY: variableRenewal("Every 2 years; deadline is tied to your NYSED registration cycle"),
   OH: variableRenewal("Biennial registration date varies by physician and license record"),
-  OK: variableRenewal("Triennial MD renewal date varies by board cohort"),
+  OK: variableRenewal("Annual reregistration, during your month of initial licensure (OAC 435:10-7-10); the 60-hr CME reporting window is a separate 3-year cycle"),
   OR: fixedRenewal("December 31 of odd-numbered years", 12, 31, "odd"),
   PA: fixedRenewal("December 31 of even-numbered years", 12, 31, "even"),
   RI: fixedRenewal("June 1 of even-numbered years (CME-earning deadline, 216-RICR-40-05-1 §1.5.5; renewal application filing is due before July 1)", 6, 1, "even"),
@@ -683,7 +683,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 60,
     totalHoursLabel: "60 hours",
     cycleYears: 3,
-    cycleLabel: "3-year renewal cycle",
+    cycleLabel: "3-year CME reporting cycle; license reregistration itself is annual, in your month of initial licensure",
     mandatoryTopics: [
       topic("Opioid prescribing / pain management", "1 hr every year", "If DEA registration authorizes controlled dangerous substances"),
       mateTopic(),
