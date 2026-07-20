@@ -943,7 +943,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     totalHours: 16,
     totalHoursLabel: "16 hours",
     cycleYears: 1,
-    cycleLabel: "Annual renewal cycle; renewal fee due on or before July 1",
+    cycleLabel: "Annual renewal cycle; renewal due on or before June 30, when the license expires (the CME reporting cycle separately runs July 1 through June 30)",
     mandatoryTopics: [
       topic("Proper prescribing", "1 hr every year", "Exempt if no Oklahoma Bureau of Narcotics and DEA authority to handle controlled dangerous substances; must be board-approved seminar"),
       mateTopic(),
