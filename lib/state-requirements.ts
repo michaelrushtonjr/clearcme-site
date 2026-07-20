@@ -280,7 +280,7 @@ const mateTopic = (note = "If DEA-registered") =>
 const mdRequirements: Record<StateCode, RequirementSeed> = {
   AK: {
     totalHours: 50,
-    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AMA Category I or board-recognized equivalent)",
+    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AMA Category I or board-recognized equivalent); first renewal is prorated — an average of 25 hrs per year of your initial license period (12 AAC 40.200(a)), and physicians licensed in the cycle's final year owe only the 2-hr pain management/opioid topic",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
@@ -845,7 +845,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
 const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   AK: {
     totalHours: 50,
-    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AOA Category I/II or board-recognized equivalent)",
+    totalHoursLabel: "50 hours per 2-year cycle, averaging 25 hours/year (AOA Category I/II or board-recognized equivalent); first renewal is prorated — an average of 25 hrs per year of your initial license period (12 AAC 40.200(a)), and physicians licensed in the cycle's final year owe only the 2-hr pain management/opioid topic",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
