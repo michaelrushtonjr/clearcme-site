@@ -914,10 +914,10 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     ],
   },
   NV: {
-    totalHours: 35,
-    totalHoursLabel: "35 hours annual through Dec. 31, 2026 (at least 10 hours Category 1A); 2027+ transition: 40 hours biennial with at least 20 Category 1A",
-    cycleYears: 1,
-    cycleLabel: "Annual renewal through Dec. 31, 2026; biennial renewal beginning with the 2027+ cycle",
+    totalHours: 40,
+    totalHoursLabel: "40 hours per 2-year cycle (NRS 633.471 as amended by AB 56 (2025), effective Jan. 1, 2026; NSBOM's Category 1A minimum under NAC 633.250 is pending conformance to the new statute)",
+    cycleYears: 2,
+    cycleLabel: "Biennial renewal cycle; DO licenses renew on or before December 31 of even-numbered years (AB 56, effective Jan. 1, 2026)",
     mandatoryTopics: [
       topic("Opioid / controlled substance education", "2 hrs every year through 2026; 4 hrs per biennium for 2027+", "Misuse/abuse of controlled substances, prescribing of opioids, or addiction; applies to all NV DOs under NSBOM rules"),
       topic("Ethics, pain management, addiction care, or SBIRT", "2 hrs in even-numbered years", "Separate recurring even-year NSBOM requirement; SBIRT can satisfy this bucket when taken in an even-year cycle"),
