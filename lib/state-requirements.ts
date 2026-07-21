@@ -773,7 +773,6 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; MD licenses expire January 31 of even-numbered years",
     mandatoryTopics: [
-      topic("Suicide prevention training", "0.5 credit every renewal"),
       topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"),
       topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"),
       mateTopic(),
@@ -982,7 +981,6 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; DO licenses expire May 31 of even-numbered years",
     mandatoryTopics: [
-      topic("Suicide prevention training", "0.5 credit every renewal"),
       topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"),
       topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"),
       mateTopic(),
