@@ -1182,7 +1182,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         verified: "2026-07-14 (COO confirmed specific-activity page and exact title; credit/price/access details are JS-gated to automated readers — per Michael's live-browser read 2026-07-11: 1.0 AMA PRA Cat 1 + 1.0 Ethics, $0 TMA members / $349 non-members, access through 8/19/2027)",
       },
       {
-        name: "Signs of Human Trafficking and Response: A Physician's Guide",
+        name: "Human Trafficking: Identification and Response",
         provider: "American College of Physicians (ACP)",
         providerUrl: "https://www.acponline.org",
         credits: "Up to 1.0 hour AMA PRA Category 1 + ABIM MOC Points",
@@ -1195,7 +1195,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         accreditation: "ACCME (ACP)",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; meets Virginia mandatory human trafficking CE requirement (VA Board of Medicine)",
-        verified: "2026-04-17",
+        verified: "2026-07-21",
       },
       {
         name: "Human Trafficking, Sex Work, and the Risk of Substance Use Disorders (Menninger Psychiatry Grand Rounds)",
