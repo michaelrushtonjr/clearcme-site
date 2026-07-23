@@ -212,7 +212,9 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   KS: fixedRenewal("June 30 annually (license expiration and CME deadline; late renewal accepted through July 31 with late fees)", 6, 30),
   KY: fixedRenewal("March 1 annually; CME is reported on a separate 3-year cycle", 3, 1),
   LA: variableRenewal("First day of your birth month, annually (LAC 46:XLV.417)"),
-  MA: variableRenewal("Every 2 years from your issuance or prior renewal date"),
+  MA: birthBasedRenewal("On or before your birthday, every 2 years (M.G.L. c. 112 §2; if your birthday falls within 3 months of initial registration, your first renewal defers to your birthday 2 years later)", {
+    usesExactBirthday: true,
+  }),
   MD: variableRenewal("September 30 of your renewal year, every 2 years"),
   ME: birthBasedRenewal("Last day of your birth month, every 2 years"),
   MI: variableRenewal("Every 3 years; renewal date varies by physician and license record"),
