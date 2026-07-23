@@ -437,7 +437,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 3,
     cycleLabel: "3-year renewal cycle; first Illinois renewal is CME-exempt",
     mandatoryTopics: [
-      topic("Opioid prescribing", "1 hr every 6 years", "Tied to the Illinois controlled-substance registration (cadence relaxed from 3 to 6 years in 2023)"),
+      topic("Opioid prescribing", "1 hr per renewal cycle", "Due each renewal of the Illinois controlled-substance registration (~3-year cycle; 720 ILCS 570/315.5 — completed during the 36-month pre-renewal period)"),
       topic("Sexual harassment prevention", "1 hr per cycle"),
       topic("Implicit bias in health care", "1 hr per cycle", "For renewals from July 1, 2026, the 1-hour course must include maternal-health risk content if you report to IDFPR that you provide maternal health care services; no extra hours"),
       topic("Alzheimer's disease and dementia", "1 hr once, then every 6 years", "If directly treating adults 26+"),
