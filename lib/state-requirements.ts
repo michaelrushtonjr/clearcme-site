@@ -426,7 +426,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   ID: {
     totalHours: 40,
-    totalHoursLabel: "40 hours (current board certification or residency/fellowship status may satisfy under IDAPA 24.33.01 §100.04)",
+    totalHoursLabel: "40 hours (current board certification or residency/fellowship status may satisfy under IDAPA 24.33.01 §079)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
