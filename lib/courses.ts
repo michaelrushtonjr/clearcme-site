@@ -227,7 +227,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         credits: "1.0 hour AMA PRA Category 1",
         creditType: "AMA_PRA_1",
         price: "Free (all membership tiers + non-members)",
-        isFree: false,
+        isFree: true,
         isHippo: false,
         description: "Webinar-based CME covering ASAM's guidance document on appropriate drug testing in addiction medicine. Practical clinical skill for prescribers managing patients with SUD. Free for all including non-members. Register at elearning.asam.org → Free Sessions.",
         url: "https://elearning.asam.org/ (navigate to Free Sessions)",
