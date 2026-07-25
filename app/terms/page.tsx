@@ -40,7 +40,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">6. Subscriptions, Billing, and Refunds</h2>
             <p>Paid plans are billed through our payment processor. Subscription access begins after successful checkout and continues until canceled. You may cancel future renewals from your account or by contacting support.</p>
-            <p className="mt-2">If ClearCME does not work as expected, contact us within 14 days of purchase at <a href="mailto:hello@clearcme.ai" className="text-[#3f5f33] hover:underline">hello@clearcme.ai</a>. We will either help resolve the issue or provide a reasonable refund when appropriate. Refunds are not guaranteed for accounts that have materially used export, reporting, or compliance-analysis features, but we will handle early-launch issues in good faith.</p>
+            <p className="mt-2">We offer a 30-day money-back guarantee. If ClearCME does not work as expected, contact us within 30 days of purchase at <a href="mailto:hello@clearcme.ai" className="text-[#3f5f33] hover:underline">hello@clearcme.ai</a> and we will refund your subscription in full. No questions asked.</p>
           </section>
 
           <section>

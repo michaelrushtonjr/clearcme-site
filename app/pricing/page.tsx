@@ -28,7 +28,7 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
   },
   {
     q: "What if I subscribe and it is not right for me?",
-    a: "Email hello@clearcme.ai within 14 days of purchase. During launch, we will either help fix the issue or handle a reasonable refund in good faith.",
+    a: "Email hello@clearcme.ai within 30 days of purchase and we'll refund you in full - no questions, no email chase.",
   },
   {
     q: "Is this legal or licensing advice?",

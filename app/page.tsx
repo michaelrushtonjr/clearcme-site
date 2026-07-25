@@ -110,10 +110,8 @@ const faqItems = [
   {
     q: "How does the guarantee actually work?",
     a: [
-      "It's two parts.",
       "30-day money-back. If ClearCME isn't right for you, request a full refund within 30 days of paying. No questions, no email chase.",
-      "The $1,000 Compliance Promise. If an error in ClearCME's requirement data causes you to miss a requirement for a state license renewal, we'll refund your subscription and cover your late-renewal fee, up to $1,000.",
-      "Every state requirement is verified twice: once by AI, and once by a human physician validating state-specific rules. We've never paid the Compliance Promise out.",
+      "Every state requirement is verified twice: once by AI, and once by a human physician validating state-specific rules.",
     ],
   },
   {
@@ -520,31 +518,23 @@ function Guarantee() {
             <div>
               <div className="g-eye">The Guarantee</div>
               <h2 className="g-h">
-                If our data is wrong and it costs you, <em>we pay.</em>
+                Try it for 30 days. <em>Not for you? Full refund.</em>
               </h2>
               <p className="g-p">
-                If an error in ClearCME&apos;s requirement data causes you to miss a requirement, we refund your
-                subscription <strong>and</strong> cover your late-renewal fee - up to <strong>$1,000</strong>.
+                Request a full refund within 30 days of paying - no questions, no email chase.
                 <br />
                 <br />
-                We&apos;ve never paid this out. Every state requirement is verified twice - once by AI, once by a human
-                physician - before it enters your dashboard.
+                Every state requirement is verified twice - once by AI, once by a human physician - before it
+                enters your dashboard.
               </p>
             </div>
-            <div className="g-stamp" aria-label="$1,000 compliance promise">
+            <div className="g-stamp" aria-label="30-day money-back guarantee">
               <div className="inner">
-                <div className="big">$1,000</div>
-                <div className="lbl">If we miss · we pay</div>
-                <div className="sm">Subscription refunded + late-renewal fee covered.</div>
+                <div className="big">30 days</div>
+                <div className="lbl">Money-back · no questions</div>
+                <div className="sm">Full refund within 30 days of purchase.</div>
               </div>
             </div>
-          </div>
-          <div className="g-plus">
-            <span className="plus-label">Plus</span>
-            <span>
-              <strong>30-day money-back.</strong> Try it. Not for you? Full refund within 30 days. No questions,
-              no email chase.
-            </span>
           </div>
         </div>
       </div>
@@ -687,7 +677,7 @@ function Pricing() {
       "Sort by price, time, topic, accreditation",
       "Audit-ready PDF export",
       "Renewal and gap reminders",
-      "The $1,000 Compliance Promise",
+      "30-day money-back guarantee",
     ],
     pro: [
       "Everything in Essential",
@@ -704,7 +694,7 @@ function Pricing() {
         <SectionHead
           eyebrow="Pricing"
           title="Less than the cost of one compliance scramble."
-          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, reminders, and the $1,000 Compliance Promise."
+          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, and reminders - backed by a 30-day money-back guarantee."
         />
         <div className="price-grid">
           <div className="plan reveal">
