@@ -646,7 +646,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   NV: {
     totalHours: 40,
-    totalHoursLabel: "40 Category 1 hours (20 hours must be in specialty or scope of practice)",
+    totalHoursLabel: "40 Category 1 hours (20 hours must be in specialty or scope of practice); first cycle prorated by when in the biennium you were licensed — 40 hrs (first 6 months), 30 (second), 20 (third), 10 (fourth) (NAC 630.157, except as provided in NAC 630.153)",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
