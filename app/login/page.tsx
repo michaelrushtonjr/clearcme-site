@@ -1,14 +1,62 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 
 // Email magic link is only available when RESEND_API_KEY is configured.
 // On production without the key, we show Google-only sign-in.
 const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
 const APPLE_ENABLED = !!process.env.NEXT_PUBLIC_APPLE_SIGNIN_ENABLED;
+
+// Human-readable copy for NextAuth's ?error= codes. Anything unlisted gets
+// the generic message rather than leaking a raw error code.
+const AUTH_ERROR_COPY: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "That sign-in belongs to a different ClearCME account than the one this browser is signed in to.",
+  AccessDenied: "Sign-in was cancelled or not permitted.",
+  Verification: "That sign-in link has expired or was already used. Request a new one below.",
+  Configuration: "Sign-in is misconfigured on our end. Please try again shortly.",
+};
+
+function AuthErrorNotice({ error }: { error: string }) {
+  // The login page has no SessionProvider, so ask next-auth's session
+  // endpoint directly to find out who (if anyone) this browser is signed in
+  // as — OAuthAccountNotLinked is almost always caused by an active session.
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => setSessionEmail(s?.user?.email ?? null))
+      .catch(() => {});
+  }, []);
+
+  const isNotLinked = error === "OAuthAccountNotLinked";
+  const message =
+    AUTH_ERROR_COPY[error] ?? "Something went wrong signing you in. Please try again.";
+
+  return (
+    <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+      <p>{message}</p>
+      {isNotLinked && (
+        <>
+          {sessionEmail && (
+            <p className="mt-2">
+              You&apos;re currently signed in as <strong>{sessionEmail}</strong>.
+            </p>
+          )}
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="mt-3 px-4 py-2 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
+          >
+            Sign out, then try again
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 const TRUST_BULLETS = [
   { icon: "✓", text: "Free to start" },
@@ -106,11 +154,7 @@ function LoginPageInner() {
           Free · No PHI stored · 3-step setup: license → map → gaps
         </p>
 
-        {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-            <strong>Auth error:</strong> {error}
-          </div>
-        )}
+        {error && <AuthErrorNotice error={error} />}
 
         <AuthForm
           email={email}
@@ -136,6 +180,8 @@ function LoginPageInner() {
               Built by a board-certified physician · All 50 states + DC
             </p>
           </div>
+
+          {error && <AuthErrorNotice error={error} />}
 
           <AuthForm
             email={email}
