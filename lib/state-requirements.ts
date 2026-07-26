@@ -704,9 +704,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   PA: {
     totalHours: 100,
-    totalHoursLabel: "100 hours (retain CME records 2 years after renewal; MD registration expires Dec. 31 of even-numbered years)",
+    totalHoursLabel: "100 hours (at least 20 AMA PRA Category 1; retain CME records 2 years after renewal; MD registration expires Dec. 31 of even-numbered years)",
     cycleYears: 2,
-    cycleLabel: "2-year renewal cycle",
+    cycleLabel: "2-year renewal cycle; first-time PA licensure is CME-exempt for the following biennial renewal period",
     mandatoryTopics: [
       topic("Patient safety / risk management", "12 hrs per cycle"),
       topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
