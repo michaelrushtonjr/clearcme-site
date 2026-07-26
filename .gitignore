@@ -21,3 +21,4 @@ npm-debug.log*
 .env.prod
 .env.vercel
 .vscode/
+*.tsbuildinfo
