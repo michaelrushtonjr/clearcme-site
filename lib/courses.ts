@@ -1455,6 +1455,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  END_OF_LIFE_CARE: {
+    topicLabel: "End-of-Life / Palliative Care",
+    requirement: "Varies by state — e.g. CA 12 hrs one-time (combined pain management and end-of-life care); several states require recurring or one-time hours",
+    courses: [
+      {
+        name: "Bridging Gaps in Palliative Care: Personalizing Care in Diverse Communities",
+        provider: "CME Outfitters",
+        providerUrl: "https://www.cmeoutfitters.com",
+        credits: "1.0 hour AMA PRA Category 1 / ACPE / ANCC / ABIM MOC / Royal College MOC",
+        creditType: "AMA_PRA_1",
+        price: "Free (free account required to claim credit)",
+        isFree: true,
+        isHippo: false,
+        description: "CME Snack-format enduring activity on disparities in palliative care access, cultural sensitivity, and multidisciplinary delivery in underserved communities. Launched October 17, 2025; credit expires April 15, 2027. Supported by an independent medical education grant from CVS Health (disclosed on page); faculty report no financial relationships. First entry in the catalog's end-of-life/palliative bucket — useful toward state end-of-life CME requirements and as a start on California's combined 12-hr pain-management/end-of-life one-time requirement.",
+        url: "https://www.cmeoutfitters.com/activity/bridging-gaps-in-palliative-care-personalizing-care-in-diverse-communities-2/",
+        accreditation: "Jointly accredited ACCME/ACPE/ANCC (CME Outfitters)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-07-26 (COO read of the live activity page: 'a maximum of 1.00 AMA PRA Category 1 Credit(s)' designation, free with account activation, credit expiration 04/15/2027, specific-activity deep link; Scout verified 2026-07-18 gap-prospect run)",
+      }
+    ],
+  },
   GENERAL_CATEGORY_1: {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
