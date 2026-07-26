@@ -1159,9 +1159,20 @@ body {
   align-items: center;
 }
 
+.landing-v3 .hero-grid > .reveal {
+  container-type: inline-size;
+}
+
 .landing-v3 .h1 {
   margin: 0;
   font-size: clamp(40px, 5.6vw, 70px);
+  /* Desktop overflow fix (2026-07-25): .wave is nowrap and needs ~10.1px of
+     column width per 1px of font-size, but .wrap caps the text column at
+     ~547px, so the 70px cap always pushed "or your money back." under the
+     dashboard card. 9.5cqw sizes the h1 to its own grid column so the wave
+     always fits; browsers without container-query units keep the line above.
+     The ≤640px media query below still overrides both on phones. */
+  font-size: min(clamp(40px, 5.6vw, 70px), 9.5cqw);
   letter-spacing: -0.022em;
 }
 
