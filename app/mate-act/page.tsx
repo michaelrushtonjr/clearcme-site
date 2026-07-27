@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
+import { getFreeMateCourses } from "@/lib/mate-free-courses";
 
 function SelfCheckTool() {
   const [deaDate, setDeaDate] = useState("");
@@ -118,6 +119,7 @@ function SelfCheckTool() {
 }
 
 export default function MateActPage() {
+  const freeMate = getFreeMateCourses();
   return (
     <PublicShell links={[{ href: "/pricing", label: "Pricing" }, { href: "/methodology", label: "Methodology" }]}>
       {/* Hero */}
@@ -271,10 +273,60 @@ export default function MateActPage() {
         <SelfCheckTool />
       </section>
 
-      {/* Recommended course */}
+      {/* Courses that satisfy it — free first */}
       <section className="public-section-band py-14">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-[#1e2920] mb-6 text-center">Recommended course</h2>
+          <h2 className="text-2xl font-bold text-[#1e2920] mb-2 text-center">Courses that satisfy it</h2>
+          <p className="text-sm text-[#3f4a40] mb-8 text-center max-w-xl mx-auto leading-relaxed">
+            These 8 hours are widely sold near renewal deadlines. They do not have to be.
+            Accredited providers offer training that covers the full requirement at no cost.
+          </p>
+
+          {freeMate.full.length > 0 && (
+            <>
+              <h3 className="text-sm font-bold text-[#3f5f33] uppercase tracking-wide mb-3">
+                Free — covers all 8 hours
+              </h3>
+              <div className="flex flex-col gap-4 mb-8">
+                {freeMate.full.map((course) => (
+                  <div key={`${course.name}|${course.url}`} className="public-card p-5">
+                    <p className="font-bold text-[#1e2920] mb-1">{course.name}</p>
+                    <p className="text-xs text-[#6b7568] mb-2">{course.provider}</p>
+                    <p className="text-sm text-[#3f4a40] mb-3 leading-relaxed">{course.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">
+                        Free
+                      </span>
+                      <span className="text-xs bg-[#dde8cf] text-[#3f5f33] font-medium px-2.5 py-1 rounded-full">
+                        {course.credits}
+                      </span>
+                    </div>
+                    <a
+                      href={course.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors"
+                    >
+                      View course →
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {freeMate.partial.length > 0 && (
+            <p className="text-sm text-[#3f4a40] mb-8 text-center">
+              {freeMate.partial.length} more free {freeMate.partial.length === 1 ? "course" : "courses"} count toward
+              the 8 hours —{" "}
+              <Link href="/courses/opioid-prescribing" className="text-[#3f5f33] font-semibold hover:underline">
+                see the full list
+              </Link>
+              .
+            </p>
+          )}
+
+          <h3 className="text-sm font-bold text-[#3f4a40] uppercase tracking-wide mb-3">Paid alternative</h3>
           <div className="public-card p-6 flex flex-col sm:flex-row gap-5 items-start">
             <div className="w-12 h-12 rounded-xl bg-[#3f5f33] flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -284,8 +336,9 @@ export default function MateActPage() {
             <div className="flex-1">
               <p className="font-bold text-[#1e2920] text-lg mb-1">Hippo Education: OUD Decoded</p>
               <p className="text-sm text-[#3f4a40] mb-3 leading-relaxed">
-                12.25 AMA PRA Category 1 Credits™ — satisfies the DEA MATE Act 8-hour requirement.
-                Covers opioid use disorder diagnosis, treatment, and clinical management.
+                12.25 AMA PRA Category 1 Credits™ — satisfies the DEA MATE Act 8-hour requirement and goes
+                well beyond it, covering opioid use disorder diagnosis, treatment, and clinical management.
+                A paid option, included here because the depth is genuinely greater than the free courses above.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">✓ Satisfies MATE Act</span>
@@ -296,7 +349,7 @@ export default function MateActPage() {
                 href="https://home.hippoed.com/oud-decoded"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#3f5f33] text-[#3f5f33] text-sm font-semibold rounded-xl hover:bg-[#dde8cf] transition-colors"
               >
                 View OUD Decoded →
               </a>
