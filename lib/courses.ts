@@ -1493,6 +1493,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  ALZHEIMERS_DEMENTIA: {
+    topicLabel: "Alzheimer's / Dementia Care",
+    requirement: "Varies by state — e.g. IL 1 hr per 6-year cycle, MA 1 hr one-time, DE 2 hrs for 2027-and-later renewals",
+    courses: [
+      {
+        name: "Cognitive Care in Family Medicine Settings",
+        provider: "American Academy of Family Physicians (AAFP)",
+        providerUrl: "https://www.aafp.org",
+        credits: "1.25 hours AAFP Prescribed credit (accepted by the AMA as equivalent to AMA PRA Category 1)",
+        creditType: "AMA_PRA_1",
+        price: "Free (free AAFP account required, no membership)",
+        isFree: true,
+        isHippo: false,
+        description: "Free on-demand course on cognitive care in primary care settings, developed with the Gary and Mary West Institute: reversible causes of cognitive impairment, when to trigger a diagnostic workup, advance care planning, and medications for MCI and dementia — broad diagnosis-and-care scope, not a single-drug deep-dive. Term of approval 1/31/2025–1/31/2028. First entry in the catalog's Alzheimer's/dementia bucket — useful toward IL, MA, and DE dementia CME requirements.",
+        url: "https://www.aafp.org/cme/all/neurology/cognitive-care-fm-settings.html",
+        accreditation: "ACCME (AAFP)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1; AAFP Prescribed credit accepted by AMA as equivalent to AMA PRA Category 1",
+        verified: "2026-07-27 (COO read of the live page: 'up to 1.25 Enduring Materials, Self-Study AAFP Prescribed credit(s)', AMA PRA Category 1 equivalency statement, 'Free online CME', term of approval 01/31/2025–01/31/2028; Scout verified 2026-07-18 gap-prospect run, facts match exactly)",
+      }
+    ],
+  },
   GENERAL_CATEGORY_1: {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
