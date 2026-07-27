@@ -75,11 +75,15 @@ feature. The fleet's shared clone now hard-resets on every run
 
 ## Environment and database — two live footguns
 
-- **`.env` does NOT point at production.** It targets a local prisma-dev
-  sandbox. The real Railway connection string is in **`.env.prod`**
-  (host `maglev.proxy.rlwy.net`). Anything you run that touches data —
-  `prisma migrate`, a script, a one-off query — hits the wrong database by
-  default and silently appears to succeed. Load `.env.prod` explicitly.
+- **`.env.local` overrides `.env`, and it decides what `npm run dev` hits.**
+  Until 2026-07-27 it pointed at production Railway, so "local" dev ran
+  against real user data. It now points at the local prisma-dev sandbox
+  (`postgres://…@localhost:51214`, requires `npx prisma dev` running).
+  Prod credentials live in **`.env.prod`** ONLY (host `maglev.proxy.rlwy.net`)
+  — load that file explicitly when you genuinely need production, and never
+  put a prod URL back in `.env` or `.env.local`. Note: the Prisma CLI
+  (`prisma migrate`, `db push`) reads `.env` via `prisma.config.ts`, not
+  `.env.local` — check which database a command will hit before running it.
 - **Never run `npm run db:seed` against production.** `prisma/seed.js` still
   contains pre-audit compliance data, including the Nevada bioterrorism
   requirement that AB 56 repealed. Re-seeding prod would reintroduce

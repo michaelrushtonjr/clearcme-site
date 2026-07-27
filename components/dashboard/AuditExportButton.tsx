@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import UpgradeNotice from "@/components/UpgradeNotice";
 
 interface AuditExportButtonProps {
   licenseId?: string;
@@ -11,6 +12,7 @@ interface AuditExportButtonProps {
 export default function AuditExportButton({ licenseId, variant = "default" }: AuditExportButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
 
   const handleDownload = async () => {
     setLoading(true);
@@ -21,6 +23,10 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
         : `/api/audit-export`;
 
       const resp = await fetch(url);
+      if (resp.status === 402) {
+        setUpgradeRequired(true);
+        return;
+      }
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
         throw new Error((body as { error?: string }).error ?? `Server error ${resp.status}`);
@@ -57,6 +63,7 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
         >
           {loading ? "Building ZIP…" : "Download audit ZIP"}
         </button>
+        {upgradeRequired && <UpgradeNotice feature="export" />}
         {error && <span className="text-xs text-[var(--status-miss)]">{error}</span>}
       </span>
     );
@@ -97,6 +104,11 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
       <p className="max-w-[16rem] text-left text-[11px] leading-snug text-[var(--ink-3)]">
         ZIP organized by license, requirement, and year.
       </p>
+      {upgradeRequired && (
+        <div className="max-w-xs">
+          <UpgradeNotice feature="export" />
+        </div>
+      )}
       {error && (
         <p className="text-xs text-[var(--status-miss)]">{error}</p>
       )}

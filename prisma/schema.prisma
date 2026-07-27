@@ -65,6 +65,11 @@ model User {
   practiceArea  String?
   npi           String?       @unique // National Provider Identifier
 
+  // Lifetime count of AI certificate extractions that produced data.
+  // Monotonic on purpose: never decremented on certificate delete, so the
+  // free-tier extraction limit can't be reset by upload → delete → repeat.
+  extractionsUsed Int @default(0)
+
   // Mobile push notifications
   pushToken     String?
   pushPlatform  String?       // 'ios' | 'android'

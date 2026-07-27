@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import UpgradeNotice from "@/components/UpgradeNotice";
 
 type UploadState = "idle" | "uploading" | "done" | "error";
 
@@ -149,6 +150,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [uploadResults, setUploadResults] = useState<MobileUploadResult[]>([]);
   const [complianceImpact, setComplianceImpact] = useState<ComplianceImpact | null>(null);
 
@@ -201,6 +203,14 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/api/certificates", { method: "POST", body: formData });
+        if (res.status === 402) {
+          // Free extraction limit reached — show an upgrade prompt, not an error
+          setUpgradeRequired(true);
+          setUploadState("idle");
+          setPreviewSrc(null);
+          setCapturedFile(null);
+          return;
+        }
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error ?? "Upload failed");
@@ -394,6 +404,8 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
 
   return (
     <div className="space-y-3">
+      {upgradeRequired && <UpgradeNotice feature="extraction" />}
+
       {errorMsg && (
         <div className="p-3 bg-[var(--status-miss-bg)] border border-[rgba(221,107,64,0.28)] rounded-xl text-sm text-[var(--status-miss)]">
           {errorMsg}

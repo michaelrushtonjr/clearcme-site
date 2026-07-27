@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NpiVerifier from "@/components/NpiVerifier";
+import UpgradeNotice from "@/components/UpgradeNotice";
 import { formatDateUTC } from "@/lib/dates";
 
 const US_STATES = [
@@ -84,6 +85,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [licenseLimitHit, setLicenseLimitHit] = useState<number | null>(null);
 
   // Existing licenses from API
   const [existingLicenses, setExistingLicenses] = useState<ExistingLicense[]>([]);
@@ -209,6 +211,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
     if (!form.renewalDate) { setError("Please enter your renewal date."); return; }
     setLoading(true);
     setError("");
+    setLicenseLimitHit(null);
     try {
       const payload: Record<string, unknown> = {
         state: form.state,
@@ -243,13 +246,17 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
       });
       if (!res.ok) {
         const data = await res.json();
+        if (res.status === 402) {
+          setLicenseLimitHit(typeof data.limit === "number" ? data.limit : 1);
+          return;
+        }
         throw new Error(data.error || "Failed to save license");
       }
 
       // POST additional licenses
       for (const lic of additionalLicenses) {
         if (!lic.state || !lic.licenseType || !lic.renewalDate) continue;
-        await fetch("/api/licenses", {
+        const licRes = await fetch("/api/licenses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -260,6 +267,11 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
             renewalDate: lic.renewalDate,
           }),
         });
+        if (licRes.status === 402) {
+          const data = await licRes.json().catch(() => ({}));
+          setLicenseLimitHit(typeof data.limit === "number" ? data.limit : 1);
+          return;
+        }
       }
 
       router.push("/dashboard");
@@ -797,6 +809,10 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         >
           + Add another state license
         </button>
+
+        {licenseLimitHit !== null && (
+          <UpgradeNotice feature="licenses" limit={licenseLimitHit} />
+        )}
 
         {error && (
           <div className="bg-[var(--status-miss-bg)] text-[var(--status-miss)] text-sm px-4 py-3 rounded-[var(--radius-sm)]">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
+import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 
 export async function GET(req: NextRequest) {
   const mobileUserId = await getMobileUserId(req);
@@ -45,6 +46,24 @@ export async function POST(req: NextRequest) {
 
   if (!state || !licenseType || !renewalDate) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Fence: license count per tier — enforced on create only, never on read
+  // or update. This POST is an upsert, so first check whether it would
+  // actually create a new row; re-saving an existing license must pass.
+  const existingLicense = await prisma.physicianLicense.findUnique({
+    where: { userId_state_licenseType: { userId, state, licenseType } },
+    select: { id: true },
+  });
+  if (!existingLicense) {
+    const entitlements = await getEntitlements(userId);
+    const licenseCount = await prisma.physicianLicense.count({ where: { userId } });
+    if (licenseCount >= entitlements.licenseLimit) {
+      return upgradeRequiredResponse("licenses", {
+        existing: licenseCount,
+        limit: entitlements.licenseLimit,
+      });
+    }
   }
 
   // Build optional DEA fields

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import UpgradeNotice from "@/components/UpgradeNotice";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -140,6 +141,7 @@ export default function SetupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [licenseLimitHit, setLicenseLimitHit] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [restored, setRestored] = useState(false);
 
@@ -313,6 +315,7 @@ export default function SetupPage() {
     const finalRenewalDate = getFinalRenewalDate(state, licenseType, renewalDate, unsureDate);
     setLoading(true);
     setError("");
+    setLicenseLimitHit(null);
     try {
       // POST primary license
       const primaryRes = await fetch("/api/licenses", {
@@ -328,6 +331,11 @@ export default function SetupPage() {
       });
       if (!primaryRes.ok) {
         const data = await primaryRes.json();
+        if (primaryRes.status === 402) {
+          setLicenseLimitHit(typeof data.limit === "number" ? data.limit : 1);
+          setLoading(false);
+          return;
+        }
         throw new Error(data.error ?? "Failed to create license");
       }
 
@@ -363,6 +371,15 @@ export default function SetupPage() {
             renewalDate: licRenewalDate,
           }),
         });
+        if (res.status === 402) {
+          // License limit hit — stop and show the upgrade prompt rather than
+          // dropping the blocked license silently. The primary license is
+          // already saved; resubmitting re-upserts it harmlessly.
+          const data = await res.json().catch(() => ({}));
+          setLicenseLimitHit(typeof data.limit === "number" ? data.limit : 1);
+          setLoading(false);
+          return;
+        }
         if (!res.ok) {
           // Non-fatal: continue even if additional license fails (e.g. duplicate)
           console.warn(`Failed to create license for ${lic.state}`);
@@ -1020,6 +1037,12 @@ export default function SetupPage() {
                 <div className="bg-slate-50 rounded-xl px-4 py-3 text-sm text-slate-600">
                   Got it — we&apos;ll track compliance for{" "}
                   <strong>{selectedStateName}</strong> only. You can add more licenses anytime from your Profile.
+                </div>
+              )}
+
+              {licenseLimitHit !== null && (
+                <div className="mt-4">
+                  <UpgradeNotice feature="licenses" limit={licenseLimitHit} />
                 </div>
               )}
 

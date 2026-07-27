@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
+import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 
 const PAGE_WIDTH = 612;
 const PAGE_HEIGHT = 792;
@@ -131,6 +132,11 @@ export async function GET(req: NextRequest) {
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const entitlements = await getEntitlements(userId);
+  if (!entitlements.ungated) {
+    return upgradeRequiredResponse("export");
   }
 
   const [certificates, licenses] = await Promise.all([

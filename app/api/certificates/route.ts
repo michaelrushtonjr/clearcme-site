@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
+import {
+  FREE_EXTRACTION_LIMIT,
+  getEntitlements,
+  recordExtractionUse,
+  upgradeRequiredResponse,
+} from "@/lib/entitlements";
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 import { inflateSync } from "zlib";
@@ -38,6 +44,16 @@ export async function POST(req: NextRequest) {
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Fence: 3 lifetime free extractions. Reject before touching the file so a
+  // blocked upload creates no record and spends no Anthropic call.
+  const entitlements = await getEntitlements(userId);
+  if (!entitlements.ungated && entitlements.extractionsUsed >= FREE_EXTRACTION_LIMIT) {
+    return upgradeRequiredResponse("extraction", {
+      used: entitlements.extractionsUsed,
+      limit: FREE_EXTRACTION_LIMIT,
+    });
   }
 
   try {
@@ -99,6 +115,8 @@ export async function POST(req: NextRequest) {
       const confidence = isLowConfidence ? 0.5 : 1.0;
       const status = isLowConfidence ? "NEEDS_REVIEW" : "COMPLETED";
 
+      await recordExtractionUse(userId);
+
       // Update with extracted data
       const updated = await prisma.certificate.update({
         where: { id: certificate.id },
@@ -133,6 +151,8 @@ export async function POST(req: NextRequest) {
       const hasPartialData = extractionResult.partialData !== undefined;
 
       if (hasPartialData && extractionResult.partialData) {
+        await recordExtractionUse(userId);
+
         const partial = extractionResult.partialData;
         const updated = await prisma.certificate.update({
           where: { id: certificate.id },

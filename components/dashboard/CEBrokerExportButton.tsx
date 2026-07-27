@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { isCEBrokerState } from "@/lib/cebroker-export";
+import UpgradeNotice from "@/components/UpgradeNotice";
 
 interface CEBrokerExportButtonProps {
   licenseId: string;
@@ -15,6 +16,7 @@ export default function CEBrokerExportButton({
 }: CEBrokerExportButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
 
@@ -38,6 +40,11 @@ export default function CEBrokerExportButton({
       const response = await fetch(
         `/api/certificates/cebroker-export?licenseId=${encodeURIComponent(licenseId)}`
       );
+
+      if (response.status === 402) {
+        setUpgradeRequired(true);
+        return;
+      }
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
@@ -117,6 +124,11 @@ export default function CEBrokerExportButton({
             </>
           )}
         </button>
+        {upgradeRequired ? (
+          <div className="max-w-xs">
+            <UpgradeNotice feature="export" />
+          </div>
+        ) : null}
         {error ? <p className="text-xs text-[var(--status-miss)]">{error}</p> : null}
       </div>
 

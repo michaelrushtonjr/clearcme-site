@@ -39,6 +39,16 @@ export default function DashboardFAB() {
     setIsExporting(true);
     try {
       const response = await fetch("/api/audit-export");
+      if (response.status === 402) {
+        // Blocked by tier — show the upgrade message, not a raw error.
+        const body = await response.json().catch(() => ({}));
+        window.alert(
+          (body as { message?: string }).message ??
+            "Audit-ready export is part of Essential. See clearcme.ai/pricing for plans."
+        );
+        setIsOpen(false);
+        return;
+      }
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
         throw new Error((body as { error?: string }).error ?? `Server error ${response.status}`);

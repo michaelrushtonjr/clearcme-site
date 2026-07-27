@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
+import UpgradeNotice from "@/components/UpgradeNotice";
 
 interface ExtractedCredit {
   title: string;
@@ -22,6 +23,7 @@ interface UploadedCert {
   needsReview?: boolean;
   warning?: string;
   error?: string;
+  upgradeRequired?: boolean;
 }
 
 type UploadState = "idle" | "uploading" | "done" | "error";
@@ -62,6 +64,16 @@ export default function CertificateUpload() {
       method: "POST",
       body: formData,
     });
+
+    if (res.status === 402) {
+      // Free extraction limit reached — render as an upgrade prompt, not an error
+      return {
+        id: crypto.randomUUID(),
+        fileName: file.name,
+        extracted: null,
+        upgradeRequired: true,
+      };
+    }
 
     if (!res.ok) {
       const err = await res.json();
@@ -124,6 +136,10 @@ export default function CertificateUpload() {
         if (result) results.push(result);
 
         setProgress(Math.round(((i + 1) / acceptedFiles.length) * 100));
+
+        // Once the extraction limit is hit, every remaining file would be
+        // blocked too — stop rather than issuing doomed requests.
+        if (result?.upgradeRequired) break;
       }
 
       setUploadedCerts(results);
@@ -144,9 +160,11 @@ export default function CertificateUpload() {
     disabled: uploadState === "uploading",
   });
 
-  const processedCerts = uploadedCerts.filter((cert) => !cert.error);
-  const extractedCerts = uploadedCerts.filter((cert) => cert.extracted && !cert.error);
-  const failedCerts = uploadedCerts.filter((cert) => cert.error || cert.extractionFailed);
+  const visibleCerts = uploadedCerts.filter((cert) => !cert.upgradeRequired);
+  const upgradeBlocked = uploadedCerts.some((cert) => cert.upgradeRequired);
+  const processedCerts = visibleCerts.filter((cert) => !cert.error);
+  const extractedCerts = visibleCerts.filter((cert) => cert.extracted && !cert.error);
+  const failedCerts = visibleCerts.filter((cert) => cert.error || cert.extractionFailed);
   const totalCreditsAdded = extractedCerts.reduce(
     (sum, cert) => sum + (cert.extracted?.creditHours ?? 0),
     0,
@@ -224,6 +242,9 @@ export default function CertificateUpload() {
       {/* Results */}
       {uploadState === "done" && uploadedCerts.length > 0 && (
         <div className="space-y-4">
+          {upgradeBlocked && <UpgradeNotice feature="extraction" />}
+
+          {visibleCerts.length > 0 && (
           <div className="product-callout-brand p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -271,11 +292,12 @@ export default function CertificateUpload() {
               </p>
             )}
           </div>
+          )}
 
-          {uploadedCerts.length > 1 && (
+          {visibleCerts.length > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-semibold text-[var(--ink)]">
-                {`${uploadedCerts.length} certificates processed`}
+                {`${visibleCerts.length} certificates processed`}
               </h3>
               <div className="flex items-center gap-2">
                 <button
@@ -294,7 +316,7 @@ export default function CertificateUpload() {
             </div>
           )}
 
-          {uploadedCerts.map((cert) => (
+          {visibleCerts.map((cert) => (
             <div key={cert.id}>
               {cert.error ? (
                 <div className="bg-[var(--status-miss-bg)] border border-[rgba(221,107,64,0.28)] rounded-2xl p-5">

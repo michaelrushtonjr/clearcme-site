@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { generateCEBrokerReport, isCEBrokerState } from "@/lib/cebroker-export";
+import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 import { prisma } from "@/lib/prisma";
 
 function formatFileDate(date: Date): string {
@@ -15,6 +16,11 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const entitlements = await getEntitlements(userId);
+    if (!entitlements.ungated) {
+      return upgradeRequiredResponse("export");
     }
 
     const licenseId = request.nextUrl.searchParams.get("licenseId");

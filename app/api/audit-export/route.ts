@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
+import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 import { prisma } from "@/lib/prisma";
 import {
   NOT_APPLICABLE_REQUIREMENT_NOTE,
@@ -82,6 +83,11 @@ export async function GET(req: NextRequest) {
   }
   const userId = session.user.id;
   const userName = session.user.name ?? null;
+
+  const entitlements = await getEntitlements(userId);
+  if (!entitlements.ungated) {
+    return upgradeRequiredResponse("export");
+  }
 
   const { searchParams } = new URL(req.url);
   const licenseId = searchParams.get("licenseId");
