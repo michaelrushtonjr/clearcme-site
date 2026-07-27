@@ -10,7 +10,7 @@ const verificationTable = [
   {
     state: "Nevada",
     code: "NV",
-    lastVerified: "April 2025",
+    lastVerified: "July 2026",
     confidence: "✅ Verified",
     source: "https://medboard.nv.gov/",
     sourceLabel: "Nevada State Board of Medical Examiners",
@@ -18,7 +18,7 @@ const verificationTable = [
   {
     state: "California",
     code: "CA",
-    lastVerified: "March 2025",
+    lastVerified: "July 2026",
     confidence: "✅ Verified",
     source: "https://www.mbc.ca.gov/",
     sourceLabel: "Medical Board of California",
@@ -26,7 +26,7 @@ const verificationTable = [
   {
     state: "Texas",
     code: "TX",
-    lastVerified: "March 2025",
+    lastVerified: "July 2026",
     confidence: "✅ Verified",
     source: "https://www.tmb.state.tx.us/",
     sourceLabel: "Texas Medical Board",
@@ -34,18 +34,18 @@ const verificationTable = [
   {
     state: "Florida",
     code: "FL",
-    lastVerified: "February 2025",
+    lastVerified: "May 2026",
     confidence: "✅ Verified",
-    source: "https://flhealthsource.gov/cme/",
-    sourceLabel: "Florida Department of Health",
+    source: "https://flboardofmedicine.gov/",
+    sourceLabel: "Florida Board of Medicine",
   },
   {
     state: "New York",
     code: "NY",
-    lastVerified: "February 2025",
+    lastVerified: "May 2026",
     confidence: "✅ Verified",
-    source: "https://www.health.ny.gov/professionals/doctors/",
-    sourceLabel: "New York State Department of Health",
+    source: "https://www.op.nysed.gov/professions-index/medicine",
+    sourceLabel: "New York State Office of the Professions",
   },
 ];
 
@@ -94,7 +94,7 @@ export default function MethodologyPage() {
             ))}
           </ul>
           <p className="mt-4 text-sm leading-relaxed text-[#6b7568]">
-            We do <strong>not</strong> rely on third-party CME aggregator sites, commercial databases, or
+            We do <strong>not</strong>{" "}rely on third-party CME aggregator sites, commercial databases, or
             crowd-sourced information. If we can&apos;t verify a requirement against a primary source,
             we flag it explicitly.
           </p>
