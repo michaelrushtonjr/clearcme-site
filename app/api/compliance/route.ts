@@ -129,6 +129,7 @@ export async function GET(req: NextRequest) {
       const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
       const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
       const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
+      const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
 
       return {
         requirementId: req.id,
@@ -136,9 +137,10 @@ export async function GET(req: NextRequest) {
         description: req.description,
         earned: earnedForTopic,
         needed: req.hoursRequired,
-        gap: isMet || isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic),
+        gap: isMet || isUnknown || isNotApplicable ? 0 : Math.max(0, req.hoursRequired - earnedForTopic),
         isMet,
         isUnknown,
+        isNotApplicable,
         isAttestable: fulfillment.isAttestable,
         cadenceLabel: cadenceLabel(req),
         prompt: fulfillment.prompt,
@@ -150,7 +152,9 @@ export async function GET(req: NextRequest) {
       (sum: number, gap: { gap: number }) => sum + Math.max(0, gap.gap),
       0
     );
-    const allMandatoryMet = mandatoryGaps.every((gap: { isMet: boolean }) => gap.isMet);
+    const allMandatoryMet = mandatoryGaps.every(
+      (gap: { isMet: boolean; isNotApplicable: boolean }) => gap.isMet || gap.isNotApplicable
+    );
     const gapHours = Math.max(generalGapHours, mandatoryHoursGap);
     const isCompliant = generalGapHours === 0 && allMandatoryMet;
 

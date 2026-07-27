@@ -10,17 +10,23 @@ import { buildNextAction } from "@/lib/next-action";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
 import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
-import { keyToSlug } from "@/lib/courses";
+import { courseCtaLabel, courseDestination } from "@/lib/course-routing";
 import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
 import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { formatStateName } from "@/lib/state-names";
 import {
+  NOT_APPLICABLE_REQUIREMENT_NOTE,
   NOT_COMPLETED_REQUIREMENT_NOTE,
   cadenceLabel,
   evaluateRequirementFulfillment,
 } from "@/lib/requirement-completions";
+import {
+  conditionSummary,
+  parseRequirementNotes,
+  shortConditionText,
+} from "@/lib/requirement-scope";
 import InfoTip from "@/components/ui/InfoTip";
 import RequirementAttestation, { type AttestationStatus } from "@/components/dashboard/RequirementAttestation";
 
@@ -33,14 +39,31 @@ interface RequirementSourceMeta {
   sourceUrl?: string;
   lastReviewed?: Date;
   effectiveDate?: Date | null;
-  scopeCaveat?: string;
+  /** The requirement's own hours phrasing, e.g. "10 hrs per cycle" */
+  hoursLabel?: string;
+  /** Who the requirement binds — the gating clause for conditional rows */
+  conditionText?: string;
+  /** true when conditionText decides whether the requirement applies at all */
+  isConditional: boolean;
+  /** One-time / first-renewal timing note */
+  timingNote?: string;
+  /** State-level cycle context — kept apart from the requirement's own scope */
+  stateCycleNote?: string;
   whyThisApplies: string;
 }
 
 interface MandatoryGap {
   requirementId: string;
   topic: string;
+  /** The state's own name for the requirement, e.g. "Geriatric medicine" */
+  displayName: string;
   description?: string;
+  /** Gated on a practice condition the licence alone can't answer */
+  isConditional: boolean;
+  /** The gating clause, trimmed for a one-line summary */
+  conditionText: string | null;
+  /** User told us it's out of scope — excluded from gap maths, never "met" */
+  isNotApplicable: boolean;
   earned: number;
   needed: number;
   gap: number;
@@ -60,6 +83,17 @@ function formatTopic(topic: string): string {
     .replace(/_/g, " ")
     .toLowerCase()
     .replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+/**
+ * OTHER_MANDATORY is a storage bucket, not a requirement name. Rendering it
+ * literally put "Other Mandatory" at the top of California's geriatric row and
+ * buried "Geriatric medicine" inside the accordion. Prefer the state's own
+ * wording whenever the topic key carries no meaning.
+ */
+function requirementDisplayName(topic: string, description?: string | null): string {
+  if (topic === "OTHER_MANDATORY" && description?.trim()) return description.trim();
+  return formatTopic(topic);
 }
 
 /** Topic-specific CTA labels */
@@ -104,14 +138,17 @@ const TONE: Record<string, { bg: string; text: string; border: string; bar: stri
 function requirementStatusLabel({
   isMet,
   isUnknown,
+  isNotApplicable,
   earned,
   daysUntilRenewal,
 }: {
   isMet: boolean;
   isUnknown?: boolean;
+  isNotApplicable?: boolean;
   earned: number;
   daysUntilRenewal: number | null;
 }) {
+  if (isNotApplicable) return "Doesn't apply";
   if (isMet) return "Met";
   if (isUnknown) return "Needs your input";
   if (daysUntilRenewal !== null && daysUntilRenewal <= 90) return "Action needed";
@@ -120,6 +157,7 @@ function requirementStatusLabel({
 }
 
 function requirementStatusClass(label: string) {
+  if (label === "Doesn't apply") return "product-pill bg-[var(--bg-2)] text-[var(--ink-3)]";
   if (label === "Met") return "product-pill product-pill-met";
   if (label === "Needs your input") return "product-pill product-pill-track";
   if (label === "Action needed") return "product-pill product-pill-miss";
@@ -198,10 +236,30 @@ function RequirementSourceDisclosure({ sourceMeta }: { sourceMeta: RequirementSo
             {formatReviewDate(sourceMeta.lastReviewed)}
           </p>
         )}
-        {sourceMeta.scopeCaveat && (
+        {sourceMeta.hoursLabel && (
           <p>
-            <span className="font-semibold text-[var(--ink)]">Scope / caveat: </span>
-            {sourceMeta.scopeCaveat}
+            <span className="font-semibold text-[var(--ink)]">Requirement: </span>
+            {sourceMeta.hoursLabel}
+          </p>
+        )}
+        {sourceMeta.conditionText && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">
+              {sourceMeta.isConditional ? "Applies when: " : "Scope / caveat: "}
+            </span>
+            {sourceMeta.conditionText}
+          </p>
+        )}
+        {sourceMeta.timingNote && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">Timing: </span>
+            {sourceMeta.timingNote}
+          </p>
+        )}
+        {sourceMeta.stateCycleNote && (
+          <p>
+            <span className="font-semibold text-[var(--ink)]">State cycle: </span>
+            {sourceMeta.stateCycleNote}
           </p>
         )}
         <p>
@@ -243,9 +301,10 @@ function buildRequirementSourceMeta({
   sourceUrl,
   ruleUpdatedAt,
   ruleNotes,
-  topic,
+  displayName,
   hoursRequired,
   firstRenewalOnly,
+  isConditional,
   requirementNotes,
   effectiveDate,
 }: {
@@ -254,26 +313,34 @@ function buildRequirementSourceMeta({
   sourceUrl?: string | null;
   ruleUpdatedAt?: Date;
   ruleNotes?: string | null;
-  topic: string;
+  displayName: string;
   hoursRequired: number;
   firstRenewalOnly: boolean;
+  isConditional: boolean;
   requirementNotes?: string | null;
   effectiveDate?: Date | null;
 }): RequirementSourceMeta {
   const stateName = formatStateName(state);
-  const scopeParts = [
-    firstRenewalOnly ? "Applies as a one-time / first-renewal requirement when applicable." : null,
-    requirementNotes,
-    ruleNotes,
-  ].filter(Boolean);
+  // The requirement's hours and its gating clause arrive glued together in
+  // `notes`; the state's cycle text is a separate fact entirely. Blindly
+  // concatenating all three produced sentences that didn't parse.
+  const { hoursLabel, detail } = parseRequirementNotes(requirementNotes);
 
   return {
     sourceTitle: `${stateName} ${licenseType} licensing requirements`,
     sourceUrl: sourceUrl ?? undefined,
     lastReviewed: ruleUpdatedAt,
     effectiveDate: effectiveDate ?? null,
-    scopeCaveat: scopeParts.length > 0 ? scopeParts.join(" ") : undefined,
-    whyThisApplies: `This appears because your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${formatTopic(topic)}${firstRenewalOnly ? " as a one-time requirement" : " in this renewal cycle"}.`,
+    hoursLabel: hoursLabel ?? undefined,
+    conditionText: detail ?? undefined,
+    isConditional,
+    timingNote: firstRenewalOnly
+      ? "Applies as a one-time / first-renewal requirement when applicable."
+      : undefined,
+    stateCycleNote: ruleNotes ?? undefined,
+    whyThisApplies: isConditional
+      ? `Your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${displayName} for physicians who meet a practice condition. Your license alone doesn't tell ClearCME whether it binds you, so we ask rather than assume.`
+      : `This appears because your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${displayName}${firstRenewalOnly ? " as a one-time requirement" : " in this renewal cycle"}.`,
   };
 }
 
@@ -384,20 +451,32 @@ export default async function CompliancePage() {
         const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
         const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
         const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
+        const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
         const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
         const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
+        const isConditional = req.cadence === "CONDITIONAL";
+        const displayName = requirementDisplayName(req.topic, req.description);
+        const conditionText = isConditional
+          ? shortConditionText(parseRequirementNotes(req.notes).detail)
+          : null;
         const completionStatus: AttestationStatus = completion
-          ? completion.notes === NOT_COMPLETED_REQUIREMENT_NOTE
+          ? completion.notes === NOT_APPLICABLE_REQUIREMENT_NOTE
+            ? "not_applicable"
+            : completion.notes === NOT_COMPLETED_REQUIREMENT_NOTE
             ? "not_completed"
             : "completed"
           : "none";
         return {
           requirementId: req.id,
           topic: req.topic,
+          displayName,
           description: req.description ?? undefined,
+          isConditional,
+          conditionText,
+          isNotApplicable,
           earned: earnedForTopic,
           needed: req.hoursRequired,
-          gap: isMet ? 0 : actionableGap,
+          gap: isMet || isNotApplicable ? 0 : actionableGap,
           isMet,
           isUnknown,
           isAttestable: fulfillment.isAttestable,
@@ -410,9 +489,10 @@ export default async function CompliancePage() {
             sourceUrl: req.sourceUrl ?? rule.sourceUrl,
             ruleUpdatedAt: rule.updatedAt,
             ruleNotes: rule.notes,
-            topic: req.topic,
+            displayName,
             hoursRequired: req.hoursRequired,
             firstRenewalOnly: req.firstRenewalOnly,
+            isConditional,
             requirementNotes: req.notes,
             effectiveDate: req.effectiveDate,
           }),
@@ -420,7 +500,7 @@ export default async function CompliancePage() {
           completedYear: completion?.completedYear ?? null,
         };
       });
-      const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet);
+      const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet || g.isNotApplicable);
       const mandatoryHoursGap = mandatoryGapsPreview.reduce((sum, g) => sum + g.gap, 0);
       const effectiveGapHours = Math.max(generalGapHours, mandatoryHoursGap);
       const isCompliant = generalGapHours === 0 && allMandatoryMet;
@@ -455,12 +535,14 @@ export default async function CompliancePage() {
           ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
           : "your renewal date",
         generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
+        totalHoursRequired: d.totalHoursNeeded,
         isCompliant: d.isCompliant,
         mandatoryGaps: d.mandatoryGaps.map((g) => ({
           topic: g.topic,
           gap: g.gap,
           isMet: g.isMet,
           isUnknown: g.isUnknown,
+          isNotApplicable: g.isNotApplicable,
           // Match by requirement id, not topic — a license can have multiple
           // rows for the same topic (e.g. NV's 2-hr state Substance Use rule
           // alongside the 8-hr federal DEA MATE one-time requirement).
@@ -710,16 +792,22 @@ export default async function CompliancePage() {
                     rows={mandatoryGaps.map((gap, gapIdx) => {
                       const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
                       const topicToneKey = gap.isMet ? "met" : gap.isUnknown ? "open" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
-                      const topicTone = TONE[topicToneKey];
-                      const statusIcon = gap.isMet ? "✓" : gap.isUnknown ? "Review" : gap.earned > 0 ? "~" : "○";
+                      const topicTone = gap.isNotApplicable
+                        ? { bg: "bg-[var(--bg-2)]", text: "text-[var(--ink-3)]", border: "border-[var(--line)]", bar: "bg-[var(--ink-4)]" }
+                        : TONE[topicToneKey];
+                      const statusIcon = gap.isNotApplicable ? "—" : gap.isMet ? "✓" : gap.isUnknown ? "Review" : gap.earned > 0 ? "~" : "○";
                       const statusLabel = requirementStatusLabel({
                         isMet: gap.isMet,
                         isUnknown: gap.isUnknown,
+                        isNotApplicable: gap.isNotApplicable,
                         earned: gap.earned,
                         daysUntilRenewal,
                       });
-                      // Mark the first unmet gap for aha-moment scroll target
-                      const isFirstGap = !gap.isMet && gapIdx === mandatoryGaps.findIndex((g) => !g.isMet);
+                      // Mark the first actionable gap for aha-moment scroll target
+                      const isFirstGap =
+                        !gap.isMet &&
+                        !gap.isNotApplicable &&
+                        gapIdx === mandatoryGaps.findIndex((g) => !g.isMet && !g.isNotApplicable);
 
                       const sourceMeta = gap.sourceMeta;
                       const infoTipUrls = parseSourceUrls(sourceMeta?.sourceUrl);
@@ -729,11 +817,23 @@ export default async function CompliancePage() {
                         // (state rule + federal one-time) would collide as keys
                         key: gap.requirementId,
                         infoTip: sourceMeta ? (
-                          <InfoTip label={`Source details for ${formatTopic(gap.topic)}`}>
+                          <InfoTip label={`Source details for ${gap.displayName}`}>
                             <span className="block space-y-1">
                               <span className="block font-semibold text-[var(--ink)]">
-                                {formatTopic(gap.topic)} · {gap.cadenceLabel}
+                                {gap.displayName} · {gap.cadenceLabel}
                               </span>
+                              {sourceMeta.hoursLabel && (
+                                <span className="block">
+                                  <span className="font-semibold text-[var(--ink)]">Requirement: </span>
+                                  {sourceMeta.hoursLabel}
+                                </span>
+                              )}
+                              {gap.isConditional && sourceMeta.conditionText && (
+                                <span className="block">
+                                  <span className="font-semibold text-[var(--ink)]">Applies when: </span>
+                                  {sourceMeta.conditionText}
+                                </span>
+                              )}
                               {sourceMeta.effectiveDate && (
                                 <span className="block">
                                   <span className="font-semibold text-[var(--ink)]">Required since: </span>
@@ -787,9 +887,16 @@ export default async function CompliancePage() {
                               >
                                 {statusIcon}
                               </span>
-                              <p className="text-sm font-medium text-[var(--ink)] truncate">
-                                {formatTopic(gap.topic)}
-                              </p>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-[var(--ink)] truncate">
+                                  {gap.displayName}
+                                </p>
+                                {gap.isConditional && gap.conditionText && (
+                                  <p className="mt-0.5 truncate text-xs text-[var(--ink-3)]">
+                                    {conditionSummary(gap.conditionText)}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <span className="font-mono text-xs font-semibold text-[var(--ink)]">
@@ -803,21 +910,39 @@ export default async function CompliancePage() {
                         ),
                         details: (
                           <div>
-                            {gap.description && (
+                            {/* The gating clause is the first thing that decides
+                                whether this row is even the physician's problem —
+                                it belongs above the fold, not inside Source / reviewed. */}
+                            {gap.isConditional && gap.sourceMeta?.conditionText && (
+                              <div className="mb-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2">
+                                <p className="text-xs font-semibold text-[var(--ink)]">
+                                  {formatStateName(license.state)} only requires this of some physicians
+                                </p>
+                                <p className="mt-1 text-xs text-[var(--ink-2)]">
+                                  {conditionSummary(gap.sourceMeta.conditionText)}
+                                </p>
+                              </div>
+                            )}
+                            {gap.description && gap.description !== gap.displayName && (
                               <p className="text-xs text-[var(--ink-3)] leading-relaxed">{gap.description}</p>
                             )}
                             <p className="mt-1 text-xs font-medium text-[var(--ink-3)]">
                               Cadence: {gap.cadenceLabel}
+                              {gap.sourceMeta?.hoursLabel ? ` · ${gap.sourceMeta.hoursLabel}` : ""}
                               {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
                             </p>
-                            {!gap.isMet && !gap.isUnknown && (
+                            {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
                               <p className={`mt-1 text-xs ${gap.earned > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-miss)]"}`}>
                                 {gap.gap.toFixed(1)} hrs short
                               </p>
                             )}
                             {gap.isUnknown && (
                               <div className="mt-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2 text-xs text-[var(--ink)]">
-                                <p className="font-semibold">Tell ClearCME if you already completed this.</p>
+                                <p className="font-semibold">
+                                  {gap.isConditional
+                                    ? "Does this apply to you?"
+                                    : "Tell ClearCME if you already completed this."}
+                                </p>
                                 <p className="mt-1 text-[var(--ink-2)]">
                                   {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
                                 </p>
@@ -827,18 +952,20 @@ export default async function CompliancePage() {
                                   licenseId={license.id}
                                   status={gap.completionStatus}
                                   completedYear={gap.completedYear}
+                                  allowNotApplicable={gap.isConditional}
                                   compact
                                 />
                               </div>
                             )}
 
-                            {/* Answered history — single status card + clear response */}
+                            {/* Answered history — single status card + follow-up actions */}
                             {!gap.isUnknown && gap.isAttestable && gap.completionStatus !== "none" && (
                               <RequirementAttestation
                                 requirementId={gap.requirementId}
                                 licenseId={license.id}
                                 status={gap.completionStatus}
                                 completedYear={gap.completedYear}
+                                allowNotApplicable={gap.isConditional}
                                 compact
                               />
                             )}
@@ -857,13 +984,18 @@ export default async function CompliancePage() {
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
-                              {!gap.isMet && !gap.isUnknown && (
+                              {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
                                 <div className="flex flex-col items-end gap-0.5">
                                   <Link
-                                    href={`/courses/${keyToSlug(gap.topic)}`}
+                                    href={courseDestination(gap.topic).href}
+                                    {...(courseDestination(gap.topic).isExternal
+                                      ? { target: "_blank", rel: "noreferrer" }
+                                      : {})}
                                     className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
                                   >
-                                    {TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"}
+                                    {courseDestination(gap.topic).isExactMatch
+                                      ? TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"
+                                      : courseCtaLabel(gap.topic, formatTopic(gap.topic))}
                                   </Link>
                                   {HIPPO_TOPICS.has(gap.topic) ? (
                                     <span className="inline-flex items-center gap-1 text-xs text-[var(--mauve)] font-medium">
@@ -877,7 +1009,7 @@ export default async function CompliancePage() {
                             </div>
 
                             {/* Gap-specific course feed — Pixel rec #4 */}
-                            {!gap.isMet && !gap.isUnknown && (
+                            {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
                               <GapCourseFeed
                                 topic={gap.topic}
                                 hoursNeeded={gap.gap}

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { NOT_COMPLETED_REQUIREMENT_NOTE } from "@/lib/requirement-completions";
+import {
+  NOT_APPLICABLE_REQUIREMENT_NOTE,
+  NOT_COMPLETED_REQUIREMENT_NOTE,
+} from "@/lib/requirement-completions";
 import RequirementAttestation from "@/components/dashboard/RequirementAttestation";
 
 const US_STATES = [
@@ -462,6 +465,8 @@ export default function SettingsClient({
                         (completion) => completion.mandatoryRequirementId === req.id && completion.physicianLicenseId === group.licenseId
                       );
                       const markedNotCompleted = saved?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
+                      const markedNotApplicable = saved?.notes === NOT_APPLICABLE_REQUIREMENT_NOTE;
+                      const isConditional = req.cadence === "CONDITIONAL";
                       return (
                         <div key={key} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -483,8 +488,17 @@ export default function SettingsClient({
                               <RequirementAttestation
                                 requirementId={req.id}
                                 licenseId={group.licenseId}
-                                status={saved ? (markedNotCompleted ? "not_completed" : "completed") : "none"}
+                                status={
+                                  saved
+                                    ? markedNotApplicable
+                                      ? "not_applicable"
+                                      : markedNotCompleted
+                                      ? "not_completed"
+                                      : "completed"
+                                    : "none"
+                                }
                                 completedYear={saved?.completedYear ?? null}
+                                allowNotApplicable={isConditional}
                                 compact
                               />
                             </div>

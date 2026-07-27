@@ -3,15 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export type AttestationStatus = "none" | "completed" | "not_completed";
+export type AttestationStatus = "none" | "completed" | "not_completed" | "not_applicable";
+
+type Action = "complete" | "not_completed" | "not_applicable" | "clear";
 
 /**
  * Inline requirement-history attestation.
  *
- * Unanswered → optional year input + "I completed this" / "I still need this".
- * Answered   → a single COMPLETED / NEEDS COMPLETION status card with a
- *              "Clear response" action underneath (replaces the old
- *              two-boxes-plus-Clear layout).
+ * Unanswered → optional year input + the answers that make sense for the row.
+ * Answered   → a single status card with a "Clear response" action underneath.
+ *
+ * Conditional requirements get a third answer. California's geriatric hours
+ * only bind a general internist or family physician with a >25% elderly panel,
+ * so for most physicians the true answer is neither "completed" nor "I still
+ * need this" — it's "this was never mine to do". Without that answer the row
+ * sat on the Compliance Map as permanently unresolved.
  *
  * Used on the Compliance Map (inline, so users never get bounced to Settings)
  * and in Settings → Requirement history.
@@ -22,19 +28,22 @@ export default function RequirementAttestation({
   status,
   completedYear,
   compact = false,
+  /** Show the "Doesn't apply to me" answer — set for CONDITIONAL requirements */
+  allowNotApplicable = false,
 }: {
   requirementId: string;
   licenseId: string;
   status: AttestationStatus;
   completedYear: number | null;
   compact?: boolean;
+  allowNotApplicable?: boolean;
 }) {
   const router = useRouter();
   const [year, setYear] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (action: "complete" | "not_completed" | "clear") => {
+  const submit = async (action: Action) => {
     setSaving(true);
     setError("");
     try {
@@ -68,37 +77,60 @@ export default function RequirementAttestation({
     }
   };
 
-  // Answered state — single status card + clear response
+  // Answered state — single status card + follow-up actions
   if (status !== "none") {
-    const isCompleted = status === "completed";
+    const tone =
+      status === "completed"
+        ? {
+            border: "border-[var(--status-met)]",
+            bg: "bg-[var(--status-met-bg)]",
+            text: "text-[var(--status-met)]",
+            label: "✓ COMPLETED",
+          }
+        : status === "not_applicable"
+        ? {
+            border: "border-[var(--line)]",
+            bg: "bg-[var(--bg-2)]",
+            text: "text-[var(--ink-2)]",
+            label: "— DOESN'T APPLY TO ME",
+          }
+        : {
+            border: "border-[var(--status-miss)]",
+            bg: "bg-[var(--status-miss-bg)]",
+            text: "text-[var(--status-miss)]",
+            label: "○ NEEDS COMPLETION",
+          };
+
     return (
       <div className={compact ? "mt-2" : "mt-3"}>
-        <div
-          className={`flex items-center gap-2 rounded-[var(--radius-sm)] border px-3 py-2.5 ${
-            isCompleted
-              ? "border-[var(--status-met)] bg-[var(--status-met-bg)]"
-              : "border-[var(--status-miss)] bg-[var(--status-miss-bg)]"
-          }`}
-        >
-          <span
-            className={`text-sm font-bold tracking-wide ${
-              isCompleted ? "text-[var(--status-met)]" : "text-[var(--status-miss)]"
-            }`}
-          >
-            {isCompleted ? "✓ COMPLETED" : "○ NEEDS COMPLETION"}
-            {isCompleted && completedYear ? (
+        <div className={`flex items-center gap-2 rounded-[var(--radius-sm)] border px-3 py-2.5 ${tone.border} ${tone.bg}`}>
+          <span className={`text-sm font-bold tracking-wide ${tone.text}`}>
+            {tone.label}
+            {status === "completed" && completedYear ? (
               <span className="font-semibold"> · {completedYear}</span>
             ) : null}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => submit("clear")}
-          disabled={saving}
-          className="mt-2 rounded-full border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-2)] hover:bg-[var(--paper)] disabled:opacity-60"
-        >
-          {saving ? "Clearing…" : "Clear response"}
-        </button>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {status !== "completed" && (
+            <button
+              type="button"
+              onClick={() => submit("complete")}
+              disabled={saving}
+              className="rounded-full bg-[var(--primary)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--primary-2)] disabled:opacity-60"
+            >
+              {saving ? "Saving…" : "I've completed it"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => submit("clear")}
+            disabled={saving}
+            className="rounded-full border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-2)] hover:bg-[var(--paper)] disabled:opacity-60"
+          >
+            {saving ? "Clearing…" : "Clear response"}
+          </button>
+        </div>
         {error && (
           <p className="mt-2 rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-xs text-[var(--status-miss)]">
             {error}
@@ -108,7 +140,7 @@ export default function RequirementAttestation({
     );
   }
 
-  // Unanswered state — year input + two actions
+  // Unanswered state — year input + the available answers
   return (
     <div className={compact ? "mt-2 space-y-2" : "mt-3 space-y-2"}>
       <input
@@ -139,6 +171,16 @@ export default function RequirementAttestation({
           I still need this
         </button>
       </div>
+      {allowNotApplicable && (
+        <button
+          type="button"
+          onClick={() => submit("not_applicable")}
+          disabled={saving}
+          className="w-full rounded-full border border-[var(--line)] bg-[var(--paper)] px-3 py-2 text-xs font-semibold text-[var(--ink-2)] hover:border-[var(--ink-3)] disabled:opacity-60"
+        >
+          This doesn&apos;t apply to my practice
+        </button>
+      )}
       {error && (
         <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-xs text-[var(--status-miss)]">
           {error}

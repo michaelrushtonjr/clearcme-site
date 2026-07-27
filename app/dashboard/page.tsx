@@ -13,7 +13,7 @@ import ComplianceDiffNotifications from "@/components/dashboard/ComplianceDiffNo
 import { DashboardSection } from "@/components/dashboard/DashboardSections";
 import { NextActionCard, AuditReadyCard } from "@/components/dashboard/NextActionCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { keyToSlug } from "@/lib/courses";
+import { courseDestination } from "@/lib/course-routing";
 import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { buildNextAction } from "@/lib/next-action";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
@@ -96,28 +96,29 @@ export default async function DashboardPage() {
         const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
         const hoursSatisfied = req.hoursRequired > 0 && earned >= req.hoursRequired;
         const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
+        const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
         return {
           topic: req.topic,
           earned,
           needed: req.hoursRequired,
           isMet: hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0),
           isUnknown,
+          isNotApplicable,
           isOneTime: req.firstRenewalOnly,
         };
       });
 
+      const actionable = mandatoryResults.filter((r) => !r.isMet && !r.isUnknown && !r.isNotApplicable);
       const mandatoryMet = mandatoryResults.filter((r) => r.isMet).length;
-      const mandatoryGapHours = mandatoryResults
-        .filter((r) => !r.isMet && !r.isUnknown)
-        .reduce((sum, r) => sum + Math.max(0, r.needed - r.earned), 0);
-      const mandatoryPendingCount = mandatoryResults.filter((r) => !r.isMet && !r.isUnknown).length;
+      const mandatoryGapHours = actionable.reduce((sum, r) => sum + Math.max(0, r.needed - r.earned), 0);
+      const mandatoryPendingCount = actionable.length;
       const effectiveHoursNeeded = Math.max(hoursNeeded, mandatoryGapHours);
-      const isCompliant = hoursNeeded === 0 && mandatoryResults.every((r) => r.isMet || r.isUnknown);
+      const isCompliant =
+        hoursNeeded === 0 && mandatoryResults.every((r) => r.isMet || r.isUnknown || r.isNotApplicable);
 
       const daysUntilRenewal = daysUntil(license.renewalDate);
 
-      const mandatoryTopics = mandatoryResults
-        .filter((r) => !r.isMet && !r.isUnknown)
+      const mandatoryTopics = actionable
         .map((r) => ({
           topic: r.topic,
           hoursNeeded: Math.max(0, r.needed - r.earned),
@@ -175,12 +176,14 @@ export default async function DashboardPage() {
         ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
         : "your renewal date",
       generalGapHours: d.hoursNeeded,
+      totalHoursRequired: d.rule?.totalHours,
       isCompliant: d.isCompliant,
       mandatoryGaps: d.mandatoryResults.map((r) => ({
         topic: r.topic,
         gap: Math.max(0, r.needed - r.earned),
         isMet: r.isMet,
         isUnknown: r.isUnknown,
+        isNotApplicable: r.isNotApplicable,
         isOneTime: r.isOneTime,
       })),
     }))
@@ -203,7 +206,7 @@ export default async function DashboardPage() {
       allGaps.push({
         label: `${d.license.state}: ${t.topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}`,
         detail: `${t.hoursNeeded.toFixed(1)} hrs short · mandatory topic`,
-        href: `/courses/${encodeURIComponent(keyToSlug(t.topic))}`,
+        href: courseDestination(t.topic).href,
         urgency: d.daysUntilRenewal != null ? 10000 - d.daysUntilRenewal + 1 : 1,
         topic: t.topic,
         state: d.license.state,
@@ -279,7 +282,14 @@ export default async function DashboardPage() {
             <NextActionCard
               eyebrow="Next best action"
               title={nextAction.headline}
-              body={<>{nextAction.explanation} Then review the remaining {Math.max(0, allGapsCount - 1)} gap{Math.max(0, allGapsCount - 1) === 1 ? "" : "s"}.</>}
+              body={
+                <>
+                  {nextAction.explanation}
+                  {allGapsCount > 1
+                    ? ` Then review the remaining ${allGapsCount - 1} gap${allGapsCount - 1 === 1 ? "" : "s"}.`
+                    : ""}
+                </>
+              }
               ctaHref={nextAction.ctaUrl}
               ctaLabel={nextAction.ctaLabel}
               source={nextAction.sourceNote ?? undefined}

@@ -116,6 +116,25 @@ interface AdditionalLicense {
   unsureDate: boolean;
 }
 
+/** A conditional requirement the answer to one question would resolve. */
+interface ConditionalMatch {
+  requirementId: string;
+  licenseId: string;
+  state: string;
+  stateName: string;
+  licenseType: string;
+  name: string;
+  clause: string;
+  hours: number;
+}
+
+interface ConditionalQuestion {
+  key: string;
+  question: string;
+  help: string | null;
+  requirements: ConditionalMatch[];
+}
+
 export default function SetupPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -135,6 +154,10 @@ export default function SetupPage() {
   // Step 4: multi-state
   const [isMultiState, setIsMultiState] = useState<boolean | null>(null);
   const [additionalLicenses, setAdditionalLicenses] = useState<AdditionalLicense[]>([]);
+
+  // Step 5: practice questions for requirements a licence alone can't resolve
+  const [conditionalQuestions, setConditionalQuestions] = useState<ConditionalQuestion[]>([]);
+  const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, "yes" | "no">>({});
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
@@ -287,6 +310,18 @@ export default function SetupPage() {
         }
       }
 
+      // Some mandatory topics only bind physicians who meet a practice
+      // condition (a DEA registration, a >25% elderly panel). Ask now, while
+      // the user is already in setup, rather than leaving those rows sitting
+      // unresolved on the Compliance Map.
+      const questions = await loadConditionalQuestions();
+      if (questions.length > 0) {
+        setConditionalQuestions(questions);
+        setStep(5);
+        setLoading(false);
+        return;
+      }
+
       router.push("/dashboard?onboarded=1");
       router.refresh();
     } catch (err: unknown) {
@@ -295,14 +330,45 @@ export default function SetupPage() {
     }
   }
 
-  const totalSteps = 4;
+  async function loadConditionalQuestions(): Promise<ConditionalQuestion[]> {
+    try {
+      const res = await fetch("/api/conditional-requirements");
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data.questions) ? (data.questions as ConditionalQuestion[]) : [];
+    } catch {
+      // Never block setup on this — the Compliance Map asks the same questions.
+      return [];
+    }
+  }
+
+  async function finishConditionalStep() {
+    setLoading(true);
+    setError("");
+    try {
+      if (Object.keys(conditionalAnswers).length > 0) {
+        await fetch("/api/conditional-requirements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers: conditionalAnswers }),
+        });
+      }
+    } catch {
+      // Answers are a convenience, not a gate — fall through to the dashboard.
+    } finally {
+      router.push("/dashboard?onboarded=1");
+      router.refresh();
+    }
+  }
+
+  const totalSteps = conditionalQuestions.length > 0 ? 5 : 4;
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3, 4].map((n) => (
+          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((n) => (
             <div
               key={n}
               className={`rounded-full transition-all ${
@@ -899,6 +965,111 @@ export default function SetupPage() {
                   {loading ? "Setting up…" : "See my compliance map →"}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Step 5: practice questions for conditional requirements */}
+          {step === 5 && (
+            <div>
+              <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
+                Step 5 of {totalSteps}
+              </p>
+              <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
+                A few questions about your practice
+              </h1>
+              <p className="text-sm text-slate-500 mb-6">
+                {conditionalQuestions.length === 1 ? "This requirement" : "These requirements"} only
+                {conditionalQuestions.length === 1 ? " binds" : " bind"} some physicians in your
+                state{conditionalQuestions.length === 1 ? "" : "s"}. Your licence alone can&apos;t
+                tell us — answer and we&apos;ll only track what actually applies to you.
+              </p>
+
+              <div className="space-y-5">
+                {conditionalQuestions.map((q) => {
+                  const answer = conditionalAnswers[q.key];
+                  return (
+                    <div key={q.key} className="rounded-xl border border-slate-200 px-4 py-4">
+                      <p className="text-sm font-medium text-slate-800">{q.question}</p>
+                      {q.help && <p className="mt-1.5 text-xs text-slate-500">{q.help}</p>}
+
+                      <div className="mt-3 flex gap-2">
+                        {(["yes", "no"] as const).map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setConditionalAnswers((prev) => ({ ...prev, [q.key]: value }))
+                            }
+                            className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                              answer === value
+                                ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                                : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                            }`}
+                          >
+                            {value === "yes" ? "Yes" : "No"}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConditionalAnswers((prev) => {
+                              const next = { ...prev };
+                              delete next[q.key];
+                              return next;
+                            })
+                          }
+                          className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
+                            answer === undefined
+                              ? "border-slate-300 bg-slate-100 text-slate-600"
+                              : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                          }`}
+                        >
+                          Not sure
+                        </button>
+                      </div>
+
+                      {/* Say plainly which requirement each answer moves, in the
+                          board's own words — this is a compliance decision, not a
+                          preference toggle. */}
+                      <ul className="mt-3 space-y-1.5">
+                        {q.requirements.map((req) => (
+                          <li
+                            key={`${req.requirementId}:${req.licenseId}`}
+                            className="text-xs leading-relaxed text-slate-500"
+                          >
+                            <span className="font-semibold text-slate-600">
+                              {req.stateName} {req.licenseType}:
+                            </span>{" "}
+                            {req.name}
+                            {req.hours > 0 ? ` · ${req.hours} hr${req.hours === 1 ? "" : "s"}` : ""}
+                            {req.clause ? ` — ${req.clause}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="mt-5 text-xs text-slate-400">
+                Answers guide ClearCME&apos;s recommendations only — they aren&apos;t filed with any
+                board, and you can change any of them from your Compliance Map. Leave anything you
+                aren&apos;t sure about on &ldquo;Not sure&rdquo; and we&apos;ll ask again there.
+              </p>
+
+              {error && (
+                <div className="mt-4 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={finishConditionalStep}
+                disabled={loading}
+                className="mt-6 w-full py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 text-sm"
+              >
+                {loading ? "Saving…" : "See my compliance map →"}
+              </button>
             </div>
           )}
         </div>

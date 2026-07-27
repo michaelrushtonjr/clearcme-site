@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { NOT_COMPLETED_REQUIREMENT_NOTE } from "@/lib/requirement-completions";
+import {
+  NOT_APPLICABLE_REQUIREMENT_NOTE,
+  NOT_COMPLETED_REQUIREMENT_NOTE,
+} from "@/lib/requirement-completions";
 
 function yearToDate(year: number | null) {
   return year ? new Date(Date.UTC(year, 0, 1)) : null;
@@ -29,7 +32,10 @@ export async function POST(req: NextRequest) {
   const physicianLicenseId = typeof body.physicianLicenseId === "string" ? body.physicianLicenseId : null;
   const completedYear = Number.isInteger(body.completedYear) ? Number(body.completedYear) : null;
   const notes = typeof body.notes === "string" ? body.notes.slice(0, 500) : null;
-  const action = body.action === "clear" || body.action === "not_completed" ? body.action : "complete";
+  const action: "clear" | "not_completed" | "not_applicable" | "complete" =
+    body.action === "clear" || body.action === "not_completed" || body.action === "not_applicable"
+      ? body.action
+      : "complete";
 
   if (!mandatoryRequirementId || !physicianLicenseId) {
     return NextResponse.json({ error: "Missing requirement or license" }, { status: 400 });
@@ -67,7 +73,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (action === "not_completed") {
+  // Both "I still need this" and "doesn't apply to me" are recorded as sentinel
+  // notes on the same row — no completion date, no hours claimed.
+  if (action === "not_completed" || action === "not_applicable") {
+    const sentinel =
+      action === "not_applicable" ? NOT_APPLICABLE_REQUIREMENT_NOTE : NOT_COMPLETED_REQUIREMENT_NOTE;
     const completion = await prisma.userRequirementCompletion.upsert({
       where: {
         userId_mandatoryRequirementId_physicianLicenseId: {
@@ -83,12 +93,12 @@ export async function POST(req: NextRequest) {
         topic: requirement.topic,
         completedYear: null,
         completedAt: null,
-        notes: NOT_COMPLETED_REQUIREMENT_NOTE,
+        notes: sentinel,
       },
       update: {
         completedYear: null,
         completedAt: null,
-        notes: NOT_COMPLETED_REQUIREMENT_NOTE,
+        notes: sentinel,
         source: "SELF_ATTESTED",
       },
     });

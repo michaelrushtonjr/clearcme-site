@@ -19,6 +19,8 @@ export interface SnapshotMandatoryTopic {
   gap: number;
   isMet: boolean;
   isUnknown: boolean;
+  /** Physician told us it's out of scope — excluded from gaps, never "met" */
+  isNotApplicable: boolean;
 }
 
 export interface LicenseSnapshot {
@@ -128,21 +130,24 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       const isMet =
         hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
       const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
+      const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
       return {
         topic: req.topic,
         label: formatTopicLabel(req.topic),
         needed: req.hoursRequired,
         earned,
-        gap: isMet || isUnknown ? 0 : Math.max(0, req.hoursRequired - earned),
+        gap: isMet || isUnknown || isNotApplicable ? 0 : Math.max(0, req.hoursRequired - earned),
         isMet,
         isUnknown,
+        isNotApplicable,
       };
     });
 
     const mandatoryGapHours = mandatoryTopics.reduce((sum, t) => sum + t.gap, 0);
     const effectiveGapHours = Math.max(generalGapHours, mandatoryGapHours);
     const isCompliant =
-      generalGapHours === 0 && mandatoryTopics.every((t) => t.isMet || t.isUnknown);
+      generalGapHours === 0 &&
+      mandatoryTopics.every((t) => t.isMet || t.isUnknown || t.isNotApplicable);
 
     const monthsLeft =
       daysUntilRenewal !== null && daysUntilRenewal > 0 ? daysUntilRenewal / 30.4 : null;
@@ -162,7 +167,9 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       generalGapHours,
       mandatoryTopics,
       completedMandatoryTopics: mandatoryTopics.filter((t) => t.isMet),
-      outstandingMandatoryTopics: mandatoryTopics.filter((t) => !t.isMet && !t.isUnknown),
+      outstandingMandatoryTopics: mandatoryTopics.filter(
+        (t) => !t.isMet && !t.isUnknown && !t.isNotApplicable
+      ),
       unansweredHistoryCount: mandatoryTopics.filter((t) => t.isUnknown).length,
       isCompliant,
       paceHoursPerMonth,
