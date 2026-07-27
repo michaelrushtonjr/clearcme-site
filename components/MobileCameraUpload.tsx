@@ -150,7 +150,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [upgradeRequired, setUpgradeRequired] = useState(false);
+  const [upgradeRequired, setUpgradeRequired] = useState<false | "slots" | "attempts">(false);
   const [uploadResults, setUploadResults] = useState<MobileUploadResult[]>([]);
   const [complianceImpact, setComplianceImpact] = useState<ComplianceImpact | null>(null);
 
@@ -205,7 +205,8 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
         const res = await fetch("/api/certificates", { method: "POST", body: formData });
         if (res.status === 402) {
           // Free extraction limit reached — show an upgrade prompt, not an error
-          setUpgradeRequired(true);
+          const err = await res.json().catch(() => ({}));
+          setUpgradeRequired(err.reason === "attempts" ? "attempts" : "slots");
           setUploadState("idle");
           setPreviewSrc(null);
           setCapturedFile(null);
@@ -404,7 +405,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
 
   return (
     <div className="space-y-3">
-      {upgradeRequired && <UpgradeNotice feature="extraction" />}
+      {upgradeRequired && <UpgradeNotice feature="extraction" reason={upgradeRequired} />}
 
       {errorMsg && (
         <div className="p-3 bg-[var(--status-miss-bg)] border border-[rgba(221,107,64,0.28)] rounded-xl text-sm text-[var(--status-miss)]">

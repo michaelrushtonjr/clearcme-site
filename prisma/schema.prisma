@@ -65,10 +65,13 @@ model User {
   practiceArea  String?
   npi           String?       @unique // National Provider Identifier
 
-  // Lifetime count of AI certificate extractions that produced data.
-  // Monotonic on purpose: never decremented on certificate delete, so the
-  // free-tier extraction limit can't be reset by upload → delete → repeat.
-  extractionsUsed Int @default(0)
+  // Free-tier extraction fence, two monotonic counters (never decremented on
+  // certificate delete, so the trial can't be reset by upload → delete → repeat):
+  // extractionsUsed — clean, full-confidence extractions; consumes a trial slot.
+  // extractionAttempts — every scan that ran, regardless of outcome; backstops
+  // API spend so imperfect/failed scans can't be free forever.
+  extractionsUsed    Int @default(0)
+  extractionAttempts Int @default(0)
 
   // Mobile push notifications
   pushToken     String?

@@ -24,6 +24,7 @@ interface UploadedCert {
   warning?: string;
   error?: string;
   upgradeRequired?: boolean;
+  upgradeReason?: "slots" | "attempts";
 }
 
 type UploadState = "idle" | "uploading" | "done" | "error";
@@ -67,11 +68,13 @@ export default function CertificateUpload() {
 
     if (res.status === 402) {
       // Free extraction limit reached — render as an upgrade prompt, not an error
+      const err = await res.json().catch(() => ({}));
       return {
         id: crypto.randomUUID(),
         fileName: file.name,
         extracted: null,
         upgradeRequired: true,
+        upgradeReason: err.reason === "attempts" ? "attempts" : "slots",
       };
     }
 
@@ -161,7 +164,7 @@ export default function CertificateUpload() {
   });
 
   const visibleCerts = uploadedCerts.filter((cert) => !cert.upgradeRequired);
-  const upgradeBlocked = uploadedCerts.some((cert) => cert.upgradeRequired);
+  const blockedCert = uploadedCerts.find((cert) => cert.upgradeRequired);
   const processedCerts = visibleCerts.filter((cert) => !cert.error);
   const extractedCerts = visibleCerts.filter((cert) => cert.extracted && !cert.error);
   const failedCerts = visibleCerts.filter((cert) => cert.error || cert.extractionFailed);
@@ -242,7 +245,7 @@ export default function CertificateUpload() {
       {/* Results */}
       {uploadState === "done" && uploadedCerts.length > 0 && (
         <div className="space-y-4">
-          {upgradeBlocked && <UpgradeNotice feature="extraction" />}
+          {blockedCert && <UpgradeNotice feature="extraction" reason={blockedCert.upgradeReason} />}
 
           {visibleCerts.length > 0 && (
           <div className="product-callout-brand p-5">

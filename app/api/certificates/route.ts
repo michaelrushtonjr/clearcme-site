@@ -4,7 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import {
   FREE_EXTRACTION_LIMIT,
+  FREE_SCAN_ATTEMPT_LIMIT,
   getEntitlements,
+  recordExtractionAttempt,
   recordExtractionUse,
   upgradeRequiredResponse,
 } from "@/lib/entitlements";
@@ -46,14 +48,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fence: 3 lifetime free extractions. Reject before touching the file so a
-  // blocked upload creates no record and spends no Anthropic call.
+  // Fence: 3 lifetime clean extractions, backstopped by 10 total scans.
+  // Reject before touching the file so a blocked upload creates no record
+  // and spends no Anthropic call.
   const entitlements = await getEntitlements(userId);
-  if (!entitlements.ungated && entitlements.extractionsUsed >= FREE_EXTRACTION_LIMIT) {
-    return upgradeRequiredResponse("extraction", {
-      used: entitlements.extractionsUsed,
-      limit: FREE_EXTRACTION_LIMIT,
-    });
+  if (!entitlements.ungated) {
+    if (entitlements.extractionsUsed >= FREE_EXTRACTION_LIMIT) {
+      return upgradeRequiredResponse(
+        "extraction",
+        { used: entitlements.extractionsUsed, limit: FREE_EXTRACTION_LIMIT },
+        "slots"
+      );
+    }
+    if (entitlements.extractionAttempts >= FREE_SCAN_ATTEMPT_LIMIT) {
+      return upgradeRequiredResponse(
+        "extraction",
+        { used: entitlements.extractionAttempts, limit: FREE_SCAN_ATTEMPT_LIMIT },
+        "attempts"
+      );
+    }
   }
 
   try {
@@ -105,6 +118,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    await recordExtractionAttempt(userId);
+
     const extractionResult = await extractCertificate(file);
 
     if (extractionResult.success && extractionResult.data) {
@@ -115,7 +130,11 @@ export async function POST(req: NextRequest) {
       const confidence = isLowConfidence ? 0.5 : 1.0;
       const status = isLowConfidence ? "NEEDS_REVIEW" : "COMPLETED";
 
-      await recordExtractionUse(userId);
+      // Only a clean, full-confidence extraction consumes a trial slot;
+      // NEEDS_REVIEW results the user must fix by hand stay free.
+      if (!isLowConfidence) {
+        await recordExtractionUse(userId);
+      }
 
       // Update with extracted data
       const updated = await prisma.certificate.update({
@@ -151,8 +170,6 @@ export async function POST(req: NextRequest) {
       const hasPartialData = extractionResult.partialData !== undefined;
 
       if (hasPartialData && extractionResult.partialData) {
-        await recordExtractionUse(userId);
-
         const partial = extractionResult.partialData;
         const updated = await prisma.certificate.update({
           where: { id: certificate.id },

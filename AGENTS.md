@@ -128,12 +128,16 @@ This is the easiest way to ship a check that appears to work and doesn't.
   `FREE`). `c3a7246` derives entitlement from price **only while** status is
   active/trialing/past_due; cancelled/unpaid/expired fall back to FREE. Don't
   loosen that — it closes the "cancels in Stripe but keeps Pro" hole.
-- **As of 2026-07-25 the paid tiers are almost entirely unenforced.** The only
-  tier check in the product is `hasFullCourseChoice` in
-  `app/dashboard/compliance/page.tsx`. Certificate extraction, all exports, and
-  license count are ungated despite being advertised as paid. If you are adding
-  enforcement, the spec is
-  `~/Documents/Claude/Projects/ClearCME/tier-fence-spec-2026-07-25.md`.
+- **Tier fences shipped 2026-07-27** (spec:
+  `~/Documents/Claude/Projects/ClearCME/tier-fence-spec-2026-07-25.md`).
+  All enforcement goes through `lib/entitlements.ts` — do not hand-roll tier
+  checks in routes. Key invariants: users created before `FOUNDING_FREE_CUTOFF`
+  are fully grandfathered; extraction usage is tracked by two MONOTONIC
+  counters on User (`extractionsUsed` = clean extractions, consumes the 3-slot
+  trial; `extractionAttempts` = every scan, 10-scan backstop) — never derive
+  usage from Certificate rows, they hard-delete; license limits are enforced
+  on create only, never on read; blocked responses are 402
+  `upgrade_required`, rendered by `components/UpgradeNotice.tsx`.
 - **There are THREE export surfaces**, and fencing one while missing the others
   is the obvious failure: `app/api/audit-export/`,
   `app/api/certificates/export/`, `app/api/certificates/cebroker-export/`.

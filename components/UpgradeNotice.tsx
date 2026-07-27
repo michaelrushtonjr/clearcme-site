@@ -6,6 +6,8 @@ interface UpgradeNoticeProps {
   feature: FencedFeature;
   /** For "licenses": the limit the user hit (1 = Free, 2 = Essential). */
   limit?: number;
+  /** For "extraction": "slots" = 3 trial extractions spent, "attempts" = 10-scan backstop. */
+  reason?: "slots" | "attempts";
 }
 
 interface NoticeCopy {
@@ -15,7 +17,11 @@ interface NoticeCopy {
   href: string;
 }
 
-function noticeCopy(feature: FencedFeature, limit?: number): NoticeCopy {
+function noticeCopy(
+  feature: FencedFeature,
+  limit?: number,
+  reason?: "slots" | "attempts"
+): NoticeCopy {
   switch (feature) {
     case "export":
       return {
@@ -25,12 +31,19 @@ function noticeCopy(feature: FencedFeature, limit?: number): NoticeCopy {
         href: "/pricing?checkout=essential",
       };
     case "extraction":
-      return {
-        title: "You've used your 3 free certificate extractions.",
-        body: "You can still add CME manually, as much as you like. Essential reads certificates for you — upload a stack and it pulls the hours, dates, and credit type out of each one.",
-        rate: "Founding rate: $99/year.",
-        href: "/pricing?checkout=essential",
-      };
+      return reason === "attempts"
+        ? {
+            title: "Free includes 10 certificate scans, and you've used them.",
+            body: "You can still add CME manually, as much as you like. Essential scans unlimited certificates — upload a stack and it pulls the hours, dates, and credit type out of each one.",
+            rate: "Founding rate: $99/year.",
+            href: "/pricing?checkout=essential",
+          }
+        : {
+            title: "You've used your 3 free certificate extractions.",
+            body: "You can still add CME manually, as much as you like. Essential reads certificates for you — upload a stack and it pulls the hours, dates, and credit type out of each one.",
+            rate: "Founding rate: $99/year.",
+            href: "/pricing?checkout=essential",
+          };
     case "licenses":
       return limit === 2
         ? {
@@ -47,8 +60,8 @@ function noticeCopy(feature: FencedFeature, limit?: number): NoticeCopy {
 }
 
 /** Renders a blocked-by-tier state as an upgrade prompt, never a raw error. */
-export default function UpgradeNotice({ feature, limit }: UpgradeNoticeProps) {
-  const copy = noticeCopy(feature, limit);
+export default function UpgradeNotice({ feature, limit, reason }: UpgradeNoticeProps) {
+  const copy = noticeCopy(feature, limit, reason);
 
   return (
     <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3 text-left">
