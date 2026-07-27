@@ -8,12 +8,29 @@ import { COURSE_CATALOG, type Course } from "./courses";
  * copy on /mate-act would silently rot into exactly the kind of wrong public
  * claim the fleet exists to prevent.
  *
- * `credits` strings begin with a parseable number ("8.0 hours AMA PRA ..."),
- * which is how a course that covers the full requirement on its own is told
- * apart from one that merely counts toward it. Anything unparseable sorts to
- * 0 and lands in `partial` — the conservative side.
+ * Hours are read with `parseHours`, which requires the number to be ATTACHED to
+ * an hours unit. Do not "simplify" this to Number.parseFloat(credits) — that was
+ * the first implementation and it is wrong in both directions against real
+ * catalog strings:
+ *
+ *   "14 modules — credit hours vary per module..."  parseFloat -> 14   (OVERCLAIMS
+ *                                                   a module count as 14 hours, and
+ *                                                   published it as covering all 8)
+ *   "Up to 10.25 hours AMA PRA Category 1"          parseFloat -> NaN  (UNDERCLAIMS
+ *                                                   a course that does cover 8)
+ *
+ * Overclaiming here is a public compliance-adjacent statement about a physician's
+ * DEA obligation, so anything unrecognised sorts to 0 and lands in `partial`.
+ * The exact `credits` string is always rendered next to the course, so a reader
+ * can see "Up to 10.25 hours" and judge for themselves.
  */
 export type MateCourse = Course & { hours: number };
+
+/** First number in `credits` that is directly qualified by an hours unit. */
+function parseHours(credits: string): number {
+  const match = /([\d.]+)\s*(?:hours?|hrs?)\b/i.exec(credits);
+  return match ? Number.parseFloat(match[1]) || 0 : 0;
+}
 
 const MATE_TOPIC_KEYS = ["OPIOID_PRESCRIBING", "SUBSTANCE_USE"] as const;
 
@@ -27,7 +44,7 @@ export function getFreeMateCourses(): { full: MateCourse[]; partial: MateCourse[
       const dedupeKey = `${course.name}|${course.url}`;
       if (seen.has(dedupeKey)) continue;
       seen.add(dedupeKey);
-      all.push({ ...course, hours: Number.parseFloat(course.credits) || 0 });
+      all.push({ ...course, hours: parseHours(course.credits) });
     }
   }
 
