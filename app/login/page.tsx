@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn, signOut } from "next-auth/react";
+import { BrandLockup } from "@/components/BrandLockup";
 
 // Email magic link is only available when RESEND_API_KEY is configured.
 // On production without the key, we show Google-only sign-in.
@@ -66,28 +66,20 @@ const TRUST_BULLETS = [
 
 function TrustBlock() {
   return (
-    <div className="flex flex-col justify-center h-full">
-      <Link href="/" className="inline-block mb-8">
-        <span className="text-3xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
-          Clear<span style={{ color: "#0F766E" }}>CME</span>
-        </span>
-      </Link>
+    <div className="flex h-full flex-col justify-center">
+      <BrandLockup href="/" size="md" className="mb-8" />
 
-      <h2 className="text-2xl font-bold mb-2" style={{ color: "#1E293B" }}>
-        CME compliance,{" "}
-        <span style={{ color: "#0F766E" }}>finally sorted.</span>
+      <h2 className="public-heading mb-3 text-3xl">
+        CME compliance, <span className="public-accent">handled.</span>
       </h2>
-      <p className="text-slate-500 mb-8 text-sm leading-relaxed">
+      <p className="mb-8 text-sm leading-relaxed text-[var(--ink-2)]">
         Map your state license requirements, track your credits, and close gaps — before your renewal deadline.
       </p>
 
-      <ul className="space-y-3 mb-10">
+      <ul className="mb-10 space-y-3">
         {TRUST_BULLETS.map((b) => (
-          <li key={b.text} className="flex items-center gap-3 text-sm text-slate-700">
-            <span
-              className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ backgroundColor: "#0F766E" }}
-            >
+          <li key={b.text} className="flex items-center gap-3 text-sm text-[var(--ink-2)]">
+            <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-bold text-[#fffdf6]">
               {b.icon}
             </span>
             {b.text}
@@ -96,18 +88,15 @@ function TrustBlock() {
       </ul>
 
       {/* Testimonial */}
-      <div className="rounded-2xl border border-slate-100 p-5" style={{ backgroundColor: "#F8FDFC" }}>
-        <p className="text-slate-700 text-sm italic leading-relaxed mb-3">
+      <div className="public-card public-card-soft p-5">
+        <p className="mb-3 text-sm italic leading-relaxed text-[var(--ink-2)]">
           &ldquo;Finally, a CME tracker built for how I actually practice.&rdquo;
         </p>
         <div className="flex items-center gap-2">
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-            style={{ backgroundColor: "#0F766E" }}
-          >
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-bold text-[#fffdf6]">
             EM
           </div>
-          <span className="text-xs text-slate-500">Dr. M.R. — Emergency Medicine</span>
+          <span className="text-xs text-[var(--ink-3)]">Dr. M.R. — Emergency Medicine</span>
         </div>
       </div>
     </div>
@@ -138,19 +127,17 @@ function LoginPageInner() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#FAFAF7" }}>
+    <div className="public-site flex min-h-screen items-center justify-center px-4">
       {/* Mobile value line — shown only below lg */}
       <div className="w-full max-w-sm lg:hidden">
-        <Link href="/" className="block text-center mb-6">
-          <span className="text-2xl font-bold tracking-tight" style={{ color: "#1E293B" }}>
-            Clear<span style={{ color: "#0F766E" }}>CME</span>
-          </span>
-        </Link>
-        <p className="text-center text-sm text-slate-600 mb-1">Sign in to your account</p>
-        <p className="text-center text-xs text-slate-400 mb-4">
+        <div className="mb-6 flex justify-center">
+          <BrandLockup href="/" size="md" />
+        </div>
+        <p className="mb-1 text-center text-sm text-[var(--ink-2)]">Sign in to your account</p>
+        <p className="mb-4 text-center text-xs text-[var(--ink-3)]">
           Built by a board-certified physician · All 50 states + DC
         </p>
-        <p className="text-center text-xs text-slate-500 mb-4 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2">
+        <p className="mb-4 rounded-xl border border-[var(--line-soft)] bg-[rgba(255,253,246,0.7)] px-4 py-2 text-center text-xs text-[var(--ink-3)]">
           Free · No PHI stored · 3-step setup: license → map → gaps
         </p>
 
@@ -175,8 +162,8 @@ function LoginPageInner() {
         {/* Right: auth form */}
         <div className="flex flex-col justify-center">
           <div className="mb-8">
-            <p className="text-sm text-slate-500">Sign in to your account</p>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm text-[var(--ink-2)]">Sign in to your account</p>
+            <p className="mt-0.5 text-xs text-[var(--ink-3)]">
               Built by a board-certified physician · All 50 states + DC
             </p>
           </div>
@@ -227,16 +214,12 @@ function AuthForm({
 }: AuthFormProps) {
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+      <div className="public-card p-8">
         {emailSent ? (
           <div className="text-center">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: "#F0FDFA" }}
-            >
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#e7ecdd]">
               <svg
-                className="w-6 h-6"
-                style={{ color: "#0F766E" }}
+                className="h-6 w-6 text-[var(--primary)]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -249,11 +232,11 @@ function AuthForm({
                 />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold mb-2" style={{ color: "#1E293B" }}>
+            <h2 className="mb-2 text-lg font-semibold text-[var(--ink)]">
               Check your email
             </h2>
-            <p className="text-sm text-slate-500">
-              We sent a magic link to <strong>{email}</strong>. Click the link to sign in.
+            <p className="text-sm text-[var(--ink-3)]">
+              We sent a sign-in link to <strong>{email}</strong>. Click the link to sign in.
             </p>
           </div>
         ) : (
@@ -261,7 +244,7 @@ function AuthForm({
             {APPLE_ENABLED && (
               <button
                 onClick={handleAppleSignIn}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-900 rounded-xl text-sm font-semibold text-white bg-slate-950 hover:bg-slate-800 transition-colors mb-3"
+                className="mb-3 flex w-full items-center justify-center gap-3 rounded-full border border-black bg-black px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1e1e1e]"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
@@ -273,7 +256,7 @@ function AuthForm({
             {/* Google Sign In */}
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors mb-6"
+              className="mb-6 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--line)] bg-[#fffdf6] px-4 py-3 text-sm font-medium text-[var(--ink-2)] transition-colors hover:bg-[#f7f2e4]"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -300,10 +283,10 @@ function AuthForm({
               <>
                 <div className="relative mb-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200" />
+                    <div className="w-full border-t border-[var(--line-soft)]" />
                   </div>
-                  <div className="relative flex justify-center text-xs text-slate-400">
-                    <span className="bg-white px-3">or continue with email</span>
+                  <div className="relative flex justify-center text-xs text-[var(--ink-3)]">
+                    <span className="bg-[#fffdf6] px-3">or continue with email</span>
                   </div>
                 </div>
 
@@ -312,7 +295,7 @@ function AuthForm({
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium text-slate-700 mb-1.5"
+                      className="mb-1.5 block text-sm font-medium text-[var(--ink-2)]"
                     >
                       Email address
                     </label>
@@ -323,17 +306,15 @@ function AuthForm({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-colors text-sm"
-                      style={{ "--tw-ring-color": "#0F766E" } as React.CSSProperties}
+                      className="w-full rounded-xl border border-[var(--line)] bg-[#fffdf6] px-4 py-3 text-sm text-[var(--ink)] transition-colors placeholder:text-[var(--ink-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || !email}
-                    className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-colors disabled:opacity-60 text-sm"
-                    style={{ backgroundColor: "#0F766E" }}
+                    className="w-full rounded-full bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-[#fffdf6] transition-colors hover:bg-[var(--primary-2)] disabled:opacity-60"
                   >
-                    {loading ? "Sending link..." : "Send magic link"}
+                    {loading ? "Sending link..." : "Email me a sign-in link"}
                   </button>
                 </form>
               </>
@@ -342,13 +323,13 @@ function AuthForm({
         )}
       </div>
 
-      <p className="text-center text-xs text-slate-400 mt-6">
+      <p className="mt-6 text-center text-xs text-[var(--ink-3)]">
         By signing in, you agree to our{" "}
-        <a href="/terms" className="hover:underline" style={{ color: "#0F766E" }}>
+        <a href="/terms" className="text-[var(--primary)] hover:underline">
           Terms
         </a>{" "}
         and{" "}
-        <a href="/privacy" className="hover:underline" style={{ color: "#0F766E" }}>
+        <a href="/privacy" className="text-[var(--primary)] hover:underline">
           Privacy Policy
         </a>
       </p>

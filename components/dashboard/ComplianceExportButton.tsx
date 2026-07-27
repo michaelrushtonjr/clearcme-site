@@ -10,7 +10,16 @@ interface LicenseExport {
   totalHoursNeeded: number;
   gapHours: number;
   isCompliant: boolean;
-  mandatoryGaps: { topic: string; earned: number; needed: number; gap: number; isMet: boolean }[];
+  mandatoryGaps: {
+    topic: string;
+    earned: number;
+    needed: number;
+    gap: number;
+    isMet: boolean;
+    displayName?: string;
+    isUnknown?: boolean;
+    completionStatus?: string;
+  }[];
 }
 
 interface CertExport {
@@ -78,8 +87,16 @@ function buildHtml(data: ExportData): string {
               .map(
                 (g) => `
               <div class="topic-row ${g.isMet ? "met" : "gap"}">
-                <span>${g.isMet ? "✅" : "⚠️"} ${formatTopic(g.topic)}</span>
-                <span>${g.earned.toFixed(1)} / ${g.needed.toFixed(0)} hrs${!g.isMet ? ` (${g.gap.toFixed(1)} hrs needed)` : ""}</span>
+                <span>${g.isMet ? "✅" : "⚠️"} ${g.displayName ?? formatTopic(g.topic)}</span>
+                <span>${g.earned.toFixed(1)} / ${g.needed.toFixed(0)} hrs${
+                  g.isMet
+                    ? g.completionStatus === "completed" && g.earned < g.needed
+                      ? " (attested complete — certificate not on file)"
+                      : ""
+                    : g.isUnknown
+                    ? " (awaiting your answer)"
+                    : ` (${g.gap.toFixed(1)} hrs needed)`
+                }</span>
               </div>`
               )
               .join("")}

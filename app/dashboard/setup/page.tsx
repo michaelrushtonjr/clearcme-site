@@ -140,6 +140,8 @@ export default function SetupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [restored, setRestored] = useState(false);
 
   // Primary license state
   const [state, setState] = useState("");
@@ -158,6 +160,51 @@ export default function SetupPage() {
   // Step 5: practice questions for requirements a licence alone can't resolve
   const [conditionalQuestions, setConditionalQuestions] = useState<ConditionalQuestion[]>([]);
   const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, "yes" | "no">>({});
+
+  // ── Survive a page refresh: park wizard progress in sessionStorage ────────
+  const WIZARD_KEY = "clearcme-setup-wizard";
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(WIZARD_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.state) setState(saved.state);
+        if (saved.licenseType) setLicenseType(saved.licenseType);
+        if (saved.specialty) setSpecialty(saved.specialty);
+        if (saved.practiceArea) setPracticeArea(saved.practiceArea);
+        if (saved.birthMonth != null) setBirthMonth(saved.birthMonth);
+        if (saved.renewalDate) setRenewalDate(saved.renewalDate);
+        if (saved.unsureDate) setUnsureDate(saved.unsureDate);
+        if (saved.displayName) setDisplayName(saved.displayName);
+        // Step 5's questions come from the server post-submit — clamp to 4.
+        if (typeof saved.step === "number") setStep(Math.min(Math.max(saved.step, 1), 4));
+      }
+    } catch {
+      // Corrupt or unavailable storage — start fresh.
+    }
+    setRestored(true);
+  }, []);
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      sessionStorage.setItem(
+        WIZARD_KEY,
+        JSON.stringify({
+          step: Math.min(step, 4),
+          state,
+          licenseType,
+          specialty,
+          practiceArea,
+          birthMonth,
+          renewalDate,
+          unsureDate,
+          displayName,
+        })
+      );
+    } catch {
+      // Storage full/blocked — persistence is best-effort.
+    }
+  }, [restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, unsureDate, displayName]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
@@ -283,6 +330,18 @@ export default function SetupPage() {
         const data = await primaryRes.json();
         throw new Error(data.error ?? "Failed to create license");
       }
+
+      // Optional display name — greeting + audit exports use it when present.
+      if (displayName.trim()) {
+        await fetch("/api/settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: displayName.trim() }),
+        }).catch(() => {});
+      }
+      try {
+        sessionStorage.removeItem(WIZARD_KEY);
+      } catch {}
 
       // POST additional licenses in sequence
       for (const lic of additionalLicenses) {
@@ -434,6 +493,26 @@ export default function SetupPage() {
               <p className="text-sm text-[var(--ink-2)] mb-6">
                 Some mandatory CME topics vary by degree type, specialty, and practice setting.
               </p>
+
+              {/* Optional display name */}
+              <div className="mb-5">
+                <label htmlFor="setup-name" className="block text-sm font-medium text-slate-700 mb-2">
+                  What should we call you?{" "}
+                  <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="setup-name"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Dr. Jordan Rivera"
+                  autoComplete="name"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+                />
+                <p className="text-xs text-slate-400 mt-2">
+                  Used for your dashboard greeting and audit exports.
+                </p>
+              </div>
 
               {/* MD / DO toggle */}
               <div className="mb-5">

@@ -336,7 +336,7 @@ export default function SettingsClient({
               className="product-input cursor-not-allowed opacity-70"
             />
             <p className="text-xs text-[var(--ink-3)] mt-1">
-              Email is managed by Google Sign-In and cannot be changed here.
+              Email comes from your sign-in method and cannot be changed here.
             </p>
           </div>
 

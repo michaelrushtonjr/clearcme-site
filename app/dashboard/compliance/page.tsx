@@ -93,6 +93,10 @@ function formatTopic(topic: string): string {
  */
 function requirementDisplayName(topic: string, description?: string | null): string {
   if (topic === "OTHER_MANDATORY" && description?.trim()) return description.trim();
+  // A license can carry two SUBSTANCE_USE requirements (a state one like SBIRT
+  // plus the federal DEA MATE Act) — give the federal one its own row name so
+  // the two are tellable apart at a glance.
+  if (topic === "SUBSTANCE_USE" && /\bMATE\b/i.test(description ?? "")) return "DEA MATE Act";
   return formatTopic(topic);
 }
 

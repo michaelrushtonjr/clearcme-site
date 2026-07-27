@@ -117,7 +117,7 @@ export default function PricingPage() {
       cta: "Start Essential",
       ctaHref: "/login",
       checkoutTier: "ESSENTIAL" as const,
-      ctaStyle: "public-btn-secondary",
+      ctaStyle: "public-btn-primary",
       features: [
         "Everything in Free",
         "Multi-state tracking (up to 2 states)",
@@ -129,7 +129,7 @@ export default function PricingPage() {
         "DEA MATE Act tracking",
         "Audit-ready PDF export",
       ],
-      popular: false,
+      popular: true,
       muted: false,
     },
     {
@@ -138,7 +138,7 @@ export default function PricingPage() {
       cta: "Start Pro",
       ctaHref: "/login",
       checkoutTier: "PRO" as const,
-      ctaStyle: "public-btn-primary",
+      ctaStyle: "public-btn-secondary",
       features: [
         "Everything in Essential",
         "Multi-state tracking (unlimited states)",
@@ -147,7 +147,7 @@ export default function PricingPage() {
         "Shareable compliance summary",
         "Quarterly digest emails",
       ],
-      popular: true,
+      popular: false,
       muted: false,
     },
     {
@@ -199,7 +199,7 @@ export default function PricingPage() {
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-[#3f5f33] text-[#fffdf6] text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
-                    ⭐ Most Popular
+                    ⭐ Most Physicians
                   </span>
                 </div>
               )}
@@ -311,7 +311,7 @@ export default function PricingPage() {
             href="/login"
             className="inline-flex items-center gap-2 px-8 py-4 bg-[#3f5f33] text-[#fffdf6] font-semibold rounded-xl hover:bg-[#2a4123] transition-colors text-base shadow-sm"
           >
-            Sign in with Google →
+            Start free →
           </Link>
           <p className="text-xs text-[#6b7568] mt-4">Free · No credit card · One helpful course match included</p>
         </div>

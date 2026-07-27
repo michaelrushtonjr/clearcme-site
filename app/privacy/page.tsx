@@ -1,5 +1,10 @@
 import { PublicShell } from "@/components/PublicSiteShell";
 
+export const metadata = {
+  title: "Privacy Policy — ClearCME",
+  description: "How ClearCME handles your data: CME credits only, no PHI stored.",
+};
+
 export default function PrivacyPage() {
   return (
     <PublicShell>

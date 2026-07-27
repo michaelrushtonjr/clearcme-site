@@ -232,7 +232,7 @@ export default async function DashboardPage() {
       {/* Greeting + status line */}
       <div className="product-page-head">
         <h1 className="product-page-title">
-          Hello{firstName ? `, ${firstName}` : ""}.
+          Hello{firstName ? `, ${firstName}` : " there"}.
         </h1>
         <p className="product-page-sub">
           <strong className="text-[var(--ink)] font-semibold">

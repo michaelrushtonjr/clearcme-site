@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { prisma } from "@/lib/prisma";
+import {
+  NOT_APPLICABLE_REQUIREMENT_NOTE,
+  NOT_COMPLETED_REQUIREMENT_NOTE,
+} from "@/lib/requirement-completions";
 import JSZip from "jszip";
 
 export const maxDuration = 60;
@@ -21,7 +25,7 @@ function topicFolder(topic: string): string {
     PATIENT_SAFETY: "Patient_Safety",
     ETHICS: "Ethics",
     CULTURAL_COMPETENCY: "Cultural_Competency",
-    SUBSTANCE_USE: "DEA_MATE_Act",
+    SUBSTANCE_USE: "Substance_Use",
     SUICIDE_PREVENTION: "Suicide_Prevention",
     OTHER_MANDATORY: "Other_Mandatory",
     GENERAL_CME: "General_CME",
@@ -43,7 +47,7 @@ function formatTopicLabel(topic: string): string {
     PATIENT_SAFETY: "Patient Safety",
     ETHICS: "Ethics",
     CULTURAL_COMPETENCY: "Cultural Competency",
-    SUBSTANCE_USE: "DEA MATE Act / Substance Use",
+    SUBSTANCE_USE: "Substance Use",
     SUICIDE_PREVENTION: "Suicide Prevention",
     OTHER_MANDATORY: "Other Mandatory Topic",
     GENERAL_CME: "General CME",
@@ -52,6 +56,13 @@ function formatTopicLabel(topic: string): string {
     MAP[topic] ??
     topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())
   );
+}
+
+// A license can carry two SUBSTANCE_USE requirements (state SBIRT + federal
+// DEA MATE Act). Label each row from its own description, not the shared topic.
+function requirementLabel(topic: string, description: string | null): string {
+  if (topic === "SUBSTANCE_USE" && /\bMATE\b/i.test(description ?? "")) return "DEA MATE Act";
+  return formatTopicLabel(topic);
 }
 
 function safeFileName(name: string, ext: string): string {
@@ -70,7 +81,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
-  const userName = session.user.name ?? "Physician";
+  const userName = session.user.name ?? null;
 
   const { searchParams } = new URL(req.url);
   const licenseId = searchParams.get("licenseId");
@@ -80,6 +91,17 @@ export async function GET(req: NextRequest) {
     where: { userId, isActive: true, ...(licenseId ? { id: licenseId } : {}) },
     orderBy: { renewalDate: "asc" },
   });
+
+  // Attestations — "I completed this" answers for one-time/long-cycle requirements
+  const requirementCompletions = await prisma.userRequirementCompletion.findMany({
+    where: { userId },
+  });
+  const completionByRequirementAndLicense = new Map(
+    requirementCompletions.map((completion) => [
+      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
+      completion,
+    ])
+  );
 
   // Fetch all certs (COMPLETED + NEEDS_REVIEW)
   const allCerts = await prisma.certificate.findMany({
@@ -105,9 +127,12 @@ export async function GET(req: NextRequest) {
   // ── Collect compliance data for summary ─────────────────────────────────────
   interface MandatoryStatus {
     topic: string;
+    label: string;
     hoursRequired: number;
     earned: number;
     isMet: boolean;
+    /** User attested completion but no certificate on file covers the hours */
+    attested: boolean;
   }
 
   interface LicenseSummary {
@@ -166,15 +191,25 @@ export async function GET(req: NextRequest) {
       const earned = cycleCerts
         .filter((c) => c.specialTopics.includes(req.topic))
         .reduce((s, c) => s + (c.creditHours ?? 0), 0);
+      const completion =
+        completionByRequirementAndLicense.get(`${req.id}:${lic.id}`) ??
+        completionByRequirementAndLicense.get(`${req.id}:global`);
+      const attestedComplete =
+        !!completion &&
+        completion.notes !== NOT_APPLICABLE_REQUIREMENT_NOTE &&
+        completion.notes !== NOT_COMPLETED_REQUIREMENT_NOTE;
+      const isMet = earned >= req.hoursRequired;
       return {
         topic: req.topic,
+        label: requirementLabel(req.topic, req.description),
         hoursRequired: req.hoursRequired,
         earned,
-        isMet: earned >= req.hoursRequired,
+        isMet,
+        attested: attestedComplete && !isMet,
       };
     });
 
-    const isCompliant = gapHours === 0 && mandatoryStatus.every((m) => m.isMet);
+    const isCompliant = gapHours === 0 && mandatoryStatus.every((m) => m.isMet || m.attested);
 
     licenseSummaries.push({
       state: lic.state,
@@ -317,7 +352,7 @@ export async function GET(req: NextRequest) {
     "ClearCME Audit Package",
     "======================",
     `Generated: ${generatedDate}`,
-    `Physician: ${userName}`,
+    ...(userName ? [`Physician: ${userName}`] : []),
   ];
 
   for (const lic of licenseSummaries) {
@@ -343,16 +378,20 @@ export async function GET(req: NextRequest) {
       `HOURS SUMMARY:`,
       `  Required: ${lic.totalHoursNeeded.toFixed(0)} hrs`,
       `  Earned:   ${lic.totalHoursEarned.toFixed(1)} hrs`,
-      `  Remaining:${Math.max(0, lic.gapHours).toFixed(1)} hrs`
+      `  Remaining: ${Math.max(0, lic.gapHours).toFixed(1)} hrs`
     );
 
     if (lic.mandatoryStatus.length > 0) {
       reportLines.push(``, `MANDATORY TOPICS:`);
       for (const m of lic.mandatoryStatus) {
-        const check = m.isMet ? "✓" : "✗";
-        const status = m.isMet ? "met" : "unmet";
+        const check = m.isMet || m.attested ? "✓" : "✗";
+        const status = m.isMet
+          ? "met"
+          : m.attested
+          ? "attested complete — no certificate on file"
+          : "unmet";
         reportLines.push(
-          `  [${check}] ${formatTopicLabel(m.topic)} (${m.hoursRequired} hrs required, ${m.earned.toFixed(1)} earned) — ${status}`
+          `  [${check}] ${m.label} (${m.hoursRequired} hrs required, ${m.earned.toFixed(1)} earned) — ${status}`
         );
       }
     }
@@ -397,10 +436,10 @@ export async function GET(req: NextRequest) {
       },
       mandatoryTopics: lic.mandatoryStatus.map((m) => ({
         topic: m.topic,
-        label: formatTopicLabel(m.topic),
+        label: m.label,
         hoursRequired: m.hoursRequired,
         hoursEarned: m.earned,
-        status: m.isMet ? "MET" : "UNMET",
+        status: m.isMet ? "MET" : m.attested ? "ATTESTED" : "UNMET",
       })),
     })),
     certificates: allCerts.map((cert) => ({

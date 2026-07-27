@@ -196,11 +196,17 @@ export function buildNextAction(
       const label = topicLabel(gap.topic);
       const daysLabel =
         license.daysUntilRenewal !== null ? ` before ${license.renewalDateLabel}` : "";
+      // "Making progress" is a claim — don't make it before anything is banked.
+      const cycleHours = license.totalHoursRequired ?? 0;
+      const hoursBanked = cycleHours > 0 ? Math.max(0, cycleHours - license.generalGapHours) : 0;
+      const started = hoursBanked > 0;
       return {
         theme: "blue",
         icon: "📈",
-        headline: `You're making progress — next: earn ${gap.gap.toFixed(1)} more hours in ${label}`,
-        explanation: `You still have time${daysLabel}. Prioritise ${label} to chip away at your biggest mandatory gap.`,
+        headline: started
+          ? `You're making progress — next: earn ${gap.gap.toFixed(1)} more hours in ${label}`
+          : `First step: earn ${gap.gap.toFixed(1)} hours in ${label}`,
+        explanation: `You still have time${daysLabel}. Prioritize ${label} to chip away at your biggest mandatory gap.`,
         ctaLabel: courseCtaLabel(gap.topic, label),
         ctaUrl: courseUrl(gap.topic),
         ctaExternal: isExternal(gap.topic),

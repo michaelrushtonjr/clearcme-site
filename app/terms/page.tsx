@@ -1,5 +1,10 @@
 import { PublicShell } from "@/components/PublicSiteShell";
 
+export const metadata = {
+  title: "Terms of Service — ClearCME",
+  description: "ClearCME's terms of service, including the 30-day money-back guarantee.",
+};
+
 export default function TermsPage() {
   return (
     <PublicShell>
