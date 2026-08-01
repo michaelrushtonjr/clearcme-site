@@ -215,7 +215,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   MA: birthBasedRenewal("On or before your birthday, every 2 years (M.G.L. c. 112 §2; if your birthday falls within 3 months of initial registration, your first renewal defers to your birthday 2 years later)", {
     usesExactBirthday: true,
   }),
-  MD: variableRenewal("September 30 of your renewal year, every 2 years"),
+  MD: variableRenewal("September 30, every 2 years; renewal year set by last-name cohort (A–L even years, M–Z odd years)"),
   ME: birthBasedRenewal("Last day of your birth month, every 2 years"),
   MI: variableRenewal("Every 3 years; renewal date varies by physician and license record"),
   MN: birthBasedRenewal("Last day of your birth month each year"),
