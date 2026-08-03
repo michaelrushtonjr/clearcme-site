@@ -678,6 +678,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Duty to report misconduct", "1 hr every cycle"),
+      topic("Pain medicine (pain management clinics)", "20 hrs Category I per 2 years", "If a physician owner of, or providing care at, a licensed Ohio pain management clinic; must include one or more courses addressing the potential for addiction; hours count toward the Category I renewal total (OAC 4731-29-01, eff. Jan. 31, 2026)"),
       mateTopic(),
     ],
   },
