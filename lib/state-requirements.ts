@@ -723,7 +723,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; 2026 RIDOH guidance allows any ACCME-accredited topic area",
     mandatoryTopics: [
-      topic("Alzheimer's disease / cognitive impairment", "Not required under the current codified rule", "The current CME rule (216-RICR-40-05-1 §1.5.5, amended 2022) mandates no topic-specific hours; some RIDOH guidance still describes a one-time 1-hr requirement from Aug. 2019 — the codified rule controls"),
+      topic("Alzheimer's disease / cognitive impairment", "1 hr one-time (minimum)", "Required by statute, not the Board CME rule: a one-time course of at least 1 hour on the diagnosis, treatment, and care of patients with cognitive impairments including Alzheimer's disease and related disorders, due no later than Oct. 1, 2023 (R.I. Gen. Laws § 23-1.7-5; the CME rule 216-RICR-40-05-1 §1.5.5 itself sets no topic hours). The statute is silent on physicians first licensed after Oct. 1, 2023 — applicability for newer licensees follows RIDOH implementation rules"),
       topic("Opioid prescribing best practices", "8 hrs one-time (Category 1)", "RI-specific rule for prescribers of Schedule II opioids, due before controlled-substance registration renewal or within 2 years, whichever is longer (216-RICR-20-20-4 §4.4(P)); largely overlaps the federal MATE 8 hrs; exempt with completed DATA 2000 waiver training and an active DEA 'X' designation"),
       mateTopic(),
     ],
