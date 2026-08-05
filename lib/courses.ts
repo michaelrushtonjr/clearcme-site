@@ -788,11 +788,11 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         isFree: false,
         isHippo: false,
         description: "Part of the AMA Code of Medical Ethics collection.",
-        url: "https://edhub.ama-assn.org/pages/ethics-collection",
+        url: "https://edhub.ama-assn.org/vha-education/module/2826383",
         accreditation: "ACCME",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-04-15",
+        verified: "2026-08-05 (URL corrected from the generic ethics-collection page to the module the operator's signed-in AMA Ed Hub session landed on 2026-08-04 via provider-referrer/5713; AMA Ed Hub blocks all automated readers — shipped per Michael's 2026-08-04 ruling, same basis as the 2026-07-25 edhub precedent)",
       },
       {
         name: "Sexual and Romantic Boundary Violations",
