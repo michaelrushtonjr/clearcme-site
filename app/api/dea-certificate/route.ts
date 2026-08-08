@@ -172,10 +172,10 @@ interface ExtractionResult {
 }
 
 async function extractDeaCertWithClaude(file: File): Promise<ExtractionResult> {
-  const apiKey = process.env.ANTHROPIC_CME;
+  const apiKey = process.env.ANTHROPIC_CME || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.error("ANTHROPIC_CME not configured");
-    return { success: false, error: "ANTHROPIC_CME not configured" };
+    console.error("Anthropic API key not configured (ANTHROPIC_CME / ANTHROPIC_API_KEY both unset)");
+    return { success: false, error: "Anthropic API key not configured (ANTHROPIC_CME / ANTHROPIC_API_KEY both unset)" };
   }
 
   try {
