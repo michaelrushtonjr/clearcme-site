@@ -390,7 +390,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("Domestic violence", "2 hrs every 6 years"),
       topic("HIV/AIDS", "1 hr first renewal only"),
       topic("Human trafficking", "1 hr one-time", "s.456.0341; practices must also post the required awareness sign since Jan. 2025"),
-      topic("Controlled substances", "2 hrs per cycle", "If DEA-registered and authorized to prescribe"),
+      topic("Controlled substances", "2 hrs per cycle", "If DEA-registered and authorized to prescribe; since Jul. 1, 2026 the course must also cover treatment of pain for patients with sickle cell disease (s.456.0301, SB 844)"),
       mateTopic(),
     ],
   },
@@ -887,7 +887,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     mandatoryTopics: [
       topic("Florida laws / rules and ethics", "1 hr per cycle"),
       topic("Prevention of medical errors", "2 hrs per cycle", "DO board's five misdiagnosed conditions differ from the MD board's list; an MD-board course may not qualify"),
-      topic("Controlled substances", "2 hrs per cycle", "If DEA registrant"),
+      topic("Controlled substances", "2 hrs per cycle", "If DEA registrant; since Jul. 1, 2026 the course must also cover treatment of pain for patients with sickle cell disease (s.456.0301, SB 844)"),
       topic("HIV/AIDS", "1 hr first renewal only"),
       topic("Domestic violence", "2 hrs every 6 years"),
       topic("Human trafficking", "1 hr one-time", "s.456.0341 applies to ch. 459 licensees; awareness-sign requirement since Jan. 2025"),
