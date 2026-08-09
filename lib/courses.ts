@@ -1531,6 +1531,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  NUTRITION: {
+    topicLabel: "Nutrition / Metabolic Health",
+    requirement: "Varies by state — e.g. MO at least 1 hr per cycle, ND 1 hr per renewal cycle, WV nutrition topic in force (hour count not yet defined)",
+    courses: [
+      {
+        name: "Introduction to Food and Health",
+        provider: "Stanford Center for Continuing Medical Education",
+        providerUrl: "https://stanford.cloud-cme.com",
+        credits: "2.5 hours AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free (free CloudCME account required)",
+        isFree: true,
+        isHippo: false,
+        description: "On-demand enduring material (2.5 hours) on practical, evidence-based nutrition for clinicians — conducting a nutritional assessment and motivational interview and formulating a strategy to improve patients' health, aimed at the obesity and diabetes epidemics in primary care. Registration fee listed as FREE on the Stanford CloudCME page. On-demand window January 8, 2024 – January 7, 2027. First entry in the catalog's nutrition bucket — useful toward Missouri's and North Dakota's nutrition/metabolic-health CME requirements (and West Virginia's once its hour count is defined).",
+        url: "https://stanford.cloud-cme.com/course/courseoverview?P=0&EID=49030",
+        accreditation: "ACCME / ACPE / ANCC (Stanford Medicine jointly accredited)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-08-09 (COO read of the live CloudCME page: 'Stanford Medicine designates this Enduring Material for a maximum of 2.50 AMA PRA Category 1 Credits™', Registration Fee FREE, on-demand through January 7, 2027; Scout verified 2026-08-08 gap-prospect run, facts match exactly)",
+      }
+    ],
+  },
   GENERAL_CATEGORY_1: {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
