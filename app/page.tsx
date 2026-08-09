@@ -694,8 +694,13 @@ function Pricing() {
         <SectionHead
           eyebrow="Pricing"
           title="Less than the cost of one compliance scramble."
-          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, and reminders - backed by a 30-day money-back guarantee."
+          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, and reminders - backed by a 30-day money-back guarantee. Founding members keep today's rate for as long as their subscription stays active."
         />
+        <div className="founding-strip reveal">
+          <strong>Founding pricing.</strong> These are our launch rates. As ClearCME grows, prices will
+          rise — but if you join now, yours won&apos;t, for as long as your subscription stays active. The
+          first 100 members keep these rates.
+        </div>
         <div className="price-grid">
           <div className="plan reveal">
             <div className="plan-name">Free</div>
@@ -710,6 +715,7 @@ function Pricing() {
           <div className="plan featured reveal">
             <span className="ribbon">Most physicians</span>
             <div className="plan-name">Essential</div>
+            <p className="plan-founding">Founding-member rate — locked while you stay.</p>
             <div className="plan-price">
               <span className="h">$99</span>
               <span className="per">/year</span>
@@ -720,6 +726,7 @@ function Pricing() {
           </div>
           <div className="plan reveal">
             <div className="plan-name">Pro</div>
+            <p className="plan-founding">Founding-member rate — locked while you stay.</p>
             <div className="plan-price">
               <span className="h">$199</span>
               <span className="per">/year</span>

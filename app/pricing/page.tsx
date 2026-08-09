@@ -14,6 +14,14 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
     a: "No — Essential covers up to 2 states, which is the most common scenario for physicians with dual licensure (e.g., Nevada + California, or a neighboring-state compact). Pro is designed for physicians tracking 3 or more states, or practices managing compliance across a group. If you're a two-state physician, Essential is all you need.",
   },
   {
+    q: "What does \"founding member\" mean?",
+    a: "The first 100 paying members keep the price they signed up at. As ClearCME adds states, integrations, and features, prices will go up — founding rates don't. The one condition is that your subscription stays continuously active; if you cancel and rejoin later, you'll join at whatever the current rate is. There's no separate tier or application — if you're among the first 100, you're a founding member.",
+  },
+  {
+    q: "Is there a monthly plan?",
+    a: "No — ClearCME is billed annually. Your license renews on a cycle, and so does ClearCME. It keeps the price low and means you're covered the moment a state board changes its requirements mid-year, not just the month you happen to be subscribed.",
+  },
+  {
     q: "What if my state's requirements change?",
     a: "We monitor requirements continuously and update within 30 days of any confirmed change.",
   },
@@ -179,7 +187,7 @@ export default function PricingPage() {
           <span className="public-accent">without the audit scramble.</span>
         </h1>
         <p className="public-subhead max-w-2xl mx-auto mb-10">
-          Start free with a useful compliance map and one best course match per gap. Upgrade when you want AI extraction, full course choice, reminders, and audit-ready exports.
+          Start free with a useful compliance map and one best course match per gap. Upgrade when you want AI extraction, full course choice, reminders, and audit-ready exports. <strong className="text-[#1e2920]">Our first 100 members keep today&apos;s rate for as long as they stay.</strong>
         </p>
 
         {/* Tier cards */}
@@ -212,7 +220,10 @@ export default function PricingPage() {
                   {tier.price}
                 </p>
                 {tier.name !== "Free" && tier.name !== "Group" && (
-                  <p className="text-xs text-[#6b7568] mt-1">billed annually</p>
+                  <>
+                    <p className="text-xs text-[#6b7568] mt-1">billed annually</p>
+                    <p className="text-xs italic text-[#3f5f33] mt-1">Founding-member rate — locked while active.</p>
+                  </>
                 )}
               </div>
 
