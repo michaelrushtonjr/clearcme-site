@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./console-1b.css";
 
 /* ─── Brand design tokens (v3 — Editorial Sage) ─── */
 @theme {

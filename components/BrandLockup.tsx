@@ -18,6 +18,8 @@ interface BrandLockupProps {
   glyphOnly?: boolean;
   /** Wraps in a Next.js Link. Pass null for unlinked. Default: "/" */
   href?: string | null;
+  /** On-dark wordmark colors (forest/console surfaces). */
+  dark?: boolean;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function BrandLockup({
   size = "md",
   glyphOnly = false,
   href = "/",
+  dark = false,
   className,
 }: BrandLockupProps) {
   const { glyph, text, gap } = SIZE_MAP[size];
@@ -53,8 +56,8 @@ export function BrandLockup({
       </svg>
 
       {!glyphOnly && (
-        <span className={clsx("font-bold tracking-tight text-brand-navy", text)}>
-          Clear<span className="text-brand-teal">CME</span>
+        <span className={clsx("font-bold tracking-tight", dark ? "text-[#F6F5F0]" : "text-brand-navy", text)}>
+          Clear<span className={dark ? "text-[#9FBE93]" : "text-brand-teal"}>CME</span>
         </span>
       )}
     </span>

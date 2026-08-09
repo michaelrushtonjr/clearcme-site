@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { consoleFontVars } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={consoleFontVars}>{children}</body>
     </html>
   );
 }
