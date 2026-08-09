@@ -407,8 +407,8 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     ],
   },
   HI: {
-    totalHours: 100,
-    totalHoursLabel: "100 hours (40 Category 1 + 60 Category 2, or 100 Category 1; first-renewal proration may reduce to 50 or 0)",
+    totalHours: 40,
+    totalHoursLabel: "40 hours Category 1 or 1A (20 if this is your first renewal; 40 for everyone beginning with the 2028 renewal) — the Board's enforced standard per its 2026 renewal/audit notices and HRS §453-6, which recognizes only Category 1/1A CME; the unamended codified rule (HAR §16-85-33) still recites 100 hours with a Category 2 pathway",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
