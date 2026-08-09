@@ -666,6 +666,7 @@ function Pricing() {
   const planFeatures = {
     free: [
       "One state mapped",
+      "AI extraction on your first 3 certificates",
       "Manual hour entry",
       "One best course match per gap",
       "Basic progress view",

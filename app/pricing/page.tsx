@@ -112,6 +112,7 @@ export default function PricingPage() {
       features: [
         "Single state requirement lookup",
         "Renewal countdown",
+        "AI extraction on your first 3 certificates",
         "Manual CME entry",
         "One best course match per gap/topic",
         "Basic compliance dashboard",
