@@ -1179,6 +1179,7 @@ body {
 .landing-v3 .h1 .wave {
   position: relative;
   color: var(--pop);
+  font-style: italic;
   white-space: nowrap;
 }
 
@@ -1212,6 +1213,20 @@ body {
   background-position: 0 6px;
   background-repeat: no-repeat;
   background-size: 100% 90%;
+}
+
+.landing-v3 .hero-guarantee {
+  max-width: 540px;
+  margin: 20px 0 0;
+  font-family: var(--display);
+  font-size: clamp(21px, 2.3vw, 27px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.landing-v3 .hero-guarantee em {
+  color: var(--primary);
+  font-style: italic;
 }
 
 .landing-v3 .hero-sub {

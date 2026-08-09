@@ -334,7 +334,7 @@ function HeroDashboard() {
       <div className="floater">
         <span className="dot-anim" aria-hidden="true" />
         <span>
-          <strong>Live</strong> - auto-updated when state boards change rules
+          <strong>Live</strong> — auto-updated when state boards change rules
         </span>
       </div>
     </div>
@@ -874,20 +874,24 @@ export default function Home() {
           <div className="wrap hero-grid">
             <div className="reveal">
               <h1 className="h1">
-                Compliant for your next renewal - <span className="wave">or your money back.</span>
+                Your CME compliance, <span className="wave">handled.</span>
               </h1>
+              <p className="hero-guarantee">
+                Compliant for your next renewal — <em>or your money back.</em>
+              </p>
+              {/* TODO(track-b): when verified course mappings ship (Phase 5), flip the closing
+                  clause to "— and the cheapest accredited way to fill it." */}
               <p className="hero-sub">
                 <strong>Under 60 seconds of setup.</strong>{" "}
-                <span className="swash">Less than the cost of one missed-requirement headache.</span> ClearCME maps your
-                CME requirements, tracks your hours, tells you exactly what&apos;s missing, and where to find it. Simply,
-                without stress, your CME is handled.
+                ClearCME maps your state&apos;s requirements, reads your
+                certificates, and shows exactly what&apos;s missing — and exactly how to fill it.
               </p>
               <div className="hero-cta-row">
                 <CtaLink>
                   See your gaps in 60 seconds <ArrowRight size={16} className="arrow" />
                 </CtaLink>
                 <Link href="#guarantee" className="btn btn-ghost">
-                  How the guarantee works
+                  How the guarantee works <ArrowRight size={16} className="arrow" />
                 </Link>
               </div>
               <div className="trust-row">
@@ -902,7 +906,12 @@ export default function Home() {
 
             <HeroDashboard />
           </div>
+        </section>
 
+        <StatePreview />
+
+        {/* Below the fold by design: the guarantee subhead is the only urgency moment above it. */}
+        <section aria-label="Cost comparison">
           <div className="wrap">
             <div className="strip reveal">
               <div className="left">
@@ -919,8 +928,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <StatePreview />
         <Features />
         <Guarantee />
         <Comparison />
