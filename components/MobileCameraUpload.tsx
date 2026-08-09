@@ -303,6 +303,11 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
     const needsReviewCount = uploadResults.filter((cert) => cert.needsReview || cert.extractionFailed).length;
     const detectedTopics = Array.from(new Set(uploadResults.flatMap((cert) => cert.topics)));
     const hasReviewNeeded = needsReviewCount > 0;
+    const hasFailed = uploadResults.some((cert) => cert.extractionFailed);
+    // Land the physician on the certificate that needs attention, not a generic page.
+    const attentionCert =
+      uploadResults.find((cert) => cert.extractionFailed) ??
+      uploadResults.find((cert) => cert.needsReview);
     const cardTone = hasReviewNeeded
       ? "border-[rgba(201,147,60,0.34)] bg-[var(--status-pending-bg)]"
       : "border-[rgba(63,95,51,0.25)] bg-[rgba(63,95,51,0.10)]";
@@ -325,13 +330,19 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
           </div>
           <div>
             <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${accentText}`}>
-              {hasReviewNeeded ? "Review needed" : "Compliance updated"}
+              {hasFailed ? "Extraction failed" : hasReviewNeeded ? "Review needed" : "Compliance updated"}
             </p>
             <h3 className="mt-1 font-display text-lg font-semibold text-[var(--ink)]">
-              {hasReviewNeeded ? "Confirm the extracted details" : "Your CME record was refreshed"}
+              {hasFailed
+                ? "We saved the upload — enter the details manually"
+                : hasReviewNeeded
+                ? "Confirm the extracted details"
+                : "Your CME record was refreshed"}
             </h3>
             <p className="mt-1 text-sm text-[var(--ink-2)]">
-              {hasReviewNeeded
+              {hasFailed
+                ? "We couldn't read this certificate automatically. Enter the details manually and the hours still count toward your requirements."
+                : hasReviewNeeded
                 ? "We saved the upload, but one or more fields need review before ClearCME relies on it for compliance."
                 : totalCreditsAdded > 0
                 ? `${totalCreditsAdded.toFixed(1)} credit${totalCreditsAdded === 1 ? "" : "s"} added from ${processedCount} upload${processedCount === 1 ? "" : "s"}.`
@@ -387,10 +398,16 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
 
         <div className="space-y-2">
           <button
-            onClick={() => router.push("/dashboard/compliance")}
+            onClick={() =>
+              router.push(
+                hasReviewNeeded && attentionCert
+                  ? `/dashboard/certificates#cert-${attentionCert.id}`
+                  : "/dashboard/compliance"
+              )
+            }
             className={`w-full rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors ${accentButton}`}
           >
-            {hasReviewNeeded ? "Review details →" : "View updated gaps →"}
+            {hasFailed ? "Enter details manually →" : hasReviewNeeded ? "Review details →" : "View updated gaps →"}
           </button>
           <button
             onClick={resetUpload}

@@ -197,13 +197,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Full extraction failed — store certificate but mark for manual review
+      // Full extraction failed — store certificate but mark for manual review.
+      // Persist the error so the UI and support can say why it failed.
       const updated = await prisma.certificate.update({
         where: { id: certificate.id },
         data: {
           extractedAt: new Date(),
           extractionStatus: "FAILED",
           extractionConfidence: 0.0,
+          extractionError: (extractionResult.error ?? "Unknown error").slice(0, 500),
         },
       });
 

@@ -42,7 +42,20 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, provider, activityDate, creditHours } = body;
+  const { title, provider, activityDate, creditHours, creditType } = body;
+
+  const CREDIT_TYPES = [
+    "AMA_PRA_1",
+    "AMA_PRA_2",
+    "AAFP_PRESCRIBED",
+    "AAFP_ELECTIVE",
+    "AOA_1_A",
+    "AOA_1_B",
+    "AOA_2_A",
+    "AOA_2_B",
+    "OTHER",
+  ] as const;
+  const validCreditType = CREDIT_TYPES.find((t) => t === creditType);
 
   const updated = await prisma.certificate.update({
     where: { id },
@@ -51,7 +64,10 @@ export async function PATCH(
       ...(provider !== undefined && { provider }),
       ...(activityDate !== undefined && { activityDate: new Date(activityDate) }),
       ...(creditHours !== undefined && { creditHours: Number(creditHours) }),
-      // Mark as manually reviewed
+      ...(validCreditType && { creditType: validCreditType }),
+      // The physician has confirmed or corrected these fields themselves —
+      // the record now counts regardless of how extraction went.
+      manuallyVerified: true,
       extractionStatus: "COMPLETED",
       extractedAt: new Date(),
     },
