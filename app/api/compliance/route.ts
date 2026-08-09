@@ -5,7 +5,12 @@ import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
 import { isComputedComplianceBlocked, computedComplianceBlockedMessage } from "@/lib/compliance-rule-availability";
 import { daysUntil } from "@/lib/dates";
-import { cadenceLabel, evaluateRequirementFulfillment } from "@/lib/requirement-completions";
+import {
+  cadenceLabel,
+  evaluateRequirementFulfillment,
+  findSatisfyingCertificate,
+  linkedCertificateId,
+} from "@/lib/requirement-completions";
 
 // GET /api/compliance — compute and return compliance status for the current user
 export async function GET(req: NextRequest) {
@@ -131,6 +136,18 @@ export async function GET(req: NextRequest) {
       const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
       const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
 
+      // Mirror of the Compliance Map's attestation pre-fill: surface the
+      // uploaded certificate that looks like it satisfies an unanswered
+      // attestable row, searching all completed certs (any year), so clients
+      // can offer "Looks satisfied by <cert>" with a one-tap confirm.
+      const suggestionSource =
+        !completion && !hoursSatisfied && fulfillment.isAttestable && !fulfillment.isSatisfied
+          ? findSatisfyingCertificate(certificates, req.topic, req.hoursRequired)
+          : null;
+      const linkedCert = completion
+        ? certificates.find((c: Certificate) => c.id === linkedCertificateId(completion.notes))
+        : undefined;
+
       return {
         requirementId: req.id,
         topic: req.topic,
@@ -145,6 +162,12 @@ export async function GET(req: NextRequest) {
         cadenceLabel: cadenceLabel(req),
         prompt: fulfillment.prompt,
         satisfiedUntil: fulfillment.satisfiedUntil,
+        suggestedCertificateId: suggestionSource?.id ?? null,
+        suggestedCertificateTitle: suggestionSource
+          ? suggestionSource.title ?? suggestionSource.fileName
+          : null,
+        satisfiedByCertificateId: linkedCert?.id ?? null,
+        satisfiedByCertificateTitle: linkedCert ? linkedCert.title ?? linkedCert.fileName : null,
       };
     });
 

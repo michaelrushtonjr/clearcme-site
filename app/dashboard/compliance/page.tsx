@@ -21,6 +21,8 @@ import {
   NOT_COMPLETED_REQUIREMENT_NOTE,
   cadenceLabel,
   evaluateRequirementFulfillment,
+  findSatisfyingCertificate,
+  linkedCertificateId,
 } from "@/lib/requirement-completions";
 import {
   conditionSummary,
@@ -28,7 +30,10 @@ import {
   shortConditionText,
 } from "@/lib/requirement-scope";
 import InfoTip from "@/components/ui/InfoTip";
-import RequirementAttestation, { type AttestationStatus } from "@/components/dashboard/RequirementAttestation";
+import RequirementAttestation, {
+  type AttestationStatus,
+  type SuggestedCertificate,
+} from "@/components/dashboard/RequirementAttestation";
 
 export const metadata = {
   title: "Compliance Map — ClearCME",
@@ -76,6 +81,10 @@ interface MandatoryGap {
   sourceMeta?: RequirementSourceMeta;
   completionStatus: AttestationStatus;
   completedYear: number | null;
+  /** Uploaded cert whose topics/hours look like they satisfy this attestable row */
+  suggestedCert: SuggestedCertificate | null;
+  /** Title of the certificate a confirmed completion is linked to */
+  satisfiedByCertLabel: string | null;
 }
 
 function formatTopic(topic: string): string {
@@ -470,6 +479,26 @@ export default async function CompliancePage() {
             ? "not_completed"
             : "completed"
           : "none";
+        // Pre-fill attestables from uploads: when a certificate's extracted
+        // topics/hours clearly cover an unanswered attestable row, surface it
+        // as "Looks satisfied by <cert>" with a one-tap confirm. All completed
+        // certs are searched (not just this cycle) — one-time training from
+        // any year satisfies a one-time requirement.
+        const suggestionSource =
+          !completion && !hoursSatisfied && fulfillment.isAttestable && !fulfillment.isSatisfied
+            ? findSatisfyingCertificate(certificates, req.topic, req.hoursRequired)
+            : null;
+        const suggestedCert: SuggestedCertificate | null = suggestionSource
+          ? {
+              id: suggestionSource.id,
+              title: suggestionSource.title ?? suggestionSource.fileName,
+              year: suggestionSource.activityDate?.getUTCFullYear() ?? null,
+              hours: suggestionSource.creditHours,
+            }
+          : null;
+        const linkedCert = completion
+          ? certificates.find((cert) => cert.id === linkedCertificateId(completion.notes))
+          : undefined;
         return {
           requirementId: req.id,
           topic: req.topic,
@@ -502,6 +531,8 @@ export default async function CompliancePage() {
           }),
           completionStatus,
           completedYear: completion?.completedYear ?? null,
+          suggestedCert,
+          satisfiedByCertLabel: linkedCert ? linkedCert.title ?? linkedCert.fileName : null,
         };
       });
       const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet || g.isNotApplicable);
@@ -957,19 +988,28 @@ export default async function CompliancePage() {
                                   status={gap.completionStatus}
                                   completedYear={gap.completedYear}
                                   allowNotApplicable={gap.isConditional}
+                                  suggestedCert={gap.suggestedCert}
+                                  satisfiedByCertLabel={gap.satisfiedByCertLabel}
                                   compact
                                 />
                               </div>
                             )}
 
-                            {/* Answered history — single status card + follow-up actions */}
-                            {!gap.isUnknown && gap.isAttestable && gap.completionStatus !== "none" && (
+                            {/* Answered history — single status card + follow-up actions.
+                                Also rendered for an unanswered row when an uploaded
+                                certificate looks like it satisfies it (pre-fill). */}
+                            {!gap.isUnknown &&
+                              gap.isAttestable &&
+                              (gap.completionStatus !== "none" ||
+                                (gap.suggestedCert && !gap.isMet && !gap.isNotApplicable)) && (
                               <RequirementAttestation
                                 requirementId={gap.requirementId}
                                 licenseId={license.id}
                                 status={gap.completionStatus}
                                 completedYear={gap.completedYear}
                                 allowNotApplicable={gap.isConditional}
+                                suggestedCert={gap.suggestedCert}
+                                satisfiedByCertLabel={gap.satisfiedByCertLabel}
                                 compact
                               />
                             )}

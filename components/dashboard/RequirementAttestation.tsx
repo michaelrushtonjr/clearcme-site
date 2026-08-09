@@ -22,6 +22,13 @@ type Action = "complete" | "not_completed" | "not_applicable" | "clear";
  * Used on the Compliance Map (inline, so users never get bounced to Settings)
  * and in Settings → Requirement history.
  */
+export interface SuggestedCertificate {
+  id: string;
+  title: string;
+  year: number | null;
+  hours: number | null;
+}
+
 export default function RequirementAttestation({
   requirementId,
   licenseId,
@@ -30,6 +37,10 @@ export default function RequirementAttestation({
   compact = false,
   /** Show the "Doesn't apply to me" answer — set for CONDITIONAL requirements */
   allowNotApplicable = false,
+  /** An uploaded certificate whose topics/hours look like they satisfy this row */
+  suggestedCert = null,
+  /** Title of the certificate a completed attestation was confirmed from */
+  satisfiedByCertLabel = null,
 }: {
   requirementId: string;
   licenseId: string;
@@ -37,13 +48,15 @@ export default function RequirementAttestation({
   completedYear: number | null;
   compact?: boolean;
   allowNotApplicable?: boolean;
+  suggestedCert?: SuggestedCertificate | null;
+  satisfiedByCertLabel?: string | null;
 }) {
   const router = useRouter();
   const [year, setYear] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (action: Action) => {
+  const submit = async (action: Action, certificateId?: string) => {
     setSaving(true);
     setError("");
     try {
@@ -51,6 +64,7 @@ export default function RequirementAttestation({
       const parsedYear = yearRaw ? Number(yearRaw) : null;
       if (
         action === "complete" &&
+        !certificateId &&
         yearRaw &&
         (parsedYear === null || !Number.isInteger(parsedYear) || parsedYear < 1950)
       ) {
@@ -62,7 +76,8 @@ export default function RequirementAttestation({
         body: JSON.stringify({
           mandatoryRequirementId: requirementId,
           physicianLicenseId: licenseId,
-          completedYear: action === "complete" ? parsedYear : null,
+          completedYear: action === "complete" && !certificateId ? parsedYear : null,
+          certificateId: certificateId ?? null,
           action,
         }),
       });
@@ -109,6 +124,9 @@ export default function RequirementAttestation({
             {status === "completed" && completedYear ? (
               <span className="font-semibold"> · {completedYear}</span>
             ) : null}
+            {status === "completed" && satisfiedByCertLabel ? (
+              <span className="font-semibold"> · satisfied by {satisfiedByCertLabel}</span>
+            ) : null}
           </span>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -143,6 +161,25 @@ export default function RequirementAttestation({
   // Unanswered state — year input + the available answers
   return (
     <div className={compact ? "mt-2 space-y-2" : "mt-3 space-y-2"}>
+      {suggestedCert && (
+        <div className="rounded-[var(--radius-sm)] border border-[var(--status-met)] bg-[var(--status-met-bg)] px-3 py-2.5">
+          <p className="text-xs font-semibold text-[var(--status-met)]">
+            Looks satisfied by {suggestedCert.title}
+            {suggestedCert.hours ? ` (${suggestedCert.hours.toFixed(1)} hrs${suggestedCert.year ? `, ${suggestedCert.year}` : ""})` : suggestedCert.year ? ` (${suggestedCert.year})` : ""}
+          </p>
+          <p className="mt-1 text-xs text-[var(--ink-2)]">
+            Your uploaded certificate covers this topic. Confirm and ClearCME marks the requirement met — you can undo with &ldquo;Clear response&rdquo; anytime.
+          </p>
+          <button
+            type="button"
+            onClick={() => submit("complete", suggestedCert.id)}
+            disabled={saving}
+            className="mt-2 rounded-full bg-[var(--status-met)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Confirm — this covers it"}
+          </button>
+        </div>
+      )}
       <input
         type="number"
         inputMode="numeric"

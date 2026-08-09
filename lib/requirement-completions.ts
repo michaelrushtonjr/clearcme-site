@@ -26,6 +26,64 @@ export const NOT_COMPLETED_REQUIREMENT_NOTE = "__CLEARCME_NOT_COMPLETED__";
  */
 export const NOT_APPLICABLE_REQUIREMENT_NOTE = "__CLEARCME_NOT_APPLICABLE__";
 
+/**
+ * A completion that was confirmed from an uploaded certificate stores the
+ * certificate id behind this prefix in `notes` — same no-migration sentinel
+ * pattern as the two flags above. The link lets the row say what satisfied
+ * it ("Satisfied by <cert>") and undo cleanly via the normal clear action.
+ */
+export const SATISFIED_BY_CERT_NOTE_PREFIX = "__CLEARCME_CERT__:";
+
+export function certificateLinkNote(certificateId: string) {
+  return `${SATISFIED_BY_CERT_NOTE_PREFIX}${certificateId}`;
+}
+
+export function linkedCertificateId(notes: string | null | undefined): string | null {
+  if (!notes?.startsWith(SATISFIED_BY_CERT_NOTE_PREFIX)) return null;
+  return notes.slice(SATISFIED_BY_CERT_NOTE_PREFIX.length) || null;
+}
+
+interface SatisfyingCertificateCandidate {
+  id: string;
+  title: string | null;
+  fileName: string;
+  activityDate: Date | null;
+  creditHours: number | null;
+  specialTopics: string[];
+}
+
+/**
+ * Find an uploaded certificate whose extracted topics/hours clearly satisfy
+ * an attestable requirement, so the attestation can be pre-filled ("Looks
+ * satisfied by <cert>") instead of asking the physician cold.
+ *
+ * Deliberately conservative: the topic must match and, when the requirement
+ * has an hours floor, a single certificate must meet it outright. Searches
+ * ALL completed certificates, not just the current cycle — a one-time
+ * requirement (e.g. DEA MATE 8 hrs) is satisfied by training from any year.
+ * The physician still confirms; this only surfaces the match (Michael's
+ * ruling, 2026-08-08).
+ */
+export function findSatisfyingCertificate<C extends SatisfyingCertificateCandidate>(
+  certificates: C[],
+  topic: string,
+  hoursRequired: number
+): C | null {
+  const matches = certificates.filter(
+    (cert) =>
+      cert.specialTopics.includes(topic) &&
+      (hoursRequired <= 0 || (cert.creditHours ?? 0) >= hoursRequired)
+  );
+  if (matches.length === 0) return null;
+  // Prefer the most recent activity — the one the physician most likely
+  // remembers — breaking ties on hours.
+  return matches.sort((a, b) => {
+    const dateDiff = (b.activityDate?.getTime() ?? 0) - (a.activityDate?.getTime() ?? 0);
+    if (dateDiff !== 0) return dateDiff;
+    return (b.creditHours ?? 0) - (a.creditHours ?? 0);
+  })[0];
+}
+
 export type RequirementFulfillmentStatus = "satisfied" | "due" | "unknown" | "not_applicable";
 
 export interface RequirementFulfillment {

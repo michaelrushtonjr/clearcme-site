@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   NOT_APPLICABLE_REQUIREMENT_NOTE,
   NOT_COMPLETED_REQUIREMENT_NOTE,
+  certificateLinkNote,
 } from "@/lib/requirement-completions";
 
 function yearToDate(year: number | null) {
@@ -30,8 +31,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const mandatoryRequirementId = typeof body.mandatoryRequirementId === "string" ? body.mandatoryRequirementId : null;
   const physicianLicenseId = typeof body.physicianLicenseId === "string" ? body.physicianLicenseId : null;
-  const completedYear = Number.isInteger(body.completedYear) ? Number(body.completedYear) : null;
-  const notes = typeof body.notes === "string" ? body.notes.slice(0, 500) : null;
+  const certificateId = typeof body.certificateId === "string" ? body.certificateId : null;
+  let completedYear = Number.isInteger(body.completedYear) ? Number(body.completedYear) : null;
+  let notes = typeof body.notes === "string" ? body.notes.slice(0, 500) : null;
   const action: "clear" | "not_completed" | "not_applicable" | "complete" =
     body.action === "clear" || body.action === "not_completed" || body.action === "not_applicable"
       ? body.action
@@ -64,6 +66,23 @@ export async function POST(req: NextRequest) {
       where: { userId, mandatoryRequirementId, physicianLicenseId },
     });
     return NextResponse.json({ ok: true, completion: null });
+  }
+
+  // Completing from an uploaded certificate ("Looks satisfied by …" confirm):
+  // link the cert in notes so the row can say what satisfied it, and default
+  // the completion year to the certificate's activity date.
+  if (action === "complete" && certificateId) {
+    const certificate = await prisma.certificate.findFirst({
+      where: { id: certificateId, userId },
+      select: { id: true, activityDate: true },
+    });
+    if (!certificate) {
+      return NextResponse.json({ error: "Certificate not found" }, { status: 404 });
+    }
+    notes = certificateLinkNote(certificate.id);
+    if (completedYear === null && certificate.activityDate) {
+      completedYear = certificate.activityDate.getUTCFullYear();
+    }
   }
 
   if (action === "complete" && completedYear !== null) {
