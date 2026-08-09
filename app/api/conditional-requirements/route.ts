@@ -46,7 +46,7 @@ const ASKABLE_CADENCES = [
 ] as const;
 
 /**
- * Collect every conditional requirement across the user's active licences that
+ * Collect every conditional requirement across the user's active licenses that
  * maps to a question we can ask, skipping any the user has already answered.
  */
 async function collectMatches(userId: string) {

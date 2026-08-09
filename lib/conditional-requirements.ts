@@ -7,7 +7,7 @@ import { parseRequirementNotes } from "@/lib/requirement-scope";
  * Roughly a tenth of the mandatory requirements in the rule set don't bind
  * every licensee — California's 10 geriatric hours only apply to a general
  * internist or family physician whose panel is >25% elderly; a dozen states
- * gate controlled-substance CME on holding a DEA registration. A licence state
+ * gate controlled-substance CME on holding a DEA registration. A license state
  * and degree type can't answer any of that, so those rows used to land on the
  * Compliance Map as permanently unresolved "Needs your input" cards with the
  * reason hidden two clicks deep.
@@ -46,7 +46,7 @@ export const CONDITION_DEFINITIONS: ConditionDefinition[] = [
     question:
       "Do you hold a DEA registration, or otherwise prescribe or dispense controlled substances?",
     help:
-      "Several states tie their opioid and controlled-substance CME to DEA registration or a state controlled-substance licence, and the federal DEA MATE Act training applies wherever you're registered. Answer yes if either is true — you can switch any individual requirement off later.",
+      "Several states tie their opioid and controlled-substance CME to DEA registration or a state controlled-substance license, and the federal DEA MATE Act training applies wherever you're registered. Answer yes if either is true — you can switch any individual requirement off later.",
     appliesOnYes: true,
     patterns: [
       /^if\s+dea[-\s]registered/i,

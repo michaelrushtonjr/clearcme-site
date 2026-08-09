@@ -29,6 +29,7 @@ import {
   parseRequirementNotes,
   shortConditionText,
 } from "@/lib/requirement-scope";
+import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import InfoTip from "@/components/ui/InfoTip";
 import RequirementAttestation, {
   type AttestationStatus,
@@ -63,7 +64,7 @@ interface MandatoryGap {
   /** The state's own name for the requirement, e.g. "Geriatric medicine" */
   displayName: string;
   description?: string;
-  /** Gated on a practice condition the licence alone can't answer */
+  /** Gated on a practice condition the license alone can't answer */
   isConditional: boolean;
   /** The gating clause, trimmed for a one-line summary */
   conditionText: string | null;
@@ -85,28 +86,6 @@ interface MandatoryGap {
   suggestedCert: SuggestedCertificate | null;
   /** Title of the certificate a confirmed completion is linked to */
   satisfiedByCertLabel: string | null;
-}
-
-function formatTopic(topic: string): string {
-  return topic
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-}
-
-/**
- * OTHER_MANDATORY is a storage bucket, not a requirement name. Rendering it
- * literally put "Other Mandatory" at the top of California's geriatric row and
- * buried "Geriatric medicine" inside the accordion. Prefer the state's own
- * wording whenever the topic key carries no meaning.
- */
-function requirementDisplayName(topic: string, description?: string | null): string {
-  if (topic === "OTHER_MANDATORY" && description?.trim()) return description.trim();
-  // A license can carry two SUBSTANCE_USE requirements (a state one like SBIRT
-  // plus the federal DEA MATE Act) — give the federal one its own row name so
-  // the two are tellable apart at a glance.
-  if (topic === "SUBSTANCE_USE" && /\bMATE\b/i.test(description ?? "")) return "DEA MATE Act";
-  return formatTopic(topic);
 }
 
 /** Topic-specific CTA labels */
@@ -445,6 +424,14 @@ export default async function CompliancePage() {
       const totalHoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
       const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
 
+      // Topics that appear on more than one requirement in this rule — their
+      // rows need distinct names or they read as duplicates.
+      const duplicatedTopics = new Set(
+        rule.mandatoryRequirements
+          .map((r) => r.topic)
+          .filter((topic, i, all) => all.indexOf(topic) !== i)
+      );
+
       // Pre-compute mandatory gaps to determine true compliance
       const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
         const earnedForTopic = cycleCerts
@@ -468,7 +455,10 @@ export default async function CompliancePage() {
         const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
         const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
         const isConditional = req.cadence === "CONDITIONAL";
-        const displayName = requirementDisplayName(req.topic, req.description);
+        const displayName = requirementDisplayName(req.topic, req.description, {
+          isConditional,
+          topicIsDuplicated: duplicatedTopics.has(req.topic),
+        });
         const conditionText = isConditional
           ? shortConditionText(parseRequirementNotes(req.notes).detail)
           : null;
@@ -935,7 +925,12 @@ export default async function CompliancePage() {
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <span className="font-mono text-xs font-semibold text-[var(--ink)]">
-                                {gap.earned.toFixed(1)}/{gap.needed.toFixed(0)} hrs
+                                {/* Attestation-only rows (needed = 0) have no
+                                    meaningful hours fraction — show the cadence
+                                    ("One-time") instead of "0/0 hrs". */}
+                                {gap.needed > 0
+                                  ? `${gap.earned.toFixed(1)}/${gap.needed.toFixed(0)} hrs`
+                                  : gap.cadenceLabel}
                               </span>
                               <span className={requirementStatusClass(statusLabel)}>
                                 {statusLabel}

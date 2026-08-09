@@ -29,7 +29,7 @@ interface Position {
  *
  * The popover renders into document.body rather than next to the trigger. As a
  * plain absolutely-positioned child it was clipped by the Compliance Map's
- * `overflow-hidden` licence card — the ⓘ sits at the card's left edge, so half
+ * `overflow-hidden` license card — the ⓘ sits at the card's left edge, so half
  * the bubble (including "Confirmed by ClearCME: <date>") fell outside and was
  * cut off. Fixed positioning plus viewport clamping means it can't be trimmed
  * by an ancestor or run off the edge of a phone screen.

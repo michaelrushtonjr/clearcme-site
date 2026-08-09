@@ -11,6 +11,7 @@ import {
   findSatisfyingCertificate,
   linkedCertificateId,
 } from "@/lib/requirement-completions";
+import { requirementDisplayName } from "@/lib/requirement-display";
 
 // GET /api/compliance — compute and return compliance status for the current user
 export async function GET(req: NextRequest) {
@@ -115,6 +116,12 @@ export async function GET(req: NextRequest) {
       return !isNvDoPsychiatryCulturalCompetency || isPsychiatry;
     });
 
+    const duplicatedTopics = new Set(
+      applicableMandatoryRequirements
+        .map((r: MandatoryRequirement) => r.topic)
+        .filter((topic, i, all) => all.indexOf(topic) !== i)
+    );
+
     const mandatoryGaps = applicableMandatoryRequirements.map((req: MandatoryRequirement) => {
       const earnedForTopic = cycleCerts
         .filter((c: Certificate) => c.specialTopics.includes(req.topic))
@@ -151,6 +158,12 @@ export async function GET(req: NextRequest) {
       return {
         requirementId: req.id,
         topic: req.topic,
+        // Human-readable row name — clients should render this, never the
+        // raw topic enum (CT's OTHER_MANDATORY row was showing as the enum).
+        displayName: requirementDisplayName(req.topic, req.description, {
+          isConditional: req.cadence === "CONDITIONAL",
+          topicIsDuplicated: duplicatedTopics.has(req.topic),
+        }),
         description: req.description,
         earned: earnedForTopic,
         needed: req.hoursRequired,

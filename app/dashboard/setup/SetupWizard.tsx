@@ -160,7 +160,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
   const [isMultiState, setIsMultiState] = useState<boolean | null>(null);
   const [additionalLicenses, setAdditionalLicenses] = useState<AdditionalLicense[]>([]);
 
-  // Step 5: practice questions for requirements a licence alone can't resolve
+  // Step 5: practice questions for requirements a license alone can't resolve
   const [conditionalQuestions, setConditionalQuestions] = useState<ConditionalQuestion[]>([]);
   const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, "yes" | "no">>({});
 
@@ -1077,7 +1077,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 5 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                Step 5 of {totalSteps}
+                One more thing
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 A few questions about your practice
@@ -1085,7 +1085,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
               <p className="text-sm text-slate-500 mb-6">
                 {conditionalQuestions.length === 1 ? "This requirement" : "These requirements"} only
                 {conditionalQuestions.length === 1 ? " binds" : " bind"} some physicians in your
-                state{conditionalQuestions.length === 1 ? "" : "s"}. Your licence alone can&apos;t
+                state{conditionalQuestions.length === 1 ? "" : "s"}. Your license alone can&apos;t
                 tell us — answer and we&apos;ll only track what actually applies to you.
               </p>
 
