@@ -1531,6 +1531,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  CHILD_ABUSE: {
+    topicLabel: "Child Abuse Identification & Reporting",
+    requirement: "Varies by state — e.g. NY 2 hrs one-time (coursework deadline Nov 17, 2026), PA 2 hrs per cycle (3 hrs initial), IL per 6-year cycle, MA one-time, IA 2 hrs per 3 years, DE 1 hr per cycle (combined with domestic violence)",
+    courses: [
+      {
+        name: "Child Abuse",
+        provider: "Pri-Med Institute",
+        providerUrl: "https://www.pri-med.com",
+        credits: "0.75 hours AMA PRA Category 1 / 1.0 ABIM MOC / 1.0 AANP",
+        creditType: "AMA_PRA_1",
+        price: "Free (free Pri-Med account required)",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring webcast on recognizing and responding to child abuse in primary care. Release date: 12/8/2023. Credit expiration date: 12/8/2026. At 0.75 hours this is a partial-credit resource — it does not by itself satisfy the 2-hour bars in states like New York or Pennsylvania; combine with additional child-abuse coursework to reach those totals. First entry in the catalog's child-abuse bucket.",
+        url: "https://www.pri-med.com/online-cme-ce/webcast/child-abuse",
+        accreditation: "ACCME (Pri-Med Institute)",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-08-09 (COO read of the live activity page: 'Pri-Med Institute designates this enduring material for a maximum of .75 AMA PRA Category 1 Credit™', release 12/8/2023, expiration 12/8/2026, specific-activity deep link, no payment gate or purchase wording anywhere on the rendered page — Pri-Med standard free-account model; Scout verified 2026-07-25 and re-verified 2026-08-01 gap-prospect run)",
+      }
+    ],
+  },
   NUTRITION: {
     topicLabel: "Nutrition / Metabolic Health",
     requirement: "Varies by state — e.g. MO at least 1 hr per cycle, ND 1 hr per renewal cycle, WV nutrition topic in force (hour count not yet defined)",
