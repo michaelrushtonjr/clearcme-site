@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOutAndClear } from "@/lib/client-sign-out";
 import { useState } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
 
@@ -143,7 +143,7 @@ function SidebarContent({
           Methodology
         </Link>
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOutAndClear({ callbackUrl: "/" })}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-sm font-medium text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)] transition-colors"
         >
           <svg className="w-5 h-5 text-[var(--ink-3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

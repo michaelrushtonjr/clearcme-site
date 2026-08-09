@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOutAndClear } from "@/lib/client-sign-out";
 import { BrandLockup } from "@/components/BrandLockup";
 
 interface NavUser {
@@ -50,7 +50,7 @@ export default function DashboardNav({ user }: { user: NavUser }) {
               {user.name ?? user.email}
             </span>
             <button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => signOutAndClear({ callbackUrl: "/" })}
               className="text-sm text-[var(--ink-3)] hover:text-[var(--ink)] transition-colors px-3 py-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--bg-2)]"
             >
               Sign out

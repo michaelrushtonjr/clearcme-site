@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { signOutAndClear } from "@/lib/client-sign-out";
 import { BrandLockup } from "@/components/BrandLockup";
 
 // Email magic link is only available when RESEND_API_KEY is configured.
@@ -47,7 +48,7 @@ function AuthErrorNotice({ error }: { error: string }) {
             </p>
           )}
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOutAndClear({ callbackUrl: "/login" })}
             className="mt-3 px-4 py-2 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
           >
             Sign out, then try again
