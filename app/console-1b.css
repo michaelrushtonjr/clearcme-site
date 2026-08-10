@@ -4,7 +4,9 @@
    Accessibility deviations from the spec (intentional, do not revert):
    - Amber TEXT uses #7A5218 (4.5:1 on the light surfaces); #A9722A stays for
      non-text marks — dots, progress fills, pill borders.
-   - Muted text floor is #6E7669; #8A9086 is decorative-only.
+   - Muted text floor is #656C60 (4.5:1 on canvas #EFEBDF, band #F0ECE1,
+     and card #FBFAF5 alike — #6E7669 only cleared 4.5 on the card);
+     #8A9086 is decorative-only.
    - Mono labels never render below 11px (spec dips to 9.5–10px).
 */
 
@@ -15,7 +17,7 @@
   --c1b-hover: #f6f3ea;
   --c1b-ink: #101613;
   --c1b-ink-2: #4b5349;
-  --c1b-muted: #6e7669;
+  --c1b-muted: #656c60;
   --c1b-faint: #8a9086; /* decorative marks only — not readable text */
   --c1b-forest: #22371f;
   --c1b-green: #2e4a2c;

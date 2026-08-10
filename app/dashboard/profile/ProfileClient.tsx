@@ -346,7 +346,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
           className="w-full py-5 border border-dashed border-[rgba(46,74,44,0.35)] rounded-xl text-left px-5 hover:bg-[#f4f1e7] transition-colors"
         >
           <span className="block text-sm font-semibold text-[var(--c1b-ink,#101613)]">+ Add a credential</span>
-          <span className="block mt-1 text-xs text-[#6E7669]">
+          <span className="block mt-1 text-xs text-[#656C60]">
             A state license or a DEA registration. We map its requirements and re-check your filed
             hours against them.
           </span>
