@@ -11,9 +11,8 @@ import { BrandLockup } from "@/components/BrandLockup";
 const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
 const APPLE_ENABLED = !!process.env.NEXT_PUBLIC_APPLE_SIGNIN_ENABLED;
 
-// Demo mode ships in Phase 4 of the console-1b redesign; the entry card is
-// built but hidden until the read-only fixture exists behind it.
-const DEMO_ENTRY_ENABLED = false;
+// Demo mode (Phase 4): read-only sample persona at /demo, no sign-up.
+const DEMO_ENTRY_ENABLED = true;
 
 // Human-readable copy for NextAuth's ?error= codes. Anything unlisted gets
 // the generic message rather than leaking a raw error code.

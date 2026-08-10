@@ -107,7 +107,12 @@ export default function FillWhatsLeft({
           >
             {m.priceUsd === 0 ? "FREE" : `$${m.priceUsd}`}
           </span>
-          <Link href={m.url} target="_blank" rel="noreferrer" className="btn-filled" style={{ padding: "8px 14px" }}>
+          <Link
+            href={m.url}
+            {...(m.url.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
+            className="btn-filled"
+            style={{ padding: "8px 14px" }}
+          >
             View course →
           </Link>
         </div>
