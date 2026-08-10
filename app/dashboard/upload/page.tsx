@@ -5,49 +5,92 @@ export const metadata = {
   title: "Upload Certificate — ClearCME",
 };
 
+const PIPELINE_STEPS = [
+  {
+    n: "01",
+    t: "You add the file",
+    s: "Photo, scan or PDF — however the provider sent it",
+  },
+  {
+    n: "02",
+    t: "We read the hours and topic",
+    s: "Usually about ten seconds per certificate",
+  },
+  {
+    n: "03",
+    t: "You confirm the match",
+    s: "Only then does it count toward a requirement",
+  },
+];
+
 export default function UploadPage() {
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="product-page-head">
-        <p className="product-page-eye">CME intake</p>
-        <h1 className="product-page-title">Upload Certificate</h1>
-        <p className="product-page-sub">
-          Upload your CME certificates — AI will extract credit info automatically.
-        </p>
-        <p className="text-xs text-[var(--ink-3)] mt-1">
-          Your certificate is encrypted in transit and at rest · AI extraction takes ~10 seconds
-        </p>
+    <div>
+      <div className="dash-head">
+        <div>
+          <p className="mono-label page-eyebrow">CME intake</p>
+          <h1 className="page-title">Upload</h1>
+          <p className="page-sub">
+            PDF, JPG or PNG · up to 10MB each. Encrypted in transit and at rest.
+          </p>
+        </div>
       </div>
 
-      {/* Mobile: camera-first upload */}
-      <div className="sm:hidden">
-        <MobileCameraUpload />
-      </div>
+      <div className="dash-grid">
+        <div>
+          {/* Mobile: camera-first upload */}
+          <div className="sm:hidden">
+            <MobileCameraUpload />
+          </div>
 
-      {/* Desktop: drag-and-drop */}
-      <div className="hidden sm:block">
-        <CertificateUpload />
-      </div>
+          {/* Desktop: drag-and-drop + processing queue */}
+          <div className="hidden sm:block">
+            <CertificateUpload />
+          </div>
+        </div>
 
-      <div className="product-callout-warm p-5">
-        <h3 className="font-display text-lg font-semibold text-[var(--ink)] mb-3">What we accept</h3>
-        <ul className="space-y-2 text-sm text-[var(--ink-2)]">
-          <li className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-[var(--primary)] rounded-full flex-shrink-0" />
-            PDF certificates (most providers)
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-[var(--primary)] rounded-full flex-shrink-0" />
-            JPG and PNG images of certificates
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-[var(--primary)] rounded-full flex-shrink-0" />
-            Max file size: 10MB per certificate
-          </li>
-        </ul>
-        <p className="text-xs text-[var(--ink-3)] mt-3">
-          AI extraction is in beta — always verify extracted data before relying on it for compliance.
-        </p>
+        <div className="rail">
+          <section className="card" style={{ padding: 18 }}>
+            <p className="mono-label" style={{ color: "var(--c1b-muted)" }}>
+              How a certificate becomes an hour
+            </p>
+            <div style={{ marginTop: 6 }}>
+              {PIPELINE_STEPS.map((step) => (
+                <div
+                  key={step.n}
+                  style={{
+                    display: "flex",
+                    gap: 14,
+                    padding: "12px 0",
+                    borderTop: step.n === "01" ? "none" : "1px solid var(--c1b-border-row)",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--c1b-muted)",
+                    }}
+                  >
+                    {step.n}
+                  </span>
+                  <span>
+                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: "var(--c1b-ink)" }}>
+                      {step.t}
+                    </span>
+                    <span style={{ display: "block", marginTop: 1, fontSize: 11.5, color: "var(--c1b-muted)" }}>
+                      {step.s}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="card-foot" style={{ margin: "6px -18px -18px", borderRadius: "0 0 10px 10px" }}>
+              Nothing counts toward a requirement until you confirm the match.
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

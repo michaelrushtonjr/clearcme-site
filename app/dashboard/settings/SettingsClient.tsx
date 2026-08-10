@@ -297,12 +297,12 @@ export default function SettingsClient({
   };
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-8" style={{ maxWidth: 860 }}>
       {/* Header */}
-      <div className="product-page-head">
-        <p className="product-page-eye">Account controls</p>
-        <h1 className="product-page-title">Settings</h1>
-        <p className="product-page-sub">Manage your account and preferences</p>
+      <div>
+        <p className="mono-label page-eyebrow">Account controls</p>
+        <h1 className="page-title">Settings</h1>
+        <p className="page-sub">Manage your account and preferences</p>
       </div>
 
       {/* Profile section */}

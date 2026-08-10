@@ -5,11 +5,20 @@ import UpgradeNotice from "@/components/UpgradeNotice";
 
 interface AuditExportButtonProps {
   licenseId?: string;
-  /** "default" = full teal button (existing), "inline" = minimal text link */
-  variant?: "default" | "inline";
+  /** "default" = full teal button (existing), "inline" = minimal text link,
+      "c1b" = console-1b styled button (filled or outline via c1bStyle) */
+  variant?: "default" | "inline" | "c1b";
+  /** Button label for the c1b variant, e.g. "Export record" / "Audit ZIP" */
+  label?: string;
+  c1bStyle?: "filled" | "outline";
 }
 
-export default function AuditExportButton({ licenseId, variant = "default" }: AuditExportButtonProps) {
+export default function AuditExportButton({
+  licenseId,
+  variant = "default",
+  label = "Download Audit ZIP",
+  c1bStyle = "filled",
+}: AuditExportButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
@@ -51,6 +60,23 @@ export default function AuditExportButton({ licenseId, variant = "default" }: Au
       setLoading(false);
     }
   };
+
+  if (variant === "c1b") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+        <button
+          onClick={handleDownload}
+          disabled={loading}
+          className={c1bStyle === "filled" ? "btn-filled" : "btn-outline"}
+          title="Downloads a ZIP organized by license, requirement, and year."
+        >
+          {loading ? "Building ZIP…" : label}
+        </button>
+        {upgradeRequired && <UpgradeNotice feature="export" />}
+        {error && <span className="text-xs text-[var(--status-miss)]">{error}</span>}
+      </div>
+    );
+  }
 
   if (variant === "inline") {
     return (

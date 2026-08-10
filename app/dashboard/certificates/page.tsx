@@ -37,17 +37,19 @@ export default async function CertificatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="product-page-head flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="dash-head">
         <div>
-          <p className="product-page-eye">Your record</p>
-          <h1 className="product-page-title">My Certificates</h1>
-          <p className="product-page-sub">
+          <p className="mono-label page-eyebrow">{totalHours.toFixed(1)} hours on file</p>
+          <h1 className="page-title">Certificates</h1>
+          <p className="page-sub">
             Every certificate you&apos;ve uploaded, with AI-extracted credit details.
           </p>
         </div>
-        <Link href="/dashboard/upload" className="product-btn product-btn-brand self-start">
-          + Upload certificate
-        </Link>
+        <div className="actions">
+          <Link href="/dashboard/upload" className="btn-filled">
+            Add certificate
+          </Link>
+        </div>
       </div>
 
       <CertificateList

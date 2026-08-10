@@ -31,6 +31,7 @@ import {
 } from "@/lib/requirement-scope";
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import InfoTip from "@/components/ui/InfoTip";
+import CredentialTabs from "@/components/console/CredentialTabs";
 import RequirementAttestation, {
   type AttestationStatus,
   type SuggestedCertificate,
@@ -622,17 +623,17 @@ export default async function CompliancePage() {
       )}
 
       {/* Header */}
-      <div className="product-page-head flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="dash-head">
         <div>
-          <p className="product-page-eye">The full record</p>
-          <h1 className="product-page-title">Compliance Map</h1>
-          <p className="product-page-sub">
-            Live status of your state license compliance — requirement rules cross-checked against state board guidance
+          <p className="mono-label page-eyebrow">Full record</p>
+          <h1 className="page-title">Compliance detail</h1>
+          <p className="page-sub">
+            Every requirement, cross-checked against state board sources.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ComplianceExportButton exportData={exportData} />
-          <AuditExportButton />
+        <div className="actions">
+          <AuditExportButton variant="c1b" label="Audit ZIP" c1bStyle="outline" />
+          <ComplianceExportButton exportData={exportData} variant="c1b" />
         </div>
       </div>
 
@@ -660,81 +661,102 @@ export default async function CompliancePage() {
         </div>
       )}
 
-      {/* Overall summary */}
-      {licenses.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="product-stat-tile p-5">
-            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Total Hours Earned</p>
-            <p className="font-mono text-2xl font-semibold text-[var(--primary)]">{totalHoursAllCerts.toFixed(1)}</p>
-            <p className="text-xs text-[var(--ink-3)] mt-0.5">across all certificates</p>
+      {/* Stat cards */}
+      {licenses.length > 0 && (() => {
+        const stillToLog = complianceData.reduce((sum, d) => sum + (d.rule ? d.gapHours : 0), 0);
+        const allGapsFlat = complianceData.flatMap((d) => d.mandatoryGaps);
+        const topicsMet = allGapsFlat.filter((g) => g.isMet).length;
+        const topicsNa = allGapsFlat.filter((g) => g.isNotApplicable).length;
+        const topicsTotal = allGapsFlat.length;
+        const withDeadline = complianceData
+          .filter((d) => d.daysUntilRenewal != null)
+          .sort((a, b) => (a.daysUntilRenewal ?? 9999) - (b.daysUntilRenewal ?? 9999));
+        const next = withDeadline[0];
+        return (
+          <div className="stat-grid">
+            <div className="stat-card">
+              <p className="k">Hours filed</p>
+              <p className="v">{totalHoursAllCerts.toFixed(1)}</p>
+              <p className="s">
+                across {certificates.length} certificate{certificates.length === 1 ? "" : "s"}
+              </p>
+            </div>
+            <div className="stat-card">
+              <p className="k">Still to log</p>
+              <p className={`v${stillToLog > 0 ? " amber" : ""}`}>{stillToLog.toFixed(1)}</p>
+              <p className="s">
+                across {licenses.length} credential{licenses.length === 1 ? "" : "s"}
+              </p>
+            </div>
+            <div className="stat-card">
+              <p className="k">Topics met</p>
+              <p className="v">
+                {topicsMet}/{Math.max(0, topicsTotal - topicsNa)}
+              </p>
+              <p className="s">{topicsNa > 0 ? `${topicsNa} not applicable` : "mandated topics"}</p>
+            </div>
+            <div className="stat-card">
+              <p className="k">Next deadline</p>
+              <p className="v">
+                {next?.daysUntilRenewal != null
+                  ? next.daysUntilRenewal <= 0
+                    ? "Due"
+                    : `${next.daysUntilRenewal}d`
+                  : "—"}
+              </p>
+              <p className="s">
+                {next?.license.renewalDate
+                  ? `${formatStateName(next.license.state)} · ${formatDateUTC(next.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })}`
+                  : "set a renewal date"}
+              </p>
+            </div>
           </div>
-          <div className="product-stat-tile p-5">
-            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Licenses Active</p>
-            <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{licenses.length}</p>
-            <p className="text-xs text-[var(--ink-3)] mt-0.5">states tracked</p>
-          </div>
-          <Link
-            href="/dashboard/certificates"
-            className="product-stat-tile p-5 block hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all"
-          >
-            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Certificates</p>
-            <p className="font-mono text-2xl font-semibold text-[var(--ink)]">{certificates.length}</p>
-            <p className="text-xs text-[var(--primary)] font-medium mt-0.5">view all →</p>
-          </Link>
-          <div className="product-stat-tile p-5">
-            <p className="text-xs font-medium text-[var(--ink-3)] uppercase tracking-wide mb-2">Overall Status</p>
-            {complianceData.every((d) => d.rule === null) ? (
-              <p className="text-lg font-bold text-[var(--ink-4)]">—</p>
-            ) : complianceData.filter((d) => d.rule).every((d) => d.isCompliant) ? (
-              <p className="text-2xl font-bold text-[var(--status-met)]">✓ Good</p>
-            ) : (
-              <p className="text-2xl font-bold text-[var(--status-pending)]">⚠ Incomplete</p>
-            )}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {/* Per-license compliance cards */}
+      {/* Per-credential record — tabbed */}
+      <CredentialTabs
+        tabs={complianceData.map(
+          (d) => `${formatStateName(d.license.state)} — ${d.license.licenseType}`
+        )}
+      >
       {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => (
-        <section key={license.id} className="product-card overflow-hidden">
-          {/* Card header */}
-          <div className="px-6 py-5 border-b border-[var(--line-soft)] flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="font-display text-xl font-semibold text-[var(--ink)]">
-                  {license.state} — {license.licenseType}
-                </h2>
-                <span
-                  className={`product-pill ${
-                    !rule
-                      ? "bg-[var(--bg-2)] text-[var(--ink-2)]"
-                      : isCompliant
-                      ? "product-pill-met"
-                      : "product-pill-pending"
-                  }`}
-                >
-                  {!rule ? "Rules pending" : isCompliant ? "✓ Compliant" : "⚠ Requirements Pending"}
-                </span>
-              </div>
-              {license.renewalDate && (
-                <p className="text-sm text-[var(--ink-3)] mt-1">
-                  Renewal: {formatDateUTC(license.renewalDate)}
-                </p>
-              )}
-              {rule?.sourceUrl && parseSourceUrls(rule.sourceUrl).length > 0 && (
-                <p className="text-xs mt-1">
-                  <a
-                    href={parseSourceUrls(rule.sourceUrl)[0]}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
-                  >
-                    Verify at the official {formatStateName(license.state)} board source ↗
-                  </a>
+        <section key={license.id} className="card" style={{ overflow: "hidden" }}>
+          {/* Dark band header */}
+          <div className="dark-band">
+            <div>
+              <h2 className="t">
+                {formatStateName(license.state)} — {license.licenseType}
+              </h2>
+              <p className="s">
+                {license.renewalDate ? `Renews ${formatDateUTC(license.renewalDate)}` : "No renewal date set"}
+                {rule ? ` · ${rule.totalHours > 0 ? `${rule.totalHours} hours every ${rule.renewalCycle % 12 === 0 ? `${rule.renewalCycle / 12} year${rule.renewalCycle === 12 ? "" : "s"}` : `${rule.renewalCycle} months`}` : "mandated topics only"}` : ""}
+              </p>
+              {rule && (
+                <p className="src">
+                  Sources checked {formatDateUTC(rule.updatedAt, { month: "short", day: "numeric", year: "numeric" })}
+                  {rule.sourceUrl && parseSourceUrls(rule.sourceUrl).length > 0 && (
+                    <>
+                      {" · "}
+                      <a
+                        href={parseSourceUrls(rule.sourceUrl)[0]}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "inherit", textDecoration: "underline" }}
+                      >
+                        Verify ↗
+                      </a>
+                    </>
+                  )}
                 </p>
               )}
             </div>
-            <RenewalCountdown days={daysUntilRenewal} percentComplete={totalHoursNeeded > 0 ? Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100) : (isCompliant ? 100 : 0)} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+              <span className={`chip ${!rule ? "chip-ondark-warn" : isCompliant ? "chip-ondark-ok" : "chip-ondark-warn"}`}>
+                {!rule ? "Rules pending" : isCompliant ? "On track" : "Action needed"}
+              </span>
+              <RenewalCountdown days={daysUntilRenewal} percentComplete={totalHoursNeeded > 0 ? Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100) : (isCompliant ? 100 : 0)} />
+            </div>
           </div>
 
           {!rule ? (
@@ -748,7 +770,9 @@ export default async function CompliancePage() {
             </div>
           ) : (
             <div className="px-6 py-5 space-y-6">
-              {/* Hours progress */}
+              {/* Hours progress — hidden for topics-only states (totalHours 0),
+                  where an hours fraction is meaningless and divides by zero */}
+              {totalHoursNeeded > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-[var(--ink-2)]">
@@ -795,9 +819,10 @@ export default async function CompliancePage() {
                   })()
                 )}
               </div>
+              )}
 
               {/* Compliance Forecast */}
-              {!isCompliant && (
+              {!isCompliant && totalHoursNeeded > 0 && (
                 <ComplianceForecast
                   state={license.state}
                   licenseType={license.licenseType}
@@ -1074,6 +1099,7 @@ export default async function CompliancePage() {
           )}
         </section>
       ))}
+      </CredentialTabs>
 
       {/* Certificates — full list lives on its own page now */}
       <Link

@@ -288,7 +288,10 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
 
       {/* Existing licenses section */}
       <div className="mb-8">
-        <h2 className="font-display text-2xl font-semibold text-[var(--ink)] mb-3">My Medical Licenses</h2>
+        <div className="mb-4">
+          <p className="mono-label page-eyebrow">Credentials on file</p>
+          <h1 className="page-title">Licenses</h1>
+        </div>
 
         {licensesLoading ? (
           <div className="text-sm text-[var(--ink-3)] py-4 text-center">Loading licenses…</div>
@@ -340,9 +343,13 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         <button
           type="button"
           onClick={() => setShowAddForm(true)}
-          className="w-full py-4 border-2 border-dashed border-[var(--line)] rounded-[var(--radius)] text-sm font-semibold text-[var(--primary)] hover:border-[var(--primary)] hover:bg-[rgba(63,95,51,0.08)] transition-colors"
+          className="w-full py-5 border border-dashed border-[rgba(46,74,44,0.35)] rounded-xl text-left px-5 hover:bg-[#f4f1e7] transition-colors"
         >
-          + Add Medical License
+          <span className="block text-sm font-semibold text-[var(--c1b-ink,#101613)]">+ Add a credential</span>
+          <span className="block mt-1 text-xs text-[#6E7669]">
+            A state license or a DEA registration. We map its requirements and re-check your filed
+            hours against them.
+          </span>
         </button>
       )}
 

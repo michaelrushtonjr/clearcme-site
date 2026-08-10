@@ -214,7 +214,14 @@ function buildHtml(data: ExportData): string {
 </html>`;
 }
 
-export default function ComplianceExportButton({ exportData }: { exportData: ExportData }) {
+export default function ComplianceExportButton({
+  exportData,
+  variant = "default",
+}: {
+  exportData: ExportData;
+  /** "c1b" renders the console-1b filled button */
+  variant?: "default" | "c1b";
+}) {
   const [loading, setLoading] = useState(false);
 
   const handleExport = () => {
@@ -239,6 +246,14 @@ export default function ComplianceExportButton({ exportData }: { exportData: Exp
       setLoading(false);
     }
   };
+
+  if (variant === "c1b") {
+    return (
+      <button onClick={handleExport} disabled={loading} className="btn-filled">
+        {loading ? "Preparing…" : "Compliance report"}
+      </button>
+    );
+  }
 
   return (
     <button
