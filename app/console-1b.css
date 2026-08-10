@@ -290,14 +290,6 @@
   border-color: var(--c1b-green);
 }
 
-.c1b-login .btn-google .g {
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--c1b-terracotta);
-  line-height: 1;
-}
-
 .c1b-login .btn-primary {
   background: var(--c1b-green);
   color: #fff;
