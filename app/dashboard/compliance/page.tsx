@@ -32,6 +32,8 @@ import {
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import InfoTip from "@/components/ui/InfoTip";
 import CredentialTabs from "@/components/console/CredentialTabs";
+import FillWhatsLeft from "@/components/console/FillWhatsLeft";
+import { matchCoursesForGap, type OpenGap } from "@/lib/course-matcher";
 import RequirementAttestation, {
   type AttestationStatus,
   type SuggestedCertificate,
@@ -579,6 +581,13 @@ export default async function CompliancePage() {
       }))
   );
 
+  // The user's full open-gap set — the matcher needs it for cross-credit badges
+  const allOpenGaps: OpenGap[] = complianceData.flatMap((d) =>
+    d.mandatoryGaps
+      .filter((g) => !g.isMet && !g.isNotApplicable && !g.isUnknown && g.gap > 0)
+      .map((g) => ({ scope: d.license.state, topic: g.topic }))
+  );
+
   // Build export data for client component
   const exportData = {
     licenses: complianceData.map((d) => ({
@@ -721,7 +730,8 @@ export default async function CompliancePage() {
         )}
       >
       {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => (
-        <section key={license.id} className="card" style={{ overflow: "hidden" }}>
+        <div key={license.id}>
+        <section className="card" style={{ overflow: "hidden" }}>
           {/* Dark band header */}
           <div className="dark-band">
             <div>
@@ -1098,6 +1108,19 @@ export default async function CompliancePage() {
             </div>
           )}
         </section>
+
+        {/* "Fill what's left" — verified course matches per open gap (Track B
+            data). Renders nothing until a gap has ≥1 verified match. */}
+        {mandatoryGaps
+          .filter((g) => !g.isMet && !g.isNotApplicable && !g.isUnknown && g.gap > 0)
+          .map((g) => (
+            <FillWhatsLeft
+              key={g.requirementId}
+              gapLabel={`${g.displayName} · ${g.gap.toFixed(1)} hrs left`}
+              matches={matchCoursesForGap({ scope: license.state, topic: g.topic }, allOpenGaps)}
+            />
+          ))}
+        </div>
       ))}
       </CredentialTabs>
 

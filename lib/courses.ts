@@ -1,3 +1,32 @@
+/**
+ * Cross-credit requirement tag (Track B, fleet-tasking 2026-08-09).
+ *
+ * `id` is a CANONICAL requirement ID — never free text. Format:
+ *   "{SCOPE}:{TOPIC}" where
+ *   - SCOPE is a two-letter StateCode from lib/state-requirements.ts
+ *     (e.g. "CA", "NY") or the literal "DEA" for the federal MATE Act
+ *   - TOPIC is a SpecialTopic enum value from prisma/schema.prisma
+ *     (e.g. "SUBSTANCE_USE", "CHILD_ABUSE", "INFECTION_CONTROL")
+ *   Examples: "CA:SUBSTANCE_USE", "NY:CHILD_ABUSE", "DEA:SUBSTANCE_USE".
+ *
+ * Display floor (do not weaken): only tags with `mappingVerified` render in
+ * "Fill what's left". A course with zero verified tags never appears there.
+ * Approved-list requirements (NY child abuse ID, NY infection control) accept
+ * only state-list membership as verification evidence — record the list URL
+ * in `evidence`.
+ */
+export type RequirementTag = {
+  id: string;
+  mappingVerified: {
+    /** ISO date the mapping (course side + requirement side + join) was verified */
+    date: string;
+    /** Who verified — e.g. "vera", "roz" */
+    by: string;
+    /** Optional pointer to the verification evidence (URL or note) */
+    evidence?: string;
+  };
+};
+
 export type Course = {
   name: string;
   provider: string;
@@ -14,6 +43,8 @@ export type Course = {
   deaMateCompliant?: boolean;
   stateAcceptance?: string;
   verified?: string;
+  /** Cross-credit mappings (Track B). Absent/empty = never shown in "Fill what's left". */
+  requirementTags?: RequirementTag[];
 };
 
 export type TopicCatalog = {
