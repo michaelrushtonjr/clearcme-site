@@ -81,11 +81,21 @@
   padding: 52px 56px;
 }
 
+/* Everything below the logo centers as one group, so tall-viewport height
+   surplus distributes above/below it instead of pooling mid-panel. The
+   padding is the minimum logo→group / group→bottom gap when there is no
+   surplus (spec frame ~780px tall). */
+.c1b-login .brand-content {
+  display: flex;
+  flex-direction: column;
+  margin: auto 0;
+  padding: 48px 0 8px;
+}
+
 .c1b-login .brand-head {
-  margin-top: 64px;
   max-width: 440px;
   font-family: var(--serif);
-  font-size: 46px;
+  font-size: clamp(46px, 4.5vh, 56px);
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -0.01em;
@@ -128,11 +138,17 @@
 }
 
 .c1b-login .preview-card {
-  margin-top: auto;
+  margin-top: clamp(48px, 8vh, 96px);
   max-width: 420px;
   border-radius: 12px;
   background: var(--c1b-dark);
   padding: 20px 22px;
+}
+
+@media (min-height: 1200px) {
+  .c1b-login .preview-card {
+    max-width: 480px;
+  }
 }
 
 .c1b-login .preview-head {
@@ -252,7 +268,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .c1b-login .btn-apple {

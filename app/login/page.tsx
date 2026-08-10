@@ -69,6 +69,7 @@ function BrandPanel() {
   return (
     <aside className="brand-panel">
       <BrandLockup href="/" size="md" dark />
+      <div className="brand-content">
       <h1 className="brand-head">Your CME compliance, handled.</h1>
       <p className="brand-sub">
         Every state you&apos;re licensed in, every mandated topic, every deadline — checked
@@ -103,6 +104,7 @@ function BrandPanel() {
             <span className="val warn">MATE 6.0 / 8</span>
           </div>
         </div>
+      </div>
       </div>
     </aside>
   );
@@ -194,7 +196,12 @@ function LoginPageInner() {
                           placeholder="you@practice.com"
                           required
                         />
-                        <button type="submit" className="btn btn-primary" disabled={loading || !email}>
+                        <button
+                          type="submit"
+                          className="btn btn-primary"
+                          disabled={loading || !email}
+                          aria-disabled={loading || !email}
+                        >
                           {loading ? "Sending link…" : "Email me a sign-in link"}
                         </button>
                       </form>
