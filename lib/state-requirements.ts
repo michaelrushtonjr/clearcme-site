@@ -258,7 +258,7 @@ const doRenewalRules: Partial<Record<StateCode, RenewalRuleConfig>> = {
   FL: fixedRenewal("March 31 of even-numbered years", 3, 31, "even"),
   HI: fixedRenewal("June 30 of even-numbered years", 6, 30, "even"),
   KS: fixedRenewal("September 30 annually (license expiration and CME deadline; late renewal accepted through October 31 with late fees)", 9, 30),
-  ME: variableRenewal("Every 2 years on your individually assigned expiration date (32 M.R.S. §2581; check your Board of Osteopathic Licensure record — not birthday-based)"),
+  ME: birthBasedRenewal("Last day of your birth month, every 2 years (02-383 C.M.R. ch. 19 §3)"),
   NV: fixedRenewal("December 31 of even-numbered years (biennial under AB 56; the Dec. 31, 2026 renewal is the first even-year cycle)", 12, 31, "even"),
   OK: fixedRenewal("June 30 annually", 6, 30),
   PA: fixedRenewal("October 31 of even-numbered years", 10, 31, "even"),
