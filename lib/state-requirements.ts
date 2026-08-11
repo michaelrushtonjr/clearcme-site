@@ -582,7 +582,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     totalHours: 60,
     totalHoursLabel: "60 hours",
     cycleYears: 3,
-    cycleLabel: "Annual renewal, 3-year rolling CME window",
+    cycleLabel: "Annual renewal, fixed 3-year CME cycle beginning on your birthday after licensure (no carryover between cycles)",
     mandatoryTopics: [
       topic("Controlled substance prescribing", "3 hrs every 3 years", "If prescribing controlled substances"),
       mateTopic("MATE training also satisfies North Carolina's 3-hour prescribing rule in that period"),
