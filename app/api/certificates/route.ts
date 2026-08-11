@@ -18,6 +18,17 @@ import type { CreditType, SpecialTopic } from "@prisma/client";
 // Extend Vercel function timeout for AI processing
 export const maxDuration = 60;
 
+// Extraction must resolve comfortably inside maxDuration so a slow or wedged
+// extraction still returns a FAILED result instead of the function being
+// killed mid-flight (which stranded certificates in "Processing" forever).
+const EXTRACTION_TIMEOUT_MS = 45_000;
+
+// Real certificate text layers are a few KB. Anything bigger reaching the
+// regex parser is binary (scans, encrypted streams) masquerading as text —
+// its lazy-dot-star patterns go quadratic on that garbage (measured 150s+ on
+// a 400KB encrypted PDF, the 2026-08-10 upload-hang incident).
+const MAX_PARSE_TEXT_CHARS = 10_000;
+
 // GET /api/certificates — list user's certificates
 export async function GET(req: NextRequest) {
   // Support both NextAuth session (web) and mobile JWT
@@ -69,6 +80,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  let createdCertificateId: string | null = null;
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -117,10 +130,32 @@ export async function POST(req: NextRequest) {
         extractionStatus: "PROCESSING",
       },
     });
+    createdCertificateId = certificate.id;
 
     await recordExtractionAttempt(userId);
 
-    const extractionResult = await extractCertificate(file);
+    // Never strand a row in PROCESSING: crashes and timeouts resolve to a
+    // FAILED extraction result, which the branches below persist properly.
+    let extractionResult: ExtractionResult;
+    try {
+      extractionResult = await Promise.race([
+        extractCertificate(file),
+        new Promise<ExtractionResult>((resolve) =>
+          setTimeout(
+            () => resolve({ success: false, error: "Extraction timed out" }),
+            EXTRACTION_TIMEOUT_MS
+          )
+        ),
+      ]);
+    } catch (extractionErr) {
+      extractionResult = {
+        success: false,
+        error:
+          extractionErr instanceof Error
+            ? extractionErr.message
+            : "Extraction failed unexpectedly",
+      };
+    }
 
     if (extractionResult.success && extractionResult.data) {
       const extracted = extractionResult.data;
@@ -220,6 +255,23 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     console.error("Certificate upload error:", error);
+    // Best effort: if the record was already created, park it in FAILED so it
+    // surfaces the manual-entry recovery path instead of "Processing" forever.
+    if (createdCertificateId) {
+      try {
+        await prisma.certificate.update({
+          where: { id: createdCertificateId },
+          data: {
+            extractedAt: new Date(),
+            extractionStatus: "FAILED",
+            extractionConfidence: 0.0,
+            extractionError: "Upload processing failed unexpectedly",
+          },
+        });
+      } catch {
+        // The 500 below already tells the client this upload failed.
+      }
+    }
     return NextResponse.json(
       { error: "Failed to process certificate" },
       { status: 500 }
@@ -280,7 +332,9 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
   }
 
   try {
-    const client = new Anthropic({ apiKey });
+    // Keep the API call inside the route's extraction budget — a hung
+    // network call must fail here, not outlive the serverless function.
+    const client = new Anthropic({ apiKey, timeout: 40_000, maxRetries: 1 });
 
     // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
@@ -390,7 +444,10 @@ async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResu
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const text = normalizeWhitespace(extractPdfText(buffer));
+    const text = normalizeWhitespace(extractPdfText(buffer)).slice(
+      0,
+      MAX_PARSE_TEXT_CHARS
+    );
     if (text.length < 40) {
       return { success: false, error: "No text layer found in PDF" };
     }
@@ -423,13 +480,31 @@ async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResu
 }
 
 function extractPdfText(buffer: Buffer): string {
-  const chunks = [buffer.toString("utf8")];
+  const chunks: string[] = [];
+  // Only keep chunks that read as text. Binary decoded as a string (image
+  // streams, encrypted content, fonts) is what fed the parser regexes
+  // megabytes of garbage and hung uploads past the function timeout.
+  const consider = (value: string) => {
+    if (isMostlyPrintable(value)) chunks.push(value);
+  };
+
+  consider(buffer.toString("utf8"));
   const source = buffer.toString("latin1");
   const streamPattern = /(<<[\s\S]*?>>)\s*stream\r?\n([\s\S]*?)\r?\nendstream/g;
   let match: RegExpExecArray | null;
 
   while ((match = streamPattern.exec(source)) !== null) {
     const dict = match[1];
+
+    // Image and font streams never contain certificate text — skip them
+    // before decompressing or scanning hundreds of KB of pixel data.
+    if (
+      /\/(?:DCTDecode|JPXDecode|CCITTFaxDecode|JBIG2Decode)\b/.test(dict) ||
+      /\/Subtype\s*\/(?:Image|FontFile\d?)\b/.test(dict)
+    ) {
+      continue;
+    }
+
     const stream = Buffer.from(match[2], "latin1");
     let data = stream;
 
@@ -441,11 +516,32 @@ function extractPdfText(buffer: Buffer): string {
       }
     }
 
-    chunks.push(data.toString("utf8"));
-    chunks.push(extractPdfDrawingText(data.toString("latin1")));
+    consider(data.toString("utf8"));
+    consider(extractPdfDrawingText(data.toString("latin1")));
   }
 
   return chunks.join(" ");
+}
+
+// True when a decoded chunk looks like actual text rather than binary noise.
+// Samples at most 50KB so the check itself stays O(1)-ish on huge streams.
+function isMostlyPrintable(value: string): boolean {
+  if (value.length === 0) return false;
+  const sample = value.length > 50_000 ? value.slice(0, 50_000) : value;
+  let printable = 0;
+  for (let i = 0; i < sample.length; i++) {
+    const code = sample.charCodeAt(i);
+    if (
+      code === 9 ||
+      code === 10 ||
+      code === 13 ||
+      (code >= 32 && code <= 126) ||
+      (code >= 160 && code <= 591)
+    ) {
+      printable++;
+    }
+  }
+  return printable / sample.length >= 0.85;
 }
 
 function extractPdfDrawingText(source: string): string {

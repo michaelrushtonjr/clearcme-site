@@ -79,7 +79,9 @@ export default function CertificateUpload() {
     }
 
     if (!res.ok) {
-      const err = await res.json();
+      // Gateway timeouts and proxy errors return non-JSON bodies — never let
+      // parsing them throw past the upload loop (that froze the spinner).
+      const err = await res.json().catch(() => ({} as { error?: string }));
       return {
         id: crypto.randomUUID(),
         fileName: file.name,
@@ -135,7 +137,20 @@ export default function CertificateUpload() {
         setCurrentFileName(file.name);
         setProgress(Math.round(((i) / acceptedFiles.length) * 80));
 
-        const result = await uploadFile(file);
+        // A dropped connection or killed serverless function rejects the
+        // fetch — surface it as a failed row instead of spinning forever.
+        let result: UploadedCert | null = null;
+        try {
+          result = await uploadFile(file);
+        } catch {
+          result = {
+            id: crypto.randomUUID(),
+            fileName: file.name,
+            extracted: null,
+            error:
+              "The upload didn't complete — the connection dropped or the server took too long. The file was not processed; please try again.",
+          };
+        }
         if (result) results.push(result);
 
         setProgress(Math.round(((i + 1) / acceptedFiles.length) * 100));
