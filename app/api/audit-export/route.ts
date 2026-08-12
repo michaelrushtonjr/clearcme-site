@@ -8,6 +8,7 @@ import {
   NOT_COMPLETED_REQUIREMENT_NOTE,
 } from "@/lib/requirement-completions";
 import JSZip from "jszip";
+import { get } from "@vercel/blob";
 
 export const maxDuration = 60;
 
@@ -256,10 +257,12 @@ export async function GET(req: NextRequest) {
   const certFileCache = new Map<string, Uint8Array | null>();
   for (const cert of allCerts) {
     if (cert.fileUrl) {
+      // Blobs live in a private store, so a plain fetch() 403s — get() signs
+      // the request with BLOB_READ_WRITE_TOKEN.
       try {
-        const resp = await fetch(cert.fileUrl);
-        if (resp.ok) {
-          const ab = await resp.arrayBuffer();
+        const result = await get(cert.fileUrl, { access: "private" });
+        if (result?.stream) {
+          const ab = await new Response(result.stream).arrayBuffer();
           certFileCache.set(cert.id, new Uint8Array(ab));
         } else {
           certFileCache.set(cert.id, null);

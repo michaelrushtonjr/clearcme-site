@@ -108,11 +108,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Upload file to Vercel Blob (gracefully skip if token not configured)
+    // Retain the original document in Vercel Blob (gracefully skip if token
+    // not configured). The store is private — these are physicians' personal
+    // certificates — so reads require the RW token or a signed URL, and
+    // `access: "public"` throws on it. Pathname is namespaced per user with a
+    // random suffix because put() refuses to overwrite an existing blob and
+    // two users will eventually both upload "Certificate.pdf".
     let fileUrl: string | null = null;
     try {
       if (process.env.BLOB_READ_WRITE_TOKEN) {
-        const blob = await put(file.name, file, { access: "public" });
+        const blob = await put(`certificates/${userId}/${file.name}`, file, {
+          access: "private",
+          addRandomSuffix: true,
+        });
         fileUrl = blob.url;
       }
     } catch (blobErr) {
