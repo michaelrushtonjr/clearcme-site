@@ -1226,3 +1226,58 @@
   text-transform: uppercase;
   color: var(--c1b-muted);
 }
+
+/* ─── v1 → Console remap (interior polish, 2026-08-11) ───
+   Interior components (compliance accordion internals, settings/profile
+   cards, gap cards) still reference Editorial Sage (v1) variables. Inside
+   the console shell those variables resolve to Console values, so interiors
+   match the 1b system without touching every call site. Scoped to .c1b:
+   anything outside the shell keeps v1.
+
+   Status mapping is deliberate: v2 is a three-value system (green / amber /
+   neutral) — v1's miss (coral), pending (mustard), and track (mauve) all
+   collapse into amber or green. Coral/terracotta never appears as a UI
+   accent (logo-only rule). */
+.c1b {
+  --ink: var(--c1b-ink);
+  --ink-2: var(--c1b-ink-2);
+  --ink-3: var(--c1b-muted);
+  --ink-4: var(--c1b-faint);
+  --bg: var(--c1b-canvas);
+  --bg-2: var(--c1b-band);
+  --paper: var(--c1b-card);
+  --line: var(--c1b-border-card);
+  --line-soft: var(--c1b-border-section);
+  --primary: var(--c1b-green);
+  --primary-2: var(--c1b-forest);
+  --primary-3: var(--c1b-green);
+  /* amber: marks (dots, bars, checkbox accents) vs readable text */
+  --warm: var(--c1b-amber);
+  --warm-2: var(--c1b-amber-text);
+  --pop: var(--c1b-amber);
+  --pop-2: var(--c1b-amber-text);
+  --mauve: var(--c1b-green);
+  --status-met: var(--c1b-green);
+  --status-met-bg: var(--c1b-green-chip-bg);
+  --status-miss: var(--c1b-amber-text);
+  --status-miss-bg: var(--c1b-amber-chip-bg);
+  --status-pending: var(--c1b-amber-text);
+  --status-pending-bg: var(--c1b-amber-chip-bg);
+  --status-track: var(--c1b-green);
+  --status-track-bg: var(--c1b-green-chip-bg);
+}
+
+/* v2 status chips are mono, uppercase, squarer-tracked (spec §4) */
+.c1b .product-pill {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Warm callout (gap card shell): amber-tinted per the three-value system —
+   the v1 gradient mixed mustard into coral. */
+.c1b .product-callout-warm {
+  background: linear-gradient(135deg, rgba(169, 114, 42, 0.1) 0%, rgba(169, 114, 42, 0.05) 100%);
+  border: 1.5px solid rgba(169, 114, 42, 0.3);
+}

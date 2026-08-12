@@ -41,7 +41,7 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
     !gaps[0].detail.includes("mandatory topic");
 
   return (
-    <div className={`${isUrgent ? "border-[rgba(221,107,64,0.32)] bg-[rgba(221,107,64,0.12)]" : "product-callout-warm"} border rounded-2xl p-5`}>
+    <div className={`${isUrgent ? "border-[rgba(169,114,42,0.4)] bg-[rgba(169,114,42,0.12)]" : "product-callout-warm"} border rounded-2xl p-5`}>
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${isUrgent ? "bg-[var(--pop)]" : "bg-[var(--warm)]"} animate-pulse`} />
@@ -77,11 +77,7 @@ export default function GapCard({ gaps, renewalDays, allGapsCount }: Props) {
                 <span className="text-xs text-[var(--ink-3)] sm:text-right">{contextNote}</span>
                 <Link
                   href={gap.href}
-                  className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 ${
-                    isUrgent
-                      ? "bg-[var(--pop)] text-white hover:bg-[var(--pop-2)]"
-                      : "bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
-                  }`}
+                  className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:min-h-0 sm:py-1.5 bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
                 >
                   See courses →
                 </Link>
