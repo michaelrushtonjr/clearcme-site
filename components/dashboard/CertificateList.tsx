@@ -1,5 +1,6 @@
 import { Certificate } from "@prisma/client";
 import Link from "next/link";
+import { formatDateUTC } from "@/lib/dates";
 
 interface Props {
   certificates: Certificate[];
@@ -73,7 +74,7 @@ export default function CertificateList({ certificates }: Props) {
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {cert.activityDate && (
                   <span className="text-xs text-[var(--ink-3)]">
-                    {new Date(cert.activityDate).toLocaleDateString("en-US", {
+                    {formatDateUTC(cert.activityDate, {
                       month: "short",
                       day: "numeric",
                       year: "numeric",

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
+import { formatDateUTC } from "@/lib/dates";
 
 interface ExtractedCredit {
   title: string;
@@ -104,11 +105,7 @@ export default function CertificateUpload() {
             title: cert.title ?? "",
             provider: cert.provider ?? "",
             date: cert.activityDate
-              ? new Date(cert.activityDate).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })
+              ? formatDateUTC(cert.activityDate)
               : "Unknown date",
             creditHours: cert.creditHours ?? 0,
             creditType: cert.creditType ?? "OTHER",

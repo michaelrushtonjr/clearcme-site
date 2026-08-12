@@ -1,4 +1,5 @@
 import { formatStateName } from "@/lib/state-names";
+import { formatDateUTC } from "@/lib/dates";
 
 export interface ComplianceRuleChangePayload {
   id: string;
@@ -84,11 +85,7 @@ export function formatComplianceChangeSummary(change: ComplianceRuleChangePayloa
 export function formatComplianceEffectiveDate(date: string | null): string | null {
   if (!date) return null;
 
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatDateUTC(date);
 }
 
 export function formatComplianceLicenseLabel(state: string, licenseType: string): string {

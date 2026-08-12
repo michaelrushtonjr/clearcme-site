@@ -9,6 +9,7 @@ import {
 } from "@/lib/requirement-completions";
 import JSZip from "jszip";
 import { get } from "@vercel/blob";
+import { formatDateUTC } from "@/lib/dates";
 
 export const maxDuration = 60;
 
@@ -73,7 +74,7 @@ function safeFileName(name: string, ext: string): string {
 
 function formatDate(d: Date | null): string {
   if (!d) return "Unknown";
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return formatDateUTC(d);
 }
 
 // GET /api/audit-export?licenseId=[id]

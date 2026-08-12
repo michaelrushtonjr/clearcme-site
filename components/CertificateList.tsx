@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteCertButton from "@/components/DeleteCertButton";
 import VerifiedProviderBadge from "@/components/VerifiedProviderBadge";
+import { formatDateUTC } from "@/lib/dates";
 
 interface Cert {
   id: string;
@@ -227,7 +228,7 @@ function CertificateRow({
             <VerifiedProviderBadge providerName={cert.provider ?? cert.providerName} />
             {cert.activityDate && (
               <span>
-                {new Date(cert.activityDate).toLocaleDateString("en-US", {
+                {formatDateUTC(cert.activityDate, {
                   month: "short",
                   day: "numeric",
                   year: "numeric",

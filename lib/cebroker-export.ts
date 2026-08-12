@@ -1,4 +1,5 @@
 import type { CreditType, PhysicianLicense } from "@prisma/client";
+import { formatDateUTC } from "@/lib/dates";
 
 const CREDIT_TYPE_LABELS: Record<CreditType, string> = {
   AMA_PRA_1: "AMA PRA Category 1",
@@ -70,11 +71,7 @@ function formatDateForCsv(date: Date | null | undefined): string {
 
 function formatDateForSummary(date: Date | null | undefined): string {
   if (!date) return "Not set";
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatDateUTC(date);
 }
 
 function formatCreditHours(hours: number | null | undefined): string {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatDateUTC } from "@/lib/dates";
 
 interface LicenseExport {
   state: string;
@@ -60,7 +61,7 @@ function formatTopic(topic: string): string {
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return formatDateUTC(iso);
 }
 
 function buildHtml(data: ExportData): string {

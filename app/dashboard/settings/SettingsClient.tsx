@@ -8,6 +8,7 @@ import {
   NOT_COMPLETED_REQUIREMENT_NOTE,
 } from "@/lib/requirement-completions";
 import RequirementAttestation from "@/components/dashboard/RequirementAttestation";
+import { formatDateUTC } from "@/lib/dates";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -581,7 +582,7 @@ export default function SettingsClient({
                     {license.renewalDate && (
                       <>
                         {" · "}Renewal:{" "}
-                        {new Date(license.renewalDate).toLocaleDateString("en-US", {
+                        {formatDateUTC(license.renewalDate, {
                           month: "short",
                           day: "numeric",
                           year: "numeric",

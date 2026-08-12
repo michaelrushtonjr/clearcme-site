@@ -1,4 +1,5 @@
 import { ComplianceStatus } from "@prisma/client";
+import { formatDateUTC } from "@/lib/dates";
 
 interface Props {
   status: ComplianceStatus;
@@ -77,7 +78,7 @@ export default function CreditSummaryCard({ status }: Props) {
         <span className="text-slate-500">
           Renewal:{" "}
           <span className="font-medium text-slate-700">
-            {new Date(status.cycleEnd).toLocaleDateString("en-US", {
+            {formatDateUTC(status.cycleEnd, {
               month: "short",
               day: "numeric",
               year: "numeric",

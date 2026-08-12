@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
+import { formatDateUTC } from "@/lib/dates";
 
 const PAGE_WIDTH = 612;
 const PAGE_HEIGHT = 792;
@@ -53,11 +54,7 @@ function wrapLine(text: string, maxLength = MAX_LINE_WIDTH): string[] {
 
 function formatDate(value: Date | null): string {
   if (!value) return "Unknown";
-  return value.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatDateUTC(value, { month: "short", day: "numeric", year: "numeric" });
 }
 
 function buildPdfText(lines: string[]): ArrayBuffer {

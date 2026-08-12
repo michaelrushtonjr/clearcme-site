@@ -162,11 +162,7 @@ function requirementStatusClass(label: string) {
 
 function formatReviewDate(date?: Date) {
   if (!date) return null;
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatDateUTC(date, { month: "short", day: "numeric", year: "numeric" });
 }
 
 function parseSourceUrls(sourceUrl?: string) {
