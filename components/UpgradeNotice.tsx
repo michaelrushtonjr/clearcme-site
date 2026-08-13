@@ -68,12 +68,23 @@ export default function UpgradeNotice({ feature, limit, reason }: UpgradeNoticeP
       <p className="text-sm font-semibold text-[var(--ink)]">{copy.title}</p>
       <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{copy.body}</p>
       {copy.rate && <p className="mt-1 text-xs italic text-[var(--ink-3)]">{copy.rate}</p>}
-      <Link
-        href={copy.href}
-        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)]"
-      >
-        See plans →
-      </Link>
+      <div className="mt-2 flex items-center gap-4">
+        <Link
+          href={copy.href}
+          className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)]"
+        >
+          See plans →
+        </Link>
+        {/* The extraction copy promises manual entry — link it, don't just say it. */}
+        {feature === "extraction" && (
+          <Link
+            href="/dashboard/certificates/new"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)]"
+          >
+            Add manually →
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

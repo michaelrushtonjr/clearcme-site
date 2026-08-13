@@ -59,6 +59,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Manual entry (JSON body): creates a record with user-supplied fields.
+  // Deliberately NOT fenced — the upgrade card promises "you can still add
+  // CME manually, as much as you like", and manual adds run no extraction,
+  // spend no Anthropic call, and consume no trial slot.
+  if (req.headers.get("content-type")?.includes("application/json")) {
+    return createManualCertificate(req, userId);
+  }
+
   // Fence: 3 lifetime clean extractions, backstopped by 10 total scans.
   // Reject before touching the file so a blocked upload creates no record
   // and spends no Anthropic call.
@@ -294,6 +302,93 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ─── Manual Entry ─────────────────────────────────────────────────────────────
+
+const VALID_CREDIT_TYPES: readonly CreditType[] = [
+  "AMA_PRA_1",
+  "AMA_PRA_2",
+  "AAFP_PRESCRIBED",
+  "AAFP_ELECTIVE",
+  "AOA_1_A",
+  "AOA_1_B",
+  "AOA_2_A",
+  "AOA_2_B",
+  "OTHER",
+];
+
+async function createManualCertificate(req: NextRequest, userId: string) {
+  let body: {
+    title?: unknown;
+    provider?: unknown;
+    activityDate?: unknown;
+    creditHours?: unknown;
+    creditType?: unknown;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const title = typeof body.title === "string" ? body.title.trim().slice(0, 500) : "";
+  if (!title) {
+    return NextResponse.json({ error: "Course title is required" }, { status: 400 });
+  }
+
+  const creditHours = Number(body.creditHours);
+  if (!Number.isFinite(creditHours) || creditHours <= 0 || creditHours > 1000) {
+    return NextResponse.json(
+      { error: "Credit hours must be a number greater than 0" },
+      { status: 400 }
+    );
+  }
+
+  const provider =
+    typeof body.provider === "string" && body.provider.trim()
+      ? body.provider.trim().slice(0, 500)
+      : null;
+
+  let activityDate: Date | null = null;
+  if (typeof body.activityDate === "string" && body.activityDate) {
+    const parsed = new Date(body.activityDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return NextResponse.json({ error: "Invalid completion date" }, { status: 400 });
+    }
+    activityDate = parsed;
+  }
+
+  const creditType =
+    VALID_CREDIT_TYPES.find((t) => t === body.creditType) ?? null;
+
+  // Same keyword inference the extractor runs, so manual entries still match
+  // mandatory-topic requirements (and attestation pre-fill can find them).
+  const topics = inferTopicLabels(title);
+
+  const certificate = await prisma.certificate.create({
+    data: {
+      userId,
+      fileName: "Manual entry",
+      fileUrl: null,
+      fileSize: null,
+      mimeType: null,
+      title,
+      provider,
+      activityDate,
+      creditHours,
+      creditType,
+      topics,
+      specialTopics: inferSpecialTopics({ title, provider, topics }),
+      // COMPLETED + manuallyVerified is the same shape the confirm-edit PATCH
+      // writes; compliance math only counts COMPLETED rows.
+      manuallyVerified: true,
+      extractionStatus: "COMPLETED",
+      extractedAt: new Date(),
+    },
+  });
+
+  return NextResponse.json({ certificate }, { status: 201 });
 }
 
 // ─── Certificate Extraction ───────────────────────────────────────────────────
