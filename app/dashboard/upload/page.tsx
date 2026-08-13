@@ -1,5 +1,12 @@
+import { auth } from "@/auth";
 import CertificateUpload from "@/components/CertificateUpload";
 import MobileCameraUpload from "@/components/MobileCameraUpload";
+import UpgradeNotice from "@/components/UpgradeNotice";
+import {
+  FREE_EXTRACTION_LIMIT,
+  FREE_SCAN_ATTEMPT_LIMIT,
+  getEntitlements,
+} from "@/lib/entitlements";
 
 export const metadata = {
   title: "Upload Certificate — ClearCME",
@@ -23,7 +30,22 @@ const PIPELINE_STEPS = [
   },
 ];
 
-export default function UploadPage() {
+export default async function UploadPage() {
+  const session = await auth();
+  const userId = session!.user!.id!;
+
+  // Gate the drop zone on the server's LIFETIME counters, not certificate
+  // count — certificates hard-delete, so a client-side count resurrects the
+  // drop zone after a delete and invites an upload the API will 402.
+  const entitlements = await getEntitlements(userId);
+  const extractionFence: false | "slots" | "attempts" = entitlements.ungated
+    ? false
+    : entitlements.extractionsUsed >= FREE_EXTRACTION_LIMIT
+    ? "slots"
+    : entitlements.extractionAttempts >= FREE_SCAN_ATTEMPT_LIMIT
+    ? "attempts"
+    : false;
+
   return (
     <div>
       <div className="dash-head">
@@ -38,15 +60,21 @@ export default function UploadPage() {
 
       <div className="dash-grid">
         <div>
-          {/* Mobile: camera-first upload */}
-          <div className="sm:hidden">
-            <MobileCameraUpload />
-          </div>
+          {extractionFence ? (
+            <UpgradeNotice feature="extraction" reason={extractionFence} />
+          ) : (
+            <>
+              {/* Mobile: camera-first upload */}
+              <div className="sm:hidden">
+                <MobileCameraUpload />
+              </div>
 
-          {/* Desktop: drag-and-drop + processing queue */}
-          <div className="hidden sm:block">
-            <CertificateUpload />
-          </div>
+              {/* Desktop: drag-and-drop + processing queue */}
+              <div className="hidden sm:block">
+                <CertificateUpload />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="rail">
