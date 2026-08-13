@@ -165,6 +165,15 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // Cheap observability: which extractor produced this result. A months-old
+    // bug (topics-only partials starving the AI pass) was invisible because
+    // nothing recorded the path taken. "none" = timed out or threw.
+    console.log(
+      `[extraction] cert=${certificate.id} path=${extractionResult.via ?? "none"} ` +
+        `success=${extractionResult.success} partial=${Boolean(extractionResult.partialData)}` +
+        (extractionResult.error ? ` error="${extractionResult.error.slice(0, 120)}"` : "")
+    );
+
     if (extractionResult.success && extractionResult.data) {
       const extracted = extractionResult.data;
 
@@ -304,6 +313,9 @@ interface ExtractionResult {
   data?: ExtractedCredit;
   partialData?: Partial<ExtractedCredit>;
   error?: string;
+  /** Which extractor produced the result — logged so silent-starvation bugs
+   * (deterministic partials suppressing the AI pass) show up in the logs. */
+  via?: "deterministic" | "ai" | "merged";
 }
 
 const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Return ONLY valid JSON with this structure:
@@ -318,18 +330,60 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
 }
 If a field cannot be determined, use null. Do not include any text outside the JSON.`;
 
+// A deterministic partial only counts as "good enough to stop" when it holds a
+// critical field: creditHours, or title AND date. Anything weaker — notably a
+// topics-only partial, since topics are keyword-inferred rather than extracted —
+// must fall through to the AI pass. (Before 2026-08-13 any non-empty partial
+// short-circuited, so one topic-keyword hit suppressed the AI extractor and the
+// user got an all-null NEEDS_REVIEW row.)
+function hasCriticalFields(partial: Partial<ExtractedCredit> | undefined): boolean {
+  if (!partial) return false;
+  return partial.creditHours != null || Boolean(partial.title && partial.date);
+}
+
+function mergeTopics(primary: string[] | undefined, fallback: string[]): string[] {
+  return Array.from(new Set([...(primary ?? []), ...fallback]));
+}
+
 async function extractCertificate(file: File): Promise<ExtractionResult> {
   const deterministic = await extractCertificateFromTextPdf(file);
-  if (deterministic.success || deterministic.partialData) {
-    return deterministic;
+  if (deterministic.success || hasCriticalFields(deterministic.partialData)) {
+    return { ...deterministic, via: "deterministic" };
   }
+
+  // Deterministic topics are still signal (they feed mandatory-topic matching)
+  // — merge them into whatever the AI pass returns instead of discarding them.
+  const deterministicTopics = deterministic.partialData?.topics ?? [];
+  const via = deterministicTopics.length > 0 ? "merged" : "ai";
 
   const aiResult = await extractCertificateWithClaude(file);
-  if (aiResult.success || aiResult.partialData) {
-    return aiResult;
+  if (aiResult.success && aiResult.data) {
+    return {
+      ...aiResult,
+      data: { ...aiResult.data, topics: mergeTopics(aiResult.data.topics, deterministicTopics) },
+      via,
+    };
+  }
+  if (aiResult.partialData) {
+    return {
+      ...aiResult,
+      partialData: {
+        ...aiResult.partialData,
+        topics: mergeTopics(aiResult.partialData.topics, deterministicTopics),
+      },
+      via,
+    };
   }
 
-  return deterministic.error ? { ...aiResult, error: aiResult.error ?? deterministic.error } : aiResult;
+  // AI produced nothing — fall back to the deterministic partial (e.g. topics
+  // only) rather than losing it; better a NEEDS_REVIEW row than a bare FAILED.
+  if (deterministic.partialData) {
+    return { ...deterministic, error: deterministic.error ?? aiResult.error, via: "deterministic" };
+  }
+
+  return deterministic.error
+    ? { ...aiResult, error: aiResult.error ?? deterministic.error, via: "ai" }
+    : { ...aiResult, via: "ai" };
 }
 
 async function extractCertificateWithClaude(file: File): Promise<ExtractionResult> {
