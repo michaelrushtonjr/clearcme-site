@@ -316,7 +316,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid / controlled substance prescribing", "3 hrs per cycle", "If Schedule II prescriber with DEA"),
+      topic("Opioid / controlled substance prescribing", "3 hrs per cycle", "If authorized to prescribe Schedule II controlled substances (with DEA registration) or to dispense controlled substances (A.R.S. 32-3248.02)"),
       mateTopic(),
     ],
   },
