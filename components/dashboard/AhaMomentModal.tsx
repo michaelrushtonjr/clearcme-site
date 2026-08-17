@@ -67,20 +67,27 @@ export default function AhaMomentModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(15,118,110,0.15)", backdropFilter: "blur(2px)" }}
+      style={{ backgroundColor: "rgba(16,22,19,0.42)", backdropFilter: "blur(2px)" }}
       onClick={dismiss}
       role="dialog"
       aria-modal="true"
       aria-labelledby="aha-title"
     >
       <div
-        className="relative bg-white rounded-2xl shadow-xl border border-teal-100 max-w-md w-full p-8"
+        className="relative max-w-md w-full p-8"
+        style={{
+          background: "var(--c1b-card, #FBFAF5)",
+          border: "1px solid rgba(16,22,19,.13)",
+          borderRadius: 10,
+          boxShadow: "0 24px 60px -30px rgba(22,32,26,.45)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={dismiss}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+          className="absolute top-4 right-4 transition-colors"
+          style={{ color: "var(--c1b-muted, #656C60)" }}
           aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -88,43 +95,46 @@ export default function AhaMomentModal({
           </svg>
         </button>
 
-        {/* Icon */}
-        <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center mb-5">
-          <svg className="w-6 h-6 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        </div>
+        <p
+          className="mono-label"
+          style={{ color: "var(--c1b-muted, #656C60)", marginBottom: 10 }}
+        >
+          Full record
+        </p>
 
-        <h2 id="aha-title" className="text-xl font-bold text-[#1E293B] mb-3">
+        <h2
+          id="aha-title"
+          className="mb-3"
+          style={{
+            fontFamily: "var(--serif, Georgia, serif)",
+            fontSize: 24,
+            fontWeight: 500,
+            color: "var(--c1b-ink, #101613)",
+          }}
+        >
           Your compliance map is ready
         </h2>
 
-        <p className="text-slate-600 leading-relaxed mb-6">
+        <p className="leading-relaxed mb-6" style={{ fontSize: 14, color: "var(--c1b-ink-2, #4B5349)" }}>
           We mapped your{" "}
-          <span className="font-semibold text-[#0F766E]">{state} {licenseType}</span>{" "}
+          <span style={{ fontWeight: 600, color: "var(--c1b-green, #2E4A2C)" }}>{state} {licenseType}</span>{" "}
           license against{" "}
-          <span className="font-semibold text-slate-800">{requirementCount} active requirement{requirementCount !== 1 ? "s" : ""}</span>{" "}
+          <span style={{ fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>{requirementCount} active requirement{requirementCount !== 1 ? "s" : ""}</span>{" "}
           and found{" "}
-          <span className="font-semibold text-amber-600">{gapCount} gap{gapCount !== 1 ? "s" : ""}</span>
+          <span style={{ fontWeight: 600, color: "var(--c1b-amber-text, #7A5218)" }}>{gapCount} gap{gapCount !== 1 ? "s" : ""}</span>
           {renewalDate ? (
             <>
               {" "}before your{" "}
-              <span className="font-semibold text-slate-800">{renewalDate}</span> renewal.
+              <span style={{ fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>{renewalDate}</span> renewal.
             </>
           ) : "."}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={showGaps}
-            className="flex-1 px-4 py-3 bg-[#0F766E] text-white font-semibold rounded-xl hover:bg-[#0D9488] transition-colors text-sm"
-          >
+          <button onClick={showGaps} className="btn-filled flex-1">
             Show me my gaps →
           </button>
-          <button
-            onClick={dismiss}
-            className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
-          >
+          <button onClick={dismiss} className="btn-outline flex-1">
             Got it
           </button>
         </div>

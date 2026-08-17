@@ -90,7 +90,6 @@ function SelfCheckTool() {
           className={`rounded-xl border p-4 ${colorMap[result.color as "red" | "amber"].bg} ${colorMap[result.color as "red" | "amber"].border}`}
         >
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">{result.color === "red" ? "⚠️" : "📅"}</span>
             <div>
               <p className={`font-semibold text-sm mb-1 ${colorMap[result.color as "red" | "amber"].title}`}>
                 {result.status}
@@ -140,7 +139,7 @@ export default function MateActPage() {
         <div className="grid sm:grid-cols-2 gap-6">
           <div className="public-card public-card-soft p-6">
             <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
-              <span className="text-xl">👥</span> Who it applies to
+              Who it applies to
             </h2>
             <p className="text-sm text-[#3f4a40] leading-relaxed mb-3">
               Every practitioner with a DEA registration number. No exceptions.
@@ -157,7 +156,7 @@ export default function MateActPage() {
 
           <div className="public-card public-card-soft p-6">
             <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
-              <span className="text-xl">📋</span> What the 8 hours must cover
+              What the 8 hours must cover
             </h2>
             <ul className="space-y-1.5 text-sm text-[#3f4a40]">
               {[
@@ -201,7 +200,7 @@ export default function MateActPage() {
                 color: "green",
                 title: "Completed 8 hours of qualifying SUD/opioid training",
                 detail: "You are compliant. Training that counts: any ACCME/AOA-accredited course covering SUD, OUD, or opioid prescribing that totals ≥8 hours.",
-                badge: "Compliant ✓",
+                badge: "Compliant",
               },
             ].map((s) => (
               <div
@@ -341,7 +340,7 @@ export default function MateActPage() {
                 A paid option, included here because the depth is genuinely greater than the free courses above.
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">✓ Satisfies MATE Act</span>
+                <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">Satisfies MATE Act</span>
                 <span className="text-xs bg-[#dde8cf] text-[#3f5f33] font-medium px-2.5 py-1 rounded-full">12.25 AMA PRA Cat 1</span>
                 <span className="text-xs bg-slate-100 text-[#3f4a40] font-medium px-2.5 py-1 rounded-full">On-demand</span>
               </div>

@@ -43,32 +43,46 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt
 
   return (
     <div className="mt-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+      <p className="mono-label mb-2" style={{ color: "var(--c1b-muted, #656C60)" }}>
         Recommended courses · {hoursNeeded.toFixed(1)} hrs needed
         {showUpgradePrompt ? " · top match shown" : ""}
       </p>
-      <div className="space-y-2">
+      <div
+        style={{
+          border: "1px solid var(--c1b-border-card, rgba(16,22,19,.13))",
+          borderRadius: 8,
+          background: "var(--c1b-card, #FBFAF5)",
+          overflow: "hidden",
+        }}
+      >
         {visible.map((course, i) => (
           <a
             key={i}
             href={course.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start justify-between gap-3 rounded-xl border border-brand-rule bg-brand-paper px-4 py-3 hover:border-brand-tealRule hover:shadow-card-1 transition-all group"
+            className="group flex items-start justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--c1b-hover,#F6F3EA)]"
+            style={i > 0 ? { borderTop: "1px solid var(--c1b-border-row, rgba(16,22,19,.06))" } : undefined}
           >
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-brand-navy leading-snug group-hover:text-brand-teal transition-colors">
+              <p
+                className="leading-snug transition-colors group-hover:text-[var(--c1b-green,#2E4A2C)]"
+                style={{ fontSize: 13.5, fontWeight: 600, color: "var(--c1b-ink, #101613)" }}
+              >
                 {course.name}
               </p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                <span className="text-xs text-slate-500">{course.provider}</span>
-                <span className="text-slate-300 text-xs">·</span>
-                <span className="text-xs text-slate-500">{course.credits}</span>
-                <span className="text-slate-300 text-xs">·</span>
-                <span className={`text-xs font-semibold ${course.isFree ? "text-brand-emerald" : "text-slate-500"}`}>
+              <p className="mt-1" style={{ fontSize: 12, color: "var(--c1b-muted, #656C60)" }}>
+                {course.provider} · {course.credits} ·{" "}
+                <span
+                  style={{
+                    fontFamily: "var(--mono, ui-monospace, monospace)",
+                    fontWeight: 600,
+                    color: course.isFree ? "var(--c1b-green, #2E4A2C)" : "var(--c1b-ink-2, #4B5349)",
+                  }}
+                >
                   {course.price}
                 </span>
-              </div>
+              </p>
             </div>
             <ExternalLinkIcon />
           </a>
@@ -77,14 +91,24 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt
 
       {catalog.courses.length > limit && (
         showUpgradePrompt ? (
-          <div className="mt-3 rounded-xl border border-brand-rule bg-brand-cream px-4 py-3">
-            <p className="text-xs font-semibold text-brand-navy">Free includes one strong course match.</p>
-            <p className="mt-1 text-xs text-slate-500">
+          <div
+            className="mt-3 px-4 py-3"
+            style={{
+              border: "1px solid var(--c1b-border-card, rgba(16,22,19,.13))",
+              borderRadius: 8,
+              background: "var(--c1b-card, #FBFAF5)",
+            }}
+          >
+            <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>
+              Free includes one strong course match.
+            </p>
+            <p className="mt-1" style={{ fontSize: 12, color: "var(--c1b-muted, #656C60)" }}>
               Upgrade to Essential to compare all {catalog.courses.length} verified options, sort by price/time, and export your audit-ready record.
             </p>
             <Link
               href="/pricing?checkout=essential"
-              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-teal hover:text-brand-tealDeep"
+              className="mt-2 inline-flex items-center gap-1 hover:underline"
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-green, #2E4A2C)" }}
             >
               Unlock full course choice →
             </Link>
@@ -92,7 +116,8 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt
         ) : (
           <Link
             href={`/courses/${slug}`}
-            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-teal hover:text-brand-tealDeep"
+            className="mt-2 inline-flex items-center gap-1 hover:underline"
+            style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-green, #2E4A2C)" }}
           >
             Browse all {catalog.courses.length} {catalog.topicLabel} courses →
           </Link>

@@ -49,16 +49,16 @@ export default function RenewalRing({
   let paceText: string | null = null;
   let paceColor = "text-slate-500";
   if (isCompliant) {
-    paceText = "Complete ✓";
+    paceText = "Complete";
     paceColor = "text-green-600";
   } else if (comfortable) {
-    paceText = "You're on track ✓";
+    paceText = "You're on track";
     paceColor = "text-teal-600";
   } else if (critical) {
-    paceText = "⚠️ Renewal at risk";
+    paceText = "Renewal at risk";
     paceColor = "text-red-600";
   } else if (actionZone && hrsPerMonth != null) {
-    paceText = `⚡ ${hrsPerMonth.toFixed(1)} hrs/month needed`;
+    paceText = `${hrsPerMonth.toFixed(1)} hrs/month needed`;
     paceColor = "text-amber-600";
   }
 
@@ -98,7 +98,7 @@ export default function RenewalRing({
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {isCompliant ? (
-            <span className="text-green-600 text-lg">✓</span>
+            <span className="text-green-600 text-lg">Met</span>
           ) : effectiveHoursNeeded > 0 ? (
             <>
               <span className="text-xs font-bold text-slate-800 leading-none">

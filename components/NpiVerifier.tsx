@@ -149,7 +149,7 @@ export default function NpiVerifier({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="text-sm font-medium text-[var(--ink)]">
-              ✓ License verified — {result.matches[0].name}
+              License verified — {result.matches[0].name}
               {result.matches[0].credential ? `, ${result.matches[0].credential}` : ""}
               {", "}
               {result.matches[0].state}
@@ -210,7 +210,7 @@ export default function NpiVerifier({
           </svg>
           <div className="flex-1">
             <p className="text-sm font-medium text-[var(--ink)]">
-              ⚠️ Could not verify automatically — you can still proceed
+              Could not verify automatically — you can still proceed
             </p>
             <p className="text-xs text-[var(--ink-2)] mt-0.5">
               NPPES may not have your record yet, or the name may differ. Your license will be saved without NPI verification.

@@ -6,88 +6,71 @@ import { Skeleton, SkeletonLine } from "@/components/ui/Skeleton";
 
 /**
  * Next.js loading UI for /dashboard/compliance.
- * Matches the compliance map page layout to prevent CLS.
+ * Mirrors the 1b compliance layout (header → stats → credential table)
+ * to prevent CLS.
  */
 export default function ComplianceLoading() {
   return (
-    <div className="space-y-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <SkeletonLine width={200} height={24} className="mb-2" />
-          <SkeletonLine width={260} height={14} className="mb-1" />
-          <SkeletonLine width={280} height={10} />
+          <SkeletonLine width={90} height={11} className="mb-2" />
+          <SkeletonLine width={240} height={28} className="mb-2" />
+          <SkeletonLine width={300} height={13} />
         </div>
         <div className="flex gap-2">
-          <SkeletonLine width={100} height={36} className="rounded-xl" />
-          <SkeletonLine width={100} height={36} className="rounded-xl" />
+          <SkeletonLine width={100} height={40} className="rounded-lg" />
+          <SkeletonLine width={140} height={40} className="rounded-lg" />
         </div>
-      </div>
-
-      {/* UrgencyCard skeleton */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
-        <SkeletonLine width={160} height={16} />
-        <SkeletonLine width="80%" height={12} />
-        <SkeletonLine width={120} height={32} className="rounded-lg" />
       </div>
 
       {/* Stats row */}
       <StatsRowSkeleton />
 
-      {/* 2 license compliance section skeletons */}
-      {[1, 2].map((i) => (
-        <section
-          key={i}
-          className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+      {/* Credential table skeleton: dark band + column band + rows */}
+      <section
+        className="overflow-hidden rounded-[10px] border"
+        style={{ background: "var(--c1b-card, #FBFAF5)", borderColor: "rgba(16,22,19,.13)" }}
+      >
+        <div
+          className="flex items-center justify-between gap-4 px-5 py-4"
+          style={{ background: "var(--c1b-forest, #22371F)" }}
         >
-          {/* Card header */}
-          <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-3">
-                <SkeletonLine width={160} height={18} />
-                <Skeleton className="rounded-full" style={{ width: 110, height: 22 }} />
-              </div>
-              <SkeletonLine width={200} height={12} />
-            </div>
-            <Skeleton className="rounded-full" style={{ width: 160, height: 28 }} />
+          <div className="flex items-center gap-3">
+            <Skeleton className="rounded" style={{ width: 180, height: 20, opacity: 0.35 }} />
+            <Skeleton className="rounded" style={{ width: 220, height: 13, opacity: 0.25 }} />
           </div>
-          {/* Card body */}
-          <div className="px-6 py-5 space-y-6">
-            {/* Hours progress bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <SkeletonLine width={120} height={12} />
-                <SkeletonLine width={80} height={12} />
-              </div>
-              <Skeleton className="rounded-full" style={{ width: "100%", height: 12 }} />
-              <div className="flex justify-between">
-                <SkeletonLine width={140} height={10} />
-                <SkeletonLine width={30} height={10} />
-              </div>
+          <Skeleton className="rounded-full" style={{ width: 90, height: 22, opacity: 0.3 }} />
+        </div>
+        <div className="px-5 py-2.5" style={{ background: "var(--c1b-band, #F0ECE1)" }}>
+          <SkeletonLine width="60%" height={10} />
+        </div>
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="grid items-center gap-4 px-5 py-4"
+            style={{
+              gridTemplateColumns: "2.4fr .9fr 1.1fr .9fr",
+              borderTop: "1px solid rgba(16,22,19,.06)",
+            }}
+          >
+            <div>
+              <SkeletonLine width={150} height={13} className="mb-1.5" />
+              <SkeletonLine width={220} height={10} />
             </div>
-            {/* Mandatory topics */}
-            <div className="space-y-2">
-              <SkeletonLine width={120} height={14} className="mb-3" />
-              {[1, 2, 3].map((j) => (
-                <Skeleton
-                  key={j}
-                  className="rounded-xl"
-                  style={{ width: "100%", height: 80 }}
-                />
-              ))}
+            <SkeletonLine width={60} height={10} />
+            <div>
+              <SkeletonLine width={70} height={11} className="mb-1.5" />
+              <Skeleton className="rounded-full" style={{ width: "90%", height: 5 }} />
             </div>
+            <SkeletonLine width={50} height={10} className="justify-self-end" />
           </div>
-        </section>
-      ))}
+        ))}
+      </section>
 
       {/* Certificate list */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <SkeletonLine width={180} height={18} />
-          <SkeletonLine width={70} height={14} />
-        </div>
-        <CertificateTableSkeleton rows={5} />
-      </section>
+      <CertificateTableSkeleton rows={3} />
     </div>
   );
 }

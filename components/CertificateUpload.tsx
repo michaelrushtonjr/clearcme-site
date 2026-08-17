@@ -696,7 +696,7 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
         </div>
-        <h2 className="font-display text-2xl font-semibold text-white mb-1">✓ Certificate Processed</h2>
+        <h2 className="font-display text-2xl font-semibold text-white mb-1">Certificate processed</h2>
         <p className="text-[rgba(244,239,227,0.82)] text-sm">AI successfully extracted your CME credit</p>
       </div>
 
@@ -779,7 +779,7 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
                     onClick={() => setConfirmed(true)}
                     className="product-btn product-btn-brand flex-1"
                   >
-                    Looks good ✓
+                    Looks good
                   </button>
                   <button
                     onClick={() => setShowAdvanced(true)}

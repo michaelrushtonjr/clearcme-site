@@ -4,8 +4,6 @@ export const revalidate = 0;
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import UrgencyCard from "@/components/dashboard/UrgencyCard";
-import MandatoryTopicAccordion from "@/components/dashboard/MandatoryTopicAccordion";
 import { buildNextAction } from "@/lib/next-action";
 import ComplianceExportButton from "@/components/dashboard/ComplianceExportButton";
 import AuditExportButton from "@/components/dashboard/AuditExportButton";
@@ -13,7 +11,6 @@ import AhaMomentModal from "@/components/dashboard/AhaMomentModal";
 import { courseCtaLabel, courseDestination } from "@/lib/course-routing";
 import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { GapCourseFeed } from "@/components/dashboard/GapCourseFeed";
-import { ComplianceForecast } from "@/components/dashboard/ComplianceForecast";
 import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { formatStateName } from "@/lib/state-names";
 import {
@@ -30,9 +27,9 @@ import {
   shortConditionText,
 } from "@/lib/requirement-scope";
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
-import InfoTip from "@/components/ui/InfoTip";
 import CredentialTabs from "@/components/console/CredentialTabs";
 import FillWhatsLeft from "@/components/console/FillWhatsLeft";
+import RequirementTable, { type RequirementRow } from "@/components/console/RequirementTable";
 import { matchCoursesForGap, type OpenGap } from "@/lib/course-matcher";
 import RequirementAttestation, {
   type AttestationStatus,
@@ -113,53 +110,6 @@ const TOPIC_LABELS: Record<string, string> = {
 /** Topics sourced from Hippo Education — show badge */
 const HIPPO_TOPICS = new Set(["SUBSTANCE_USE", "OPIOID_PRESCRIBING", "INFECTION_CONTROL"]);
 
-function getUrgencyTone(daysUntilRenewal: number | null, percentComplete: number) {
-  if (percentComplete >= 100) return "met";
-  if (daysUntilRenewal === null) return "open";
-  if (daysUntilRenewal < 0) return "due";
-  if (daysUntilRenewal < 60) return "warn-now";
-  if (daysUntilRenewal < 180) return "warn-soon";
-  return "open";
-}
-
-const TONE: Record<string, { bg: string; text: string; border: string; bar: string }> = {
-  met:        { bg: "bg-brand-emeraldTint", text: "text-brand-emerald",  border: "border-brand-emeraldTint", bar: "bg-brand-emerald" },
-  open:       { bg: "bg-brand-amberTint",   text: "text-brand-amber",    border: "border-brand-amberRule",   bar: "bg-brand-teal" },
-  "warn-soon":{ bg: "bg-brand-amberTint",   text: "text-brand-amberMid", border: "border-brand-amberRule",   bar: "bg-brand-amberMid" },
-  "warn-now": { bg: "bg-brand-crimsonTint", text: "text-brand-crimson",  border: "border-brand-crimsonTint", bar: "bg-brand-crimson" },
-  due:        { bg: "bg-brand-crimsonTint", text: "text-brand-crimson",  border: "border-brand-crimsonTint", bar: "bg-brand-crimson" },
-};
-
-function requirementStatusLabel({
-  isMet,
-  isUnknown,
-  isNotApplicable,
-  earned,
-  daysUntilRenewal,
-}: {
-  isMet: boolean;
-  isUnknown?: boolean;
-  isNotApplicable?: boolean;
-  earned: number;
-  daysUntilRenewal: number | null;
-}) {
-  if (isNotApplicable) return "Doesn't apply";
-  if (isMet) return "Met";
-  if (isUnknown) return "Needs your input";
-  if (daysUntilRenewal !== null && daysUntilRenewal <= 90) return "Action needed";
-  if (earned > 0) return "At risk";
-  return "Missing";
-}
-
-function requirementStatusClass(label: string) {
-  if (label === "Doesn't apply") return "product-pill bg-[var(--bg-2)] text-[var(--ink-3)]";
-  if (label === "Met") return "product-pill product-pill-met";
-  if (label === "Needs your input") return "product-pill product-pill-track";
-  if (label === "Action needed") return "product-pill product-pill-miss";
-  if (label === "At risk") return "product-pill product-pill-pending";
-  return "product-pill product-pill-miss";
-}
-
 function formatReviewDate(date?: Date) {
   if (!date) return null;
   return formatDateUTC(date, { month: "short", day: "numeric", year: "numeric" });
@@ -172,118 +122,111 @@ function parseSourceUrls(sourceUrl?: string) {
     .filter((url) => /^https?:\/\//i.test(url));
 }
 
-function RequirementSourceDisclosure({ sourceMeta }: { sourceMeta: RequirementSourceMeta }) {
-  const sourceUrls = parseSourceUrls(sourceMeta.sourceUrl);
-
-  return (
-    <details className="group mt-2 rounded-[var(--radius-sm)] border border-[rgba(63,95,51,0.18)] bg-[rgba(63,95,51,0.07)] px-3 py-2 text-xs text-[var(--ink-2)] open:bg-[rgba(63,95,51,0.10)]">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-[var(--primary)] marker:hidden">
-        <span>Source / reviewed</span>
-        <span className="text-[var(--primary-2)] transition-transform group-open:rotate-180">⌄</span>
-      </summary>
-      <div className="mt-2 space-y-1.5 leading-relaxed">
-        {(sourceMeta.sourceUrl || sourceMeta.sourceTitle) && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">
-              Official source{sourceUrls.length > 1 ? "s" : ""}: {" "}
-            </span>
-            {sourceUrls.length === 1 ? (
-              <a
-                href={sourceUrls[0]}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
-              >
-                {sourceMeta.sourceTitle ?? "State board guidance"}
-              </a>
-            ) : sourceUrls.length > 1 ? (
-              <span className="inline-flex flex-wrap gap-x-2 gap-y-1">
-                {sourceUrls.map((url, index) => (
-                  <a
-                    key={url}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
-                  >
-                    {index === 0 ? sourceMeta.sourceTitle ?? "State board guidance" : `Primary source ${index + 1}`}
-                  </a>
-                ))}
-              </span>
-            ) : (
-              <span>{sourceMeta.sourceTitle}</span>
-            )}
-          </p>
-        )}
-        {sourceMeta.effectiveDate && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">Required since: </span>
-            {formatReviewDate(sourceMeta.effectiveDate)}
-          </p>
-        )}
-        {sourceMeta.lastReviewed && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">Last reviewed: </span>
-            {formatReviewDate(sourceMeta.lastReviewed)}
-          </p>
-        )}
-        {sourceMeta.hoursLabel && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">Requirement: </span>
-            {sourceMeta.hoursLabel}
-          </p>
-        )}
-        {sourceMeta.conditionText && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">
-              {sourceMeta.isConditional ? "Applies when: " : "Scope / caveat: "}
-            </span>
-            {sourceMeta.conditionText}
-          </p>
-        )}
-        {sourceMeta.timingNote && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">Timing: </span>
-            {sourceMeta.timingNote}
-          </p>
-        )}
-        {sourceMeta.stateCycleNote && (
-          <p>
-            <span className="font-semibold text-[var(--ink)]">State cycle: </span>
-            {sourceMeta.stateCycleNote}
-          </p>
-        )}
-        <p>
-          <span className="font-semibold text-[var(--ink)]">Why this applies: </span>
-          {sourceMeta.whyThisApplies}
-        </p>
-      </div>
-    </details>
-  );
+/** Rule cell (mono, lowercase): "per cycle", "one-time", "every 4 yrs", "conditional" */
+function ruleCell(label: string, isConditional: boolean): string {
+  if (isConditional) return "conditional";
+  const everyN = /^Every (\d+) years$/.exec(label);
+  if (everyN) return `every ${everyN[1]} yrs`;
+  switch (label) {
+    case "One-time":
+      return "one-time";
+    case "Every renewal":
+      return "per cycle";
+    case "First renewal only":
+      return "first renewal";
+    case "Initial license only":
+      return "initial license";
+    case "Recurring long-cycle":
+      return "long-cycle";
+    default:
+      return label.toLowerCase();
+  }
 }
 
-function remainingHoursLabel({
-  generalGapHours,
-  mandatoryGaps,
-  isCompliant,
-}: {
-  generalGapHours: number;
-  mandatoryGaps: MandatoryGap[];
-  isCompliant: boolean;
-}) {
-  if (isCompliant) return "All hours completed ✓";
+const detailText = { fontSize: 12.5, lineHeight: 1.55, color: "var(--c1b-ink-2)" } as const;
+const detailLabel = { fontWeight: 600, color: "var(--c1b-ink)" } as const;
 
-  const mandatoryHoursGap = mandatoryGaps.reduce((sum, gap) => sum + Math.max(0, gap.gap), 0);
-  const parts: string[] = [];
+/** Flattened source/provenance block for an expanded requirement row. */
+function SourceBlock({ sourceMeta }: { sourceMeta: RequirementSourceMeta }) {
+  const sourceUrls = parseSourceUrls(sourceMeta.sourceUrl);
+  const linkStyle = {
+    color: "var(--c1b-green)",
+    textDecoration: "underline",
+    textUnderlineOffset: 2,
+  } as const;
 
-  if (generalGapHours > 0) {
-    parts.push(`${generalGapHours.toFixed(1)} general hr${generalGapHours === 1 ? "" : "s"}`);
-  }
-  if (mandatoryHoursGap > 0) {
-    parts.push(`${mandatoryHoursGap.toFixed(1)} topic hr${mandatoryHoursGap === 1 ? "" : "s"}`);
-  }
-
-  return parts.length > 0 ? `${parts.join(" + ")} remaining` : "Mandatory topics still need confirmation";
+  return (
+    <div
+      style={{
+        borderTop: "1px solid var(--c1b-border-row)",
+        paddingTop: 10,
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <p className="mono-label" style={{ color: "var(--c1b-muted)", marginBottom: 2 }}>
+        Source / reviewed
+      </p>
+      {(sourceMeta.sourceUrl || sourceMeta.sourceTitle) && (
+        <p style={detailText}>
+          <span style={detailLabel}>Official source{sourceUrls.length > 1 ? "s" : ""}: </span>
+          {sourceUrls.length > 0 ? (
+            sourceUrls.map((url, index) => (
+              <span key={url}>
+                {index > 0 && " · "}
+                <a href={url} target="_blank" rel="noreferrer" style={linkStyle}>
+                  {index === 0 ? sourceMeta.sourceTitle ?? "State board guidance" : `Source ${index + 1}`}
+                </a>
+              </span>
+            ))
+          ) : (
+            <span>{sourceMeta.sourceTitle}</span>
+          )}
+        </p>
+      )}
+      {sourceMeta.effectiveDate && (
+        <p style={detailText}>
+          <span style={detailLabel}>Required since: </span>
+          {formatReviewDate(sourceMeta.effectiveDate)}
+        </p>
+      )}
+      {sourceMeta.lastReviewed && (
+        <p style={detailText}>
+          <span style={detailLabel}>Last reviewed by ClearCME: </span>
+          {formatReviewDate(sourceMeta.lastReviewed)}
+        </p>
+      )}
+      {sourceMeta.hoursLabel && (
+        <p style={detailText}>
+          <span style={detailLabel}>Requirement: </span>
+          {sourceMeta.hoursLabel}
+        </p>
+      )}
+      {sourceMeta.conditionText && (
+        <p style={detailText}>
+          <span style={detailLabel}>{sourceMeta.isConditional ? "Applies when: " : "Scope / caveat: "}</span>
+          {sourceMeta.conditionText}
+        </p>
+      )}
+      {sourceMeta.timingNote && (
+        <p style={detailText}>
+          <span style={detailLabel}>Timing: </span>
+          {sourceMeta.timingNote}
+        </p>
+      )}
+      {sourceMeta.stateCycleNote && (
+        <p style={detailText}>
+          <span style={detailLabel}>State cycle: </span>
+          {sourceMeta.stateCycleNote}
+        </p>
+      )}
+      <p style={detailText}>
+        <span style={detailLabel}>Why this applies: </span>
+        {sourceMeta.whyThisApplies}
+      </p>
+    </div>
+  );
 }
 
 function buildRequirementSourceMeta({
@@ -333,20 +276,6 @@ function buildRequirementSourceMeta({
       ? `Your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${displayName} for physicians who meet a practice condition. Your license alone doesn't tell ClearCME whether it binds you, so we ask rather than assume.`
       : `This appears because your tracked license is ${state} ${licenseType}, and the ${stateName} rule set includes ${hoursRequired.toFixed(0)} hour${hoursRequired === 1 ? "" : "s"} of ${displayName}${firstRenewalOnly ? " as a one-time requirement" : " in this renewal cycle"}.`,
   };
-}
-
-function RenewalCountdown({ days, percentComplete }: { days: number | null; percentComplete: number }) {
-  if (days === null) return null;
-  const tone = TONE[getUrgencyTone(days, percentComplete)];
-
-  return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${tone.bg} ${tone.text} ${tone.border}`}>
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      {days <= 0 ? "Renewal overdue" : days === 1 ? "1 day until renewal" : `${days} days until renewal`}
-    </div>
-  );
 }
 
 export default async function CompliancePage() {
@@ -547,7 +476,8 @@ export default async function CompliancePage() {
 
   const totalHoursAllCerts = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
-  // Shared next-action engine — same recommendation as the dashboard hero card
+  // Shared next-action engine — same recommendation as the dashboard hero card.
+  // Here it only decides which requirement row starts expanded.
   const nextAction = buildNextAction(
     complianceData
       .filter((d) => d.rule !== null)
@@ -621,7 +551,7 @@ export default async function CompliancePage() {
     : null;
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
       {/* Aha-moment modal — fires once on first compliance map visit */}
       {ahaProps && ahaProps.requirementCount > 0 && (
         <AhaMomentModal {...ahaProps} />
@@ -642,25 +572,14 @@ export default async function CompliancePage() {
         </div>
       </div>
 
-      {/* Your Next Action card — rendered from the shared engine */}
-      {nextAction && <UrgencyCard rec={nextAction} />}
-
       {/* No licenses */}
       {licenses.length === 0 && (
-        <div className="product-callout-brand p-8 text-center">
-          <div className="w-12 h-12 bg-[rgba(63,95,51,0.12)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-          </div>
-          <h3 className="font-display text-xl font-semibold text-[var(--ink)] mb-2">No licenses configured</h3>
-          <p className="text-sm text-[var(--ink-2)] mb-4">
+        <div className="card" style={{ padding: "36px 24px", textAlign: "center" }}>
+          <h3 className="card-title">No licenses configured</h3>
+          <p style={{ margin: "8px auto 18px", maxWidth: 420, fontSize: 14, color: "var(--c1b-ink-2)" }}>
             Add your state medical licenses to see personalized compliance requirements.
           </p>
-          <Link
-            href="/dashboard/profile"
-            className="product-btn product-btn-brand"
-          >
+          <Link href="/dashboard/profile" className="btn-filled">
             Add licenses →
           </Link>
         </div>
@@ -725,383 +644,291 @@ export default async function CompliancePage() {
           (d) => `${formatStateName(d.license.state)} — ${d.license.licenseType}`
         )}
       >
-      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => (
+      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => {
+        const rows: RequirementRow[] = [];
+
+        // General hours — first row of the table, same grammar as topic rows
+        if (rule && totalHoursNeeded > 0) {
+          const generalGap = Math.max(0, totalHoursNeeded - totalHoursEarned);
+          const genMet = generalGap === 0;
+          let genStatus = "Open";
+          let genTone: RequirementRow["statusTone"] = "open";
+          let paceSentence: string | null = null;
+          if (genMet) {
+            genStatus = "Met";
+            genTone = "met";
+          } else if (daysUntilRenewal !== null && daysUntilRenewal <= 0) {
+            genStatus = "Action needed";
+          } else if (daysUntilRenewal !== null && daysUntilRenewal > 0) {
+            const monthsLeft = daysUntilRenewal / 30.4;
+            const hrsPerMonth = monthsLeft > 0 ? gapHours / monthsLeft : gapHours;
+            const pctTimeLeft = daysUntilRenewal / (rule.renewalCycle * 30.4);
+            const pctDone = totalHoursNeeded > 0 ? totalHoursEarned / totalHoursNeeded : 0;
+            const onTrack = pctDone >= 1 - pctTimeLeft;
+            genStatus = onTrack ? "On pace" : "Behind";
+            genTone = onTrack ? "muted" : "open";
+            paceSentence = `To finish by renewal, log ${hrsPerMonth.toFixed(1)} hrs/month.`;
+          }
+          rows.push({
+            key: `${license.id}-general`,
+            name: "General hours",
+            note: `${totalHoursNeeded.toFixed(0)} hours of accredited CME each renewal cycle`,
+            srcLine: `Source: ${formatStateName(license.state)} ${license.licenseType} licensing requirements · verified ${formatDateUTC(rule.updatedAt, { month: "short", day: "numeric", year: "numeric" })}`,
+            rule: "per cycle",
+            hrsLabel: `${totalHoursEarned.toFixed(1)} / ${totalHoursNeeded.toFixed(0)}`,
+            pct: (totalHoursEarned / totalHoursNeeded) * 100,
+            barTone: genMet ? "met" : "open",
+            status: genStatus,
+            statusTone: genTone,
+            detail: (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {paceSentence && <p style={detailText}>{paceSentence}</p>}
+                <p style={{ fontSize: 12.5, color: "var(--c1b-muted)" }}>
+                  {cycleCerts.length} certificate{cycleCerts.length === 1 ? "" : "s"} counted in this cycle.{" "}
+                  <Link
+                    href="/dashboard/upload"
+                    style={{ fontWeight: 600, color: "var(--c1b-green)", textDecoration: "none" }}
+                  >
+                    Add certificate →
+                  </Link>
+                </p>
+              </div>
+            ),
+          });
+        }
+
+        // Mandatory topic rows
+        const firstGapIdx = mandatoryGaps.findIndex((g) => !g.isMet && !g.isNotApplicable);
+        mandatoryGaps.forEach((gap, gapIdx) => {
+          const sourceMeta = gap.sourceMeta;
+
+          let status = "Open";
+          let statusTone: RequirementRow["statusTone"] = "open";
+          if (gap.isNotApplicable) {
+            status = "N/A";
+            statusTone = "muted";
+          } else if (gap.isMet) {
+            status = "Met";
+            statusTone = "met";
+          } else if (gap.isUnknown) {
+            status = "Needs input";
+          } else if (daysUntilRenewal !== null && daysUntilRenewal <= 90) {
+            status = "Action needed";
+          }
+
+          const verifiedLabel = formatReviewDate(sourceMeta?.lastReviewed);
+          let srcLine = sourceMeta
+            ? `Source: ${sourceMeta.sourceTitle}${verifiedLabel ? ` · verified ${verifiedLabel}` : ""}`
+            : null;
+          if (gap.satisfiedByCertLabel) {
+            srcLine = `Satisfied by ${gap.satisfiedByCertLabel}`;
+          } else if (gap.completionStatus === "completed") {
+            srcLine = `You attested completion${gap.completedYear ? ` · ${gap.completedYear}` : ""}`;
+          } else if (gap.isNotApplicable) {
+            srcLine = "You marked this as not applicable";
+          } else if (gap.suggestedCert && !gap.isMet) {
+            srcLine = `Looks satisfied by ${gap.suggestedCert.title} — open this row to confirm`;
+          }
+
+          const note =
+            gap.isConditional && gap.conditionText
+              ? conditionSummary(gap.conditionText)
+              : gap.description && gap.description !== gap.displayName
+              ? gap.description
+              : null;
+
+          const showCourseBits = !gap.isMet && !gap.isUnknown && !gap.isNotApplicable;
+          const destination = courseDestination(gap.topic);
+
+          rows.push({
+            key: gap.requirementId,
+            name: gap.displayName,
+            note,
+            srcLine,
+            rule: ruleCell(gap.cadenceLabel, gap.isConditional),
+            hrsLabel:
+              gap.needed > 0 ? `${gap.earned.toFixed(1)} / ${gap.needed.toFixed(0)}` : "n/a",
+            pct: gap.needed > 0 ? (gap.earned / gap.needed) * 100 : gap.isMet ? 100 : 0,
+            barTone: gap.needed > 0 && !gap.isNotApplicable && !gap.isUnknown ? (gap.isMet ? "met" : "open") : "none",
+            status,
+            statusTone,
+            defaultOpen:
+              nextAction?.topic === gap.topic &&
+              nextAction?.licenseState === license.state &&
+              !gap.isMet,
+            isScrollTarget: gapIdx === firstGapIdx,
+            detail: (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* The gating clause is the first thing that decides whether
+                    this row is even the physician's problem. */}
+                {gap.isConditional && sourceMeta?.conditionText && (
+                  <div
+                    style={{
+                      border: "1px solid var(--c1b-border-card)",
+                      background: "var(--c1b-card)",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                    }}
+                  >
+                    <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink)" }}>
+                      {formatStateName(license.state)} only requires this of some physicians
+                    </p>
+                    <p style={{ marginTop: 3, ...detailText }}>
+                      {conditionSummary(sourceMeta.conditionText)}
+                    </p>
+                  </div>
+                )}
+                {gap.isConditional && gap.description && gap.description !== gap.displayName && (
+                  <p style={detailText}>{gap.description}</p>
+                )}
+                <p style={{ fontSize: 12, color: "var(--c1b-muted)" }}>
+                  Cadence: {gap.cadenceLabel}
+                  {sourceMeta?.hoursLabel ? ` · ${sourceMeta.hoursLabel}` : ""}
+                  {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
+                </p>
+                {showCourseBits && gap.gap > 0 && (
+                  <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-amber-text)", marginTop: -6 }}>
+                    {gap.gap.toFixed(1)} hrs short
+                  </p>
+                )}
+
+                {gap.isUnknown && (
+                  <div
+                    style={{
+                      border: "1px solid rgba(169,114,42,.32)",
+                      background: "rgba(169,114,42,.07)",
+                      borderRadius: 8,
+                      padding: "12px 14px",
+                    }}
+                  >
+                    <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink)" }}>
+                      {gap.isConditional
+                        ? "Does this apply to you?"
+                        : "Tell ClearCME if you already completed this."}
+                    </p>
+                    <p style={{ marginTop: 4, ...detailText }}>
+                      {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
+                    </p>
+                    <p style={{ marginTop: 4, fontSize: 12, color: "var(--c1b-muted)" }}>
+                      This is not an error — it keeps recommendations from over-counting CME you may already have.
+                    </p>
+                    <RequirementAttestation
+                      requirementId={gap.requirementId}
+                      licenseId={license.id}
+                      status={gap.completionStatus}
+                      completedYear={gap.completedYear}
+                      allowNotApplicable={gap.isConditional}
+                      suggestedCert={gap.suggestedCert}
+                      satisfiedByCertLabel={gap.satisfiedByCertLabel}
+                      compact
+                    />
+                  </div>
+                )}
+
+                {/* Answered history — single status card + follow-up actions.
+                    Also rendered for an unanswered row when an uploaded
+                    certificate looks like it satisfies it (pre-fill). */}
+                {!gap.isUnknown &&
+                  gap.isAttestable &&
+                  (gap.completionStatus !== "none" ||
+                    (gap.suggestedCert && !gap.isMet && !gap.isNotApplicable)) && (
+                  <RequirementAttestation
+                    requirementId={gap.requirementId}
+                    licenseId={license.id}
+                    status={gap.completionStatus}
+                    completedYear={gap.completedYear}
+                    allowNotApplicable={gap.isConditional}
+                    suggestedCert={gap.suggestedCert}
+                    satisfiedByCertLabel={gap.satisfiedByCertLabel}
+                    compact
+                  />
+                )}
+
+                {showCourseBits && (
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <Link
+                        href={destination.href}
+                        {...(destination.isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
+                        className="btn-filled"
+                        style={{ padding: "8px 14px", fontSize: 12.5 }}
+                      >
+                        {destination.isExactMatch
+                          ? TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"
+                          : courseCtaLabel(gap.topic, formatTopic(gap.topic))}
+                      </Link>
+                      <span style={{ fontSize: 11.5, color: "var(--c1b-muted)" }}>
+                        {HIPPO_TOPICS.has(gap.topic) ? "via Hippo Education" : "ACCME-accredited · Cat 1"}
+                      </span>
+                    </div>
+                    <GapCourseFeed
+                      topic={gap.topic}
+                      hoursNeeded={gap.gap}
+                      limit={hasFullCourseChoice ? 3 : 1}
+                      showUpgradePrompt={!hasFullCourseChoice}
+                    />
+                  </div>
+                )}
+
+                {sourceMeta && <SourceBlock sourceMeta={sourceMeta} />}
+              </div>
+            ),
+          });
+        });
+
+        const bandSourceUrls = rule ? parseSourceUrls(rule.sourceUrl ?? undefined) : [];
+        const sourcesChecked = rule
+          ? formatDateUTC(rule.updatedAt, { month: "short", day: "numeric", year: "numeric" })
+          : null;
+
+        return (
         <div key={license.id}>
         <section className="card" style={{ overflow: "hidden" }}>
           {/* Dark band header */}
           <div className="dark-band">
-            <div>
+            <div className="head">
               <h2 className="t">
                 {formatStateName(license.state)} — {license.licenseType}
               </h2>
+              <span className="vdiv" aria-hidden="true" />
               <p className="s">
                 {license.renewalDate ? `Renews ${formatDateUTC(license.renewalDate)}` : "No renewal date set"}
                 {rule ? ` · ${rule.totalHours > 0 ? `${rule.totalHours} hours every ${rule.renewalCycle % 12 === 0 ? `${rule.renewalCycle / 12} year${rule.renewalCycle === 12 ? "" : "s"}` : `${rule.renewalCycle} months`}` : "mandated topics only"}` : ""}
               </p>
-              {rule && (
+            </div>
+            <div className="right">
+              {sourcesChecked && (
                 <p className="src">
-                  Sources checked {formatDateUTC(rule.updatedAt, { month: "short", day: "numeric", year: "numeric" })}
-                  {rule.sourceUrl && parseSourceUrls(rule.sourceUrl).length > 0 && (
-                    <>
-                      {" · "}
-                      <a
-                        href={parseSourceUrls(rule.sourceUrl)[0]}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ color: "inherit", textDecoration: "underline" }}
-                      >
-                        Verify ↗
-                      </a>
-                    </>
+                  {bandSourceUrls.length > 0 ? (
+                    <a href={bandSourceUrls[0]} target="_blank" rel="noreferrer">
+                      Sources checked {sourcesChecked}
+                    </a>
+                  ) : (
+                    <>Sources checked {sourcesChecked}</>
                   )}
                 </p>
               )}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
               <span className={`chip ${!rule ? "chip-ondark-warn" : isCompliant ? "chip-ondark-ok" : "chip-ondark-warn"}`}>
                 {!rule ? "Rules pending" : isCompliant ? "On track" : "Action needed"}
               </span>
-              <RenewalCountdown days={daysUntilRenewal} percentComplete={totalHoursNeeded > 0 ? Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100) : (isCompliant ? 100 : 0)} />
             </div>
           </div>
 
           {!rule ? (
-            <div className="px-6 py-8 text-center">
-              <p className="text-[var(--ink-2)] text-sm">
+            <div style={{ padding: "30px 20px", textAlign: "center" }}>
+              <p style={{ fontSize: 14, color: "var(--c1b-ink-2)" }}>
                 {blockedMessage ?? "Compliance rules for this license are not yet loaded."}
               </p>
-              <p className="text-xs text-[var(--ink-3)] mt-1">
+              <p style={{ marginTop: 6, fontSize: 12.5, color: "var(--c1b-muted)" }}>
                 We&apos;re adding state requirements continuously — check back soon.
               </p>
             </div>
+          ) : rows.length > 0 ? (
+            <RequirementTable rows={rows} />
           ) : (
-            <div className="px-6 py-5 space-y-6">
-              {/* Hours progress — hidden for topics-only states (totalHours 0),
-                  where an hours fraction is meaningless and divides by zero */}
-              {totalHoursNeeded > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-[var(--ink-2)]">
-                    CME Hours This Cycle
-                  </span>
-                  <span className="font-mono text-sm font-semibold text-[var(--ink)]">
-                    {totalHoursEarned.toFixed(1)} / {totalHoursNeeded.toFixed(0)} hrs
-                  </span>
-                </div>
-                <div className="h-3 bg-[var(--bg-2)] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      isCompliant ? "bg-[var(--status-met)]" : totalHoursEarned > 0 ? "bg-[var(--primary)]" : "bg-[var(--ink-4)]"
-                    }`}
-                    style={{ width: `${Math.min(100, (totalHoursEarned / totalHoursNeeded) * 100)}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-[var(--ink-3)]">
-                    {remainingHoursLabel({
-                      generalGapHours: Math.max(0, totalHoursNeeded - totalHoursEarned),
-                      mandatoryGaps,
-                      isCompliant,
-                    })}
-                  </span>
-                  <span className="text-xs text-[var(--ink-3)]">
-                    {Math.round((totalHoursEarned / totalHoursNeeded) * 100)}%
-                  </span>
-                </div>
-                {/* Pace indicator */}
-                {!isCompliant && daysUntilRenewal !== null && daysUntilRenewal > 0 && (
-                  (() => {
-                    const monthsLeft = daysUntilRenewal / 30.4;
-                    const hrsPerMonth = monthsLeft > 0 ? gapHours / monthsLeft : gapHours;
-                    const pctTimeLeft = daysUntilRenewal / (rule.renewalCycle * 30.4);
-                    const pctDone = totalHoursNeeded > 0 ? totalHoursEarned / totalHoursNeeded : 0;
-                    const onTrack = pctDone >= (1 - pctTimeLeft);
-                    const critical = daysUntilRenewal < 60 && pctDone < 0.5;
-                    return (
-                      <p className={`text-xs mt-1.5 font-medium ${critical ? "text-[var(--status-miss)]" : onTrack ? "text-[var(--status-met)]" : "text-[var(--status-pending)]"}`}>
-                        {critical ? "!" : onTrack ? "✓" : "→"} To finish by renewal, you need {hrsPerMonth.toFixed(1)} hrs/month
-                      </p>
-                    );
-                  })()
-                )}
-              </div>
-              )}
-
-              {/* Compliance Forecast */}
-              {!isCompliant && totalHoursNeeded > 0 && (
-                <ComplianceForecast
-                  state={license.state}
-                  licenseType={license.licenseType}
-                  hoursEarned={totalHoursEarned}
-                  totalHours={totalHoursNeeded}
-                  renewalDate={license.renewalDate}
-                  certDates={cycleCerts.map((c) => c.activityDate?.toISOString() ?? c.createdAt.toISOString())}
-                  licenseId={license.id}
-                />
-              )}
-
-              {/* Mandatory topics — collapsed accordion; the next-action topic starts open */}
-              {mandatoryGaps.length > 0 && (
-                <div>
-                  <h3 className="font-display text-lg font-semibold text-[var(--ink)] mb-3">Mandatory Topics</h3>
-                  <MandatoryTopicAccordion
-                    rows={mandatoryGaps.map((gap, gapIdx) => {
-                      const pct = Math.min(100, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 100);
-                      const topicToneKey = gap.isMet ? "met" : gap.isUnknown ? "open" : getUrgencyTone(daysUntilRenewal, gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0);
-                      const topicTone = gap.isNotApplicable
-                        ? { bg: "bg-[var(--bg-2)]", text: "text-[var(--ink-3)]", border: "border-[var(--line)]", bar: "bg-[var(--ink-4)]" }
-                        : TONE[topicToneKey];
-                      const statusIcon = gap.isNotApplicable ? "—" : gap.isMet ? "✓" : gap.isUnknown ? "Review" : gap.earned > 0 ? "~" : "○";
-                      const statusLabel = requirementStatusLabel({
-                        isMet: gap.isMet,
-                        isUnknown: gap.isUnknown,
-                        isNotApplicable: gap.isNotApplicable,
-                        earned: gap.earned,
-                        daysUntilRenewal,
-                      });
-                      // Mark the first actionable gap for aha-moment scroll target
-                      const isFirstGap =
-                        !gap.isMet &&
-                        !gap.isNotApplicable &&
-                        gapIdx === mandatoryGaps.findIndex((g) => !g.isMet && !g.isNotApplicable);
-
-                      const sourceMeta = gap.sourceMeta;
-                      const infoTipUrls = parseSourceUrls(sourceMeta?.sourceUrl);
-
-                      return {
-                        // requirementId, not topic — duplicate topics per license
-                        // (state rule + federal one-time) would collide as keys
-                        key: gap.requirementId,
-                        infoTip: sourceMeta ? (
-                          <InfoTip label={`Source details for ${gap.displayName}`}>
-                            <span className="block space-y-1">
-                              <span className="block font-semibold text-[var(--ink)]">
-                                {gap.displayName} · {gap.cadenceLabel}
-                              </span>
-                              {sourceMeta.hoursLabel && (
-                                <span className="block">
-                                  <span className="font-semibold text-[var(--ink)]">Requirement: </span>
-                                  {sourceMeta.hoursLabel}
-                                </span>
-                              )}
-                              {gap.isConditional && sourceMeta.conditionText && (
-                                <span className="block">
-                                  <span className="font-semibold text-[var(--ink)]">Applies when: </span>
-                                  {sourceMeta.conditionText}
-                                </span>
-                              )}
-                              {sourceMeta.effectiveDate && (
-                                <span className="block">
-                                  <span className="font-semibold text-[var(--ink)]">Required since: </span>
-                                  {formatReviewDate(sourceMeta.effectiveDate)}
-                                </span>
-                              )}
-                              {infoTipUrls.length > 0 ? (
-                                <span className="block">
-                                  <span className="font-semibold text-[var(--ink)]">Primary source: </span>
-                                  {infoTipUrls.map((url, index) => (
-                                    <a
-                                      key={url}
-                                      href={url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-[var(--primary)] underline decoration-[rgba(63,95,51,0.3)] underline-offset-2 hover:text-[var(--primary-2)]"
-                                    >
-                                      {index === 0
-                                        ? sourceMeta.sourceTitle ?? "State board guidance"
-                                        : ` · Source ${index + 1}`}
-                                    </a>
-                                  ))}
-                                </span>
-                              ) : (
-                                <span className="block">{sourceMeta.sourceTitle}</span>
-                              )}
-                              {sourceMeta.lastReviewed && (
-                                <span className="block">
-                                  <span className="font-semibold text-[var(--ink)]">Last reviewed by ClearCME: </span>
-                                  {formatReviewDate(sourceMeta.lastReviewed)}
-                                </span>
-                              )}
-                            </span>
-                          </InfoTip>
-                        ) : undefined,
-                        isScrollTarget: isFirstGap,
-                        toneClassName: `${topicTone.bg} ${topicTone.border}`,
-                        defaultOpen:
-                          nextAction?.topic === gap.topic &&
-                          nextAction?.licenseState === license.state &&
-                          !gap.isMet,
-                        summary: (
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span
-                                className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${
-                                  gap.isUnknown
-                                    ? "bg-[var(--status-track-bg)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[var(--status-track)]"
-                                    : "text-base"
-                                }`}
-                              >
-                                {statusIcon}
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-[var(--ink)] truncate">
-                                  {gap.displayName}
-                                </p>
-                                {gap.isConditional && gap.conditionText && (
-                                  <p className="mt-0.5 truncate text-xs text-[var(--ink-3)]">
-                                    {conditionSummary(gap.conditionText)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="font-mono text-xs font-semibold text-[var(--ink)]">
-                                {/* Attestation-only rows (needed = 0) have no
-                                    meaningful hours fraction — show the cadence
-                                    ("One-time") instead of "0/0 hrs". */}
-                                {gap.needed > 0
-                                  ? `${gap.earned.toFixed(1)}/${gap.needed.toFixed(0)} hrs`
-                                  : gap.cadenceLabel}
-                              </span>
-                              <span className={requirementStatusClass(statusLabel)}>
-                                {statusLabel}
-                              </span>
-                            </div>
-                          </div>
-                        ),
-                        details: (
-                          <div>
-                            {/* The gating clause is the first thing that decides
-                                whether this row is even the physician's problem —
-                                it belongs above the fold, not inside Source / reviewed. */}
-                            {gap.isConditional && gap.sourceMeta?.conditionText && (
-                              <div className="mb-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2">
-                                <p className="text-xs font-semibold text-[var(--ink)]">
-                                  {formatStateName(license.state)} only requires this of some physicians
-                                </p>
-                                <p className="mt-1 text-xs text-[var(--ink-2)]">
-                                  {conditionSummary(gap.sourceMeta.conditionText)}
-                                </p>
-                              </div>
-                            )}
-                            {gap.description && gap.description !== gap.displayName && (
-                              <p className="text-xs text-[var(--ink-3)] leading-relaxed">{gap.description}</p>
-                            )}
-                            <p className="mt-1 text-xs font-medium text-[var(--ink-3)]">
-                              Cadence: {gap.cadenceLabel}
-                              {gap.sourceMeta?.hoursLabel ? ` · ${gap.sourceMeta.hoursLabel}` : ""}
-                              {gap.satisfiedUntil ? ` · satisfied until ${formatReviewDate(gap.satisfiedUntil)}` : ""}
-                            </p>
-                            {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
-                              <p className={`mt-1 text-xs ${gap.earned > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-miss)]"}`}>
-                                {gap.gap.toFixed(1)} hrs short
-                              </p>
-                            )}
-                            {gap.isUnknown && (
-                              <div className="mt-2 rounded-[var(--radius-sm)] border border-[rgba(139,122,184,0.28)] bg-[var(--status-track-bg)] px-3 py-2 text-xs text-[var(--ink)]">
-                                <p className="font-semibold">
-                                  {gap.isConditional
-                                    ? "Does this apply to you?"
-                                    : "Tell ClearCME if you already completed this."}
-                                </p>
-                                <p className="mt-1 text-[var(--ink-2)]">
-                                  {gap.prompt ?? "This requirement may be one-time or long-cycle, so we need your history before counting it as still due."}
-                                </p>
-                                <p className="mt-1 text-[var(--status-track)]">This is not an error — it keeps recommendations from over-counting CME you may already have.</p>
-                                <RequirementAttestation
-                                  requirementId={gap.requirementId}
-                                  licenseId={license.id}
-                                  status={gap.completionStatus}
-                                  completedYear={gap.completedYear}
-                                  allowNotApplicable={gap.isConditional}
-                                  suggestedCert={gap.suggestedCert}
-                                  satisfiedByCertLabel={gap.satisfiedByCertLabel}
-                                  compact
-                                />
-                              </div>
-                            )}
-
-                            {/* Answered history — single status card + follow-up actions.
-                                Also rendered for an unanswered row when an uploaded
-                                certificate looks like it satisfies it (pre-fill). */}
-                            {!gap.isUnknown &&
-                              gap.isAttestable &&
-                              (gap.completionStatus !== "none" ||
-                                (gap.suggestedCert && !gap.isMet && !gap.isNotApplicable)) && (
-                              <RequirementAttestation
-                                requirementId={gap.requirementId}
-                                licenseId={license.id}
-                                status={gap.completionStatus}
-                                completedYear={gap.completedYear}
-                                allowNotApplicable={gap.isConditional}
-                                suggestedCert={gap.suggestedCert}
-                                satisfiedByCertLabel={gap.satisfiedByCertLabel}
-                                compact
-                              />
-                            )}
-
-                            {gap.sourceMeta && (
-                              <RequirementSourceDisclosure sourceMeta={gap.sourceMeta} />
-                            )}
-
-                            {/* Progress bar */}
-                            <div className="mt-3 flex items-center gap-3">
-                              <div className="flex-1 h-1.5 bg-white/60 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full ${
-                                    gap.isMet ? "bg-[var(--status-met)]" : gap.earned > 0 ? "bg-[var(--warm)]" : "bg-[var(--pop)]"
-                                  }`}
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                              {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
-                                <div className="flex flex-col items-end gap-0.5">
-                                  <Link
-                                    href={courseDestination(gap.topic).href}
-                                    {...(courseDestination(gap.topic).isExternal
-                                      ? { target: "_blank", rel: "noreferrer" }
-                                      : {})}
-                                    className="flex-shrink-0 text-xs font-medium px-3 py-1 rounded-lg transition-colors bg-[var(--primary)] text-white hover:bg-[var(--primary-2)]"
-                                  >
-                                    {courseDestination(gap.topic).isExactMatch
-                                      ? TOPIC_LABELS[gap.topic] ?? "Find Accredited CME →"
-                                      : courseCtaLabel(gap.topic, formatTopic(gap.topic))}
-                                  </Link>
-                                  {HIPPO_TOPICS.has(gap.topic) ? (
-                                    <span className="inline-flex items-center gap-1 text-xs text-[var(--mauve)] font-medium">
-                                      via Hippo Education
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs text-[var(--ink-3)]">ACCME-accredited • Cat 1</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Gap-specific course feed — Pixel rec #4 */}
-                            {!gap.isMet && !gap.isUnknown && !gap.isNotApplicable && (
-                              <GapCourseFeed
-                                topic={gap.topic}
-                                hoursNeeded={gap.gap}
-                                limit={hasFullCourseChoice ? 3 : 1}
-                                showUpgradePrompt={!hasFullCourseChoice}
-                              />
-                            )}
-                          </div>
-                        ),
-                      };
-                    })}
-                  />
-                </div>
-              )}
-
-              {/* No mandatory topics */}
-              {mandatoryGaps.length === 0 && (
-                <p className="text-sm text-[var(--ink-3)]">
-                  No mandatory topic requirements configured for this license.
-                </p>
-              )}
-            </div>
+            <p style={{ padding: "22px 20px", fontSize: 13.5, color: "var(--c1b-muted)" }}>
+              No mandatory topic requirements configured for this license.
+            </p>
           )}
         </section>
 
@@ -1117,30 +944,34 @@ export default async function CompliancePage() {
             />
           ))}
         </div>
-      ))}
+        );
+      })}
       </CredentialTabs>
 
-      {/* Certificates — full list lives on its own page now */}
+      {/* Certificates — full list lives on its own page */}
       <Link
         href="/dashboard/certificates"
-        className="product-card px-5 py-4 flex items-center justify-between gap-3 hover:border-[var(--primary)] hover:shadow-[var(--shadow-md)] transition-all"
+        className="card transition-colors hover:border-[var(--c1b-green)]"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          padding: "16px 20px",
+          textDecoration: "none",
+        }}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[rgba(63,95,51,0.12)] flex items-center justify-center flex-shrink-0">
-            <svg className="w-4.5 h-4.5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--ink)]">
-              {certificates.length} certificate{certificates.length === 1 ? "" : "s"} on file
-            </p>
-            <p className="text-xs text-[var(--ink-3)]">
-              {totalHoursAllCerts.toFixed(1)} hrs total · AI-extracted credit details
-            </p>
-          </div>
-        </div>
-        <span className="text-sm font-medium text-[var(--primary)] flex-shrink-0">View all →</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "var(--c1b-ink)" }}>
+            {certificates.length} certificate{certificates.length === 1 ? "" : "s"} on file
+          </span>
+          <span style={{ display: "block", marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
+            {totalHoursAllCerts.toFixed(1)} hrs total · AI-extracted credit details
+          </span>
+        </span>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--c1b-green)", flexShrink: 0 }}>
+          View all →
+        </span>
       </Link>
     </div>
   );

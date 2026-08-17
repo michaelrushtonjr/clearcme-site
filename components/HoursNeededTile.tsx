@@ -63,7 +63,7 @@ export default function HoursNeededTile({
             </p>
             <p className="text-xs text-[var(--ink-3)] mt-0.5">
               {totalHoursStillNeeded === 0
-                ? "all clear ✓"
+                ? "all clear"
                 : licenses.length > 1
                 ? `across ${licenses.length} licenses, all cycles`
                 : "this cycle"}

@@ -11,7 +11,7 @@ const verificationTable = [
     state: "Nevada",
     code: "NV",
     lastVerified: "July 2026",
-    confidence: "✅ Verified",
+    confidence: "Verified",
     source: "https://medboard.nv.gov/",
     sourceLabel: "Nevada State Board of Medical Examiners",
   },
@@ -19,7 +19,7 @@ const verificationTable = [
     state: "California",
     code: "CA",
     lastVerified: "July 2026",
-    confidence: "✅ Verified",
+    confidence: "Verified",
     source: "https://www.mbc.ca.gov/",
     sourceLabel: "Medical Board of California",
   },
@@ -27,7 +27,7 @@ const verificationTable = [
     state: "Texas",
     code: "TX",
     lastVerified: "July 2026",
-    confidence: "✅ Verified",
+    confidence: "Verified",
     source: "https://www.tmb.state.tx.us/",
     sourceLabel: "Texas Medical Board",
   },
@@ -35,7 +35,7 @@ const verificationTable = [
     state: "Florida",
     code: "FL",
     lastVerified: "May 2026",
-    confidence: "✅ Verified",
+    confidence: "Verified",
     source: "https://flboardofmedicine.gov/",
     sourceLabel: "Florida Board of Medicine",
   },
@@ -43,7 +43,7 @@ const verificationTable = [
     state: "New York",
     code: "NY",
     lastVerified: "May 2026",
-    confidence: "✅ Verified",
+    confidence: "Verified",
     source: "https://www.op.nysed.gov/professions-index/medicine",
     sourceLabel: "New York State Office of the Professions",
   },
@@ -80,7 +80,7 @@ export default function MethodologyPage() {
       <section className="mx-auto max-w-3xl space-y-8 px-6 pb-16">
         <div className="public-card p-6">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-[#1e2920]">
-            <span className="text-2xl">🏛️</span> Primary sources only
+            Primary sources only
           </h2>
           <p className="mb-4 text-sm leading-relaxed text-[#3f4a40]">
             Every ClearCME requirement entry is verified against primary sources:
@@ -103,7 +103,7 @@ export default function MethodologyPage() {
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="public-card public-card-soft p-6">
             <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-[#1e2920]">
-              <span className="text-2xl">📅</span> Last verified dates &amp; source URLs
+              Last verified dates &amp; source URLs
             </h2>
             <ul className="space-y-2 text-sm text-[#3f4a40]">
               <li className="flex items-start gap-2"><CheckIcon />A “last verified” date — so you know when we last confirmed accuracy</li>
@@ -113,7 +113,7 @@ export default function MethodologyPage() {
 
           <div className="public-card public-card-soft p-6">
             <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-[#1e2920]">
-              <span className="text-2xl">🔍</span> Continuous monitoring (Vera)
+              Continuous monitoring (Vera)
             </h2>
             <p className="text-sm leading-relaxed text-[#3f4a40]">
               Our internal QA system, <strong>Vera</strong>, checks requirements against primary sources on a
@@ -125,7 +125,7 @@ export default function MethodologyPage() {
 
         <div className="public-card p-6">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-[#1e2920]">
-            <span className="text-2xl">⚡</span> Update frequency
+            Update frequency
           </h2>
           <ul className="space-y-3 text-sm text-[#3f4a40]">
             <li className="flex items-start gap-3">
@@ -141,7 +141,7 @@ export default function MethodologyPage() {
 
         <div className="rounded-[22px] border border-[#e9d29a] bg-[#fbf1dc]/70 p-6">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-[#1e2920]">
-            <span className="text-2xl">⚠️</span> Known limitations
+            Known limitations
           </h2>
           <p className="mb-3 text-sm leading-relaxed text-[#3f4a40]">
             We are transparent about what we can&apos;t always verify automatically:
@@ -154,7 +154,7 @@ export default function MethodologyPage() {
 
         <div className="rounded-[22px] border border-[#bfd1ad] bg-[#dde8cf]/70 p-6">
           <h2 className="mb-3 flex items-center gap-2 text-xl font-bold text-[#1e2920]">
-            <span className="text-2xl">📬</span> Found an error?
+            Found an error?
           </h2>
           <p className="mb-4 text-sm leading-relaxed text-[#3f4a40]">
             If you believe a requirement is incorrect or outdated, please tell us. We take accuracy

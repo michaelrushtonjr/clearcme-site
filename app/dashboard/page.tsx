@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [certificates, licenses, requirementCompletions] = await Promise.all([
+  const [certificates, licenses, requirementCompletions, emailPreference] = await Promise.all([
     prisma.certificate.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -32,6 +32,10 @@ export default async function DashboardPage() {
     }),
     prisma.userRequirementCompletion.findMany({
       where: { userId },
+    }),
+    prisma.emailPreference.findUnique({
+      where: { userId },
+      select: { renewalReminders: true },
     }),
   ]);
 
@@ -297,6 +301,9 @@ export default async function DashboardPage() {
           hasLicense={hasLicenses}
           hasCertificate={hasCertificates}
           hasComplianceData={validCompliance.length > 0}
+          // renewalReminders defaults to true in the schema — a missing row
+          // means the user never turned them off, so the step counts as done.
+          hasRenewalAlerts={emailPreference?.renewalReminders ?? true}
         />
       </div>
 

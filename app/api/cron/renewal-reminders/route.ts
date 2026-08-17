@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
 
         if (daysUntilRenewal < 30) {
           // Urgent
-          title = "⚠️ Renewal Alert";
+          title = "Renewal alert";
           if (gapHours !== null && gapHours > 0) {
             body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. You still need ${gapHours} CME hours.`;
           } else {
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
           }
         } else {
           // 30–60 day heads-up
-          title = "📋 CME Reminder";
+          title = "CME reminder";
           body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Start tracking your CME now.`;
         }
 

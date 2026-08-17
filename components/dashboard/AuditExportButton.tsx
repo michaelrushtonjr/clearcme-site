@@ -121,10 +121,7 @@ export default function AuditExportButton({
             Building ZIP…
           </>
         ) : (
-          <>
-            <span>📦</span>
-            Download Audit ZIP
-          </>
+          "Download Audit ZIP"
         )}
       </button>
       <p className="max-w-[16rem] text-left text-[11px] leading-snug text-[var(--ink-3)]">

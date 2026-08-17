@@ -9,6 +9,7 @@ import {
 } from "@/lib/requirement-completions";
 import RequirementAttestation from "@/components/dashboard/RequirementAttestation";
 import { formatDateUTC } from "@/lib/dates";
+import { formatStateName } from "@/lib/state-names";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -346,7 +347,7 @@ export default function SettingsClient({
           )}
           {saveSuccess && (
             <p className="text-sm text-[var(--status-met)] bg-[var(--status-met-bg)] px-3 py-2 rounded-[var(--radius-sm)]">
-              ✓ Changes saved
+              Changes saved
             </p>
           )}
 
@@ -437,83 +438,59 @@ export default function SettingsClient({
         </div>
       </section>
 
-      {/* Requirement history */}
-      <section id="requirement-history" className="product-card overflow-hidden">
-        <div className="product-callout-brand rounded-none border-x-0 border-t-0 px-6 py-4">
-          <p className="product-callout-eye">Required setup step</p>
-          <h2 className="mt-1 font-display text-xl font-semibold text-[var(--ink)]">Confirm your special requirement history</h2>
-          <p className="text-xs text-[var(--ink-2)] mt-1">
-            Some CME topics are one-time or every few years. Confirm what you already completed so ClearCME can calculate your actual remaining hours.
-          </p>
-        </div>
-        <div className="px-6 py-5 space-y-5">
-          <p className="product-callout-brand px-4 py-3 text-xs leading-relaxed text-[var(--ink-2)]">
-            This is a user attestation, not an error state. It helps ClearCME avoid recommending courses for requirements you may already have satisfied. Keep your original CME documentation for your board&apos;s retention period.
-          </p>
-          {licenseRequirements.every((group) => group.requirements.length === 0) ? (
-            <p className="text-sm text-[var(--ink-3)]">No one-time or long-cycle requirements found for your active licenses.</p>
-          ) : (
-            licenseRequirements.map((group) => (
-              group.requirements.length > 0 && (
-                <div key={group.licenseId} className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[var(--ink)]">
-                    {group.state} {group.licenseType}
-                  </h3>
-                  <div className="space-y-3">
-                    {group.requirements.map((req) => {
-                      const key = `${req.id}:${group.licenseId}`;
-                      const saved = requirementCompletions.find(
-                        (completion) => completion.mandatoryRequirementId === req.id && completion.physicianLicenseId === group.licenseId
-                      );
-                      const markedNotCompleted = saved?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
-                      const markedNotApplicable = saved?.notes === NOT_APPLICABLE_REQUIREMENT_NOTE;
-                      const isConditional = req.cadence === "CONDITIONAL";
-                      return (
-                        <div key={key} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold text-[var(--ink)]">{formatTopic(req.topic)}</p>
-                                <span className="product-pill product-pill-track">
-                                  {formatCadence(req)}
-                                </span>
-                              </div>
-                              {req.description && (
-                                <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{req.description}</p>
-                              )}
-                              {req.notes && (
-                                <p className="mt-1 text-xs leading-relaxed text-[var(--ink-3)]">{req.notes}</p>
-                              )}
-                            </div>
-                            <div className="sm:w-56">
-                              <RequirementAttestation
-                                requirementId={req.id}
-                                licenseId={group.licenseId}
-                                status={
-                                  saved
-                                    ? markedNotApplicable
-                                      ? "not_applicable"
-                                      : markedNotCompleted
-                                      ? "not_completed"
-                                      : "completed"
-                                    : "none"
-                                }
-                                completedYear={saved?.completedYear ?? null}
-                                allowNotApplicable={isConditional}
-                                compact
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )
-            ))
-          )}
-        </div>
-      </section>
+      {/* Requirement history — "One-time topics" (1b) */}
+      {(() => {
+        const historyRows = licenseRequirements.flatMap((group) =>
+          group.requirements.map((req) => ({
+            group,
+            req,
+            saved: requirementCompletions.find(
+              (completion) =>
+                completion.mandatoryRequirementId === req.id &&
+                completion.physicianLicenseId === group.licenseId
+            ),
+          }))
+        );
+        const unconfirmed = historyRows.filter((row) => !row.saved).length;
+        return (
+          <section id="requirement-history" className="card overflow-hidden">
+            <div className="card-head">
+              <h2 className="card-title">One-time topics</h2>
+              <span
+                className="mono-label"
+                style={{ color: unconfirmed > 0 ? "var(--c1b-amber-text)" : "var(--c1b-muted)" }}
+              >
+                {unconfirmed > 0
+                  ? `${unconfirmed} unconfirmed`
+                  : historyRows.length > 0
+                  ? "All confirmed"
+                  : ""}
+              </span>
+            </div>
+            {historyRows.length === 0 ? (
+              <p style={{ padding: "2px 18px 18px", fontSize: 13.5, color: "var(--c1b-muted)" }}>
+                No one-time or long-cycle requirements found for your active licenses.
+              </p>
+            ) : (
+              historyRows.map(({ group, req, saved }) => (
+                <HistoryRow
+                  key={`${req.id}:${group.licenseId}`}
+                  group={group}
+                  req={req}
+                  saved={saved}
+                  formatTopic={formatTopic}
+                  formatCadence={formatCadence}
+                />
+              ))
+            )}
+            <div className="card-foot">
+              Some topics are one-time or every few years — confirming what you already completed
+              keeps ClearCME from recommending CME you don&apos;t need. This is your attestation, not an
+              error state; keep original documentation for your board&apos;s retention period.
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Notification preferences */}
       <section className="product-card overflow-hidden">
@@ -709,6 +686,117 @@ export default function SettingsClient({
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+/**
+ * One row of the "One-time topics" card (1b settings). At rest an answered
+ * row shows a quiet status chip — "2026", "N/A", "Still needed" — with a
+ * Change link; unanswered rows show the attestation inline.
+ */
+function HistoryRow({
+  group,
+  req,
+  saved,
+  formatTopic,
+  formatCadence,
+}: {
+  group: LicenseRequirementGroup;
+  req: RequirementSummary;
+  saved: RequirementCompletion | undefined;
+  formatTopic: (topic: string) => string;
+  formatCadence: (req: RequirementSummary) => string;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  const markedNotCompleted = saved?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
+  const markedNotApplicable = saved?.notes === NOT_APPLICABLE_REQUIREMENT_NOTE;
+  const isConditional = req.cadence === "CONDITIONAL";
+  const status = saved
+    ? markedNotApplicable
+      ? "not_applicable"
+      : markedNotCompleted
+      ? "not_completed"
+      : "completed"
+    : "none";
+  const answered = status !== "none";
+  const showAttestation = !answered || editing;
+
+  const noteParts = [
+    `${formatStateName(group.state)} ${group.licenseType}`,
+    req.hoursRequired > 0 ? `${req.hoursRequired} hours` : null,
+    formatCadence(req).toLowerCase(),
+  ].filter(Boolean);
+
+  return (
+    <div style={{ borderTop: "1px solid var(--c1b-border-row)", padding: "14px 18px" }}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--c1b-ink)" }}>
+            {formatTopic(req.topic)}
+          </p>
+          <p style={{ marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
+            {noteParts.join(" · ")}
+          </p>
+          {req.description && (
+            <p style={{ marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
+              {req.description}
+            </p>
+          )}
+        </div>
+        {answered && !editing && (
+          <div className="flex flex-shrink-0 items-center gap-3">
+            <span
+              className={`chip ${
+                status === "completed"
+                  ? "chip-met"
+                  : status === "not_completed"
+                  ? "chip-open"
+                  : "chip-muted"
+              }`}
+            >
+              {status === "completed"
+                ? saved?.completedYear
+                  ? `${saved.completedYear}`
+                  : "Confirmed"
+                : status === "not_applicable"
+                ? "N/A"
+                : "Still needed"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="hover:underline"
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-green)" }}
+            >
+              Change
+            </button>
+          </div>
+        )}
+      </div>
+      {showAttestation && (
+        <div className="mt-1 sm:max-w-md">
+          <RequirementAttestation
+            requirementId={req.id}
+            licenseId={group.licenseId}
+            status={status}
+            completedYear={saved?.completedYear ?? null}
+            allowNotApplicable={isConditional}
+            compact
+          />
+          {editing && (
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="mt-2 hover:underline"
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-muted)" }}
+            >
+              Close
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

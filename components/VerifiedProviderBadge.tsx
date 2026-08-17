@@ -8,7 +8,7 @@ export default function VerifiedProviderBadge({
   providerName,
 }: VerifiedProviderBadgeProps) {
   const isVerified = providerName ? matchProvider(providerName) : false;
-  const label = isVerified ? "✓ Verified Provider" : "⚠ Unverified Provider";
+  const label = isVerified ? "Verified Provider" : "Unverified Provider";
   const classes = isVerified
     ? "product-pill-met"
     : "product-pill-pending";

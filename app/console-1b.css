@@ -882,6 +882,238 @@
   justify-self: end;
 }
 
+/* ─── Compliance requirement table (1b compliance screen: REQUIREMENT /
+   RULE / PROGRESS / STATUS). Distinct from the dashboard's .req-row ledger.
+   Column widths per the prototype (2.4fr 1fr 1fr 1fr, tuned for the
+   wider source lines real data carries). ─── */
+
+.c1b .rt {
+  --rt-cols: 2.4fr 0.9fr 1.1fr 0.9fr;
+}
+
+.c1b .rt-band {
+  display: grid;
+  grid-template-columns: var(--rt-cols);
+  gap: 14px;
+  padding: 11px 20px;
+  background: var(--c1b-band);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c1b-ink-2);
+}
+
+.c1b .rt-band .r {
+  text-align: right;
+}
+
+.c1b .rt-row {
+  display: grid;
+  grid-template-columns: var(--rt-cols);
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 15px 20px;
+  border: 0;
+  border-top: 1px solid var(--c1b-border-row);
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.c1b button.rt-row {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.c1b button.rt-row:hover {
+  background: var(--c1b-hover);
+}
+
+.c1b button.rt-row:focus-visible {
+  outline: 2px solid var(--c1b-green);
+  outline-offset: -2px;
+}
+
+.c1b .rt-cell-name {
+  min-width: 0;
+}
+
+.c1b .rt-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c1b-ink);
+}
+
+.c1b .rt-note {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--c1b-muted);
+}
+
+.c1b .rt-src {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--c1b-muted);
+}
+
+.c1b .rt-rule {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--c1b-muted);
+  white-space: nowrap;
+}
+
+.c1b .rt-prog {
+  min-width: 0;
+}
+
+.c1b .rt-prog .num {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--c1b-ink);
+  white-space: nowrap;
+}
+
+.c1b .rt-bar {
+  display: block;
+  height: 5px;
+  margin-top: 6px;
+  border-radius: 99px;
+  background: var(--c1b-track);
+  overflow: hidden;
+}
+
+.c1b .rt-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+}
+
+.c1b .rt-bar > .met {
+  background: var(--c1b-green);
+}
+
+.c1b .rt-bar > .open {
+  background: var(--c1b-amber);
+}
+
+.c1b .rt-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.c1b .rt-status.met {
+  color: var(--c1b-green);
+}
+
+.c1b .rt-status.open {
+  color: var(--c1b-amber-text);
+}
+
+.c1b .rt-status.muted {
+  color: var(--c1b-muted);
+}
+
+.c1b .rt-detail {
+  border-top: 1px solid var(--c1b-border-row);
+  background: var(--c1b-hover);
+  padding: 16px 20px 18px;
+}
+
+@media (max-width: 700px) {
+  .c1b .rt-band {
+    display: none;
+  }
+
+  .c1b .rt-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 13px 16px;
+  }
+
+  .c1b .rt-rule {
+    display: none;
+  }
+
+  .c1b .rt-prog {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .c1b .rt-prog .num {
+    flex-shrink: 0;
+  }
+
+  .c1b .rt-bar {
+    flex: 1;
+    max-width: 220px;
+    margin-top: 0;
+  }
+
+  .c1b .rt-detail {
+    padding: 14px 16px 16px;
+  }
+}
+
+/* Dark-band inline head (compliance): title | divider | subtitle on one
+   line, sources + chip grouped right — per the 1b compliance screens. */
+.c1b .dark-band .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.c1b .dark-band .head .s {
+  margin-top: 0;
+}
+
+.c1b .dark-band .vdiv {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.c1b .dark-band .right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.c1b .dark-band .right .src {
+  margin-top: 0;
+}
+
+.c1b .dark-band .src a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.c1b .dark-band .src a:hover {
+  text-decoration: underline;
+}
+
 /* Stat cards (compliance) */
 .c1b .stat-grid {
   display: grid;

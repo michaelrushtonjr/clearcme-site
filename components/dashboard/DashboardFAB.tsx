@@ -113,7 +113,6 @@ export default function DashboardFAB() {
             onClick={() => setIsOpen(false)}
             className={actionItemClassName}
           >
-            <span aria-hidden="true">📊</span>
             <span>Status check</span>
           </Link>
 
@@ -122,7 +121,6 @@ export default function DashboardFAB() {
             onClick={() => setIsOpen(false)}
             className={actionItemClassName}
           >
-            <span aria-hidden="true">📷</span>
             <span>Upload cert</span>
           </Link>
         </div>

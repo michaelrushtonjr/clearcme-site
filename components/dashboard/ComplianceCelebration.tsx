@@ -47,7 +47,7 @@ export default function ComplianceCelebration({
     <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-green-800 mb-1">
-          🎉 You&apos;re compliant for this renewal cycle.
+          You&apos;re compliant for this renewal cycle.
         </p>
         <p className="text-xs text-green-700 mb-2">
           {state} · {licenseType} · Renewal {renewalDateLabel}

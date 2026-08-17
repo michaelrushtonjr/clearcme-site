@@ -208,7 +208,7 @@ export default function PricingPage() {
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-[#3f5f33] text-[#fffdf6] text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
-                    ⭐ Most Physicians
+                    Most Physicians
                   </span>
                 </div>
               )}

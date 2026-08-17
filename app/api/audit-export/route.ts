@@ -383,7 +383,7 @@ export async function GET(req: NextRequest) {
 
     reportLines.push(
       ``,
-      `COMPLIANCE STATUS: ${lic.isCompliant ? "COMPLIANT ✓" : "INCOMPLETE ✗"}`,
+      `COMPLIANCE STATUS: ${lic.isCompliant ? "COMPLIANT" : "INCOMPLETE"}`,
       ``,
       `HOURS SUMMARY:`,
       `  Required: ${lic.totalHoursNeeded.toFixed(0)} hrs`,
@@ -394,7 +394,7 @@ export async function GET(req: NextRequest) {
     if (lic.mandatoryStatus.length > 0) {
       reportLines.push(``, `MANDATORY TOPICS:`);
       for (const m of lic.mandatoryStatus) {
-        const check = m.isMet || m.attested ? "✓" : "✗";
+        const check = m.isMet || m.attested ? "x" : " ";
         const status = m.isMet
           ? "met"
           : m.attested

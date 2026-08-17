@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import FillWhatsLeft from "@/components/console/FillWhatsLeft";
+import RequirementTable, { type RequirementRow } from "@/components/console/RequirementTable";
 import { DEMO_COURSES, DEMO_CREDENTIALS, DEMO_PERSONA } from "@/lib/demo-fixture";
 
 function daysUntil(iso: string) {
@@ -10,16 +11,38 @@ function daysUntil(iso: string) {
 }
 
 const STATUS_UI = {
-  met: { chip: "Met", cls: "chip-met", dot: "dot-met", fill: "fill-met" },
-  open: { chip: "Open", cls: "chip-open", dot: "dot-open", fill: "fill-open" },
-  na: { chip: "N/A", cls: "chip-muted", dot: "dot-na", fill: null },
-  current: { chip: "Current", cls: "chip-muted", dot: "dot-met", fill: null },
+  met: { label: "Met", tone: "met", bar: "met" },
+  open: { label: "Open", tone: "open", bar: "open" },
+  na: { label: "N/A", tone: "muted", bar: "none" },
+  current: { label: "Current", tone: "muted", bar: "none" },
 } as const;
 
 export default function DemoComplianceClient() {
   const [active, setActive] = useState(0);
   const cred = DEMO_CREDENTIALS[active];
   const next = [...DEMO_CREDENTIALS].sort((a, b) => +new Date(a.deadline) - +new Date(b.deadline))[0];
+
+  const rows: RequirementRow[] = cred.requirements.map((r) => {
+    const s = STATUS_UI[r.status];
+    const pct =
+      r.earned != null && r.needed > 0
+        ? Math.min(100, (r.earned / r.needed) * 100)
+        : r.status === "met"
+          ? 100
+          : 0;
+    return {
+      key: `${cred.id}-${r.name}`,
+      name: r.name,
+      note: r.note,
+      srcLine: `Source: ${r.source} · verified ${r.verified}`,
+      rule: r.rule,
+      hrsLabel: r.earned != null && r.needed > 0 ? `${r.earned.toFixed(1)} / ${r.needed}` : "n/a",
+      pct,
+      barTone: r.earned != null && r.needed > 0 ? s.bar : "none",
+      status: r.statusLabel ?? s.label,
+      statusTone: s.tone,
+    };
+  });
 
   return (
     <div>
@@ -80,51 +103,20 @@ export default function DemoComplianceClient() {
 
       <section className="card" style={{ overflow: "hidden", marginTop: 18 }}>
         <div className="dark-band">
-          <div>
+          <div className="head">
             <h2 className="t">{cred.darkTitle}</h2>
+            <span className="vdiv" aria-hidden="true" />
             <p className="s">{cred.darkSubtitle}</p>
-            <p className="src">Sources checked Jul 12 2026</p>
           </div>
-          <span className={`chip ${cred.onTrack ? "chip-ondark-ok" : "chip-ondark-warn"}`}>
-            {cred.onTrack ? "On track" : "Action needed"}
-          </span>
+          <div className="right">
+            <p className="src">Sources checked Jul 12 2026</p>
+            <span className={`chip ${cred.onTrack ? "chip-ondark-ok" : "chip-ondark-warn"}`}>
+              {cred.onTrack ? "On track" : "Action needed"}
+            </span>
+          </div>
         </div>
 
-        <div className="band-row" aria-hidden="true">
-          <span>Requirement</span>
-          <span className="r">Progress · Status</span>
-        </div>
-
-        {cred.requirements.map((r) => {
-          const s = STATUS_UI[r.status];
-          const pct =
-            r.earned != null && r.needed > 0
-              ? Math.min(100, (r.earned / r.needed) * 100)
-              : r.status === "met"
-                ? 100
-                : 0;
-          return (
-            <div key={r.name} className="req-row" style={{ cursor: "default" }}>
-              <span className={`dot ${s.dot}`} aria-hidden="true" />
-              <span>
-                <span className="name">{r.name}</span>
-                <span className="note" style={{ display: "block" }}>
-                  {r.note ? `${r.note} · ` : ""}
-                  <span className="mono-label" style={{ fontSize: 11, letterSpacing: ".08em" }}>
-                    Source: {r.source} · verified {r.verified}
-                  </span>
-                </span>
-              </span>
-              <span className="prog" aria-hidden="true">
-                {s.fill && <span className={s.fill} style={{ width: `${pct}%` }} />}
-              </span>
-              <span className="hrs">
-                {r.earned != null && r.needed > 0 ? `${r.earned.toFixed(1)}/${r.needed}` : "—"}
-              </span>
-              <span className={`chip ${s.cls}`}>{s.chip}</span>
-            </div>
-          );
-        })}
+        <RequirementTable rows={rows} />
       </section>
 
       {cred.gapLabel && (

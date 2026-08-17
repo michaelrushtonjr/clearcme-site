@@ -16,9 +16,13 @@ export const DEMO_PERSONA = {
 export interface DemoRequirement {
   name: string;
   note?: string;
+  /** Mono rule cell: "per cycle", "one-time", "every 4 yrs", "conditional" */
+  rule: string;
   earned: number | null; // null = attestation-only row
   needed: number;
   status: "met" | "open" | "na" | "current";
+  /** Optional display override for the status cell, e.g. "On pace" */
+  statusLabel?: string;
   source: string;
   verified: string;
 }
@@ -51,15 +55,19 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
     requirements: [
       {
         name: "General hours",
-        note: "50 hours every 2 years",
+        note: "50 hours of accredited CME each renewal cycle",
+        rule: "per cycle",
         earned: 32.0,
         needed: 50,
         status: "open",
+        statusLabel: "On pace",
         source: "Medical Board of California",
         verified: "Jul 12, 2026",
       },
       {
         name: "End of life care",
+        note: "Pain management and end-of-life care",
+        rule: "one-time",
         earned: 12.0,
         needed: 12,
         status: "met",
@@ -68,6 +76,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
       },
       {
         name: "Substance use",
+        note: "DEA MATE Act / substance use disorder training",
+        rule: "one-time",
         earned: 6.0,
         needed: 8,
         status: "open",
@@ -76,7 +86,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
       },
       {
         name: "Geriatric medicine",
-        note: "Only applies above 25% elderly patients",
+        note: "Applies to general internists and family physicians above 25% elderly patients",
+        rule: "conditional",
         earned: null,
         needed: 0,
         status: "na",
@@ -99,6 +110,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
     requirements: [
       {
         name: "Infection control",
+        note: "Infection control and barrier precautions",
+        rule: "every 4 yrs",
         earned: 3.0,
         needed: 3,
         status: "met",
@@ -107,6 +120,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
       },
       {
         name: "Child abuse identification",
+        note: "Identifying and reporting child abuse and maltreatment",
+        rule: "one-time",
         earned: 0.0,
         needed: 2,
         status: "open",
@@ -129,7 +144,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
     requirements: [
       {
         name: "MATE Act training",
-        note: "The 6.0 hours you filed for California count here too.",
+        note: "Eight hours on substance use disorders. The 6.0 hours you filed for California count here too.",
+        rule: "one-time",
         earned: 6.0,
         needed: 8,
         status: "open",
@@ -138,6 +154,8 @@ export const DEMO_CREDENTIALS: DemoCredential[] = [
       },
       {
         name: "Registration renewal",
+        note: "Attestation is made as part of the renewal form",
+        rule: "every 3 yrs",
         earned: null,
         needed: 0,
         status: "current",

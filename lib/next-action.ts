@@ -42,7 +42,6 @@ export type NextActionTheme = "red" | "amber" | "blue" | "green";
 
 export interface NextActionRecommendation {
   theme: NextActionTheme;
-  icon: string;
   headline: string;
   explanation: string;
   ctaLabel: string;
@@ -124,7 +123,6 @@ export function buildNextAction(
     const soonest = sorted[0];
     return {
       theme: "green",
-      icon: "✓",
       headline: `You're compliant — next renewal: ${soonest.renewalDateLabel}`,
       explanation:
         "All CME requirements are met for this cycle. Keep uploading certificates as you earn them.",
@@ -146,7 +144,6 @@ export function buildNextAction(
     const name = gap ? topicLabel(gap.topic) : "general CME";
     return {
       theme: "red",
-      icon: "!",
       headline: `${urgent.state} renewal in ${urgent.daysUntilRenewal} days — complete ${name} now`,
       explanation: `Your ${urgent.renewalDateLabel} renewal is approaching. Focus on your highest-priority gap first to avoid a compliance violation.`,
       ctaLabel: courseCtaLabel(gap?.topic ?? null, name),
@@ -176,7 +173,6 @@ export function buildNextAction(
       const label = topicLabel(req.topic);
       return {
         theme: "amber",
-        icon: "📋",
         headline: `Complete your ${label} requirement — it's a one-time task`,
         explanation: `This is a mandatory one-time requirement for your ${license.state} license. You only have to do it once — best to knock it out now.`,
         ctaLabel: courseCtaLabel(req.topic, label),
@@ -202,7 +198,6 @@ export function buildNextAction(
       const started = hoursBanked > 0;
       return {
         theme: "blue",
-        icon: "📈",
         headline: started
           ? `You're making progress — next: earn ${gap.gap.toFixed(1)} more hours in ${label}`
           : `First step: earn ${gap.gap.toFixed(1)} hours in ${label}`,
@@ -244,7 +239,6 @@ export function buildNextAction(
   const generalDestination = courseDestination(null);
   return {
     theme: "blue",
-    icon: nearlyDone ? "🏁" : "📈",
     headline,
     explanation: `${mandatorySentence} Keep adding accredited CME hours to complete your cycle.`,
     ctaLabel: "Find general CME →",

@@ -15,6 +15,8 @@ interface Props {
   hasLicense: boolean;
   hasCertificate: boolean;
   hasComplianceData: boolean;
+  /** True when the DB-backed email preference has renewal reminders enabled */
+  hasRenewalAlerts: boolean;
 }
 
 const STORAGE_KEY = "onboarding_steps";
@@ -32,7 +34,7 @@ function saveSteps(steps: Record<string, boolean>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(steps));
 }
 
-export default function OnboardingChecklist({ hasLicense, hasCertificate, hasComplianceData }: Props) {
+export default function OnboardingChecklist({ hasLicense, hasCertificate, hasComplianceData, hasRenewalAlerts }: Props) {
   const [mounted, setMounted] = useState(false);
   const [stored, setStored] = useState<Record<string, boolean>>({});
 
@@ -40,17 +42,20 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
     const timer = window.setTimeout(() => {
       setMounted(true);
       const saved = loadSteps();
-      // Sync real progress into stored state
+      // Sync real progress into stored state. Every step reads from the
+      // database truth passed in as props — localStorage is only a cache, so
+      // a setting enabled on another device still completes the step here.
       const merged = { ...saved };
       if (hasLicense) merged.license = true;
       if (hasCertificate) merged.certificate = true;
       if (hasComplianceData) merged.compliance = true;
+      if (hasRenewalAlerts) merged.alerts = true;
       setStored(merged);
       saveSteps(merged);
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [hasLicense, hasCertificate, hasComplianceData]);
+  }, [hasLicense, hasCertificate, hasComplianceData, hasRenewalAlerts]);
 
   if (!mounted) return null;
 
@@ -162,7 +167,13 @@ export default function OnboardingChecklist({ hasLicense, hasCertificate, hasCom
                   step.done ? "bg-[var(--primary)] text-white" : "bg-[var(--paper)] border-2 border-[rgba(63,95,51,0.25)] text-[var(--primary)]"
                 }`}
               >
-                {step.done ? "✓" : ""}
+                {step.done ? (
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  ""
+                )}
               </span>
               <span
                 className={`text-sm font-medium ${

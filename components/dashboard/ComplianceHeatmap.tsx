@@ -59,14 +59,14 @@ function getRenewalLabel(daysUntilRenewal: number | null) {
 
 function getWarningLabel(item: ComplianceOverview) {
   if (item.hasGeneralGap && item.hasMandatoryGap) {
-    return "⚠⚠";
+    return "2 gaps";
   }
 
   if (item.hasGeneralGap || item.hasMandatoryGap) {
-    return "⚠";
+    return "1 gap";
   }
 
-  return "✓";
+  return "Met";
 }
 
 export default function ComplianceHeatmap({ items }: ComplianceHeatmapProps) {

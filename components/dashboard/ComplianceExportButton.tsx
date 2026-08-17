@@ -73,7 +73,7 @@ function buildHtml(data: ExportData): string {
       <div class="card">
         <div class="card-header">
           <strong>${l.state} — ${l.licenseType}</strong>
-          <span class="badge ${l.isCompliant ? "badge-green" : "badge-amber"}">${l.isCompliant ? "✓ Compliant" : "⚠ Requirements Pending"}</span>
+          <span class="badge ${l.isCompliant ? "badge-green" : "badge-amber"}">${l.isCompliant ? "Compliant" : "Requirements pending"}</span>
         </div>
         <table>
           <tr><td>Renewal Date</td><td>${formatDate(l.renewalDate)}</td></tr>
@@ -88,7 +88,7 @@ function buildHtml(data: ExportData): string {
               .map(
                 (g) => `
               <div class="topic-row ${g.isMet ? "met" : "gap"}">
-                <span>${g.isMet ? "✅" : "⚠️"} ${g.displayName ?? formatTopic(g.topic)}</span>
+                <span>${g.displayName ?? formatTopic(g.topic)}</span>
                 <span>${g.earned.toFixed(1)} / ${g.needed.toFixed(0)} hrs${
                   g.isMet
                     ? g.completionStatus === "completed" && g.earned < g.needed
@@ -129,34 +129,34 @@ function buildHtml(data: ExportData): string {
   <title>ClearCME Compliance Report</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1E2920; padding: 40px; font-size: 13px; background: #FFFDF6; }
-    h1 { font-size: 22px; font-weight: 800; color: #1E2920; }
-    h2 { font-size: 15px; font-weight: 700; color: #3F4A40; margin: 28px 0 12px; border-bottom: 2px solid #DDD4BD; padding-bottom: 6px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #3F5F33; padding-bottom: 16px; }
-    .brand { font-family: Fraunces, Georgia, serif; font-size: 24px; font-weight: 900; color: #1E2920; }
-    .brand span { color: #3F5F33; }
-    .meta { text-align: right; color: #6B7568; font-size: 12px; }
-    .card { background: #F4EFE3; border: 1px solid #DDD4BD; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    body { font-family: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #101613; padding: 40px; font-size: 13px; background: #FFFFFF; }
+    h1 { font-size: 22px; font-weight: 700; color: #101613; }
+    h2 { font-size: 15px; font-weight: 700; color: #22371F; margin: 28px 0 12px; border-bottom: 2px solid #E3E0D3; padding-bottom: 6px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #22371F; padding-bottom: 16px; }
+    .brand { font-family: Newsreader, Georgia, serif; font-size: 24px; font-weight: 600; color: #101613; }
+    .brand span { color: #2E4A2C; }
+    .meta { text-align: right; color: #656C60; font-size: 12px; }
+    .card { background: #FBFAF5; border: 1px solid rgba(16,22,19,.13); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
-    .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-    .badge-green { background: rgba(107,142,102,.18); color: #6B8E66; }
-    .badge-amber { background: rgba(201,147,60,.18); color: #A87729; }
+    .badge { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+    .badge-green { background: #E3E7DA; color: #2E4A2C; }
+    .badge-amber { background: #F3E3CC; color: #7A5218; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     table td { padding: 4px 8px; }
-    table td:first-child { color: #6B7568; width: 40%; }
+    table td:first-child { color: #656C60; width: 40%; }
     .topics { margin-top: 12px; }
-    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6B7568; margin-bottom: 6px; }
-    .topic-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid #ECE3CA; }
-    .topic-row.gap { color: #A87729; }
-    .topic-row.met { color: #6B8E66; }
+    .section-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #656C60; margin-bottom: 6px; }
+    .topic-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(16,22,19,.08); }
+    .topic-row.gap { color: #7A5218; }
+    .topic-row.met { color: #2E4A2C; }
     .certs-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .certs-table th { text-align: left; padding: 6px 8px; background: #ECE4CF; font-weight: 600; color: #6B7568; font-size: 11px; text-transform: uppercase; }
-    .certs-table td { padding: 6px 8px; border-bottom: 1px solid #ECE3CA; }
+    .certs-table th { text-align: left; padding: 6px 8px; background: #F0ECE1; font-weight: 600; color: #656C60; font-size: 11px; text-transform: uppercase; }
+    .certs-table td { padding: 6px 8px; border-bottom: 1px solid rgba(16,22,19,.08); }
     .summary-row { display: flex; gap: 16px; margin-bottom: 24px; }
-    .summary-tile { flex: 1; background: #F4EFE3; border: 1px solid #DDD4BD; border-radius: 8px; padding: 12px; text-align: center; }
-    .summary-tile .val { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px; font-weight: 800; color: #3F5F33; }
-    .summary-tile .lbl { font-size: 11px; color: #6B7568; margin-top: 2px; }
-    .footer { margin-top: 32px; color: #95A092; font-size: 11px; text-align: center; border-top: 1px solid #DDD4BD; padding-top: 12px; }
+    .summary-tile { flex: 1; background: #FBFAF5; border: 1px solid rgba(16,22,19,.13); border-radius: 8px; padding: 12px; text-align: center; }
+    .summary-tile .val { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px; font-weight: 600; color: #2E4A2C; }
+    .summary-tile .lbl { font-size: 11px; color: #656C60; margin-top: 2px; }
+    .footer { margin-top: 32px; color: #656C60; font-size: 11px; text-align: center; border-top: 1px solid #E3E0D3; padding-top: 12px; }
     @media print { body { padding: 20px; } }
   </style>
 </head>
@@ -186,8 +186,8 @@ function buildHtml(data: ExportData): string {
       <div class="lbl">Certificates</div>
     </div>
     <div class="summary-tile">
-      <div class="val">${data.licenses.every((l) => l.isCompliant) ? "✓" : "⚠"}</div>
-      <div class="lbl">Overall Status</div>
+      <div class="val">${data.licenses.filter((l) => l.isCompliant).length}/${data.licenses.length}</div>
+      <div class="lbl">Licenses Compliant</div>
     </div>
   </div>
 

@@ -252,7 +252,7 @@ export function renderMonthlyDigestEmail({
         <tr><td style="padding:16px 20px;">
           ${
             license.isCompliant
-              ? `<p style="margin:0;font-size:14px;color:${BRAND_GREEN};font-weight:600;">✓ All requirements complete. You're on track.</p>`
+              ? `<p style="margin:0;font-size:14px;color:${BRAND_GREEN};font-weight:600;">All requirements complete. You're on track.</p>`
               : `
           <p style="margin:0 0 10px;font-size:14px;color:${INK};line-height:1.7;">
             ${
