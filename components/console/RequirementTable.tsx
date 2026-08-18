@@ -68,7 +68,21 @@ export default function RequirementTable({ rows }: { rows: RequirementRow[] }) {
                 )}
               </span>
             </span>
-            <span className={`rt-status ${row.statusTone}`}>{row.status}</span>
+            <span className={`rt-status ${row.statusTone}`}>
+              {row.status}
+              {row.detail && (
+                <svg className="rt-caret" viewBox="0 0 10 6" aria-hidden="true">
+                  <path
+                    d="M1 1l4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </span>
           </>
         );
 

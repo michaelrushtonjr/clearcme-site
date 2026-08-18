@@ -158,8 +158,10 @@ function SourceBlock({ sourceMeta }: { sourceMeta: RequirementSourceMeta }) {
   return (
     <div
       style={{
-        borderTop: "1px solid var(--c1b-border-row)",
-        paddingTop: 10,
+        border: "1px solid var(--c1b-border-card)",
+        borderRadius: 8,
+        background: "var(--c1b-card)",
+        padding: "12px 14px",
         display: "flex",
         flexDirection: "column",
         gap: 4,

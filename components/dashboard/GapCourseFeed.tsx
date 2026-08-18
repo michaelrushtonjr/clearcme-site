@@ -61,7 +61,7 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt
             href={course.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-start justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--c1b-hover,#F6F3EA)]"
+            className="group flex items-start justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--c1b-hover-wash,rgba(46,74,44,0.05))]"
             style={i > 0 ? { borderTop: "1px solid var(--c1b-border-row, rgba(16,22,19,.06))" } : undefined}
           >
             <div className="min-w-0 flex-1">

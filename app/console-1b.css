@@ -14,7 +14,10 @@
   --c1b-canvas: #efebdf;
   --c1b-card: #fbfaf5;
   --c1b-band: #f0ece1;
-  --c1b-hover: #f6f3ea;
+  --c1b-hover: #f6f3ea; /* static soft surfaces (card foots) — NOT hover states */
+  /* Interactive hover = faint brand-green wash. A hover tint that matches the
+     page canvas reads as the card going transparent (Michael, 8/17). */
+  --c1b-hover-wash: rgba(46, 74, 44, 0.05);
   --c1b-ink: #101613;
   --c1b-ink-2: #4b5349;
   --c1b-muted: #656c60;
@@ -805,7 +808,7 @@
 }
 
 .c1b .req-row:hover {
-  background: var(--c1b-hover);
+  background: var(--c1b-hover-wash);
 }
 
 @media (max-width: 640px) {
@@ -930,8 +933,15 @@
   transition: background-color 0.12s ease;
 }
 
+/* Hover is a brand-green wash, not a canvas-colored tint — a tint that
+   matches the page background reads as the card going transparent instead
+   of the row being interactive. */
 .c1b button.rt-row:hover {
-  background: var(--c1b-hover);
+  background: var(--c1b-hover-wash);
+}
+
+.c1b button.rt-row:hover .rt-caret {
+  color: var(--c1b-muted);
 }
 
 .c1b button.rt-row:focus-visible {
@@ -1031,9 +1041,27 @@
   color: var(--c1b-muted);
 }
 
+/* Expand affordance — quiet caret beside the status, rotates when open.
+   Decorative mark, so the faint tone is allowed; hover darkens it. */
+.c1b .rt-caret {
+  display: inline-block;
+  width: 10px;
+  height: 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+  color: var(--c1b-faint);
+  transition: transform 0.15s ease, color 0.12s ease;
+}
+
+.c1b button.rt-row[aria-expanded="true"] .rt-caret {
+  transform: rotate(180deg);
+}
+
+/* The expanded drawer sits on the band tone (NOT the hover tint — the two
+   must never alias) and its functional blocks float as cards inside it. */
 .c1b .rt-detail {
   border-top: 1px solid var(--c1b-border-row);
-  background: var(--c1b-hover);
+  background: var(--c1b-band);
   padding: 16px 20px 18px;
 }
 
@@ -1218,7 +1246,7 @@
 }
 
 .c1b .cred-tabs button:hover {
-  background: var(--c1b-hover);
+  background: var(--c1b-hover-wash);
 }
 
 .c1b .cred-tabs button.active {
@@ -1343,7 +1371,7 @@
 }
 
 .c1b .next-actions a:hover {
-  background: var(--c1b-hover);
+  background: var(--c1b-hover-wash);
 }
 
 .c1b .next-actions .n {
