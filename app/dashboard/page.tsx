@@ -395,10 +395,24 @@ export default async function DashboardPage() {
                   </Link>
                 )}
 
-                {d.mandatoryResults.map((r, i) => {
+                {[...d.mandatoryResults]
+                  // Actionable rows first; met / not-applicable sink to the
+                  // bottom of the group (same ordering as the Compliance page)
+                  .sort(
+                    (a, b) =>
+                      Number(a.isMet || a.isNotApplicable) -
+                      Number(b.isMet || b.isNotApplicable)
+                  )
+                  .map((r, i) => {
                   const s = ledgerStatus(r);
-                  const pct =
-                    r.needed > 0 ? Math.min(100, (r.earned / r.needed) * 100) : r.isMet ? 100 : 0;
+                  // Met via attestation/history: show "met", not a this-cycle
+                  // zero fraction that contradicts the chip.
+                  const metNotByHours = r.isMet && !(r.needed > 0 && r.earned >= r.needed);
+                  const pct = r.isMet
+                    ? 100
+                    : r.needed > 0
+                    ? Math.min(100, (r.earned / r.needed) * 100)
+                    : 0;
                   return (
                     <Link
                       key={`${d.license.id}-${r.topic}-${i}`}
@@ -419,7 +433,7 @@ export default async function DashboardPage() {
                         {s.fill && <span className={s.fill} style={{ width: `${pct}%` }} />}
                       </span>
                       <span className="hrs">
-                        {r.needed > 0 ? `${r.earned.toFixed(1)}/${r.needed}` : "—"}
+                        {metNotByHours ? "met" : r.needed > 0 ? `${r.earned.toFixed(1)}/${r.needed}` : "—"}
                       </span>
                       <span className={`chip ${s.cls}`}>{s.chip}</span>
                     </Link>

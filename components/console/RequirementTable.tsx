@@ -29,6 +29,8 @@ export interface RequirementRow {
   defaultOpen?: boolean;
   /** Aha-moment scroll target (first unmet gap) */
   isScrollTarget?: boolean;
+  /** Renders a slim mono section band above this row, e.g. "Settled · no action needed" */
+  dividerBefore?: string;
   detail?: ReactNode;
 }
 
@@ -91,6 +93,7 @@ export default function RequirementTable({ rows }: { rows: RequirementRow[] }) {
             key={row.key}
             {...(row.isScrollTarget ? { "data-gap-card": "true", tabIndex: -1 } : {})}
           >
+            {row.dividerBefore && <div className="rt-divider">{row.dividerBefore}</div>}
             {row.detail ? (
               <button
                 type="button"

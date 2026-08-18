@@ -1057,6 +1057,27 @@
   transform: rotate(180deg);
 }
 
+/* Slim section divider inside the table — separates settled rows (met /
+   current / not-applicable) from the actionable ones above. Static soft
+   surface, so --c1b-hover is the correct tone here. */
+.c1b .rt-divider {
+  padding: 7px 20px;
+  background: var(--c1b-hover);
+  border-top: 1px solid var(--c1b-border-row);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c1b-muted);
+}
+
+@media (max-width: 700px) {
+  .c1b .rt-divider {
+    padding: 6px 16px;
+  }
+}
+
 /* The expanded drawer sits on the band tone (NOT the hover tint — the two
    must never alias) and its functional blocks float as cards inside it. */
 .c1b .rt-detail {

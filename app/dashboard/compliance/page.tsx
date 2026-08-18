@@ -699,9 +699,13 @@ export default async function CompliancePage() {
           });
         }
 
-        // Mandatory topic rows
-        const firstGapIdx = mandatoryGaps.findIndex((g) => !g.isMet && !g.isNotApplicable);
-        mandatoryGaps.forEach((gap, gapIdx) => {
+        // Mandatory topic rows — actionable rows stay on top; settled rows
+        // (met / not applicable) drop below a "Complete" divider so one-time
+        // history doesn't clutter the live cycle work. Nothing is hidden:
+        // this page is the audit ledger, so every row stays on the record.
+        const actionableRows: RequirementRow[] = [];
+        const settledRows: RequirementRow[] = [];
+        mandatoryGaps.forEach((gap) => {
           const sourceMeta = gap.sourceMeta;
 
           let status = "Open";
@@ -742,23 +746,37 @@ export default async function CompliancePage() {
           const showCourseBits = !gap.isMet && !gap.isUnknown && !gap.isNotApplicable;
           const destination = courseDestination(gap.topic);
 
-          rows.push({
+          // The fraction measures THIS cycle's uploaded hours — the right
+          // cell for per-cycle rows, the wrong one for a requirement
+          // satisfied by attestation/history. "0.0 / 2" under MET reads as
+          // deficient; the honest cell there is "met" (never a fabricated
+          // fraction), with provenance on the source line.
+          const metByHours = gap.needed > 0 && gap.earned >= gap.needed;
+
+          const row: RequirementRow = {
             key: gap.requirementId,
             name: gap.displayName,
             note,
             srcLine,
             rule: ruleCell(gap.cadenceLabel, gap.isConditional),
             hrsLabel:
-              gap.needed > 0 ? `${gap.earned.toFixed(1)} / ${gap.needed.toFixed(0)}` : "n/a",
-            pct: gap.needed > 0 ? (gap.earned / gap.needed) * 100 : gap.isMet ? 100 : 0,
-            barTone: gap.needed > 0 && !gap.isNotApplicable && !gap.isUnknown ? (gap.isMet ? "met" : "open") : "none",
+              gap.isMet && !metByHours
+                ? "met"
+                : gap.needed > 0
+                ? `${gap.earned.toFixed(1)} / ${gap.needed.toFixed(0)}`
+                : "n/a",
+            pct: gap.isMet ? 100 : gap.needed > 0 ? (gap.earned / gap.needed) * 100 : 0,
+            barTone: gap.isMet
+              ? "met"
+              : gap.needed > 0 && !gap.isNotApplicable && !gap.isUnknown
+              ? "open"
+              : "none",
             status,
             statusTone,
             defaultOpen:
               nextAction?.topic === gap.topic &&
               nextAction?.licenseState === license.state &&
               !gap.isMet,
-            isScrollTarget: gapIdx === firstGapIdx,
             detail: (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* The gating clause is the first thing that decides whether
@@ -875,8 +893,23 @@ export default async function CompliancePage() {
                 {sourceMeta && <SourceBlock sourceMeta={sourceMeta} />}
               </div>
             ),
-          });
+          };
+
+          if (gap.isMet || gap.isNotApplicable) {
+            settledRows.push(row);
+          } else {
+            actionableRows.push(row);
+          }
         });
+
+        if (actionableRows.length > 0) {
+          // Aha-moment scroll target — the first live gap
+          actionableRows[0].isScrollTarget = true;
+        }
+        if (settledRows.length > 0) {
+          settledRows[0].dividerBefore = "Complete · no action needed";
+        }
+        rows.push(...actionableRows, ...settledRows);
 
         const bandSourceUrls = rule ? parseSourceUrls(rule.sourceUrl ?? undefined) : [];
         const sourcesChecked = rule

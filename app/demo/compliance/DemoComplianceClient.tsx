@@ -22,7 +22,15 @@ export default function DemoComplianceClient() {
   const cred = DEMO_CREDENTIALS[active];
   const next = [...DEMO_CREDENTIALS].sort((a, b) => +new Date(a.deadline) - +new Date(b.deadline))[0];
 
-  const rows: RequirementRow[] = cred.requirements.map((r) => {
+  // Same ordering rule as the real page: actionable rows first, settled
+  // (met / current / n-a) below a divider.
+  const isSettled = (status: string) =>
+    status === "met" || status === "na" || status === "current";
+  const ordered = [...cred.requirements].sort(
+    (a, b) => Number(isSettled(a.status)) - Number(isSettled(b.status))
+  );
+
+  const rows: RequirementRow[] = ordered.map((r) => {
     const s = STATUS_UI[r.status];
     const pct =
       r.earned != null && r.needed > 0
@@ -43,6 +51,8 @@ export default function DemoComplianceClient() {
       statusTone: s.tone,
     };
   });
+  const firstSettled = rows.find((row, i) => isSettled(ordered[i].status));
+  if (firstSettled) firstSettled.dividerBefore = "Complete · no action needed";
 
   return (
     <div>
