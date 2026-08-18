@@ -8,21 +8,21 @@ export default function VerifiedProviderBadge({
   providerName,
 }: VerifiedProviderBadgeProps) {
   const isVerified = providerName ? matchProvider(providerName) : false;
-  const label = isVerified ? "Verified Provider" : "Unverified Provider";
-  const classes = isVerified
-    ? "product-pill-met"
-    : "product-pill-pending";
-  const tooltip = isVerified
-    ? "Matched to a known ACCME-accredited CME provider."
-    : "We could not match this provider to our known ACCME-accredited provider list.";
 
+  // Positive-only signal: an unmatched provider renders nothing. Flagging a
+  // legitimate provider "unverified" because our registry hasn't caught up
+  // (EM:RAP, ASAM, …) reads as an accusation against the physician's CME —
+  // absence of a badge carries the same information without the insult.
+  if (!isVerified) return null;
+
+  const tooltip = "Matched to a known ACCME-accredited CME provider.";
   return (
     <span
       title={tooltip}
       aria-label={tooltip}
-      className={`product-pill ${classes}`}
+      className="product-pill product-pill-met"
     >
-      {label}
+      Verified Provider
     </span>
   );
 }

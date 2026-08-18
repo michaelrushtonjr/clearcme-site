@@ -14,7 +14,7 @@ import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { buildNextAction } from "@/lib/next-action";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
-import { formatTopic } from "@/lib/requirement-display";
+import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import { formatStateName } from "@/lib/state-names";
 
 export default async function DashboardPage() {
@@ -79,6 +79,15 @@ export default async function DashboardPage() {
       const hoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
       const hoursNeeded = Math.max(0, rule.totalHours - hoursEarned);
 
+      // Topics appearing on more than one requirement (e.g. NV's state
+      // substance-use rule beside the federal DEA MATE one-time) need distinct
+      // display names or the ledger reads as duplicate rows.
+      const duplicatedTopics = new Set(
+        rule.mandatoryRequirements
+          .map((r) => r.topic)
+          .filter((topic, i, all) => all.indexOf(topic) !== i)
+      );
+
       const mandatoryResults = rule.mandatoryRequirements.map((req) => {
         const earned = cycleCerts
           .filter((c) => c.specialTopics.includes(req.topic))
@@ -100,6 +109,10 @@ export default async function DashboardPage() {
         const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
         return {
           topic: req.topic,
+          displayName: requirementDisplayName(req.topic, req.description, {
+            isConditional: req.cadence === "CONDITIONAL",
+            topicIsDuplicated: duplicatedTopics.has(req.topic),
+          }),
           earned,
           needed: req.hoursRequired,
           isMet: hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0),
@@ -395,7 +408,7 @@ export default async function DashboardPage() {
                     >
                       <span className={`dot ${s.dot}`} aria-hidden="true" />
                       <span>
-                        <span className="name">{formatTopic(r.topic)}</span>
+                        <span className="name">{r.displayName}</span>
                         {r.isOneTime && (
                           <span className="note" style={{ display: "block" }}>
                             One-time requirement

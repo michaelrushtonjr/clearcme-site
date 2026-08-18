@@ -10,12 +10,16 @@ const defaultLinks = [
 export function PublicNav({
   links = defaultLinks,
   ctaHref = "/login",
-  ctaLabel = "Sign in →",
+  ctaLabel = "Start free →",
 }: {
   links?: { href: string; label: string }[];
   ctaHref?: string;
   ctaLabel?: string;
 }) {
+  // With the default conversion CTA, keep a quiet Sign in link beside it.
+  // Pages that override the CTA to a sign-in/dashboard action (e.g. course
+  // pages) don't get the extra link — it would duplicate the CTA.
+  const showSignIn = ctaLabel === "Start free →";
   return (
     <nav className="public-nav" aria-label="Main navigation">
       <div className="public-wrap public-nav-row">
@@ -26,6 +30,11 @@ export function PublicNav({
               {link.label}
             </Link>
           ))}
+          {showSignIn && (
+            <Link href="/login" className="public-nav-link">
+              Sign in
+            </Link>
+          )}
           <Link href={ctaHref} className="public-nav-cta">
             {ctaLabel}
           </Link>
