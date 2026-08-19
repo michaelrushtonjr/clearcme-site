@@ -26,12 +26,14 @@ export default function ManualCertificateEntry() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [duplicateWarning, setDuplicateWarning] = useState("");
 
   const canSave = fields.title.trim() !== "" && fields.creditHours !== "";
 
-  const handleSave = async () => {
+  const handleSave = async (confirmDuplicate = false) => {
     setSaving(true);
     setSaveError("");
+    setDuplicateWarning("");
     try {
       const res = await fetch("/api/certificates", {
         method: "POST",
@@ -42,11 +44,19 @@ export default function ManualCertificateEntry() {
           activityDate: fields.date || undefined,
           creditHours: parseFloat(fields.creditHours),
           creditType: fields.creditType || undefined,
+          ...(confirmDuplicate && { confirmDuplicate: true }),
         }),
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({} as { error?: string }));
-        setSaveError(err.error ?? "Save failed");
+        const err = await res
+          .json()
+          .catch(() => ({} as { error?: string; code?: string }));
+        // Exact title+date+hours already on file — soft warning, not a block.
+        if (res.status === 409 && err.code === "possible_duplicate") {
+          setDuplicateWarning(err.error ?? "This looks like a duplicate entry.");
+        } else {
+          setSaveError(err.error ?? "Save failed");
+        }
       } else {
         setSaved(true);
       }
@@ -60,6 +70,7 @@ export default function ManualCertificateEntry() {
     setFields({ title: "", provider: "", date: "", creditHours: "", creditType: "" });
     setSaved(false);
     setSaveError("");
+    setDuplicateWarning("");
   };
 
   if (saved) {
@@ -150,8 +161,21 @@ export default function ManualCertificateEntry() {
 
       {saveError && <p className="text-xs text-[var(--status-miss)]">{saveError}</p>}
 
+      {duplicateWarning && (
+        <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3 space-y-2">
+          <p className="text-xs text-[var(--ink-2)]">{duplicateWarning}</p>
+          <button
+            onClick={() => handleSave(true)}
+            disabled={saving}
+            className="product-btn product-btn-secondary w-full min-h-0 py-2 text-sm disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save anyway — separate completion"}
+          </button>
+        </div>
+      )}
+
       <button
-        onClick={handleSave}
+        onClick={() => handleSave()}
         disabled={saving || !canSave}
         className="product-btn product-btn-primary w-full py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >

@@ -12,6 +12,7 @@ import {
 } from "@/lib/entitlements";
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
+import { createHash } from "crypto";
 import { inflateSync } from "zlib";
 import type { CreditType, SpecialTopic } from "@prisma/client";
 
@@ -116,6 +117,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Same bytes, same user -> the certificate is already on file. Block
+    // before the blob write and the attempt counter, so a duplicate never
+    // consumes storage or a scan.
+    const fileHash = createHash("sha256")
+      .update(Buffer.from(await file.arrayBuffer()))
+      .digest("hex");
+    const duplicate = await prisma.certificate.findFirst({
+      where: { userId, fileHash },
+      select: { id: true, title: true, fileName: true },
+    });
+    if (duplicate) {
+      return NextResponse.json(
+        {
+          error: `This exact file is already on file as "${
+            duplicate.title ?? duplicate.fileName
+          }" — delete that certificate first if you meant to replace it.`,
+          code: "duplicate_file",
+          certificateId: duplicate.id,
+        },
+        { status: 409 }
+      );
+    }
+
     // Retain the original document in Vercel Blob (gracefully skip if token
     // not configured). The store is private — these are physicians' personal
     // certificates — so reads require the RW token or a signed URL, and
@@ -143,6 +167,7 @@ export async function POST(req: NextRequest) {
         fileUrl,
         fileSize: file.size,
         mimeType: file.type,
+        fileHash,
         extractionStatus: "PROCESSING",
       },
     });
@@ -361,6 +386,42 @@ async function createManualCertificate(req: NextRequest, userId: string) {
 
   const creditType =
     VALID_CREDIT_TYPES.find((t) => t === body.creditType) ?? null;
+
+  // Soft duplicate check: an identical title + date + hours entry is almost
+  // always the same completion typed twice. Warn once; a resubmit with
+  // confirmDuplicate saves anyway (distinct completions do legitimately
+  // repeat, e.g. an annual course... but then the date differs).
+  const confirmDuplicate =
+    (body as { confirmDuplicate?: unknown }).confirmDuplicate === true;
+  if (!confirmDuplicate) {
+    const sameTitleHours = await prisma.certificate.findMany({
+      where: {
+        userId,
+        creditHours,
+        title: { equals: title, mode: "insensitive" },
+      },
+      select: { activityDate: true },
+    });
+    const sameDate = sameTitleHours.some((c) => {
+      if (c.activityDate == null || activityDate == null) {
+        return c.activityDate == null && activityDate == null;
+      }
+      return (
+        c.activityDate.toISOString().slice(0, 10) ===
+        activityDate.toISOString().slice(0, 10)
+      );
+    });
+    if (sameDate) {
+      return NextResponse.json(
+        {
+          error:
+            "A certificate with this exact title, date, and hours is already on file. Save anyway if this is a separate completion.",
+          code: "possible_duplicate",
+        },
+        { status: 409 }
+      );
+    }
+  }
 
   // Same keyword inference the extractor runs, so manual entries still match
   // mandatory-topic requirements (and attestation pre-fill can find them).

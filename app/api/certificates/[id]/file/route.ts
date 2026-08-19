@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { auth } from "@/auth";
@@ -55,6 +56,28 @@ export async function POST(
     return NextResponse.json({ error: "File too large. Maximum 10MB." }, { status: 400 });
   }
 
+  // Same-user duplicate bytes: this document is already attached to another
+  // certificate — attaching it twice would double-document the same course.
+  const fileHash = createHash("sha256")
+    .update(Buffer.from(await file.arrayBuffer()))
+    .digest("hex");
+  const duplicate = await prisma.certificate.findFirst({
+    where: { userId: session.user.id, fileHash, id: { not: id } },
+    select: { id: true, title: true, fileName: true },
+  });
+  if (duplicate) {
+    return NextResponse.json(
+      {
+        error: `This exact file is already attached to "${
+          duplicate.title ?? duplicate.fileName
+        }".`,
+        code: "duplicate_file",
+        certificateId: duplicate.id,
+      },
+      { status: 409 }
+    );
+  }
+
   // Unlike the upload route (where retention is best-effort alongside
   // extraction), storing the file IS this endpoint — fail loudly, never skip.
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -86,6 +109,7 @@ export async function POST(
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type,
+      fileHash,
     },
   });
 
