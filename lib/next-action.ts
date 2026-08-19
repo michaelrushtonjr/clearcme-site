@@ -1,8 +1,8 @@
 /**
  * Single prioritization engine for "what should I do next?"
  *
- * Both the dashboard hero card and the Compliance Map's UrgencyCard render
- * this engine's output, so the app always gives one consistent answer.
+ * Every surface that answers "what should I do next?" renders this
+ * engine's output, so the app always gives one consistent answer.
  *
  * Priority (merged heuristic, evaluated across ALL licenses):
  *   1. Fully compliant everywhere → audit-ready (green)
