@@ -14,6 +14,18 @@ export interface PaceDeadline {
  * finish = now + ceil(remainingHrs / pace) months, verdict computed against
  * the user's real deadline list (soonest first).
  */
+/** Whole calendar months from now until `date` (floor), minimum 1 — the same
+ * add-a-month convention the finish math uses, so a pace derived from it
+ * can't land one `ceil` past the deadline. */
+function monthsUntil(date: Date): number {
+  const now = new Date();
+  let m = (date.getFullYear() - now.getFullYear()) * 12 + (date.getMonth() - now.getMonth());
+  if (date.getDate() < now.getDate()) m -= 1;
+  return Math.max(1, m);
+}
+
+const roundUpHalf = (n: number) => Math.ceil(n * 2) / 2;
+
 export default function PacePlanner({
   remainingHours,
   deadlines,
@@ -21,9 +33,28 @@ export default function PacePlanner({
   remainingHours: number;
   deadlines: PaceDeadline[];
 }) {
-  const [pace, setPace] = useState(2);
+  // Required pace targets the EARLIEST deadline — clearing that clears
+  // everything, so the slider opens on a passing plan instead of the old
+  // fixed 2.0 (which opened "Too slow" for any real gap). Rounded UP to the
+  // 0.5 step: nearest-rounding can open one month past the deadline.
+  const requiredPerMonth = (() => {
+    if (remainingHours <= 0 || deadlines.length === 0) return 0;
+    const earliest = deadlines
+      .map((d) => new Date(d.date))
+      .sort((a, b) => +a - +b)[0];
+    return remainingHours / monthsUntil(earliest);
+  })();
+
+  const [pace, setPace] = useState(() =>
+    requiredPerMonth > 0 ? roundUpHalf(requiredPerMonth) : 2
+  );
 
   if (remainingHours <= 0 || deadlines.length === 0) return null;
+
+  // A gap the old fixed 6.0 cap couldn't express now stretches the range:
+  // headroom to 1.5x the required pace, so "faster than needed" stays
+  // reachable at every gap size.
+  const sliderMax = Math.max(6, roundUpHalf(requiredPerMonth * 1.5));
 
   const months = Math.ceil(remainingHours / pace);
   const finish = new Date();
@@ -63,7 +94,7 @@ export default function PacePlanner({
       <input
         type="range"
         min={0.5}
-        max={6}
+        max={sliderMax}
         step={0.5}
         value={pace}
         onChange={(e) => setPace(Number(e.target.value))}
