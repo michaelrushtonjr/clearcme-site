@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { requirementDisplayName } from "@/lib/requirement-display";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -165,7 +166,17 @@ export default function SettingsClient({
   const [licenseEditError, setLicenseEditError] = useState("");
 
   const isPaidPlan = subscription?.tier === "ESSENTIAL" || subscription?.tier === "PRO";
-  const planLabel = subscription ? `${subscription.tier} · ${subscription.status}` : "FREE";
+  // Mockup-09 register: "Pro — $199/year". Prices mirror /pricing and the
+  // fence copy; non-active statuses stay visible so a lapsed card isn't
+  // silently labeled like a healthy one.
+  const PLAN_DISPLAY: Record<string, string> = {
+    FREE: "Free",
+    ESSENTIAL: "Essential — $99/year",
+    PRO: "Pro — $199/year",
+  };
+  const planLabel = `${PLAN_DISPLAY[subscription?.tier ?? "FREE"] ?? subscription?.tier ?? "Free"}${
+    subscription && subscription.status !== "ACTIVE" ? ` · ${subscription.status.toLowerCase()}` : ""
+  }`;
 
   const startCheckout = async (tier: "ESSENTIAL" | "PRO") => {
     setCheckoutTier(tier);
@@ -198,12 +209,6 @@ export default function SettingsClient({
       setBillingLoading(false);
     }
   };
-
-  const formatTopic = (topic: string) =>
-    topic
-      .replace(/_/g, " ")
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase());
 
   const formatCadence = (req: RequirementSummary) => {
     if (req.cadence === "ONE_TIME" || req.firstRenewalOnly) return "One-time";
@@ -308,11 +313,11 @@ export default function SettingsClient({
       </div>
 
       {/* Profile section */}
-      <section className="product-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Profile</h2>
+      <section className="card overflow-hidden">
+        <div className="card-head">
+          <h2 className="card-title">Profile</h2>
         </div>
-        <form onSubmit={handleSaveProfile} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSaveProfile} className="space-y-4" style={{ padding: "4px 18px 18px" }}>
           <div>
             <label className="product-label">
               Display Name
@@ -362,33 +367,49 @@ export default function SettingsClient({
       </section>
 
       {/* Billing section */}
-      <section className="product-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Billing</h2>
-          <p className="text-xs text-[var(--ink-3)] mt-0.5">Upgrade, manage, or verify your ClearCME plan</p>
+      <section className="card overflow-hidden">
+        <div className="card-head">
+          <h2 className="card-title">Plan</h2>
         </div>
-        <div className="px-6 py-5 space-y-4">
-          <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3">
-            <p className="font-mono text-xs font-medium uppercase tracking-wide text-[var(--ink-3)]">Current plan</p>
-            <p className="mt-1 text-lg font-semibold text-[var(--ink)]">{planLabel}</p>
-            {subscription?.currentPeriodEnd && (
-              <p className="mt-1 text-xs text-[var(--ink-3)]">
-                Current period ends {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                {subscription.cancelAtPeriodEnd ? " · cancels at period end" : ""}
+        <div className="space-y-4" style={{ padding: "4px 18px 18px" }}>
+          <div
+            className="flex items-center justify-between gap-4"
+            style={{
+              background: "var(--c1b-band)",
+              border: "1px solid var(--c1b-border-row)",
+              borderRadius: 8,
+              padding: "12px 16px",
+            }}
+          >
+            <div>
+              <p className="mono-label" style={{ color: "var(--c1b-muted)" }}>
+                Current
               </p>
+              <p style={{ marginTop: 2, fontSize: 17, fontWeight: 600, color: "var(--c1b-ink)" }}>
+                {planLabel}
+              </p>
+              {subscription?.currentPeriodEnd && (
+                <p style={{ marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
+                  Current period ends {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                  {subscription.cancelAtPeriodEnd ? " · cancels at period end" : ""}
+                </p>
+              )}
+            </div>
+            {subscription?.stripeCustomerId && (
+              <button
+                type="button"
+                onClick={openBillingPortal}
+                disabled={billingLoading}
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--c1b-green)" }}
+                className="disabled:opacity-60"
+              >
+                {billingLoading ? "Opening…" : "Manage"}
+              </button>
             )}
           </div>
 
           {isPaidPlan ? (
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={openBillingPortal}
-                disabled={billingLoading || !subscription?.stripeCustomerId}
-                className="product-btn product-btn-brand disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {billingLoading ? "Opening billing…" : "Manage billing"}
-              </button>
               <Link
                 href="/pricing"
                 className="product-btn product-btn-secondary"
@@ -419,16 +440,6 @@ export default function SettingsClient({
                   {checkoutTier === "PRO" ? "Opening checkout…" : "Upgrade to Pro"}
                 </button>
               </div>
-              {subscription?.stripeCustomerId && (
-                <button
-                  type="button"
-                  onClick={openBillingPortal}
-                  disabled={billingLoading}
-                  className="text-sm font-medium text-[var(--ink-3)] underline-offset-4 hover:text-[var(--ink)] hover:underline disabled:opacity-60"
-                >
-                  {billingLoading ? "Opening billing…" : "Open billing portal"}
-                </button>
-              )}
             </div>
           )}
 
@@ -478,7 +489,6 @@ export default function SettingsClient({
                   group={group}
                   req={req}
                   saved={saved}
-                  formatTopic={formatTopic}
                   formatCadence={formatCadence}
                 />
               ))
@@ -493,21 +503,20 @@ export default function SettingsClient({
       })()}
 
       {/* Notification preferences */}
-      <section className="product-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[var(--line-soft)] bg-[var(--bg-2)]">
-          <h2 className="font-display text-xl font-semibold text-[var(--ink)]">Email Notifications</h2>
-          <p className="text-xs text-[var(--ink-3)] mt-0.5">Sent to {user.email ?? "your account email"}</p>
+      <section className="card overflow-hidden">
+        <div className="card-head">
+          <h2 className="card-title">Reminders</h2>
         </div>
-        <div className="px-6 py-5 space-y-4">
+        <div className="space-y-4" style={{ padding: "4px 18px 18px" }}>
           <ToggleRow
             label="Renewal reminders"
-            description="90, 60, 30, and 7 days before each license renewal, with your current hours and remaining requirements"
+            description="90, 60, 30 and 7 days out, with your hours and what is left"
             value={emailPrefs.renewalReminders}
             onChange={(v) => updateEmailPref({ renewalReminders: v })}
           />
           <ToggleRow
-            label="Monthly compliance digest"
-            description="A monthly check-in per license: hours completed, required CME done and still open, and the pace that finishes everything before renewal"
+            label="Monthly digest"
+            description="One note per license: hours filed, topics open, and the pace that finishes on time"
             value={emailPrefs.monthlyDigest}
             onChange={(v) => updateEmailPref({ monthlyDigest: v })}
           />
@@ -699,15 +708,16 @@ function HistoryRow({
   group,
   req,
   saved,
-  formatTopic,
   formatCadence,
 }: {
   group: LicenseRequirementGroup;
   req: RequirementSummary;
   saved: RequirementCompletion | undefined;
-  formatTopic: (topic: string) => string;
   formatCadence: (req: RequirementSummary) => string;
 }) {
+  // Shared display-name logic: OTHER_MANDATORY rows read as the state's own
+  // wording ("Duty to report misconduct"), not the storage bucket's name.
+  const displayName = requirementDisplayName(req.topic, req.description);
   const [editing, setEditing] = useState(false);
 
   const markedNotCompleted = saved?.notes === NOT_COMPLETED_REQUIREMENT_NOTE;
@@ -734,12 +744,12 @@ function HistoryRow({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <p style={{ fontSize: 14, fontWeight: 600, color: "var(--c1b-ink)" }}>
-            {formatTopic(req.topic)}
+            {displayName}
           </p>
           <p style={{ marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
             {noteParts.join(" · ")}
           </p>
-          {req.description && (
+          {req.description && req.description.trim() !== displayName && (
             <p style={{ marginTop: 2, fontSize: 12, color: "var(--c1b-muted)" }}>
               {req.description}
             </p>
