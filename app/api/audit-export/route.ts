@@ -9,6 +9,7 @@ import {
 } from "@/lib/requirement-completions";
 import JSZip from "jszip";
 import { get } from "@vercel/blob";
+import { requirementDisplayName } from "@/lib/requirement-display";
 import { formatDateUTC } from "@/lib/dates";
 
 export const maxDuration = 60;
@@ -36,37 +37,8 @@ function topicFolder(topic: string): string {
   return MAP[topic] ?? topic.replace(/[^a-zA-Z0-9]/g, "_");
 }
 
-function formatTopicLabel(topic: string): string {
-  const MAP: Record<string, string> = {
-    OPIOID_PRESCRIBING: "Opioid Prescribing",
-    PAIN_MANAGEMENT: "Pain Management",
-    IMPLICIT_BIAS: "Implicit Bias",
-    END_OF_LIFE_CARE: "End-of-Life Care",
-    DOMESTIC_VIOLENCE: "Domestic Violence",
-    CHILD_ABUSE: "Child Abuse",
-    ELDER_ABUSE: "Elder Abuse",
-    HUMAN_TRAFFICKING: "Human Trafficking",
-    INFECTION_CONTROL: "Infection Control",
-    PATIENT_SAFETY: "Patient Safety",
-    ETHICS: "Ethics",
-    CULTURAL_COMPETENCY: "Cultural Competency",
-    SUBSTANCE_USE: "Substance Use",
-    SUICIDE_PREVENTION: "Suicide Prevention",
-    OTHER_MANDATORY: "Other Mandatory Topic",
-    GENERAL_CME: "General CME",
-  };
-  return (
-    MAP[topic] ??
-    topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())
-  );
-}
 
-// A license can carry two SUBSTANCE_USE requirements (state SBIRT + federal
-// DEA MATE Act). Label each row from its own description, not the shared topic.
-function requirementLabel(topic: string, description: string | null): string {
-  if (topic === "SUBSTANCE_USE" && /\bMATE\b/i.test(description ?? "")) return "DEA MATE Act";
-  return formatTopicLabel(topic);
-}
+
 
 function safeFileName(name: string, ext: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) + ext;
@@ -120,12 +92,23 @@ export async function GET(req: NextRequest) {
     orderBy: { activityDate: "desc" },
   });
 
-  // Pick the primary license for the ZIP name
-  const primaryLicense = licenses[0] ?? null;
-  const state = primaryLicense?.state ?? "UNKNOWN";
-  const licenseType = primaryLicense?.licenseType ?? "LICENSE";
+  // Name the package for everything in it: a single-license export keeps
+  // State_Type; a multi-license export enumerates the states (an NV+MI
+  // physician used to get "..._NV_DO_..." from licenses[0] alone).
   const year = new Date().getFullYear().toString();
-  const rootFolder = `ClearCME_Audit_${state}_${licenseType.replace(/[^a-zA-Z0-9]/g, "_")}_${year}`;
+  const uniqueStates = [...new Set(licenses.map((l) => l.state))];
+  let scopeLabel: string;
+  if (licenses.length === 1) {
+    const lic = licenses[0];
+    scopeLabel = `${lic.state}_${(lic.licenseType ?? "LICENSE").replace(/[^a-zA-Z0-9]/g, "_")}`;
+  } else if (uniqueStates.length === 0) {
+    scopeLabel = "UNKNOWN";
+  } else if (uniqueStates.length <= 4) {
+    scopeLabel = uniqueStates.join("-");
+  } else {
+    scopeLabel = "Multi_State";
+  }
+  const rootFolder = `ClearCME_Audit_${scopeLabel}_${year}`;
 
   const zip = new JSZip();
   const root = zip.folder(rootFolder)!;
@@ -209,7 +192,11 @@ export async function GET(req: NextRequest) {
       const isMet = earned >= req.hoursRequired;
       return {
         topic: req.topic,
-        label: requirementLabel(req.topic, req.description),
+        // Shared display-name logic: MATE Act naming plus OTHER_MANDATORY
+        // falling back to the state's own wording ("Duty to report
+        // misconduct"), matching the console instead of "Other Mandatory
+        // Topic".
+        label: requirementDisplayName(req.topic, req.description),
         hoursRequired: req.hoursRequired,
         earned,
         isMet,
@@ -284,8 +271,10 @@ export async function GET(req: NextRequest) {
       const folder = byReq.folder(folderName)!;
       const fileBuffer = certFileCache.get(cert.id) ?? null;
       const dateStr = cert.activityDate?.toISOString().slice(0, 10) ?? "unknown-date";
+      // Strip a trailing extension from the name source — fileName already
+      // carries one, which produced "..._scan.pdf.pdf".
       const baseName = safeFileName(
-        `${dateStr}_${cert.title ?? cert.fileName ?? cert.id}`,
+        `${dateStr}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
         ""
       );
 
@@ -320,8 +309,10 @@ export async function GET(req: NextRequest) {
     const folder = byYear.folder(yr)!;
     const fileBuffer = certFileCache.get(cert.id) ?? null;
     const dateStr = cert.activityDate?.toISOString().slice(0, 10) ?? "unknown-date";
+    // Strip a trailing extension from the name source — fileName already
+    // carries one, which produced "..._scan.pdf.pdf".
     const baseName = safeFileName(
-      `${dateStr}_${cert.title ?? cert.fileName ?? cert.id}`,
+      `${dateStr}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
       ""
     );
 

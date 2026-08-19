@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatTopic } from "@/lib/requirement-display";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
@@ -197,7 +198,7 @@ export async function GET(req: NextRequest) {
       pushWrapped(detailLine);
 
       if (certificate.specialTopics.length > 0) {
-        pushWrapped(`   Topics: ${certificate.specialTopics.join(", ")}`);
+        pushWrapped(`   Topics: ${certificate.specialTopics.map(formatTopic).join(", ")}`);
       }
 
       lines.push(

@@ -3,11 +3,19 @@
  * Map page and /api/compliance so no surface ever shows a raw topic enum.
  */
 
+// Labels the generic Title Case transform gets wrong.
+const TOPIC_LABELS: Record<string, string> = {
+  END_OF_LIFE_CARE: "End-of-Life Care",
+};
+
 export function formatTopic(topic: string): string {
-  return topic
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+  return (
+    TOPIC_LABELS[topic] ??
+    topic
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+  );
 }
 
 /**
