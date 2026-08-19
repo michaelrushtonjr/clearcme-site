@@ -79,7 +79,10 @@ function layout({ body, unsubscribeUrl }: { body: string; unsubscribeUrl: string
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#FFFFFF;border-radius:12px;border:1px solid #E5E3DC;overflow:hidden;">
         <tr>
           <td style="background-color:${BRAND_GREEN};padding:20px 32px;">
-            <span style="color:#FFFFFF;font-size:18px;font-weight:700;letter-spacing:0.3px;">ClearCME</span>
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding-right:10px;"><img src="${base}/clearcme-mark-tile.png" width="28" height="28" alt="" style="display:block;border:0;" /></td>
+              <td><span style="color:#FFFFFF;font-size:18px;font-weight:700;letter-spacing:0.3px;">ClearCME</span></td>
+            </tr></table>
           </td>
         </tr>
         <tr>
@@ -308,4 +311,79 @@ export function renderMonthlyDigestEmail({
   });
 
   return { subject, html };
+}
+
+// ── Magic-link sign-in ────────────────────────────────────────────────────────
+// Transactional (no unsubscribe footer), so it doesn't use layout() above.
+// Palette is the Console 1b token set — forest header, green button, cream
+// card — matching the product the link opens into. The two lifecycle
+// templates above predate the 1b redesign and keep their palette for now.
+
+const C1B_FOREST = "#22371F";
+const C1B_GREEN = "#2E4A2C";
+const C1B_CARD = "#FBFAF5";
+const C1B_CANVAS = "#EFEBDF";
+const C1B_INK = "#101613";
+const C1B_MUTED = "#656C60";
+const C1B_BORDER = "rgba(16, 22, 19, 0.13)"; // --c1b-border-card
+const JAKARTA_STACK =
+  "'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+
+export function renderMagicLinkEmail({ url }: { url: string }): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const base = siteUrl();
+  const subject = "Sign in to ClearCME";
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:${C1B_CANVAS};font-family:${JAKARTA_STACK};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${C1B_CANVAS};padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:${C1B_CARD};border-radius:12px;border:1px solid ${C1B_BORDER};overflow:hidden;">
+        <tr>
+          <td style="background-color:${C1B_FOREST};padding:20px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding-right:10px;"><img src="${base}/clearcme-mark-tile.png" width="28" height="28" alt="" style="display:block;border:0;" /></td>
+              <td><span style="color:#FFFFFF;font-size:18px;font-weight:700;letter-spacing:0.3px;font-family:${JAKARTA_STACK};">Clear<span style="color:#9FBE93;">CME</span></span></td>
+            </tr></table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:${C1B_INK};">Sign in to ClearCME</h1>
+            <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:${C1B_INK};">
+              Use the button below to sign in. The link expires in 24 hours and can be used once.
+            </p>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0 4px;"><tr><td style="border-radius:999px;background-color:${C1B_GREEN};">
+              <a href="${url}" style="display:inline-block;padding:12px 24px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;">Sign in to ClearCME</a>
+            </td></tr></table>
+            <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:${C1B_MUTED};">
+              If the button doesn't work, copy and paste this link into your browser:<br />
+              <a href="${url}" style="color:${C1B_GREEN};word-break:break-all;">${url}</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid ${C1B_BORDER};">
+            <p style="margin:0;font-size:12px;color:${C1B_MUTED};line-height:1.5;">
+              If you didn't request this email, you can safely ignore it — no one can sign in without this link.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  const text = `Sign in to ClearCME
+
+Use this link to sign in. It expires in 24 hours and can be used once:
+
+${url}
+
+If you didn't request this email, you can safely ignore it.
+`;
+  return { subject, html, text };
 }

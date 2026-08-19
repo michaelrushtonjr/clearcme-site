@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { renderMagicLinkEmail } from "@/lib/email";
 
 const providers = [
   ...(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
@@ -31,6 +32,30 @@ const providers = [
         Resend({
           apiKey: process.env.RESEND_API_KEY,
           from: process.env.EMAIL_FROM ?? "noreply@clearcme.ai",
+          // Branded sign-in email. Mirrors the default provider send exactly
+          // (same Resend endpoint, same throw-on-failure) with our subject
+          // and template swapped in — the default is an unbranded Auth.js
+          // card with a cobalt button and subject "Sign in to clearcme.ai".
+          async sendVerificationRequest({ identifier, url, provider }) {
+            const { subject, html, text } = renderMagicLinkEmail({ url });
+            const res = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${provider.apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                from: provider.from,
+                to: identifier,
+                subject,
+                html,
+                text,
+              }),
+            });
+            if (!res.ok) {
+              throw new Error("Resend error: " + JSON.stringify(await res.json()));
+            }
+          },
         }),
       ]
     : []),
@@ -74,6 +99,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     error: "/login",
+    // Branded check-your-email page instead of Auth.js's unstyled default
+    // at /api/auth/verify-request.
+    verifyRequest: "/login/check-email",
   },
   callbacks: {
     session({ session, user }) {
