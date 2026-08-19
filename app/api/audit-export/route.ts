@@ -407,15 +407,43 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  reportLines.push(``, `─────────────────────────────`, ``, `CERTIFICATES ON FILE: ${allCerts.length}`);
+  // Documented = the file is actually in this package (certFileCache hit) —
+  // stricter than fileUrl, so a blob fetch failure also reads as
+  // undocumented and the package never overstates its contents.
+  const documentedCerts = allCerts.filter((c) => certFileCache.get(c.id));
+  const undocumentedCerts = allCerts.filter((c) => !certFileCache.get(c.id));
+  const documentedHours = documentedCerts.reduce((s, c) => s + (c.creditHours ?? 0), 0);
+  const undocumentedHours = undocumentedCerts.reduce((s, c) => s + (c.creditHours ?? 0), 0);
 
-  allCerts.forEach((cert, i) => {
+  const certLine = (cert: (typeof allCerts)[number], i: number) => {
     const folders = certFolderMap.get(cert.id) ?? ["General_CME"];
     const dateStr = cert.activityDate?.toISOString().slice(0, 10) ?? "unknown";
+    return `  ${i + 1}. ${cert.title ?? cert.fileName ?? "Untitled"} | ${cert.provider ?? "Unknown Provider"} | ${dateStr} | ${cert.creditHours?.toFixed(1) ?? "?"} hrs | ${folders.join(", ")}`;
+  };
+
+  reportLines.push(``, `─────────────────────────────`, ``, `CERTIFICATES ON FILE: ${allCerts.length}`);
+
+  if (documentedCerts.length > 0) {
     reportLines.push(
-      `  ${i + 1}. ${cert.title ?? cert.fileName ?? "Untitled"} | ${cert.provider ?? "Unknown Provider"} | ${dateStr} | ${cert.creditHours?.toFixed(1) ?? "?"} hrs | ${folders.join(", ")}`
+      ``,
+      `DOCUMENTED — file included in this package: ${documentedCerts.length} (${documentedHours.toFixed(1)} hrs)`
     );
-  });
+    documentedCerts.forEach((cert, i) => reportLines.push(certLine(cert, i)));
+  }
+
+  if (undocumentedCerts.length > 0) {
+    reportLines.push(
+      ``,
+      `UNDOCUMENTED — no stored file; placeholder note included: ${undocumentedCerts.length} (${undocumentedHours.toFixed(1)} hrs)`
+    );
+    undocumentedCerts.forEach((cert, i) => reportLines.push(certLine(cert, i)));
+    reportLines.push(
+      ``,
+      `Hour totals in this report count documented and undocumented`,
+      `certificates alike. Re-upload missing source documents at`,
+      `clearcme.ai/dashboard/certificates to complete the package.`
+    );
+  }
 
   reportLines.push(
     ``,
@@ -433,6 +461,14 @@ export async function GET(req: NextRequest) {
     generated: new Date().toISOString(),
     physician: userName,
     generatedBy: "ClearCME (clearcme.ai)",
+    documentation: {
+      certificates: allCerts.length,
+      documented: documentedCerts.length,
+      undocumented: undocumentedCerts.length,
+      documentedHours,
+      undocumentedHours,
+      note: "Hour totals include undocumented certificates; per-certificate flags below.",
+    },
     licenses: licenseSummaries.map((lic) => ({
       state: lic.state,
       licenseType: lic.licenseType,
@@ -461,6 +497,7 @@ export async function GET(req: NextRequest) {
       creditType: cert.creditType,
       status: cert.extractionStatus,
       fileStored: !!cert.fileUrl,
+      fileIncluded: !!certFileCache.get(cert.id),
       folders: certFolderMap.get(cert.id) ?? [],
     })),
   };

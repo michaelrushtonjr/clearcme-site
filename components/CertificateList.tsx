@@ -12,6 +12,7 @@ interface Cert {
   title?: string | null;
   courseName?: string | null;
   fileName?: string | null;
+  fileUrl?: string | null;
   provider?: string | null;
   providerName?: string | null;
   activityDate: Date | string | null;
@@ -189,6 +190,93 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
   );
 }
 
+
+// Rows whose source document was never stored (pre-Aug-11 uploads before
+// blob retention worked, and manual entries) export as placeholder stubs in
+// the audit package. This control heals the record in place: the file
+// reattaches to the existing certificate — no new row, no re-extraction,
+// no trial slot.
+function ReuploadSourceDoc({ cert }: { cert: Cert }) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [healed, setHealed] = useState(false);
+  const [error, setError] = useState("");
+
+  const isManualEntry = cert.fileName === "Manual entry";
+
+  const handleFile = async (file: File) => {
+    setError("");
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File too large. Maximum 10MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch(`/api/certificates/${cert.id}/file`, {
+        method: "POST",
+        body,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setError(err.error ?? "Upload failed — please try again.");
+      } else {
+        setHealed(true);
+        router.refresh();
+      }
+    } catch {
+      setError("Network error — please try again.");
+    }
+    setUploading(false);
+  };
+
+  if (healed) {
+    return (
+      <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[var(--status-met)]">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+        Document attached — audit exports now include the file itself.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-2">
+      <p className="text-xs text-[var(--ink-3)]">
+        {isManualEntry
+          ? "No certificate file is attached — audit exports include a placeholder note instead of the document."
+          : "The original file isn't stored — audit exports include a placeholder note until you re-upload it."}
+      </p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = "";
+        }}
+      />
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="mt-1 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-2)] disabled:opacity-50"
+      >
+        {uploading
+          ? "Uploading…"
+          : isManualEntry
+            ? "Attach source document"
+            : "Re-upload source document"}
+      </button>
+      {error && <p className="mt-1 text-xs text-[var(--status-miss)]">{error}</p>}
+    </div>
+  );
+}
+
 function CertificateRow({
   cert,
   sharedStates,
@@ -279,6 +367,9 @@ function CertificateRow({
             </button>
           )}
         </div>
+      )}
+      {cert.fileUrl == null && !needsAttention && !justSaved && (
+        <ReuploadSourceDoc cert={cert} />
       )}
       {justSaved && (
         <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[var(--status-met)]">
