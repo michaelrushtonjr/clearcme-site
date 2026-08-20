@@ -615,7 +615,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Opioid prescribing / OUD treatment", "3 hrs every 2 years", "If required to register with NH controlled drug prescription health and safety program; cite Med 402.01(o)-(p) / RSA 318-B:40"),
+      topic("Opioid prescribing / OUD treatment", "3 hrs every 2 years", "If required to register with NH controlled drug prescription health and safety program; cite Med 402.01(o)-(p) / RSA 318-B:41"),
       mateTopic(),
     ],
   },
