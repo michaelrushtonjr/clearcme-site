@@ -754,6 +754,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle; for 2025+ use 24 months preceding renewal, not two calendar years",
     mandatoryTopics: [
       topic("Controlled substance prescribing", "2 hrs per cycle", "Applies to all licensees unless exempt under T.C.A. 63-1-402(c): board certified (ABMS/AOA/ABPS) in pain management, anesthesiology, physical medicine and rehabilitation, neurology, or rheumatology, or practicing at a registered pain management clinic"),
+      topic("Nutrition", "At least 1 hr, one-time", "Effective for CME required on/after Jan. 1, 2028 (Public Chapter 857, 2026; T.C.A. 63-6-233(d)) — not yet in force; 1 of the required hours, completed once; course must be available free of charge; provision sunsets Jan. 1, 2033"),
       mateTopic(),
     ],
   },
@@ -978,6 +979,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "2-year renewal cycle; for 2025+ use 24 months preceding renewal, not two calendar years",
     mandatoryTopics: [
       topic("Controlled substance prescribing", "2 hrs per cycle", "Applies to all licensees unless exempt under T.C.A. 63-1-402(c): board certified (ABMS/AOA/ABPS) in pain management, anesthesiology, physical medicine and rehabilitation, neurology, or rheumatology, or practicing at a registered pain management clinic"),
+      topic("Nutrition", "At least 1 hr, one-time", "Effective for CME required on/after Jan. 1, 2028 (Public Chapter 857, 2026; T.C.A. 63-9-107(a)(3)) — not yet in force; 1 of the required hours, completed once; course must be available free of charge; provision sunsets Jan. 1, 2033"),
       mateTopic(),
     ],
   },
