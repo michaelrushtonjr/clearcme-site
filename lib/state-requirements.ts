@@ -819,7 +819,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   WI: {
     totalHours: 30,
-    totalHoursLabel: "30 hours",
+    totalHoursLabel: "30 hours of AMA PRA Category 1 / AOA Category 1 (or ACCME-recognized equivalent) credit; no Category 2 (Med 13.03(1)(b))",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
