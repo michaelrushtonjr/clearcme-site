@@ -1,0 +1,13 @@
+title = "ClearCME credential checks"
+[extend]
+useDefault = true
+
+[[rules]]
+id = "clearcme-database-password"
+description = "Embedded remote Postgres credential"
+regex = '''(?i)postgres(?:ql)?://[^\s:'"`]+:[^\s@'"`]+@[^\s'"`]+'''
+
+# Never read the production environment file in local repair runs.
+[allowlist]
+description = "Production environment is excluded by repair instructions"
+paths = ['''(^|/)\.env\.prod$''']

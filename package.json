@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "sync-courses": "node scripts/sync-courses.js",
     "audit-course-pricing": "node scripts/audit-course-pricing.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "secrets": "node scripts/check-secrets.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
