@@ -93,7 +93,7 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       where: {
         state_licenseType: { state: license.state, licenseType: license.licenseType },
       },
-      include: { mandatoryRequirements: true },
+      include: { mandatoryRequirements: { where: { retiredAt: null } } },
     });
     if (!rule) continue;
 

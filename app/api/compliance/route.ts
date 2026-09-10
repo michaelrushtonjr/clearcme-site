@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
               licenseType: license.licenseType,
             },
           },
-          include: { mandatoryRequirements: true },
+          include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
     if (!rule) {

@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
       ? null
       : await prisma.complianceRule.findUnique({
           where: { state_licenseType: { state: lic.state, licenseType: lic.licenseType } },
-          include: { mandatoryRequirements: true },
+          include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
     if (!rule) {

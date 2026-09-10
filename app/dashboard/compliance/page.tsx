@@ -324,7 +324,7 @@ export default async function CompliancePage() {
                 licenseType: license.licenseType,
               },
             },
-            include: { mandatoryRequirements: true },
+            include: { mandatoryRequirements: { where: { retiredAt: null } } },
           });
 
       if (!rule) {

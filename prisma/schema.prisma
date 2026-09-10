@@ -256,6 +256,8 @@ model ComplianceRuleChange {
 model MandatoryRequirement {
   id               String       @id @default(cuid())
   complianceRuleId String
+  requirementKey   String
+  retiredAt        DateTime?
   topic            SpecialTopic
   hoursRequired    Float
   description      String?      // e.g. "3 hours opioid prescribing for first renewal"
@@ -272,6 +274,7 @@ model MandatoryRequirement {
   completions    UserRequirementCompletion[]
 
   @@index([complianceRuleId])
+  @@unique([complianceRuleId, requirementKey])
 }
 
 // ── Email notifications ──────────────────────────────────────────────────────

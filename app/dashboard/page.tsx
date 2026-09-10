@@ -63,7 +63,7 @@ export default async function DashboardPage() {
         where: {
           state_licenseType: { state: license.state, licenseType: license.licenseType },
         },
-        include: { mandatoryRequirements: true },
+        include: { mandatoryRequirements: { where: { retiredAt: null } } },
       });
       if (!rule) return null;
 

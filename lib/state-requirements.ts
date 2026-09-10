@@ -58,6 +58,9 @@ export interface MandatoryTopic {
   topic: string;
   hours: string;
   note?: string;
+  /** Populate only after the existing Vera/Roz fact-verification process. */
+  cadence?: "EVERY_RENEWAL" | "ONE_TIME" | "FIRST_RENEWAL_ONLY" | "EVERY_N_YEARS" | "INITIAL_LICENSE_ONLY" | "CONDITIONAL";
+  intervalYears?: number;
 }
 
 export interface StateRequirement {
