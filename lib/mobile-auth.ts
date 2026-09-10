@@ -17,7 +17,7 @@ export async function getMobileUserId(req: NextRequest): Promise<string | null> 
   if (!secret) return null;
 
   try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret), { algorithms: ["HS256"], requiredClaims: ["sub", "exp"] });
     return (payload.sub as string) ?? null;
   } catch {
     return null;
