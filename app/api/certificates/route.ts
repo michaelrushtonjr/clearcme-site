@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { inferSpecialTopics, extractedTopicFlags } from "@/lib/certificate-topics";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
@@ -14,7 +15,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 import { createHash } from "crypto";
 import { inflateSync } from "zlib";
-import type { CreditType, SpecialTopic } from "@prisma/client";
+import type { CreditType } from "@prisma/client";
 
 // Extend Vercel function timeout for AI processing
 export const maxDuration = 60;
@@ -235,7 +236,9 @@ export async function POST(req: NextRequest) {
           creditType: normalizeCreditType(extracted.creditType),
           accreditation: extracted.accreditation,
           topics: extracted.topics,
-          specialTopics: inferSpecialTopics(extracted),
+          specialTopics: extractedTopicFlags(extracted.specialTopics, extracted),
+          extractedSpecialTopics: extractedTopicFlags(extracted.specialTopics, extracted),
+          suggestedSpecialTopics: inferSpecialTopics(extracted),
         },
       });
 
@@ -269,7 +272,8 @@ export async function POST(req: NextRequest) {
             creditType: normalizeCreditType(partial.creditType),
             accreditation: partial.accreditation,
             topics: partial.topics ?? [],
-            specialTopics: inferSpecialTopics(partial),
+            specialTopics: [],
+            suggestedSpecialTopics: inferSpecialTopics(partial),
           },
         });
 
@@ -440,7 +444,8 @@ async function createManualCertificate(req: NextRequest, userId: string) {
       creditHours,
       creditType,
       topics,
-      specialTopics: inferSpecialTopics({ title, provider, topics }),
+      specialTopics: [],
+      suggestedSpecialTopics: inferSpecialTopics({ title, topics }),
       // COMPLETED + manuallyVerified is the same shape the confirm-edit PATCH
       // writes; compliance math only counts COMPLETED rows.
       manuallyVerified: true,
@@ -462,6 +467,7 @@ interface ExtractedCredit {
   creditType: string | null;
   topics: string[];
   accreditation: string | null;
+  specialTopics?: string[];
 }
 
 interface ExtractionResult {
@@ -482,9 +488,10 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
   "creditHours": 0.0,
   "creditType": "AMA_PRA_1 | AOA_1A | AAFP | ANCC | OTHER",
   "topics": ["list", "of", "topics"],
+  "specialTopics": ["enum flags explicitly supported by the title or activity topics; otherwise empty"],
   "accreditation": "full accreditation statement"
 }
-If a field cannot be determined, use null. Do not include any text outside the JSON.`;
+specialTopics may contain only OPIOID_PRESCRIBING, PAIN_MANAGEMENT, IMPLICIT_BIAS, END_OF_LIFE_CARE, DOMESTIC_VIOLENCE, CHILD_ABUSE, ELDER_ABUSE, HUMAN_TRAFFICKING, INFECTION_CONTROL, PATIENT_SAFETY, ETHICS, CULTURAL_COMPETENCY, SUBSTANCE_USE, SUICIDE_PREVENTION, OTHER_MANDATORY. Use [] when uncertain. Generic prescribing does not mean opioid prescribing. If a field cannot be determined, use null. Do not include any text outside the JSON.`;
 
 // A deterministic partial only counts as "good enough to stop" when it holds a
 // critical field: creditHours, or title AND date. Anything weaker — notably a
@@ -936,32 +943,3 @@ function inferTopicLabels(text: string) {
   return Array.from(topics);
 }
 
-function inferSpecialTopics(extracted: Partial<ExtractedCredit>): SpecialTopic[] {
-  const text = [
-    extracted.title,
-    extracted.provider,
-    extracted.accreditation,
-    ...(extracted.topics ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  const topics = new Set<SpecialTopic>();
-
-  if (/opioid|controlled substance|prescribing/.test(text)) topics.add("OPIOID_PRESCRIBING");
-  if (/pain management|pain assessment/.test(text)) topics.add("PAIN_MANAGEMENT");
-  if (/substance use|sud\b|oud\b|buprenorphine|addiction|mate act|dea requirement/.test(text)) topics.add("SUBSTANCE_USE");
-  if (/implicit bias|unconscious bias|health equity/.test(text)) topics.add("IMPLICIT_BIAS");
-  if (/end[- ]of[- ]life|palliative care|hospice/.test(text)) topics.add("END_OF_LIFE_CARE");
-  if (/domestic violence|intimate partner violence/.test(text)) topics.add("DOMESTIC_VIOLENCE");
-  if (/child abuse|child maltreatment|mandated reporting/.test(text)) topics.add("CHILD_ABUSE");
-  if (/elder abuse|older adult abuse/.test(text)) topics.add("ELDER_ABUSE");
-  if (/human trafficking|trafficking victim/.test(text)) topics.add("HUMAN_TRAFFICKING");
-  if (/infection control|infectious disease prevention|bloodborne pathogen/.test(text)) topics.add("INFECTION_CONTROL");
-  if (/patient safety|medical error|risk management|root cause analysis/.test(text)) topics.add("PATIENT_SAFETY");
-  if (/ethics|professional responsibility|jurisprudence/.test(text)) topics.add("ETHICS");
-  if (/cultural competency|cultural competence|cultural humility/.test(text)) topics.add("CULTURAL_COMPETENCY");
-  if (/suicide prevention|suicide assessment|suicide treatment/.test(text)) topics.add("SUICIDE_PREVENTION");
-
-  return Array.from(topics);
-}

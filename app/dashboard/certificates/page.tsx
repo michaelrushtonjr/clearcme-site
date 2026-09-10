@@ -1,3 +1,4 @@
+import { evaluateLicense } from "@/lib/compliance-engine";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -18,19 +19,14 @@ export default async function CertificatesPage() {
     }),
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
-      select: { state: true },
     }),
   ]);
 
-  // AMA PRA Cat 1 credits count toward every tracked state (mirrors compliance page)
-  const licenseStates = [...new Set(licenses.map((l) => l.state))];
   const sharedCredits: Record<string, string[]> = {};
-  if (licenseStates.length >= 2) {
-    for (const cert of certificates) {
-      if (cert.creditType === "AMA_PRA_1") {
-        sharedCredits[cert.id] = licenseStates;
-      }
-    }
+  for (const license of licenses) {
+    const rule = await prisma.complianceRule.findUnique({ where: { state_licenseType: { state: license.state, licenseType: license.licenseType } } });
+    const evaluation = evaluateLicense({ license, rule, requirements: [], certificates, completions: [], today: new Date() });
+    for (const id of evaluation.countedCertificateIds) sharedCredits[id] = [...new Set([...(sharedCredits[id] ?? []), license.state])];
   }
 
   const totalHours = certificates.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);

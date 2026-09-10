@@ -165,6 +165,9 @@ model Certificate {
   accreditation   String?  // e.g. "AMA PRA Category 1", "AAFP Prescribed"
   topics          String[] // e.g. ["opioid prescribing", "pain management"]
   specialTopics   SpecialTopic[] // mapped special/mandatory topic flags
+  suggestedSpecialTopics SpecialTopic[] @default([])
+  extractedSpecialTopics SpecialTopic[] @default([]) // provenance: explicitly returned by extractor
+  topicHourAllocations Json @default("{}") // physician-confirmed split, sum <= creditHours
 
   // Manual override support
   manuallyVerified Boolean @default(false)
@@ -224,6 +227,7 @@ model ComplianceRule {
   licenseType   LicenseType
   renewalCycle  Int         // months, e.g. 24 = 2 years
   totalHours    Float       // total CME hours required per cycle
+  acceptedCreditTypes CreditType[] @default([]) // empty = eligibility not yet specified
   updatedAt     DateTime    @updatedAt
   sourceUrl     String?     // link to official state medical board source
   notes         String?
