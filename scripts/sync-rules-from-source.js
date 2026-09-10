@@ -7,7 +7,8 @@ const { planSync, withRequirementKeys } = require('./rule-sync-planner');
 function sourceRows(state, licenseType, topics, existingRows, questions) {
   const rows = topics.map((topic) => {
     const mapped = specialTopic(topic);
-    const existing = existingRows.find((row) => row.topic === mapped && row.description === topic.topic);
+    const candidates = existingRows.filter((row) => row.topic === mapped);
+    const existing = candidates.find((row) => row.description === topic.topic) ?? (candidates.length === 1 ? candidates[0] : undefined);
     const explicit = Boolean(topic.cadence) && (topic.cadence !== 'EVERY_N_YEARS' || topic.intervalYears > 0);
     if (!explicit) questions.push(`${state} ${licenseType}: ${topic.topic} — cadence/interval missing; proposed value requires Vera/Roz verification. Stored as CONDITIONAL with UNVERIFIED-CADENCE.`);
     const cadence = explicit ? topic.cadence : 'CONDITIONAL';
@@ -29,7 +30,7 @@ function appendQuestions(questions) {
   const file = path.join(__dirname, '..', 'codex-review', 'FACT-QUESTIONS-A.md');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '# Run A fact questions\n';
-  const fresh = questions.filter((line) => !existing.includes(line));
+  const fresh = questions.filter((line) => !existing.includes(line) && !existing.includes(line.split(' — ')[0].replace(': ', ' — ')));
   if (fresh.length) fs.writeFileSync(file, existing + '\n' + fresh.map((line) => `- ${line}`).join('\n') + '\n');
 }
 

@@ -33,3 +33,7 @@ describe("non-destructive sync planner", () => {
     expect(tx.mandatoryRequirement.update).toHaveBeenCalledWith(expect.objectContaining({ data: { retiredAt: expect.any(Date) } }));
   });
 });
+test("description updates do not change an existing attestation permission", () => {
+  const rows = sourceRows("NV", "MD", [{ topic: "Medical ethics", hours: "1" }], [{ topic: "ETHICS", description: "Ethics", requirementKey: "NV:MD:ETHICS", attestationAllowed: false }], []);
+  expect(rows[0].attestationAllowed).toBe(false);
+});

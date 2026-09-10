@@ -44,3 +44,7 @@ test("unknown is retained even when another requirement is due and hours are ful
 test("next action asks for answers when hours gap is zero", () => {
   expect(buildNextAction([{ state: "NV", licenseType: "MD", daysUntilRenewal: 1, renewalDateLabel: "tomorrow", generalGapHours: 0, isCompliant: false, overall: "UNKNOWN", mandatoryGaps: [] }])?.headline).toBe("Needs your answer");
 });
+test("a lookback requirement cannot be met by undated attestation", () => {
+  const input = licenseInput({ requirements: [requirement({ hoursRequired: 0, lookbackYears: 2, cadence: "CONDITIONAL" })], completions: [{ mandatoryRequirementId: "requirement", physicianLicenseId: "license", completedAt: null, completedYear: null, notes: null }] });
+  expect(evaluateLicense(input).overall).toBe("UNKNOWN");
+});

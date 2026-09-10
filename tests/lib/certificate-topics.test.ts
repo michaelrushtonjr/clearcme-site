@@ -44,3 +44,7 @@ test("linked attestations cannot reuse the same certificate across different top
   const result = evaluateLicense(licenseInput({ requirements: [requirement({ id: "first", cadence: "ONE_TIME" }), requirement({ id: "second", topic: "PAIN_MANAGEMENT", cadence: "ONE_TIME" })], certificates: [certificate({ specialTopics: [], extractedSpecialTopics: [], creditHours: 2 })], completions: ["first", "second"].map((id) => ({ mandatoryRequirementId: id, physicianLicenseId: "license", completedAt: new Date("2026-01-15"), completedYear: 2026, notes: "__CLEARCME_CERT__:certificate" })) }));
   expect(result.requirements.map((r) => r.status)).toEqual(["MET", "NOT_MET"]);
 });
+test("a confirmed certificate link and extracted flag share one topic allocation", () => {
+  const result = evaluateLicense(licenseInput({ requirements: [requirement({ id: "ethics" }), requirement({ id: "pain", topic: "PAIN_MANAGEMENT", cadence: "ONE_TIME" })], certificates: [certificate()], completions: [{ mandatoryRequirementId: "pain", physicianLicenseId: "license", completedAt: new Date("2026-01-15"), completedYear: 2026, notes: "__CLEARCME_CERT__:certificate" }] }));
+  expect(result.requirements.map((r) => r.status)).toEqual(["NOT_MET", "MET"]);
+});

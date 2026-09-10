@@ -247,7 +247,7 @@ export default async function DashboardPage() {
   }) => {
     if (r.isNotApplicable) return { chip: "N/A", cls: "chip-muted", dot: "dot-na", fill: null };
     if (r.isMet) return { chip: "Met", cls: "chip-met", dot: "dot-met", fill: "fill-met" };
-    if (r.isUnknown) return { chip: "Review", cls: "chip-muted", dot: "dot-na", fill: "fill-open" };
+    if (r.isUnknown) return { chip: "Needs your answer", cls: "chip-muted", dot: "dot-na", fill: "fill-open" };
     return { chip: "Open", cls: "chip-open", dot: "dot-open", fill: "fill-open" };
   };
 

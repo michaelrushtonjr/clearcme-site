@@ -66,7 +66,7 @@ export default async function SettingsPage() {
             where: {
               state_licenseType: { state: license.state, licenseType: license.licenseType },
             },
-            include: { mandatoryRequirements: true },
+            include: { mandatoryRequirements: { where: { retiredAt: null } } },
           });
       return {
         licenseId: license.id,

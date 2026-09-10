@@ -59,6 +59,7 @@ interface RequirementSourceMeta {
 }
 
 interface MandatoryGap {
+  status: import("@/lib/compliance-engine").RequirementStatus;
   requirementId: string;
   topic: string;
   /** The state's own name for the requirement, e.g. "Geriatric medicine" */
@@ -404,6 +405,7 @@ export default async function CompliancePage() {
           ? certificates.find((cert) => cert.id === linkedCertificateId(completion.notes))
           : undefined;
         return {
+          status: result.status,
           requirementId: req.id,
           topic: req.topic,
           displayName,
@@ -467,7 +469,6 @@ export default async function CompliancePage() {
   // Here it only decides which requirement row starts expanded.
   const nextAction = buildNextAction(
     complianceData
-      .filter((d) => d.rule !== null)
       .map((d) => ({
         state: d.license.state,
         licenseType: d.license.licenseType,
@@ -478,7 +479,7 @@ export default async function CompliancePage() {
         generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
         totalHoursRequired: d.totalHoursNeeded,
         isCompliant: d.isCompliant,
-        overall: d.overall,
+      overall: d.overall,
         mandatoryGaps: d.mandatoryGaps.map((g) => ({
           topic: g.topic,
           gap: g.gap,
@@ -512,7 +513,7 @@ export default async function CompliancePage() {
       totalHoursNeeded: d.totalHoursNeeded,
       gapHours: d.gapHours,
       isCompliant: d.isCompliant,
-        overall: d.overall,
+      overall: d.overall,
       mandatoryGaps: d.mandatoryGaps,
     })),
     certificates: certificates.map((c) => ({
@@ -705,7 +706,9 @@ export default async function CompliancePage() {
             status = "Met";
             statusTone = "met";
           } else if (gap.isUnknown) {
-            status = "Needs input";
+            status = "Needs your answer";
+          } else if (gap.status === "EXPIRED") {
+            status = "Expired";
           } else if (daysUntilRenewal !== null && daysUntilRenewal <= 90) {
             status = "Action needed";
           }

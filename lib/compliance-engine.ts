@@ -66,7 +66,11 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
   const usable = (cert: EngineCertificate) => (cert.extractionStatus === "COMPLETED" || (cert.extractionStatus === "MANUAL" && cert.manuallyVerified)) && eligible(cert) && Number.isFinite(cert.creditHours) && (cert.creditHours ?? 0) > 0 && cert.activityDate !== null && cert.activityDate <= today;
   const topicHours = (cert: EngineCertificate, topic: string): number => {
     if (!usable(cert)) return 0;
-    const allowed = cert.manuallyVerified ? cert.specialTopics : (cert.extractedSpecialTopics ?? []).filter((t) => cert.specialTopics.includes(t) && inferSpecialTopics(cert).includes(t));
+    const linkedTopics = completions.filter((c) => (c.physicianLicenseId === license.id || c.physicianLicenseId === null) && linkedCertificateId(c.notes) === cert.id)
+      .sort((a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0) || a.mandatoryRequirementId.localeCompare(b.mandatoryRequirementId))
+      .flatMap((c) => input.requirements.filter((r) => r.id === c.mandatoryRequirementId && !r.retiredAt).map((r) => r.topic));
+    const confirmed = [...new Set([...(cert.manuallyVerified ? cert.specialTopics : []), ...linkedTopics])];
+    const allowed = confirmed.length ? confirmed : (cert.extractedSpecialTopics ?? []).filter((t) => cert.specialTopics.includes(t) && inferSpecialTopics(cert).includes(t));
     if (!allowed.includes(topic as EngineRequirement["topic"])) return 0;
     const allocations = cert.topicHourAllocations;
     if (cert.manuallyVerified && allocations && typeof allocations === "object" && Object.keys(allocations).length) {
@@ -100,15 +104,13 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     if (expiry) expiry.setUTCFullYear(expiry.getUTCFullYear() + req.lookbackYears!);
     const expired = !!expiry && expiry < cycleEnd;
     const future = !!completedAt && completedAt > today;
-    const linkedCompletions = linked ? completions.filter((c) => (c.physicianLicenseId === license.id || c.physicianLicenseId === null) && linkedCertificateId(c.notes) === linked.id).sort((a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0) || a.mandatoryRequirementId.localeCompare(b.mandatoryRequirementId)) : [];
-    const hasRecordedSplit = linked?.topicHourAllocations && typeof linked.topicHourAllocations === "object" && Object.keys(linked.topicHourAllocations).length > 0;
-    const firstLinkedTopic = input.requirements.find((r) => r.id === linkedCompletions[0]?.mandatoryRequirementId)?.topic;
-    const linkedHours = linked ? hasRecordedSplit ? topicHours(linked, req.topic) : firstLinkedTopic === req.topic ? linked.creditHours ?? 0 : 0 : 0;
+    const linkedHours = linked ? topicHours(linked, req.topic) : 0;
     const hasEvidence = !explicitNo && !future && (linkedId ? !!linked && linkedHours > 0 : !!completedAt || !!completion);
     let status: RequirementStatus;
     if (req.notes?.startsWith("UNVERIFIED-CADENCE:")) status = "UNKNOWN";
     else if (completion?.notes === NOT_APPLICABLE_REQUIREMENT_NOTE || fulfillment.status === "not_applicable") status = "NOT_APPLICABLE";
     else if (req.cadence === "CONDITIONAL" && !completion) status = "UNKNOWN";
+    else if (req.lookbackYears && completion && !completedAt && !explicitNo) status = "UNKNOWN";
     else if (req.hoursRequired === 0) status = expired ? "EXPIRED" : hasEvidence ? "MET" : explicitNo ? "NOT_MET" : "UNKNOWN";
     else if (earned >= req.hoursRequired) status = "MET";
     else if (expired) status = "EXPIRED";

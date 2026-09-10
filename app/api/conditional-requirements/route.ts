@@ -64,7 +64,7 @@ async function collectMatches(userId: string) {
       })),
     },
     include: {
-      mandatoryRequirements: { where: { cadence: { in: [...ASKABLE_CADENCES] } } },
+      mandatoryRequirements: { where: { retiredAt: null, cadence: { in: [...ASKABLE_CADENCES] } } },
     },
   });
 
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
           : NOT_COMPLETED_REQUIREMENT_NOTE;
 
       const requirement = await prisma.mandatoryRequirement.findFirst({
-        where: { id: match.requirementId },
+        where: { id: match.requirementId, retiredAt: null },
         select: { id: true, topic: true },
       });
       if (!requirement) continue;
