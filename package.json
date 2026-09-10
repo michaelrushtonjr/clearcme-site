@@ -10,7 +10,8 @@
     "db:seed": "node prisma/seed.js",
     "postinstall": "prisma generate",
     "sync-courses": "node scripts/sync-courses.js",
-    "audit-course-pricing": "node scripts/audit-course-pricing.mjs"
+    "audit-course-pricing": "node scripts/audit-course-pricing.mjs",
+    "test": "vitest run"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -23,6 +24,7 @@
     "@types/pg": "^8.20.0",
     "@vercel/blob": "^2.3.3",
     "clsx": "^2.1.1",
+    "google-auth-library": "^11.0.2",
     "jszip": "^3.10.1",
     "lucide-react": "^1.11.0",
     "next": "^16.2.6",
@@ -42,7 +44,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.0.18",
+    "zod": "4.6.1"
   },
   "overrides": {
     "postcss": "8.5.14",
