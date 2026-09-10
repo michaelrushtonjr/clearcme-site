@@ -154,12 +154,14 @@ export function renderRenewalReminderEmail({
   const urgent = days <= 30;
   const accent = urgent ? CRIMSON : days <= 60 ? AMBER : BRAND_GREEN;
 
-  const subject = license.isCompliant
+  const subject = license.overall === "UNKNOWN" ? `${license.state} ${license.licenseType} — Needs your answer` : license.overall === "NOT_COMPUTED" ? `${license.state} ${license.licenseType} — Review state requirements` : license.isCompliant
     ? `${license.state} ${license.licenseType} renewal in ${days} days — you're on track`
     : `${license.state} ${license.licenseType} renewal in ${days} days — ${gapHours.toFixed(0)} hours of CME remaining`;
 
   let statusBlock: string;
-  if (license.isCompliant) {
+  if (license.overall === "UNKNOWN" || license.overall === "NOT_COMPUTED") {
+    statusBlock = `<p>${license.statusLabel}. Review your compliance map before relying on a compliance status.</p>`;
+  } else if (license.isCompliant) {
     statusBlock = `
       <p style="margin:0 0 8px;font-size:15px;color:${INK};line-height:1.6;">
         You're on track. Your <strong>${license.state} ${license.licenseType}</strong> license renews on <strong>${renewalLabel}</strong> (${days} days), and your CME requirements are complete.
@@ -254,7 +256,7 @@ export function renderMonthlyDigestEmail({
         </td></tr>
         <tr><td style="padding:16px 20px;">
           ${
-            license.isCompliant
+            license.overall === "UNKNOWN" || license.overall === "NOT_COMPUTED" ? `<p>${license.statusLabel}. Review your compliance map.</p>` : license.isCompliant
               ? `<p style="margin:0;font-size:14px;color:${BRAND_GREEN};font-weight:600;">All requirements complete. You're on track.</p>`
               : `
           <p style="margin:0 0 10px;font-size:14px;color:${INK};line-height:1.7;">

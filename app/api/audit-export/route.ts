@@ -3,10 +3,8 @@ import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 import { prisma } from "@/lib/prisma";
-import {
-  NOT_APPLICABLE_REQUIREMENT_NOTE,
-  NOT_COMPLETED_REQUIREMENT_NOTE,
-} from "@/lib/requirement-completions";
+import { auditCompliance } from "@/lib/compliance-adapters";
+import type { LicenseEvaluation, OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
 import JSZip from "jszip";
 import { get } from "@vercel/blob";
 import { requirementDisplayName } from "@/lib/requirement-display";
@@ -76,12 +74,7 @@ export async function GET(req: NextRequest) {
   const requirementCompletions = await prisma.userRequirementCompletion.findMany({
     where: { userId },
   });
-  const completionByRequirementAndLicense = new Map(
-    requirementCompletions.map((completion) => [
-      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
-      completion,
-    ])
-  );
+
 
   // Fetch all certs (COMPLETED + NEEDS_REVIEW)
   const allCerts = await prisma.certificate.findMany({
@@ -121,6 +114,7 @@ export async function GET(req: NextRequest) {
     label: string;
     hoursRequired: number;
     earned: number;
+    status: RequirementStatus;
     isMet: boolean;
     /** User attested completion but no certificate on file covers the hours */
     attested: boolean;
@@ -134,6 +128,9 @@ export async function GET(req: NextRequest) {
     totalHoursEarned: number;
     totalHoursNeeded: number;
     gapHours: number;
+    overall: OverallStatus;
+    evaluation: LicenseEvaluation;
+    uncertainHours: number;
     isCompliant: boolean;
     mandatoryStatus: MandatoryStatus[];
     cycleCertIds: string[];
@@ -150,73 +147,18 @@ export async function GET(req: NextRequest) {
           include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
-    if (!rule) {
-      licenseSummaries.push({
-        state: lic.state,
-        licenseType: lic.licenseType,
-        licenseNumber: lic.licenseNumber,
-        renewalDate: lic.renewalDate,
-        totalHoursEarned: 0,
-        totalHoursNeeded: 0,
-        gapHours: 0,
-        isCompliant: false,
-        mandatoryStatus: [],
-        cycleCertIds: [],
-      });
-      continue;
-    }
-
-    const cycleEnd = lic.renewalDate ?? new Date();
-    const cycleStart = new Date(cycleEnd);
-    cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
-
-    const cycleCerts = allCerts.filter((c) => {
-      if (!c.activityDate) return false;
-      return c.activityDate >= cycleStart && c.activityDate <= cycleEnd;
+    const view = auditCompliance({ license: lic, rule, requirements: rule?.mandatoryRequirements ?? [], certificates: allCerts, completions: requirementCompletions, today: new Date() });
+    const mandatoryStatus: MandatoryStatus[] = view.mandatoryGaps.map((result) => {
+      const req = rule!.mandatoryRequirements.find((r) => r.id === result.requirementId)!;
+      return { topic: result.topic, label: requirementDisplayName(req.topic, req.description), hoursRequired: result.needed,
+        earned: result.earned, status: result.status, isMet: result.isMet,
+        attested: result.isMet && result.earned < result.needed };
     });
-
-    const totalHoursEarned = cycleCerts.reduce((s, c) => s + (c.creditHours ?? 0), 0);
-    const gapHours = Math.max(0, rule.totalHours - totalHoursEarned);
-
-    const mandatoryStatus: MandatoryStatus[] = rule.mandatoryRequirements.map((req) => {
-      const earned = cycleCerts
-        .filter((c) => c.specialTopics.includes(req.topic))
-        .reduce((s, c) => s + (c.creditHours ?? 0), 0);
-      const completion =
-        completionByRequirementAndLicense.get(`${req.id}:${lic.id}`) ??
-        completionByRequirementAndLicense.get(`${req.id}:global`);
-      const attestedComplete =
-        !!completion &&
-        completion.notes !== NOT_APPLICABLE_REQUIREMENT_NOTE &&
-        completion.notes !== NOT_COMPLETED_REQUIREMENT_NOTE;
-      const isMet = earned >= req.hoursRequired;
-      return {
-        topic: req.topic,
-        // Shared display-name logic: MATE Act naming plus OTHER_MANDATORY
-        // falling back to the state's own wording ("Duty to report
-        // misconduct"), matching the console instead of "Other Mandatory
-        // Topic".
-        label: requirementDisplayName(req.topic, req.description),
-        hoursRequired: req.hoursRequired,
-        earned,
-        isMet,
-        attested: attestedComplete && !isMet,
-      };
-    });
-
-    const isCompliant = gapHours === 0 && mandatoryStatus.every((m) => m.isMet || m.attested);
-
     licenseSummaries.push({
-      state: lic.state,
-      licenseType: lic.licenseType,
-      licenseNumber: lic.licenseNumber,
-      renewalDate: lic.renewalDate,
-      totalHoursEarned,
-      totalHoursNeeded: rule.totalHours,
-      gapHours,
-      isCompliant,
-      mandatoryStatus,
-      cycleCertIds: cycleCerts.map((c) => c.id),
+      state: lic.state, licenseType: lic.licenseType, licenseNumber: lic.licenseNumber, renewalDate: lic.renewalDate,
+      totalHoursEarned: view.hoursEarned, totalHoursNeeded: rule?.totalHours ?? 0, gapHours: view.gapHours,
+      isCompliant: view.isCompliant, overall: view.overall, evaluation: view.evaluation, uncertainHours: view.uncertainHours,
+      mandatoryStatus, cycleCertIds: view.evaluation.countedCertificateIds,
     });
   }
 
@@ -374,7 +316,7 @@ export async function GET(req: NextRequest) {
 
     reportLines.push(
       ``,
-      `COMPLIANCE STATUS: ${lic.isCompliant ? "COMPLIANT" : "INCOMPLETE"}`,
+      `COMPLIANCE STATUS: ${lic.overall}`,
       ``,
       `HOURS SUMMARY:`,
       `  Required: ${lic.totalHoursNeeded.toFixed(0)} hrs`,
@@ -386,11 +328,7 @@ export async function GET(req: NextRequest) {
       reportLines.push(``, `MANDATORY TOPICS:`);
       for (const m of lic.mandatoryStatus) {
         const check = m.isMet || m.attested ? "x" : " ";
-        const status = m.isMet
-          ? "met"
-          : m.attested
-          ? "attested complete — no certificate on file"
-          : "unmet";
+        const status = m.status;
         reportLines.push(
           `  [${check}] ${m.label} (${m.hoursRequired} hrs required, ${m.earned.toFixed(1)} earned) — ${status}`
         );
@@ -465,10 +403,12 @@ export async function GET(req: NextRequest) {
       licenseType: lic.licenseType,
       licenseNumber: lic.licenseNumber,
       renewalDate: lic.renewalDate?.toISOString() ?? null,
-      complianceStatus: lic.isCompliant ? "COMPLIANT" : "INCOMPLETE",
+      complianceStatus: lic.overall,
+      evaluation: lic.evaluation,
       hoursSummary: {
         required: lic.totalHoursNeeded,
         earned: lic.totalHoursEarned,
+        uncertain: lic.uncertainHours,
         remaining: Math.max(0, lic.gapHours),
       },
       mandatoryTopics: lic.mandatoryStatus.map((m) => ({
@@ -476,7 +416,7 @@ export async function GET(req: NextRequest) {
         label: m.label,
         hoursRequired: m.hoursRequired,
         hoursEarned: m.earned,
-        status: m.isMet ? "MET" : m.attested ? "ATTESTED" : "UNMET",
+        status: m.status,
       })),
     })),
     certificates: allCerts.map((cert) => ({
@@ -494,6 +434,7 @@ export async function GET(req: NextRequest) {
   };
 
   root.file("Compliance_Summary.json", JSON.stringify(complianceSummary, null, 2));
+  root.file("compliance.json", JSON.stringify(complianceSummary, null, 2));
 
   // ── Generate ZIP ─────────────────────────────────────────────────────────────
 

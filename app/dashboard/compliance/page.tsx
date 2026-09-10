@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { compliancePageCompliance } from "@/lib/compliance-adapters";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -17,7 +18,6 @@ import {
   NOT_APPLICABLE_REQUIREMENT_NOTE,
   NOT_COMPLETED_REQUIREMENT_NOTE,
   cadenceLabel,
-  evaluateRequirementFulfillment,
   findSatisfyingCertificate,
   linkedCertificateId,
 } from "@/lib/requirement-completions";
@@ -291,7 +291,7 @@ export default async function CompliancePage() {
       orderBy: { renewalDate: "asc" },
     }),
     prisma.certificate.findMany({
-      where: { userId, extractionStatus: "COMPLETED" },
+      where: { userId },
       orderBy: { activityDate: "desc" },
     }),
     prisma.userRequirementCompletion.findMany({
@@ -327,10 +327,13 @@ export default async function CompliancePage() {
             include: { mandatoryRequirements: { where: { retiredAt: null } } },
           });
 
+      const view = compliancePageCompliance({ license, rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
       if (!rule) {
         return {
           license,
           rule: null,
+          overall: view.overall,
+          uncertainHours: view.uncertainHours,
           totalHoursEarned: 0,
           totalHoursNeeded: 0,
           gapHours: 0,
@@ -342,17 +345,9 @@ export default async function CompliancePage() {
         };
       }
 
-      const cycleEnd = license.renewalDate ?? new Date();
-      const cycleStart = new Date(cycleEnd);
-      cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
-
-      const cycleCerts = certificates.filter((cert) => {
-        if (!cert.activityDate) return false;
-        return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
-      });
-
-      const totalHoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-      const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
+      const cycleCerts = certificates.filter((cert) => view.evaluation.countedCertificateIds.includes(cert.id));
+      const totalHoursEarned = view.hoursEarned;
+      const generalGapHours = view.generalGapHours;
 
       // Topics that appear on more than one requirement in this rule — their
       // rows need distinct names or they read as duplicates.
@@ -364,26 +359,15 @@ export default async function CompliancePage() {
 
       // Pre-compute mandatory gaps to determine true compliance
       const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
-        const earnedForTopic = cycleCerts
-          .filter((c) => c.specialTopics.includes(req.topic))
-          .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
+        const result = view.mandatoryGaps.find((r) => r.requirementId === req.id)!;
+        const earnedForTopic = result.earned;
         const completion =
           completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
           completionByRequirementAndLicense.get(`${req.id}:global`);
-        const fulfillment = evaluateRequirementFulfillment({
-          requirement: req,
-          completion,
-          cycleEnd,
-          licenseState: license.state,
-          licenseIssueDate: license.issueDate,
-          daysUntilRenewal: daysUntil(license.renewalDate),
-        });
-        const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
+        const fulfillment = { ...result, isSatisfied: result.isMet };
         const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
-        const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
-        const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
-        const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
-        const actionableGap = isUnknown ? 0 : Math.max(0, req.hoursRequired - earnedForTopic);
+        const { isMet, isUnknown, isNotApplicable } = result;
+        const actionableGap = result.gap;
         const isConditional = req.cadence === "CONDITIONAL";
         const displayName = requirementDisplayName(req.topic, req.description, {
           isConditional,
@@ -455,16 +439,17 @@ export default async function CompliancePage() {
           satisfiedByCertLabel: linkedCert ? linkedCert.title ?? linkedCert.fileName : null,
         };
       });
-      const allMandatoryMet = mandatoryGapsPreview.every((g) => g.isMet || g.isNotApplicable);
       const mandatoryHoursGap = mandatoryGapsPreview.reduce((sum, g) => sum + g.gap, 0);
       const effectiveGapHours = Math.max(generalGapHours, mandatoryHoursGap);
-      const isCompliant = generalGapHours === 0 && allMandatoryMet;
+      const isCompliant = view.isCompliant;
 
       const mandatoryGaps: MandatoryGap[] = mandatoryGapsPreview;
 
       return {
         license,
         rule,
+        overall: view.overall,
+        uncertainHours: view.uncertainHours,
         totalHoursEarned,
         totalHoursNeeded: rule.totalHours,
         gapHours: effectiveGapHours,
@@ -493,6 +478,7 @@ export default async function CompliancePage() {
         generalGapHours: Math.max(0, d.totalHoursNeeded - d.totalHoursEarned),
         totalHoursRequired: d.totalHoursNeeded,
         isCompliant: d.isCompliant,
+        overall: d.overall,
         mandatoryGaps: d.mandatoryGaps.map((g) => ({
           topic: g.topic,
           gap: g.gap,
@@ -526,6 +512,7 @@ export default async function CompliancePage() {
       totalHoursNeeded: d.totalHoursNeeded,
       gapHours: d.gapHours,
       isCompliant: d.isCompliant,
+        overall: d.overall,
       mandatoryGaps: d.mandatoryGaps,
     })),
     certificates: certificates.map((c) => ({
@@ -646,7 +633,7 @@ export default async function CompliancePage() {
           (d) => `${formatStateName(d.license.state)} — ${d.license.licenseType}`
         )}
       >
-      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => {
+      {complianceData.map(({ license, rule, totalHoursEarned, totalHoursNeeded, gapHours, isCompliant, overall, uncertainHours, mandatoryGaps, daysUntilRenewal, cycleCerts, blockedMessage }) => {
         const rows: RequirementRow[] = [];
 
         // General hours — first row of the table, same grammar as topic rows
@@ -686,6 +673,7 @@ export default async function CompliancePage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {paceSentence && <p style={detailText}>{paceSentence}</p>}
                 <p style={{ fontSize: 12.5, color: "var(--c1b-muted)" }}>
+                  {uncertainHours > 0 && <span>{uncertainHours.toFixed(1)} hours pending eligibility review. </span>}
                   {cycleCerts.length} certificate{cycleCerts.length === 1 ? "" : "s"} counted in this cycle.{" "}
                   <Link
                     href="/dashboard/upload"
@@ -944,7 +932,7 @@ export default async function CompliancePage() {
                 </p>
               )}
               <span className={`chip ${!rule ? "chip-ondark-warn" : isCompliant ? "chip-ondark-ok" : "chip-ondark-warn"}`}>
-                {!rule ? "Rules pending" : isCompliant ? "On track" : "Action needed"}
+                {!rule ? "Rules pending" : overall === "UNKNOWN" ? "Needs your answer" : isCompliant ? "On track" : "Action needed"}
               </span>
             </div>
           </div>
