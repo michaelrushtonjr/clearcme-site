@@ -66,12 +66,12 @@ export default async function UploadPage() {
             <>
               {/* Mobile: camera-first upload */}
               <div className="sm:hidden">
-                <MobileCameraUpload />
+                <MobileCameraUpload userId={userId} />
               </div>
 
               {/* Desktop: drag-and-drop + processing queue */}
               <div className="hidden sm:block">
-                <CertificateUpload />
+                <CertificateUpload userId={userId} />
               </div>
             </>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useDropzone } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
@@ -52,20 +53,14 @@ function formatTopicLabel(topic: string) {
   return TOPIC_FORMAT[topic] ?? topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-export default function CertificateUpload() {
+export default function CertificateUpload({ userId }: { userId: string }) {
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [progress, setProgress] = useState(0);
   const [uploadedCerts, setUploadedCerts] = useState<UploadedCert[]>([]);
   const [currentFileName, setCurrentFileName] = useState("");
 
-  const uploadFile = async (file: File): Promise<UploadedCert | null> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("/api/certificates", {
-      method: "POST",
-      body: formData,
-    });
+  const uploadFile = useCallback(async (file: File): Promise<UploadedCert | null> => {
+    const res = await uploadCertificate(file, userId);
 
     if (res.status === 402) {
       // Free extraction limit reached — render as an upgrade prompt, not an error
@@ -117,7 +112,7 @@ export default function CertificateUpload() {
       needsReview: isNeedsReview,
       warning: data.warning,
     };
-  };
+  }, [userId]);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -139,13 +134,12 @@ export default function CertificateUpload() {
         let result: UploadedCert | null = null;
         try {
           result = await uploadFile(file);
-        } catch {
+        } catch (error) {
           result = {
             id: crypto.randomUUID(),
             fileName: file.name,
             extracted: null,
-            error:
-              "The upload didn't complete — the connection dropped or the server took too long. The file was not processed; please try again.",
+            error: error instanceof Error ? error.message : "The upload did not complete. Please try again.",
           };
         }
         if (result) results.push(result);
@@ -160,7 +154,7 @@ export default function CertificateUpload() {
       setUploadedCerts(results);
       setUploadState("done");
     },
-    []
+    [uploadFile]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
