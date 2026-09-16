@@ -1,0 +1,26 @@
+[
+  {
+    "state": "MI",
+    "licenseType": "MD",
+    "topic": "OTHER_MANDATORY",
+    "count": 2
+  },
+  {
+    "state": "NV",
+    "licenseType": "MD",
+    "topic": "OTHER_MANDATORY",
+    "count": 2
+  },
+  {
+    "state": "LA",
+    "licenseType": "MD",
+    "topic": "OTHER_MANDATORY",
+    "count": 2
+  },
+  {
+    "state": "FL",
+    "licenseType": "MD",
+    "topic": "OTHER_MANDATORY",
+    "count": 2
+  }
+]

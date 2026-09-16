@@ -58,6 +58,9 @@ export interface MandatoryTopic {
   topic: string;
   hours: string;
   note?: string;
+  /** Populate only after the existing Vera/Roz fact-verification process. */
+  cadence?: "EVERY_RENEWAL" | "ONE_TIME" | "FIRST_RENEWAL_ONLY" | "EVERY_N_YEARS" | "INITIAL_LICENSE_ONLY" | "CONDITIONAL";
+  intervalYears?: number;
 }
 
 export interface StateRequirement {
@@ -346,13 +349,13 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "Annual renewal, 24-month CME lookback",
     mandatoryTopics: [
-      topic("Infectious diseases / HIV", "1 hr first CME-required renewal, then every 6 years"),
-      topic("Risk management", "1 hr first CME-required renewal, then every 6 years"),
-      topic("Sexual assault", "1 hr first CME-required renewal, then every 6 years"),
-      topic("Domestic violence", "1 hr first CME-required renewal, then every 6 years"),
-      topic("Cultural competency", "1 hr first CME-required renewal, then every 6 years"),
-      topic("Behavioral health", "1 hr first CME-required renewal, then every 6 years"),
-      mateTopic(),
+      { ...topic("Infectious diseases / HIV", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...topic("Risk management", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...topic("Sexual assault", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...topic("Domestic violence", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...topic("Cultural competency", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...topic("Behavioral health", "1 hr first CME-required renewal, then every 6 years"), cadence: "EVERY_N_YEARS", intervalYears: 6 },
+      { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
   DC: {
@@ -470,11 +473,11 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 3,
     cycleLabel: "3-year CME reporting cycle; license registration is annual by March 1",
     mandatoryTopics: [
-      topic("KASPER / pain management / addiction", "4.5 hrs every 3 years", "If authorized to prescribe or dispense controlled substances"),
-      topic("Addiction medicine", "12 hrs every 3 years", "If DEA-licensed to prescribe buprenorphine"),
-      topic("Domestic violence", "3 hrs one-time", "Due within 3 years of initial licensure, not recurring (KRS 194A.540(11)); applies to primary-care physicians and psychiatrists"),
-      topic("Pediatric abusive head trauma", "1 hr within 5 years", "Applies to EM, FM, pediatrics, radiology, urgent care"),
-      mateTopic(),
+      { ...topic("KASPER / pain management / addiction", "4.5 hrs every 3 years", "If authorized to prescribe or dispense controlled substances"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
+      { ...topic("Addiction medicine", "12 hrs every 3 years", "If DEA-licensed to prescribe buprenorphine"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
+      { ...topic("Domestic violence", "3 hrs one-time", "Due within 3 years of initial licensure, not recurring (KRS 194A.540(11)); applies to primary-care physicians and psychiatrists"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
+      { ...topic("Pediatric abusive head trauma", "1 hr within 5 years", "Applies to EM, FM, pediatrics, radiology, urgent care"), cadence: "EVERY_N_YEARS", intervalYears: 5 },
+      { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
   LA: {
@@ -494,16 +497,16 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Risk management", "10 hrs per cycle"),
-      topic("Board regulations review", "2 credits per cycle"),
-      topic("Opioid education and pain management", "3 hrs per cycle", "If prescribing controlled substances"),
-      topic("Implicit bias in health care", "2 hrs one-time", "Required if not completed previously"),
-      topic("End-of-life care", "2 hrs one-time"),
-      topic("Child abuse recognition and reporting", "One-time training"),
-      topic("Domestic and sexual violence", "One-time training"),
-      topic("Alzheimer's disease / dementias", "1 hr one-time", "If serving adult populations and not previously completed"),
-      topic("EHR proficiency", "3 credits one-time", "If not previously completed; course or demonstration pathway"),
-      mateTopic(),
+      { ...topic("Risk management", "10 hrs per cycle"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Board regulations review", "2 credits per cycle"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Opioid education and pain management", "3 hrs per cycle", "If prescribing controlled substances"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Implicit bias in health care", "2 hrs one-time", "Required if not completed previously"), cadence: "ONE_TIME" },
+      { ...topic("End-of-life care", "2 hrs one-time"), cadence: "ONE_TIME" },
+      { ...topic("Child abuse recognition and reporting", "One-time training"), cadence: "ONE_TIME" },
+      { ...topic("Domestic and sexual violence", "One-time training"), cadence: "ONE_TIME" },
+      { ...topic("Alzheimer's disease / dementias", "1 hr one-time", "If serving adult populations and not previously completed"), cadence: "ONE_TIME" },
+      { ...topic("EHR proficiency", "3 credits one-time", "If not previously completed; course or demonstration pathway"), cadence: "ONE_TIME" },
+      { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
   MD: {
@@ -779,9 +782,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; MD licenses expire January 31 of even-numbered years",
     mandatoryTopics: [
-      topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"),
-      topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"),
-      mateTopic(),
+      { ...topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"), cadence: "EVERY_RENEWAL" },
+      { ...topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"), cadence: "ONE_TIME" },
+      { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
   VA: {
@@ -833,9 +836,9 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Risk assessment and responsible prescribing / controlled substances", "3 hrs per 2-year cycle", "Recurring biennial renewal prerequisite — required during each reporting period for any licensee who prescribed, administered, or dispensed a controlled substance under a WV license in that period (waived if none; 11 CSR 6 § 11-6-3.2 — WVBOM: 'not a one-time only requirement'); new licensees also complete the Board-approved course within 1 year of initial licensure (§ 11-6-3.1)"),
-      topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"),
-      mateTopic(),
+      { ...topic("Risk assessment and responsible prescribing / controlled substances", "3 hrs per 2-year cycle", "Recurring biennial renewal prerequisite — required during each reporting period for any licensee who prescribed, administered, or dispensed a controlled substance under a WV license in that period (waived if none; 11 CSR 6 § 11-6-3.2 — WVBOM: 'not a one-time only requirement'); new licensees also complete the Board-approved course within 1 year of initial licensure (§ 11-6-3.1)"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"), cadence: "CONDITIONAL" },
+      { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
   WY: {
@@ -1142,7 +1145,16 @@ export const STATE_REQUIREMENTS: Record<
       DO: buildRequirement(
         stateCode,
         "DO",
-        doOverrides[stateCode] ?? mdRequirements[stateCode],
+        doOverrides[stateCode] ?? (["CT", "MA", "KY"].includes(stateCode) ? {
+          ...mdRequirements[stateCode],
+          // The transcribed cadence metadata is authorized for MD only.
+          mandatoryTopics: mdRequirements[stateCode].mandatoryTopics.map((entry) => {
+            const topic = { ...entry };
+            delete topic.cadence;
+            delete topic.intervalYears;
+            return topic;
+          }),
+        } : mdRequirements[stateCode]),
       ),
     },
   ]),

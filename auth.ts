@@ -1,3 +1,4 @@
+import { providerEmailVerified } from "@/lib/mobile-identity";
 import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
@@ -12,8 +13,7 @@ const providers = [
         Apple({
           clientId: process.env.AUTH_APPLE_ID,
           clientSecret: process.env.AUTH_APPLE_SECRET,
-          // Safe: Apple emails are always verified; rationale at the Google
-          // provider's matching flag below.
+          // The signIn callback below requires a verified provider email.
           allowDangerousEmailAccountLinking: true,
         }),
       ]
@@ -21,10 +21,7 @@ const providers = [
   Google({
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // "Dangerous" only if a provider can hand us an unverified email — Google
-    // and Apple never do. Without this, a user whose email already exists
-    // (magic link, other provider, or mobile find-or-create-by-email) bounces
-    // with error=OAuthAccountNotLinked instead of signing in.
+    // Linking is gated by the verified-email check in signIn below.
     allowDangerousEmailAccountLinking: true,
   }),
   ...(process.env.RESEND_API_KEY
@@ -104,6 +101,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verifyRequest: "/login/check-email",
   },
   callbacks: {
+    signIn({ account, profile }) {
+      if (account?.provider === "google" || account?.provider === "apple") {
+        return providerEmailVerified(account.provider, profile?.email_verified);
+      }
+      return true;
+    },
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;

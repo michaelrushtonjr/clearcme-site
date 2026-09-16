@@ -1,0 +1,1 @@
+{ "requirement": { "id": "expired", "topic": "ETHICS", "hoursRequired": 1, "cadence": "EVERY_N_YEARS", "lookbackYears": 2 }, "completion": { "mandatoryRequirementId": "expired", "physicianLicenseId": "license", "completedAt": "2020-01-01T00:00:00.000Z", "completedYear": 2020, "notes": null } }

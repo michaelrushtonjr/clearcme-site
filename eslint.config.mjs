@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     // Next.js production bundle.
     "prisma/seed.js",
     "scripts/*.js",
+    "design/console-1b/support.js",
   ]),
 ]);
 

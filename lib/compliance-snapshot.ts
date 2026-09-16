@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/lib/dates";
-import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
-import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
+import { notificationCompliance, licensePractice } from "@/lib/compliance-adapters";
+import type { OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
 
 /**
  * Per-user compliance snapshot for email notifications.
@@ -12,6 +12,7 @@ import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
  */
 
 export interface SnapshotMandatoryTopic {
+  status: RequirementStatus;
   topic: string;
   label: string;
   needed: number;
@@ -24,6 +25,9 @@ export interface SnapshotMandatoryTopic {
 }
 
 export interface LicenseSnapshot {
+  overall: OverallStatus;
+  statusLabel: string;
+  uncertainHours: number;
   licenseId: string;
   state: string;
   licenseType: string;
@@ -60,7 +64,7 @@ export function formatTopicLabel(topic: string): string {
 export async function getComplianceSnapshot(userId: string): Promise<UserComplianceSnapshot | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, specialty: true, practiceArea: true },
   });
   if (!user?.email) return null;
 
@@ -70,84 +74,38 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       orderBy: { renewalDate: "asc" },
     }),
     prisma.certificate.findMany({
-      where: { userId, extractionStatus: "COMPLETED" },
+      where: { userId },
     }),
     prisma.userRequirementCompletion.findMany({
       where: { userId },
     }),
   ]);
 
-  const completionByRequirementAndLicense = new Map(
-    requirementCompletions.map((completion) => [
-      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
-      completion,
-    ])
-  );
+
 
   const licenseSnapshots: LicenseSnapshot[] = [];
 
   for (const license of licenses) {
-    if (isComputedComplianceBlocked(license.state, license.licenseType)) continue;
 
     const rule = await prisma.complianceRule.findUnique({
       where: {
         state_licenseType: { state: license.state, licenseType: license.licenseType },
       },
-      include: { mandatoryRequirements: true },
+      include: { mandatoryRequirements: { where: { retiredAt: null } } },
     });
-    if (!rule) continue;
-
-    const cycleEnd = license.renewalDate ?? new Date();
-    const cycleStart = new Date(cycleEnd);
-    cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
-
-    const cycleCerts = certificates.filter((cert) => {
-      if (!cert.activityDate) return false;
-      return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
-    });
-
-    const hoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-    const generalGapHours = Math.max(0, rule.totalHours - hoursEarned);
+    const view = notificationCompliance({ license, practice: licensePractice(license, user), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+    const hoursEarned = view.hoursEarned;
+    const generalGapHours = view.generalGapHours;
     const daysUntilRenewal = daysUntil(license.renewalDate);
-
-    const mandatoryTopics: SnapshotMandatoryTopic[] = rule.mandatoryRequirements.map((req) => {
-      const earned = cycleCerts
-        .filter((c) => c.specialTopics.includes(req.topic))
-        .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-      const completion =
-        completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
-        completionByRequirementAndLicense.get(`${req.id}:global`);
-      const fulfillment = evaluateRequirementFulfillment({
-        requirement: req,
-        completion,
-        cycleEnd,
-        licenseState: license.state,
-        licenseIssueDate: license.issueDate,
-        daysUntilRenewal,
-      });
-      const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
-      const hoursSatisfied = req.hoursRequired > 0 && earned >= req.hoursRequired;
-      const isMet =
-        hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
-      const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
-      const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
-      return {
-        topic: req.topic,
-        label: formatTopicLabel(req.topic),
-        needed: req.hoursRequired,
-        earned,
-        gap: isMet || isUnknown || isNotApplicable ? 0 : Math.max(0, req.hoursRequired - earned),
-        isMet,
-        isUnknown,
-        isNotApplicable,
-      };
-    });
+    const mandatoryTopics: SnapshotMandatoryTopic[] = view.mandatoryGaps.map((result) => ({
+      topic: result.topic, status: result.status, label: formatTopicLabel(result.topic),
+      needed: result.needed, earned: result.earned, gap: result.gap,
+      isMet: result.isMet, isUnknown: result.isUnknown, isNotApplicable: result.isNotApplicable,
+    }));
 
     const mandatoryGapHours = mandatoryTopics.reduce((sum, t) => sum + t.gap, 0);
     const effectiveGapHours = Math.max(generalGapHours, mandatoryGapHours);
-    const isCompliant =
-      generalGapHours === 0 &&
-      mandatoryTopics.every((t) => t.isMet || t.isUnknown || t.isNotApplicable);
+    const isCompliant = view.isCompliant;
 
     const monthsLeft =
       daysUntilRenewal !== null && daysUntilRenewal > 0 ? daysUntilRenewal / 30.4 : null;
@@ -157,12 +115,15 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
         : null;
 
     licenseSnapshots.push({
+      overall: view.overall,
+      statusLabel: view.statusLabel,
+      uncertainHours: view.uncertainHours,
       licenseId: license.id,
       state: license.state,
       licenseType: license.licenseType,
       renewalDate: license.renewalDate,
       daysUntilRenewal,
-      totalHoursRequired: rule.totalHours,
+      totalHoursRequired: rule?.totalHours ?? 0,
       hoursEarned,
       generalGapHours,
       mandatoryTopics,

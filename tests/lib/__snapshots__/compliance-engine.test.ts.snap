@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`synthetic NV MD golden evaluation 1`] = `
+{
+  "countedCertificateIds": [
+    "certificate",
+  ],
+  "cycleEnd": 2026-12-31T00:00:00.000Z,
+  "cycleStart": 2024-12-31T00:00:00.000Z,
+  "generalHours": {
+    "counted": 1,
+    "required": 1,
+    "uncertain": 0,
+  },
+  "overall": "COMPLIANT",
+  "reasons": [],
+  "requirements": [
+    {
+      "earned": 1,
+      "gap": 0,
+      "isAttestable": false,
+      "prompt": null,
+      "required": 1,
+      "requirementId": "requirement",
+      "satisfiedUntil": null,
+      "status": "MET",
+      "topic": "ETHICS",
+    },
+  ],
+}
+`;

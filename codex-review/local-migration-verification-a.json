@@ -1,0 +1,100 @@
+{
+  "checkedAt": "2026-09-16T07:49:37.715Z",
+  "endpoint": "localhost:51214",
+  "schema": "public",
+  "tableCounts": {
+    "Account": 0,
+    "Certificate": 0,
+    "ComplianceRule": 51,
+    "ComplianceRuleChange": 0,
+    "ComplianceStatus": 2,
+    "EmailLog": 0,
+    "EmailPreference": 0,
+    "MandatoryRequirement": 83,
+    "PhysicianLicense": 3,
+    "Session": 1,
+    "Subscription": 1,
+    "User": 2,
+    "UserComplianceDiff": 0,
+    "UserRequirementCompletion": 0,
+    "VerificationToken": 0,
+    "Waitlist": 0
+  },
+  "allOriginalFieldsUnchanged": true,
+  "approvedKeys": 8,
+  "requirementsWithKeys": 83,
+  "duplicateKeys": 0,
+  "migrations": [
+    {
+      "name": "00000000000000_baseline",
+      "checksum": "7e9395fe2c63ad66ba4b1100a343e8e38b14cc4586f2d943d6e789f79bcf54bc",
+      "finishedAt": "2026-09-16T07:47:44.372Z"
+    },
+    {
+      "name": "20260424_add_compliance_diff_notifications",
+      "checksum": "36b1d820f3e973f233be7e56c2fd6cbde7ee2dbe846dbb49c25a195a5c303ef7",
+      "finishedAt": "2026-09-16T07:47:44.840Z"
+    },
+    {
+      "name": "202605030115_add_stripe_subscription_billing",
+      "checksum": "af79e33c0dcc6b91f5ba5d889e702bc595656b01768912e0541ec8a351164198",
+      "finishedAt": "2026-09-16T07:47:45.293Z"
+    },
+    {
+      "name": "202605070900_add_requirement_cadence_completions",
+      "checksum": "d521c1d5029bec0266ed12c65bd76a39b86bd04c7d00d99f4406c9b721ee6f59",
+      "finishedAt": "2026-09-16T07:47:45.757Z"
+    },
+    {
+      "name": "202605162045_add_user_practice_area",
+      "checksum": "fb8dd602fa425d9db167611ad230f21b0c68b46bb44197dec58fc769d1981c35",
+      "finishedAt": "2026-09-16T07:47:46.218Z"
+    },
+    {
+      "name": "202605242205_add_license_practice_context",
+      "checksum": "c20799b5f0098f8e37637d903da6e092a23096d4cf1f0f60402616b85d5ffbb7",
+      "finishedAt": "2026-09-16T07:47:46.673Z"
+    },
+    {
+      "name": "202607061000_add_requirement_effective_date_source",
+      "checksum": "5b26900ebaab9999f239b34a42758f6122ad39c6f58bafe512085e522a39bc24",
+      "finishedAt": "2026-09-16T07:47:47.129Z"
+    },
+    {
+      "name": "202607061100_add_email_preferences_and_log",
+      "checksum": "a1db558ac71b92a3fd285405f119928b4b2733c1f19b5ef1d2eff9c2c985d38a",
+      "finishedAt": "2026-09-16T07:47:47.598Z"
+    },
+    {
+      "name": "202607271030_add_user_extractions_used",
+      "checksum": "fc45199feee114e9f3834099a1adff61794e3f4dc688dbb45005c7c7194d43cc",
+      "finishedAt": "2026-09-16T07:47:48.071Z"
+    },
+    {
+      "name": "202607271115_add_user_extraction_attempts",
+      "checksum": "9cbdcf07760fba63cd6abcbd3fd0bab4549b0a5962f293dd02629b6c74847cb3",
+      "finishedAt": "2026-09-16T07:47:48.526Z"
+    },
+    {
+      "name": "20260819064500_add_certificate_file_hash",
+      "checksum": "36ae0dbd91335969d335415bf0c2fef8d512017f613369faadd9fe5fb4c2f767",
+      "finishedAt": "2026-09-16T07:47:48.983Z"
+    },
+    {
+      "name": "20260910055000_reconcile_completion_index_name",
+      "checksum": "119210ea28313d627213b66bb3ff02d9e8ae741d373bba240cd6daad888010a7",
+      "finishedAt": "2026-09-16T07:47:49.429Z"
+    },
+    {
+      "name": "20260910060000_requirement_identity_retirement",
+      "checksum": "ca638b94df36ff3fd1dca0323b3d1322424607a54056c31de5f94922d6f6f835",
+      "finishedAt": "2026-09-16T07:48:32.035Z"
+    },
+    {
+      "name": "20260910061000_certificate_eligibility_topics",
+      "checksum": "5f0b159cd1ca5e0c7a5f74769bafba9bfd7de46cb95b68fbfd615f77f6382a63",
+      "finishedAt": "2026-09-16T07:48:32.061Z"
+    }
+  ],
+  "productionAccessed": false
+}

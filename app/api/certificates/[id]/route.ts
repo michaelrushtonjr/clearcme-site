@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getMobileUserId } from "@/lib/mobile-auth";
+import { inferSpecialTopics, validateTopicAllocations } from "@/lib/certificate-topics";
+import type { SpecialTopic } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -28,8 +31,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -37,12 +42,20 @@ export async function PATCH(
 
   // Verify ownership
   const existing = await prisma.certificate.findUnique({ where: { id } });
-  if (!existing || existing.userId !== session.user.id) {
+  if (!existing || existing.userId !== userId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   const body = await req.json();
-  const { title, provider, activityDate, creditHours, creditType } = body;
+  const { title, provider, activityDate, creditHours, creditType, topics, topicHourAllocations } = body;
+  if (topics !== undefined && (!Array.isArray(topics) || topics.some((t: unknown) => typeof t !== "string"))) return NextResponse.json({ error: "Topics must be text labels" }, { status: 400 });
+  let split: Record<string, number> | undefined;
+  try {
+    if (topicHourAllocations !== undefined) split = validateTopicAllocations(topicHourAllocations, Number(creditHours ?? existing.creditHours));
+    else if (creditHours !== undefined && Object.keys(existing.topicHourAllocations as object ?? {}).length) validateTopicAllocations(existing.topicHourAllocations, Number(creditHours));
+  } catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 400 }); }
+  const confirmedTopics = split ? Object.keys(split) as SpecialTopic[] : existing.manuallyVerified ? existing.specialTopics : [];
+  const suggestions = inferSpecialTopics({ title: title ?? existing.title, topics: topics ?? existing.topics }).filter((t) => !confirmedTopics.includes(t));
 
   const CREDIT_TYPES = [
     "AMA_PRA_1",
@@ -60,6 +73,10 @@ export async function PATCH(
   const updated = await prisma.certificate.update({
     where: { id },
     data: {
+      specialTopics: confirmedTopics,
+      suggestedSpecialTopics: suggestions,
+      ...(split && { topicHourAllocations: split }),
+      ...(topics !== undefined && { topics }),
       ...(title !== undefined && { title }),
       ...(provider !== undefined && { provider }),
       ...(activityDate !== undefined && { activityDate: new Date(activityDate) }),
@@ -68,7 +85,7 @@ export async function PATCH(
       // The physician has confirmed or corrected these fields themselves —
       // the record now counts regardless of how extraction went.
       manuallyVerified: true,
-      extractionStatus: "COMPLETED",
+      extractionStatus: [title, provider, activityDate, creditHours, creditType].some((v) => v !== undefined) ? "COMPLETED" : existing.extractionStatus,
       extractedAt: new Date(),
     },
   });

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import type { Certificate, MandatoryRequirement } from "@prisma/client";
 import { isComputedComplianceBlocked, computedComplianceBlockedMessage } from "@/lib/compliance-rule-availability";
-import { daysUntil } from "@/lib/dates";
 import {
   cadenceLabel,
-  evaluateRequirementFulfillment,
   findSatisfyingCertificate,
   linkedCertificateId,
 } from "@/lib/requirement-completions";
@@ -34,17 +33,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ compliance: [], message: "No active licenses found." });
   }
 
+  const userProfile = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { specialty: true, practiceArea: true },
+  });
+
   // Get all certificates for this user
   const certificates = await prisma.certificate.findMany({
-    where: { userId, extractionStatus: "COMPLETED" },
+    where: { userId },
   });
 
   const requirementCompletions = await prisma.userRequirementCompletion.findMany({
     where: { userId },
-  });
-  const userProfile = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { specialty: true, practiceArea: true },
   });
   const completionByRequirementAndLicense = new Map(
     requirementCompletions.map((completion) => [
@@ -68,53 +68,30 @@ export async function GET(req: NextRequest) {
               licenseType: license.licenseType,
             },
           },
-          include: { mandatoryRequirements: true },
+          include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
+    const view = apiCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
     if (!rule) {
       // No rule configured yet, or computed compliance is intentionally blocked for this state.
       complianceResults.push({
         state: license.state,
         licenseType: license.licenseType,
         renewalDate: license.renewalDate,
-        status: "NO_RULES_CONFIGURED",
+        status: view.overall,
+        overall: view.overall,
+        evaluation: view.evaluation,
+        isCompliant: false,
         message: computedComplianceBlockedMessage(license.state, license.licenseType),
       });
       continue;
     }
 
-    // Determine cycle window
-    const cycleEnd = license.renewalDate ?? new Date();
-    const cycleStart = new Date(cycleEnd);
-    cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
-
-    // Filter certificates within cycle window
-    const cycleCerts = certificates.filter((cert: Certificate) => {
-      if (!cert.activityDate) return false;
-      return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
-    });
-
-    const totalHoursEarned = cycleCerts.reduce(
-      (sum: number, c: Certificate) => sum + (c.creditHours ?? 0),
-      0
-    );
-    const generalGapHours = Math.max(0, rule.totalHours - totalHoursEarned);
-
-    // Check mandatory topics
-    const specialty = license.specialty ?? userProfile?.specialty ?? "";
-    const practiceArea = license.practiceArea ?? userProfile?.practiceArea ?? "";
-    const isPsychiatry = `${specialty} ${practiceArea}`
-      .toLowerCase()
-      .includes("psychiat");
-    const applicableMandatoryRequirements = rule.mandatoryRequirements.filter((req: MandatoryRequirement) => {
-      const text = `${req.description ?? ""} ${req.notes ?? ""}`.toLowerCase();
-      const isNvDoPsychiatryCulturalCompetency =
-        license.state === "NV" &&
-        license.licenseType === "DO" &&
-        req.topic === "CULTURAL_COMPETENCY" &&
-        text.includes("psychiat");
-      return !isNvDoPsychiatryCulturalCompetency || isPsychiatry;
-    });
+    const { cycleStart, cycleEnd } = view;
+    const cycleCerts = certificates.filter((cert) => view.evaluation.countedCertificateIds.includes(cert.id));
+    const totalHoursEarned = view.hoursEarned;
+    const generalGapHours = view.generalGapHours;
+    const applicableMandatoryRequirements = rule.mandatoryRequirements;
 
     const duplicatedTopics = new Set(
       applicableMandatoryRequirements
@@ -123,25 +100,14 @@ export async function GET(req: NextRequest) {
     );
 
     const mandatoryGaps = applicableMandatoryRequirements.map((req: MandatoryRequirement) => {
-      const earnedForTopic = cycleCerts
-        .filter((c: Certificate) => c.specialTopics.includes(req.topic))
-        .reduce((sum: number, c: Certificate) => sum + (c.creditHours ?? 0), 0);
+      const result = view.mandatoryGaps.find((r) => r.requirementId === req.id)!;
+      const earnedForTopic = result.earned;
       const completion =
         completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
         completionByRequirementAndLicense.get(`${req.id}:global`);
-      const fulfillment = evaluateRequirementFulfillment({
-        requirement: req,
-        completion,
-        cycleEnd,
-        licenseState: license.state,
-        licenseIssueDate: license.issueDate,
-        daysUntilRenewal: daysUntil(license.renewalDate),
-      });
-      const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
+      const fulfillment = { ...result, isSatisfied: result.isMet };
       const hoursSatisfied = req.hoursRequired > 0 && earnedForTopic >= req.hoursRequired;
-      const isMet = hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0);
-      const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
-      const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
+      const { isMet, isUnknown, isNotApplicable } = result;
 
       // Mirror of the Compliance Map's attestation pre-fill: surface the
       // uploaded certificate that looks like it satisfies an unanswered
@@ -157,6 +123,7 @@ export async function GET(req: NextRequest) {
 
       return {
         requirementId: req.id,
+        status: result.status,
         topic: req.topic,
         // Human-readable row name — clients should render this, never the
         // raw topic enum (CT's OTHER_MANDATORY row was showing as the enum).
@@ -188,11 +155,8 @@ export async function GET(req: NextRequest) {
       (sum: number, gap: { gap: number }) => sum + Math.max(0, gap.gap),
       0
     );
-    const allMandatoryMet = mandatoryGaps.every(
-      (gap: { isMet: boolean; isNotApplicable: boolean }) => gap.isMet || gap.isNotApplicable
-    );
     const gapHours = Math.max(generalGapHours, mandatoryHoursGap);
-    const isCompliant = generalGapHours === 0 && allMandatoryMet;
+    const isCompliant = view.isCompliant;
 
     // Upsert compliance status record
     await prisma.complianceStatus.upsert({
@@ -239,6 +203,11 @@ export async function GET(req: NextRequest) {
       isCompliant,
       mandatoryGaps,
       certificatesInCycle: cycleCerts.length,
+      overall: view.overall,
+      status: view.overall,
+      statusLabel: view.statusLabel,
+      uncertainHours: view.uncertainHours,
+      evaluation: view.evaluation,
     });
   }
 

@@ -1,128 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { SignJWT } from "jose";
-
-// POST /api/auth/mobile-google
-// Accepts a Google ID token from native mobile sign-in, validates it,
-// finds or creates the user, and returns a signed JWT for mobile API access.
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
-}
-
+import { OAuth2Client } from "google-auth-library";
+import { MOBILE_CORS, MobileAuthError, providerEmailVerified, resolveMobileIdentity, signMobileJwt } from "@/lib/mobile-identity";
+const google = new OAuth2Client();
+export async function OPTIONS() { return new NextResponse(null, { status: 204, headers: MOBILE_CORS }); }
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { idToken } = body as { idToken?: string };
-
-    if (!idToken) {
-      return NextResponse.json({ error: "idToken is required" }, { status: 400 });
-    }
-
-    // Validate ID token with Google
-    const tokenInfoRes = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`
-    );
-
-    if (!tokenInfoRes.ok) {
-      return NextResponse.json({ error: "Invalid Google ID token" }, { status: 401 });
-    }
-
-    const tokenInfo = await tokenInfoRes.json() as {
-      sub: string;
-      email: string;
-      name?: string;
-      picture?: string;
-      aud?: string;
-      error_description?: string;
-    };
-
-    if (tokenInfo.error_description) {
-      return NextResponse.json({ error: "Invalid Google ID token: " + tokenInfo.error_description }, { status: 401 });
-    }
-
-    const { sub: googleId, email, name, picture: image } = tokenInfo;
-
-    if (!email || !googleId) {
-      return NextResponse.json({ error: "Google token missing email or sub" }, { status: 401 });
-    }
-
-    // Find or create user (mirroring NextAuth Google flow)
-    let user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: name ?? null,
-          image: image ?? null,
-          emailVerified: new Date(),
-        },
-      });
-
-      // Create a linked Google Account record
-      await prisma.account.create({
-        data: {
-          userId: user.id,
-          type: "oauth",
-          provider: "google",
-          providerAccountId: googleId,
-        },
-      });
-    } else {
-      // Update last login and ensure account link exists
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date() },
-      });
-
-      const existingAccount = await prisma.account.findUnique({
-        where: { provider_providerAccountId: { provider: "google", providerAccountId: googleId } },
-      });
-
-      if (!existingAccount) {
-        await prisma.account.create({
-          data: {
-            userId: user.id,
-            type: "oauth",
-            provider: "google",
-            providerAccountId: googleId,
-          },
-        });
-      }
-    }
-
-    // Sign JWT with NEXTAUTH_SECRET, 30-day expiry
-    const secret = process.env.NEXTAUTH_SECRET;
-    if (!secret) {
-      console.error("NEXTAUTH_SECRET not configured");
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-    }
-
-    const secretBytes = new TextEncoder().encode(secret);
-    const jwt = await new SignJWT({ sub: user.id, email: user.email ?? "" })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("30d")
-      .sign(secretBytes);
-
-    return NextResponse.json({
-      jwt,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      },
-    }, { headers: CORS_HEADERS });
+    const { idToken } = await req.json();
+    if (typeof idToken !== "string" || !idToken) return NextResponse.json({ error: "idToken is required" }, { status: 400, headers: MOBILE_CORS });
+    const audience = [process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_IOS_CLIENT_ID].filter((id): id is string => !!id?.trim());
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.NEXTAUTH_SECRET) throw new MobileAuthError("Server configuration error", 500);
+    let payload;
+    try {
+      const ticket = await google.verifyIdToken({ idToken, audience });
+      payload = ticket.getPayload();
+    } catch { throw new MobileAuthError("Invalid Google ID token", 401); }
+    if (!payload?.sub || !payload.email || !audience.includes(payload.aud)) throw new MobileAuthError("Invalid Google ID token", 401);
+    const user = await resolveMobileIdentity({ provider: "google", subject: payload.sub, email: payload.email, verified: providerEmailVerified("google", payload.email_verified), name: payload.name, image: payload.picture });
+    const jwt = await signMobileJwt(user.id, user.email);
+    return NextResponse.json({ jwt, user: { id: user.id, email: user.email, name: user.name, image: user.image } }, { headers: MOBILE_CORS });
   } catch (error) {
-    console.error("Mobile Google auth error:", error);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500, headers: CORS_HEADERS });
+    const status = error instanceof MobileAuthError ? error.status : error instanceof SyntaxError ? 400 : 500;
+    if (status === 500) console.error("Mobile Google authentication failed; no token logged");
+    return NextResponse.json({ error: error instanceof MobileAuthError ? error.message : "Authentication failed" }, { status, headers: MOBILE_CORS });
   }
 }

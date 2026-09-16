@@ -26,6 +26,7 @@ export interface MandatoryGapSummary {
 }
 
 export interface LicenseComplianceSummary {
+  overall?: import("@/lib/compliance-engine").OverallStatus;
   state: string;
   licenseType: string;
   daysUntilRenewal: number | null;
@@ -117,6 +118,13 @@ export function buildNextAction(
 
   const sorted = [...licenses].sort(byRenewal);
   const nonCompliant = sorted.filter((l) => !l.isCompliant);
+
+  const unresolved = sorted.find((l) => l.overall === "UNKNOWN" || l.overall === "NOT_COMPUTED");
+  if (unresolved) {
+    return { theme: "amber", headline: unresolved.overall === "UNKNOWN" ? "Needs your answer" : "Review your state requirements",
+      explanation: unresolved.overall === "UNKNOWN" ? "Confirm the unanswered requirements and certificate eligibility in your compliance map." : "Computed compliance is unavailable for this license. Review the state guidance in your compliance map.",
+      ctaLabel: "Review compliance", ctaUrl: "/dashboard/compliance", ctaExternal: false, sourceNote: unresolved.state, topic: null, licenseState: unresolved.state };
+  }
 
   // ── 1. Fully compliant everywhere ──────────────────────────────────────────
   if (nonCompliant.length === 0) {

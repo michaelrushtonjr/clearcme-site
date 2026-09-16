@@ -10,8 +10,10 @@ interface LicenseExport {
   totalHoursEarned: number;
   totalHoursNeeded: number;
   gapHours: number;
+  overall: import("@/lib/compliance-engine").OverallStatus;
   isCompliant: boolean;
   mandatoryGaps: {
+    status: import("@/lib/compliance-engine").RequirementStatus;
     topic: string;
     earned: number;
     needed: number;
@@ -73,7 +75,7 @@ function buildHtml(data: ExportData): string {
       <div class="card">
         <div class="card-header">
           <strong>${l.state} — ${l.licenseType}</strong>
-          <span class="badge ${l.isCompliant ? "badge-green" : "badge-amber"}">${l.isCompliant ? "Compliant" : "Requirements pending"}</span>
+          <span class="badge ${l.isCompliant ? "badge-green" : "badge-amber"}">${l.overall === "UNKNOWN" ? "Needs your answer" : l.overall === "NOT_COMPUTED" ? "Rules pending" : l.isCompliant ? "Compliant" : "Action needed"}</span>
         </div>
         <table>
           <tr><td>Renewal Date</td><td>${formatDate(l.renewalDate)}</td></tr>
@@ -94,7 +96,7 @@ function buildHtml(data: ExportData): string {
                     ? g.completionStatus === "completed" && g.earned < g.needed
                       ? " (attested complete — certificate not on file)"
                       : ""
-                    : g.isUnknown
+                    : g.status === "EXPIRED" ? " (expired)" : g.status === "NOT_APPLICABLE" ? " (not applicable)" : g.isUnknown
                     ? " (awaiting your answer)"
                     : ` (${g.gap.toFixed(1)} hrs needed)`
                 }</span>

@@ -6,7 +6,9 @@
 
 const { Client } = require('pg');
 
-const DATABASE_URL = 'postgresql://postgres:zMXlJQjBWHbgASCiRJmfwJDzxYzzkQLW@maglev.proxy.rlwy.net:59552/railway';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) throw new Error('DATABASE_URL environment variable is required');
+if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(DATABASE_URL).hostname)) throw new Error('Seed requires a local sandbox DATABASE_URL');
 
 // States already seeded - skip
 const ALREADY_SEEDED = new Set(['NV', 'CA', 'TX', 'FL', 'NY', 'IL', 'PA', 'OH', 'GA', 'WA']);

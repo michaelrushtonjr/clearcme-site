@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
+import { getComplianceSnapshot } from "@/lib/compliance-snapshot";
 import { prisma } from "@/lib/prisma";
 
 // Expo Push API endpoint
@@ -85,13 +85,7 @@ export async function POST(req: NextRequest) {
             renewalDate: true,
           },
         },
-        complianceStatus: {
-          select: {
-            licenseState: true,
-            licenseType: true,
-            gapHours: true,
-          },
-        },
+
       },
     });
 
@@ -100,10 +94,7 @@ export async function POST(req: NextRequest) {
     for (const user of users) {
       if (!user.pushToken || user.licenses.length === 0) continue;
 
-      // Build a compliance lookup map
-      const complianceMap = new Map(
-        user.complianceStatus.map((cs) => [`${cs.licenseState}-${cs.licenseType}`, cs])
-      );
+      const snapshot = await getComplianceSnapshot(user.id);
 
       for (const license of user.licenses) {
         if (!license.renewalDate) continue;
@@ -111,10 +102,8 @@ export async function POST(req: NextRequest) {
         const msUntilRenewal = license.renewalDate.getTime() - now.getTime();
         const daysUntilRenewal = Math.ceil(msUntilRenewal / (1000 * 60 * 60 * 24));
 
-        const compliance = isComputedComplianceBlocked(license.state, license.licenseType)
-          ? null
-          : complianceMap.get(`${license.state}-${license.licenseType}`);
-        const gapHours = compliance ? Math.max(0, compliance.gapHours) : null;
+        const compliance = snapshot?.licenses.find((entry) => entry.licenseId === license.id);
+        const gapHours = compliance && compliance.overall !== "NOT_COMPUTED" ? Math.max(compliance.generalGapHours, compliance.mandatoryTopics.reduce((sum, topic) => sum + topic.gap, 0)) : null;
 
         // Determine designation label (MD / DO / etc.)
         const designation = license.licenseType === "DO" ? "DO" : "MD";
@@ -135,6 +124,8 @@ export async function POST(req: NextRequest) {
           title = "CME reminder";
           body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Start tracking your CME now.`;
         }
+
+        if (compliance?.overall === "UNKNOWN") body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Needs your answer — review your compliance map.`;
 
         messages.push({
           to: user.pushToken,

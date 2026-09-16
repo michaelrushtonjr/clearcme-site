@@ -13,7 +13,7 @@ import { courseDestination } from "@/lib/course-routing";
 import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { buildNextAction } from "@/lib/next-action";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
-import { evaluateRequirementFulfillment } from "@/lib/requirement-completions";
+import { dashboardCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import { formatStateName } from "@/lib/state-names";
 
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [certificates, licenses, requirementCompletions, emailPreference] = await Promise.all([
+  const [certificates, licenses, requirementCompletions, emailPreference, userProfile] = await Promise.all([
     prisma.certificate.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -37,14 +37,13 @@ export default async function DashboardPage() {
       where: { userId },
       select: { renewalReminders: true },
     }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { specialty: true, practiceArea: true },
+    }),
   ]);
 
-  const completionByRequirementAndLicense = new Map(
-    requirementCompletions.map((completion) => [
-      `${completion.mandatoryRequirementId}:${completion.physicianLicenseId ?? "global"}`,
-      completion,
-    ])
-  );
+
 
   // Quick setup intercept: redirect first-time users with no licenses
   if (licenses.length === 0 && certificates.length === 0) {
@@ -63,21 +62,13 @@ export default async function DashboardPage() {
         where: {
           state_licenseType: { state: license.state, licenseType: license.licenseType },
         },
-        include: { mandatoryRequirements: true },
+        include: { mandatoryRequirements: { where: { retiredAt: null } } },
       });
       if (!rule) return null;
 
-      const cycleEnd = license.renewalDate ?? new Date();
-      const cycleStart = new Date(cycleEnd);
-      cycleStart.setMonth(cycleStart.getMonth() - rule.renewalCycle);
-
-      const cycleCerts = completedCerts.filter((cert) => {
-        if (!cert.activityDate) return false;
-        return cert.activityDate >= cycleStart && cert.activityDate <= cycleEnd;
-      });
-
-      const hoursEarned = cycleCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-      const hoursNeeded = Math.max(0, rule.totalHours - hoursEarned);
+      const view = dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule.mandatoryRequirements, certificates, completions: requirementCompletions, today: new Date() });
+      const hoursEarned = view.hoursEarned;
+      const hoursNeeded = view.generalGapHours;
 
       // Topics appearing on more than one requirement (e.g. NV's state
       // substance-use rule beside the federal DEA MATE one-time) need distinct
@@ -89,24 +80,8 @@ export default async function DashboardPage() {
       );
 
       const mandatoryResults = rule.mandatoryRequirements.map((req) => {
-        const earned = cycleCerts
-          .filter((c) => c.specialTopics.includes(req.topic))
-          .reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
-        const completion =
-          completionByRequirementAndLicense.get(`${req.id}:${license.id}`) ??
-          completionByRequirementAndLicense.get(`${req.id}:global`);
-        const fulfillment = evaluateRequirementFulfillment({
-          requirement: req,
-          completion,
-          cycleEnd,
-          licenseState: license.state,
-          licenseIssueDate: license.issueDate,
-          daysUntilRenewal: daysUntil(license.renewalDate),
-        });
-        const historySensitive = req.firstRenewalOnly || req.cadence !== "EVERY_RENEWAL";
-        const hoursSatisfied = req.hoursRequired > 0 && earned >= req.hoursRequired;
-        const isUnknown = fulfillment.isUnknown && !hoursSatisfied;
-        const isNotApplicable = fulfillment.isNotApplicable && !hoursSatisfied;
+        const result = view.mandatoryGaps.find((r) => r.requirementId === req.id)!;
+        const { earned, isUnknown, isNotApplicable } = result;
         return {
           topic: req.topic,
           displayName: requirementDisplayName(req.topic, req.description, {
@@ -115,7 +90,7 @@ export default async function DashboardPage() {
           }),
           earned,
           needed: req.hoursRequired,
-          isMet: hoursSatisfied || fulfillment.isSatisfied || (!historySensitive && req.hoursRequired === 0),
+          isMet: result.isMet,
           isUnknown,
           isNotApplicable,
           isOneTime: req.firstRenewalOnly,
@@ -127,8 +102,7 @@ export default async function DashboardPage() {
       const mandatoryGapHours = actionable.reduce((sum, r) => sum + Math.max(0, r.needed - r.earned), 0);
       const mandatoryPendingCount = actionable.length;
       const effectiveHoursNeeded = Math.max(hoursNeeded, mandatoryGapHours);
-      const isCompliant =
-        hoursNeeded === 0 && mandatoryResults.every((r) => r.isMet || r.isUnknown || r.isNotApplicable);
+      const isCompliant = view.isCompliant;
 
       const daysUntilRenewal = daysUntil(license.renewalDate);
 
@@ -141,6 +115,9 @@ export default async function DashboardPage() {
       return {
         license,
         rule,
+        overall: view.overall,
+        statusLabel: view.statusLabel,
+        uncertainHours: view.uncertainHours,
         hoursEarned,
         hoursNeeded,
         mandatoryMet,
@@ -157,10 +134,10 @@ export default async function DashboardPage() {
   );
 
   const validCompliance = complianceData.filter(Boolean) as NonNullable<(typeof complianceData)[number]>[];
-  const nextRenewal = [...validCompliance].sort((a, b) => (a.daysUntilRenewal ?? 9999) - (b.daysUntilRenewal ?? 9999))[0];
+
 
   const totalHoursStillNeeded = validCompliance.reduce((sum, d) => sum + d.effectiveHoursNeeded, 0);
-  const allCompliant = validCompliance.length > 0 && validCompliance.every((d) => d.isCompliant);
+  const allCompliant = validCompliance.length === licenses.length && validCompliance.length > 0 && validCompliance.every((d) => d.isCompliant);
   const unansweredHistoryCount = validCompliance.reduce(
     (sum, d) => sum + d.mandatoryResults.filter((r) => r.isUnknown).length,
     0
@@ -170,8 +147,11 @@ export default async function DashboardPage() {
   const hasCertificates = certificates.length > 0;
 
   // Shared next-action engine — same recommendation as the Compliance page
+  const unavailableCompliance = licenses.filter((license) => !validCompliance.some((d) => d.license.id === license.id)).map((license) => ({
+    license, view: dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule: null, requirements: [], certificates, completions: requirementCompletions, today: new Date() }),
+  }));
   const nextAction = buildNextAction(
-    validCompliance.map((d) => ({
+    [...unavailableCompliance.map(({ license, view }) => ({ state: license.state, licenseType: license.licenseType, daysUntilRenewal: daysUntil(license.renewalDate), renewalDateLabel: "your renewal date", generalGapHours: 0, isCompliant: false, overall: view.overall, mandatoryGaps: [] })), ...validCompliance.map((d) => ({
       state: d.license.state,
       licenseType: d.license.licenseType,
       daysUntilRenewal: d.daysUntilRenewal,
@@ -181,6 +161,7 @@ export default async function DashboardPage() {
       generalGapHours: d.hoursNeeded,
       totalHoursRequired: d.rule?.totalHours,
       isCompliant: d.isCompliant,
+      overall: d.overall,
       mandatoryGaps: d.mandatoryResults.map((r) => ({
         topic: r.topic,
         gap: Math.max(0, r.needed - r.earned),
@@ -189,7 +170,7 @@ export default async function DashboardPage() {
         isNotApplicable: r.isNotApplicable,
         isOneTime: r.isOneTime,
       })),
-    }))
+    }))]
   );
 
   // Next-action rows (numbered card in the right rail), engine pick first
@@ -270,7 +251,7 @@ export default async function DashboardPage() {
   }) => {
     if (r.isNotApplicable) return { chip: "N/A", cls: "chip-muted", dot: "dot-na", fill: null };
     if (r.isMet) return { chip: "Met", cls: "chip-met", dot: "dot-met", fill: "fill-met" };
-    if (r.isUnknown) return { chip: "Review", cls: "chip-muted", dot: "dot-na", fill: "fill-open" };
+    if (r.isUnknown) return { chip: "Needs your answer", cls: "chip-muted", dot: "dot-na", fill: "fill-open" };
     return { chip: "Open", cls: "chip-open", dot: "dot-open", fill: "fill-open" };
   };
 
@@ -343,7 +324,7 @@ export default async function DashboardPage() {
             <h2 className="card-title">Requirement ledger</h2>
             {sourcesCheckedLabel && <span className="meta">Sources checked {sourcesCheckedLabel}</span>}
           </div>
-          {validCompliance.length === 0 && (
+          {validCompliance.length === 0 && licenses.length === 0 && (
             <p style={{ padding: "8px 18px 18px", fontSize: 14, color: "var(--c1b-ink-2)" }}>
               Add a license to see its requirements mapped here.{" "}
               <Link href="/dashboard/profile" style={{ fontWeight: 600, color: "var(--c1b-green)" }}>
@@ -351,6 +332,7 @@ export default async function DashboardPage() {
               </Link>
             </p>
           )}
+          {unavailableCompliance.map(({ license, view }) => <p key={license.id} style={{ padding: 18 }}>{view.evaluation.reasons.join(" ")}</p>)}
           {validCompliance.map((d) => {
             const renews = d.license.renewalDate
               ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
@@ -362,9 +344,10 @@ export default async function DashboardPage() {
                     {formatStateName(d.license.state)} — {d.license.licenseType}
                     {renews ? ` / Renews ${renews}` : ""}
                   </span>
-                  <span className="r">{d.effectiveHoursNeeded.toFixed(1)} left</span>
+                  <span className="r">{d.statusLabel} · {d.effectiveHoursNeeded.toFixed(1)} left</span>
                 </div>
 
+                {d.uncertainHours > 0 && <p style={{ padding: "8px 18px" }}>{d.uncertainHours.toFixed(1)} hours pending eligibility review</p>}
                 {/* General hours row */}
                 {d.rule.totalHours > 0 && (
                   <Link href="/dashboard/compliance" className="req-row" style={{ textDecoration: "none" }}>
