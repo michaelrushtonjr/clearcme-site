@@ -17,7 +17,7 @@ function view(input: LicenseInput) {
     evaluation, overall: evaluation.overall, statusLabel: complianceStatusLabel(evaluation.overall),
     isCompliant: evaluation.overall === "COMPLIANT", hoursEarned: evaluation.generalHours.counted,
     uncertainHours: evaluation.generalHours.uncertain, generalGapHours,
-    gapHours: Math.max(generalGapHours, mandatoryGaps.reduce((sum, r) => sum + r.gap, 0)),
+    gapHours: Math.max(generalGapHours, mandatoryGaps.filter((r) => r.scope !== "FEDERAL").reduce((sum, r) => sum + r.gap, 0)),
     mandatoryGaps, cycleStart: evaluation.cycleStart, cycleEnd: evaluation.cycleEnd,
   };
 }

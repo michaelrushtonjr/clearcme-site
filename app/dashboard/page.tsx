@@ -1,3 +1,6 @@
+import FederalTrainingStatus from "@/components/FederalTrainingStatus";
+import { getFederalTraining } from "@/lib/federal-training";
+import { isStateRequirement } from "@/lib/mate-act";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -53,6 +56,7 @@ export default async function DashboardPage() {
   const completedCerts = certificates.filter((c) => c.extractionStatus === "COMPLETED");
   const totalHours = completedCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);
 
+  const federalTraining = await getFederalTraining(userId);
   // Compute compliance for all licenses
   const complianceData = await Promise.all(
     licenses.map(async (license) => {
@@ -66,7 +70,7 @@ export default async function DashboardPage() {
       });
       if (!rule) return null;
 
-      const view = dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule.mandatoryRequirements, certificates, completions: requirementCompletions, today: new Date() });
+      const view = dashboardCompliance({ federalTraining, license, practice: licensePractice(license, userProfile), rule, requirements: rule.mandatoryRequirements, certificates, completions: requirementCompletions, today: new Date() });
       const hoursEarned = view.hoursEarned;
       const hoursNeeded = view.generalGapHours;
 
@@ -79,7 +83,7 @@ export default async function DashboardPage() {
           .filter((topic, i, all) => all.indexOf(topic) !== i)
       );
 
-      const mandatoryResults = rule.mandatoryRequirements.map((req) => {
+      const mandatoryResults = rule.mandatoryRequirements.filter(isStateRequirement).map((req) => {
         const result = view.mandatoryGaps.find((r) => r.requirementId === req.id)!;
         const { earned, isUnknown, isNotApplicable } = result;
         return {
@@ -121,7 +125,7 @@ export default async function DashboardPage() {
         hoursEarned,
         hoursNeeded,
         mandatoryMet,
-        mandatoryTotal: rule.mandatoryRequirements.length,
+        mandatoryTotal: rule.mandatoryRequirements.filter(isStateRequirement).length,
         mandatoryPendingCount,
         mandatoryGapHours,
         mandatoryTopics,
@@ -148,7 +152,7 @@ export default async function DashboardPage() {
 
   // Shared next-action engine — same recommendation as the Compliance page
   const unavailableCompliance = licenses.filter((license) => !validCompliance.some((d) => d.license.id === license.id)).map((license) => ({
-    license, view: dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule: null, requirements: [], certificates, completions: requirementCompletions, today: new Date() }),
+    license, view: dashboardCompliance({ federalTraining, license, practice: licensePractice(license, userProfile), rule: null, requirements: [], certificates, completions: requirementCompletions, today: new Date() }),
   }));
   const nextAction = buildNextAction(
     [...unavailableCompliance.map(({ license, view }) => ({ state: license.state, licenseType: license.licenseType, daysUntilRenewal: daysUntil(license.renewalDate), renewalDateLabel: "your renewal date", generalGapHours: 0, isCompliant: false, overall: view.overall, mandatoryGaps: [] })), ...validCompliance.map((d) => ({
@@ -170,7 +174,7 @@ export default async function DashboardPage() {
         isNotApplicable: r.isNotApplicable,
         isOneTime: r.isOneTime,
       })),
-    }))]
+    }))], federalTraining
   );
 
   // Next-action rows (numbered card in the right rail), engine pick first
@@ -340,7 +344,7 @@ export default async function DashboardPage() {
               </Link>
             </p>
           )}
-          {unavailableCompliance.map(({ license, view }) => <p key={license.id} style={{ padding: 18 }}>{view.evaluation.reasons.join(" ")}</p>)}
+          {unavailableCompliance.map(({ license, view }) => <div key={license.id}><p style={{ padding: 18 }}>{view.evaluation.reasons.join(" ")}</p><FederalTrainingStatus requirement={federalTraining} /></div>)}
           {validCompliance.map((d) => {
             const renews = d.license.renewalDate
               ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
@@ -355,6 +359,7 @@ export default async function DashboardPage() {
                   <span className="r">{d.statusLabel} · {d.effectiveHoursNeeded.toFixed(1)} left</span>
                 </div>
 
+                <FederalTrainingStatus requirement={federalTraining} />
                 {d.uncertainHours > 0 && <p style={{ padding: "8px 18px" }}>{d.uncertainHours.toFixed(1)} hours pending eligibility review</p>}
                 {/* General hours row */}
                 {d.rule.totalHours > 0 && (

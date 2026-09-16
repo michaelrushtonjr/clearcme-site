@@ -83,7 +83,8 @@ export function topicLabel(topic: string): string {
     PATIENT_SAFETY: "Patient Safety",
     ETHICS: "Ethics",
     CULTURAL_COMPETENCY: "Cultural Competency",
-    SUBSTANCE_USE: "DEA MATE Act",
+    SUBSTANCE_USE: "Substance Use",
+    MATE_ACT: "DEA MATE Act",
     SUICIDE_PREVENTION: "Suicide Prevention",
     OTHER_MANDATORY: "Mandatory Topic",
   };
@@ -112,12 +113,18 @@ function byRenewal(a: LicenseComplianceSummary, b: LicenseComplianceSummary) {
 }
 
 export function buildNextAction(
-  licenses: LicenseComplianceSummary[]
+  licenses: LicenseComplianceSummary[],
+  federalTraining?: import("@/lib/compliance-engine").RequirementEvaluation
 ): NextActionRecommendation | null {
   if (licenses.length === 0) return null;
 
   const sorted = [...licenses].sort(byRenewal);
   const nonCompliant = sorted.filter((l) => !l.isCompliant);
+
+  if (federalTraining && !["MET", "NOT_APPLICABLE"].includes(federalTraining.status)
+    && !sorted.some((license) => license.generalGapHours > 0 || unmet(license).length > 0)) {
+    return { theme: "amber", headline: "Review your federal training record", explanation: "Confirm your DEA registration history and training attestation. This record is shared across all licenses.", ctaLabel: "Review federal record", ctaUrl: "/dashboard/profile#federal-training", ctaExternal: false, sourceNote: "Federal requirement", topic: "MATE_ACT", licenseState: null };
+  }
 
   const unresolved = sorted.find((l) => l.overall === "UNKNOWN" || l.overall === "NOT_COMPUTED");
   if (unresolved) {
@@ -166,14 +173,12 @@ export function buildNextAction(
   }
 
   // ── 3. One-time requirements: knock them out early ────────────────────────
-  // DEA MATE Act (SUBSTANCE_USE, federal) first, then biggest gap. Licenses
+  // Prioritize the biggest remaining state one-time gap. Licenses
   // are scanned in renewal order so the nearest deadline's tasks surface first.
   for (const license of nonCompliant) {
     const oneTime = unmet(license)
       .filter((g) => g.isOneTime)
       .sort((a, b) => {
-        if (a.topic === "SUBSTANCE_USE") return -1;
-        if (b.topic === "SUBSTANCE_USE") return 1;
         return b.gap - a.gap;
       });
     if (oneTime.length > 0) {

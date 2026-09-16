@@ -1,3 +1,4 @@
+import { getFederalTraining } from "@/lib/federal-training";
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/lib/dates";
 import { notificationCompliance, licensePractice } from "@/lib/compliance-adapters";
@@ -12,6 +13,7 @@ import type { OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
  */
 
 export interface SnapshotMandatoryTopic {
+  scope?: "FEDERAL";
   status: RequirementStatus;
   topic: string;
   label: string;
@@ -66,7 +68,7 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
     where: { id: userId },
     select: { id: true, email: true, name: true, specialty: true, practiceArea: true },
   });
-  if (!user?.email) return null;
+  if (!user) return null;
 
   const [licenses, certificates, requirementCompletions] = await Promise.all([
     prisma.physicianLicense.findMany({
@@ -83,6 +85,7 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
 
 
 
+  const federalTraining = await getFederalTraining(userId);
   const licenseSnapshots: LicenseSnapshot[] = [];
 
   for (const license of licenses) {
@@ -93,17 +96,17 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       },
       include: { mandatoryRequirements: { where: { retiredAt: null } } },
     });
-    const view = notificationCompliance({ license, practice: licensePractice(license, user), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+    const view = notificationCompliance({ federalTraining, license, practice: licensePractice(license, user), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
     const hoursEarned = view.hoursEarned;
     const generalGapHours = view.generalGapHours;
     const daysUntilRenewal = daysUntil(license.renewalDate);
     const mandatoryTopics: SnapshotMandatoryTopic[] = view.mandatoryGaps.map((result) => ({
-      topic: result.topic, status: result.status, label: formatTopicLabel(result.topic),
+      scope: result.scope, topic: result.topic, status: result.status, label: formatTopicLabel(result.topic),
       needed: result.needed, earned: result.earned, gap: result.gap,
       isMet: result.isMet, isUnknown: result.isUnknown, isNotApplicable: result.isNotApplicable,
     }));
 
-    const mandatoryGapHours = mandatoryTopics.reduce((sum, t) => sum + t.gap, 0);
+    const mandatoryGapHours = mandatoryTopics.filter((t) => t.scope !== "FEDERAL").reduce((sum, t) => sum + t.gap, 0);
     const effectiveGapHours = Math.max(generalGapHours, mandatoryGapHours);
     const isCompliant = view.isCompliant;
 
@@ -127,9 +130,9 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       hoursEarned,
       generalGapHours,
       mandatoryTopics,
-      completedMandatoryTopics: mandatoryTopics.filter((t) => t.isMet),
+      completedMandatoryTopics: mandatoryTopics.filter((t) => t.scope !== "FEDERAL" && t.isMet),
       outstandingMandatoryTopics: mandatoryTopics.filter(
-        (t) => !t.isMet && !t.isUnknown && !t.isNotApplicable
+        (t) => t.scope !== "FEDERAL" && !t.isMet && !t.isUnknown && !t.isNotApplicable
       ),
       unansweredHistoryCount: mandatoryTopics.filter((t) => t.isUnknown).length,
       isCompliant,
@@ -138,16 +141,16 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
   }
 
   const totalGapHours = licenseSnapshots.reduce(
-    (sum, l) => sum + Math.max(l.generalGapHours, l.mandatoryTopics.reduce((s, t) => s + t.gap, 0)),
+    (sum, l) => sum + Math.max(l.generalGapHours, l.mandatoryTopics.filter((t) => t.scope !== "FEDERAL").reduce((s, t) => s + t.gap, 0)),
     0
   );
 
   return {
     userId: user.id,
-    email: user.email,
+    email: user.email ?? "",
     firstName: (user.name ?? "").trim().split(/\s+/)[0] ?? "",
     licenses: licenseSnapshots,
-    totalGapHours,
+    totalGapHours: totalGapHours + federalTraining.gap,
     allCompliant: licenseSnapshots.length > 0 && licenseSnapshots.every((l) => l.isCompliant),
   };
 }

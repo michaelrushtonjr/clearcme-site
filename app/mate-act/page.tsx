@@ -1,120 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import MateActNotice from "@/components/MateActNotice";
+import { mateActDeadline } from "@/lib/mate-act";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
 import { getFreeMateCourses } from "@/lib/mate-free-courses";
 
 function SelfCheckTool() {
-  const [deaDate, setDeaDate] = useState("");
-  const [result, setResult] = useState<null | {
-    applies: boolean;
-    status: string;
-    detail: string;
-    color: string;
-  }>(null);
-
-  const MATE_EFFECTIVE = new Date("2023-06-27");
-
-  const handleCheck = () => {
-    if (!deaDate) return;
-    const date = new Date(deaDate);
-
-    if (date >= MATE_EFFECTIVE) {
-      setResult({
-        applies: true,
-        status: "Required — and already due",
-        detail:
-          "You registered or renewed your DEA on or after June 27, 2023. The 8-hour MATE Act training was required at time of registration/renewal. Complete it as soon as possible.",
-        color: "red",
-      });
-    } else {
-      setResult({
-        applies: true,
-        status: "Required at your NEXT DEA renewal",
-        detail:
-          "You registered before June 27, 2023. The 8-hour training is required when you next renew your DEA registration. DEA registrations expire every 3 years — check your DEA.gov account for your renewal date.",
-        color: "amber",
-      });
-    }
-  };
-
-  const colorMap = {
-    red: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      title: "text-red-900",
-      text: "text-red-800",
-      badge: "bg-red-100 text-red-700",
-    },
-    amber: {
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-      title: "text-amber-900",
-      text: "text-amber-800",
-      badge: "bg-amber-100 text-amber-700",
-    },
-  };
-
-  return (
-    <div className="public-card p-6 space-y-5">
-      <div>
-        <h3 className="font-bold text-[#1e2920] text-lg mb-1">Quick self-check</h3>
-        <p className="text-sm text-[#6b7568]">
-          When did you last register or renew your DEA?
-        </p>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <input
-          type="date"
-          value={deaDate}
-          onChange={(e) => {
-            setDeaDate(e.target.value);
-            setResult(null);
-          }}
-          max={new Date().toISOString().split("T")[0]}
-          className="flex-1 px-4 py-3 rounded-xl border border-[#ddd4bd] text-sm focus:outline-none focus:ring-2 focus:ring-[#3f5f33] focus:border-transparent"
-        />
-        <button
-          onClick={handleCheck}
-          disabled={!deaDate}
-          className="px-6 py-3 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-        >
-          Check my status
-        </button>
-      </div>
-
-      {result && (
-        <div
-          className={`rounded-xl border p-4 ${colorMap[result.color as "red" | "amber"].bg} ${colorMap[result.color as "red" | "amber"].border}`}
-        >
-          <div className="flex items-start gap-3">
-            <div>
-              <p className={`font-semibold text-sm mb-1 ${colorMap[result.color as "red" | "amber"].title}`}>
-                {result.status}
-              </p>
-              <p className={`text-sm leading-relaxed ${colorMap[result.color as "red" | "amber"].text}`}>
-                {result.detail}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="text-xs text-[#6b7568]">
-        Not sure of your DEA date?{" "}
-        <a
-          href="https://www.deadiversion.usdoj.gov/drugreg/registration.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#3f5f33] hover:underline"
-        >
-          Check DEA Diversion Control →
-        </a>
-      </p>
-    </div>
-  );
+  const [registeredAt, setRegisteredAt] = useState("");
+  const [firstRenewal, setFirstRenewal] = useState("");
+  const result = mateActDeadline({ registeredAt, firstRenewalOnOrAfterCutoff: firstRenewal });
+  return <div className="public-card p-6 space-y-5">
+    <h3 className="font-bold">Registration history</h3>
+    <label className="block">First DEA registration date<input className="product-input" type="date" value={registeredAt} onChange={(e) => setRegisteredAt(e.target.value)} /></label>
+    <label className="block">First DEA renewal on or after June 27, 2023, if known<input className="product-input" type="date" value={firstRenewal} onChange={(e) => setFirstRenewal(e.target.value)} /></label>
+    <p>{result.status === "KNOWN" ? "Qualifying event recorded. Review the requirement above and your training evidence." : "Needs your answer — check your DEA registration history."}</p>
+  </div>;
 }
 
 export default function MateActPage() {
@@ -123,15 +25,12 @@ export default function MateActPage() {
     <PublicShell links={[{ href: "/pricing", label: "Pricing" }, { href: "/methodology", label: "Methodology" }]}>
       {/* Hero */}
       <section className="public-hero mx-auto max-w-3xl">
-        <div className="public-kicker mb-6 text-[#b85631]">DEA Requirement · Effective June 27, 2023</div>
+        <div className="public-kicker mb-6 text-[#b85631]">Federal training record</div>
         <h1 className="public-heading mb-5 text-4xl sm:text-6xl">
           Are you DEA-registered?<br />
           <span className="public-pop-accent">You may owe the DEA an 8-hour training.</span>
         </h1>
-        <p className="public-subhead mx-auto max-w-2xl">
-          The DEA MATE Act (effective June 27, 2023) requires all DEA-registered practitioners to complete
-          8 hours of training on treating patients with opioid or substance use disorders — one time.
-        </p>
+        <div className="public-subhead mx-auto max-w-2xl"><MateActNotice /></div>
       </section>
 
       {/* Who it applies to + What it covers */}
@@ -142,7 +41,7 @@ export default function MateActPage() {
               Who it applies to
             </h2>
             <p className="text-sm text-[#3f4a40] leading-relaxed mb-3">
-              Every practitioner with a DEA registration number. No exceptions.
+              Use your federal record to document training or a qualifying basis described above.
             </p>
             <ul className="space-y-1.5 text-sm text-[#3f4a40]">
               {["Physicians (MD, DO)", "Physician Assistants (PA)", "Nurse Practitioners (NP)", "Dentists"].map((item) => (
@@ -171,98 +70,6 @@ export default function MateActPage() {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Three scenarios */}
-      <section className="public-section-band py-14">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-[#1e2920] mb-8 text-center">Are you compliant?</h2>
-          <div className="space-y-4">
-            {[
-              {
-                num: "1",
-                color: "amber",
-                title: "DEA registered before June 2023 and haven't renewed since",
-                detail: "The training is required at your NEXT DEA renewal. DEA registrations expire every 3 years.",
-                badge: "Required at next renewal",
-              },
-              {
-                num: "2",
-                color: "red",
-                title: "DEA registered or renewed on/after June 27, 2023",
-                detail: "The training was required at the time of your registration or renewal. If you haven't completed it, do so now.",
-                badge: "Required now",
-              },
-              {
-                num: "3",
-                color: "green",
-                title: "Completed 8 hours of qualifying SUD/opioid training",
-                detail: "You are compliant. Training that counts: any ACCME/AOA-accredited course covering SUD, OUD, or opioid prescribing that totals ≥8 hours.",
-                badge: "Compliant",
-              },
-            ].map((s) => (
-              <div
-                key={s.num}
-                className={`flex gap-4 p-5 rounded-2xl border ${
-                  s.color === "green"
-                    ? "bg-green-50 border-green-200"
-                    : s.color === "red"
-                    ? "bg-red-50 border-red-200"
-                    : "bg-amber-50 border-amber-200"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                    s.color === "green"
-                      ? "bg-green-200 text-green-800"
-                      : s.color === "red"
-                      ? "bg-red-200 text-red-800"
-                      : "bg-amber-200 text-amber-800"
-                  }`}
-                >
-                  {s.num}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <p
-                      className={`font-semibold text-sm ${
-                        s.color === "green"
-                          ? "text-green-900"
-                          : s.color === "red"
-                          ? "text-red-900"
-                          : "text-amber-900"
-                      }`}
-                    >
-                      {s.title}
-                    </p>
-                    <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
-                        s.color === "green"
-                          ? "bg-green-100 text-green-700"
-                          : s.color === "red"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
-                    >
-                      {s.badge}
-                    </span>
-                  </div>
-                  <p
-                    className={`text-sm mt-1.5 leading-relaxed ${
-                      s.color === "green"
-                        ? "text-green-800"
-                        : s.color === "red"
-                        ? "text-red-800"
-                        : "text-amber-800"
-                    }`}
-                  >
-                    {s.detail}
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

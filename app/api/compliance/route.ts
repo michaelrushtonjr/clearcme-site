@@ -1,3 +1,5 @@
+import { getFederalTraining } from "@/lib/federal-training";
+import { isStateRequirement } from "@/lib/mate-act";
 import { NextRequest, NextResponse } from "next/server";
 import { apiCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { auth } from "@/auth";
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
     ])
   );
 
+  const federalTraining = await getFederalTraining(userId);
   const complianceResults = [];
 
   for (const license of licenses) {
@@ -71,7 +74,7 @@ export async function GET(req: NextRequest) {
           include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
-    const view = apiCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+    const view = apiCompliance({ federalTraining, license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
     if (!rule) {
       // No rule configured yet, or computed compliance is intentionally blocked for this state.
       complianceResults.push({
@@ -81,6 +84,7 @@ export async function GET(req: NextRequest) {
         status: view.overall,
         overall: view.overall,
         evaluation: view.evaluation,
+        federalRequirements: [federalTraining],
         isCompliant: false,
         message: computedComplianceBlockedMessage(license.state, license.licenseType),
       });
@@ -91,7 +95,7 @@ export async function GET(req: NextRequest) {
     const cycleCerts = certificates.filter((cert) => view.evaluation.countedCertificateIds.includes(cert.id));
     const totalHoursEarned = view.hoursEarned;
     const generalGapHours = view.generalGapHours;
-    const applicableMandatoryRequirements = rule.mandatoryRequirements;
+    const applicableMandatoryRequirements = rule.mandatoryRequirements.filter(isStateRequirement);
 
     const duplicatedTopics = new Set(
       applicableMandatoryRequirements
@@ -208,6 +212,7 @@ export async function GET(req: NextRequest) {
       statusLabel: view.statusLabel,
       uncertainHours: view.uncertainHours,
       evaluation: view.evaluation,
+      federalRequirements: [federalTraining],
     });
   }
 

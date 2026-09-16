@@ -626,7 +626,7 @@ function MultiState() {
               <div className="flag">NV</div>
               <div className="info">
                 <div className="name">Nevada · MD</div>
-                <div className="deet">DEA MATE Act outstanding · Jun 30 renewal</div>
+                <div className="deet">DEA MATE Act · federal training record</div>
               </div>
               <div className="right">
                 <div className="pct">76%</div>
