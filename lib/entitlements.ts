@@ -35,23 +35,29 @@ export interface Entitlements {
   extractionAttempts: number;
 }
 
-// Subscription.tier is already the *effective* tier: the Stripe webhook
-// (c3a7246) writes FREE whenever the subscription status stops entitling,
-// so no status re-check is needed here.
-//
+// Re-evaluate grace on every read, even when no further Stripe event arrives.
+export function effectiveSubscriptionTier(subscription: {
+  tier: Tier; status: string; paymentFailureGraceUntil?: Date | null;
+} | null, now = new Date()): Tier {
+  if (!subscription) return "FREE";
+  if (subscription.status === "ACTIVE" || subscription.status === "TRIALING") return subscription.tier;
+  if (subscription.status === "PAST_DUE" && subscription.paymentFailureGraceUntil && subscription.paymentFailureGraceUntil > now) return subscription.tier;
+  return "FREE";
+}
+
 // Extraction usage is the User.extractionsUsed counter, NOT a count of
 // Certificate rows: certificates are hard-deleted, so a row count would let
 // upload → delete → repeat reset the free trial.
 export async function getEntitlements(userId: string): Promise<Entitlements> {
   const [subscription, user] = await Promise.all([
-    prisma.subscription.findUnique({ where: { userId }, select: { tier: true } }),
+    prisma.subscription.findUnique({ where: { userId }, select: { tier: true, status: true, paymentFailureGraceUntil: true } }),
     prisma.user.findUnique({
       where: { id: userId },
       select: { createdAt: true, extractionsUsed: true, extractionAttempts: true },
     }),
   ]);
 
-  const tier = (subscription?.tier as Tier) ?? "FREE";
+  const tier = effectiveSubscriptionTier(subscription);
   const paid = tier === "ESSENTIAL" || tier === "PRO";
   const grandfathered = !paid && user != null && user.createdAt < FOUNDING_FREE_CUTOFF;
 

@@ -8,8 +8,8 @@ const prismaMock = vi.hoisted(() => {
     user: model(), account: model(), session: model(), verificationToken: model(),
     physicianLicense: model(), certificate: model(), complianceRule: model(),
     mandatoryRequirement: model(), userRequirementCompletion: model(),
-    subscription: model(), complianceStatus: model(), emailPreference: model(),
-    $transaction: vi.fn(),
+    subscription: model(), stripePriceMap: model(), stripeEvent: model(), billingAnomaly: model(), complianceStatus: model(), emailPreference: model(),
+    $transaction: vi.fn(), $queryRaw: vi.fn(),
   };
   db.$transaction.mockImplementation(async (callback) => callback(db));
   return db;

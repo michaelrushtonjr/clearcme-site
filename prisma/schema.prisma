@@ -148,6 +148,7 @@ model Certificate {
   fileUrl     String?   // Populated after upload to storage
   fileSize    Int?      // bytes
   mimeType    String?   // application/pdf, image/jpeg, image/png
+  storageStatus CertificateStorageStatus @default(STORE_FAILED)
   fileHash    String?   // SHA-256 of the uploaded bytes; null for manual entries and pre-hash rows
 
   // AI-extracted data
@@ -160,6 +161,10 @@ model Certificate {
   title           String?
   provider        String?  // e.g. "ACEP", "AMA", "Medscape"
   activityDate    DateTime?
+  hoursEarned     Float?
+  activityMaxHours Float?
+  activityFingerprint String?
+  possibleDuplicateOfId String? // Deliberately retained if target is deleted: resolution must be explicit.
   creditHours     Float?
   creditType      CreditType?
   accreditation   String?  // e.g. "AMA PRA Category 1", "AAFP Prescribed"
@@ -177,7 +182,14 @@ model Certificate {
 
   @@index([userId])
   @@index([activityDate])
-  @@index([userId, fileHash])
+  @@unique([userId, fileHash])
+  @@index([userId, activityFingerprint])
+}
+
+enum CertificateStorageStatus {
+  STORED
+  STORE_FAILED
+  DELETED
 }
 
 enum ExtractionStatus {
@@ -409,7 +421,9 @@ model Subscription {
   status             SubscriptionStatus @default(ACTIVE)
   stripeCustomerId   String?
   stripePriceId      String?
-  stripeSubId        String?
+  stripeSubId        String? // Stripe subscription identity (unique below)
+  stripeCreatedAt    DateTime?
+  paymentFailureGraceUntil DateTime?
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
   cancelAtPeriodEnd  Boolean            @default(false)
@@ -436,4 +450,29 @@ enum SubscriptionStatus {
   INCOMPLETE
   INCOMPLETE_EXPIRED
   UNPAID
+}
+
+// Price history is retained across rotations; inactive prices still confer their tier.
+model StripePriceMap {
+  priceId String @id
+  tier SubscriptionTier
+  label String
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model BillingAnomaly {
+  id String @id @default(cuid())
+  priceId String?
+  stripeEventId String?
+  userId String?
+  message String
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+model StripeEvent {
+  stripeEventId String @id
+  type String
+  createdAt DateTime @default(now())
 }

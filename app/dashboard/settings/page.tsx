@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "@/lib/entitlements";
 import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { prisma } from "@/lib/prisma";
@@ -44,6 +45,7 @@ export default async function SettingsPage() {
       select: {
         tier: true,
         status: true,
+        paymentFailureGraceUntil: true,
         stripeCustomerId: true,
         currentPeriodEnd: true,
         cancelAtPeriodEnd: true,
@@ -85,7 +87,7 @@ export default async function SettingsPage() {
     <SettingsClient
       user={user ?? { id: userId, name: null, email: sessionEmail, image: null, specialty: null, practiceArea: null }}
       licenses={licenses}
-      subscription={subscription}
+      subscription={subscription ? { ...subscription, tier: effectiveSubscriptionTier(subscription) } : null}
       licenseRequirements={licenseRequirements}
       requirementCompletions={requirementCompletions}
       emailPreference={emailPreference ?? { renewalReminders: true, monthlyDigest: true }}
