@@ -56,6 +56,9 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">6. Third-Party Partners</h2>
+            {/* PRIVACY-COPY-PENDING-MICHAEL
+            <p>When you upload a CME certificate, we may send it to Anthropic, a third-party AI provider, to extract details such as the activity title, provider, completion date, and hours of CME. Do not upload documents containing patient information. To delete an uploaded certificate and its stored original, open Certificates in your dashboard and select Delete for that certificate.</p>
+            */}
             <p>ClearCME may recommend CME courses from partner providers. When you click through to a partner&rsquo;s site, their privacy policy applies. We may receive referral commissions from paid partners, but we do not sell your personal data or share your uploaded certificate data with course providers for advertising.</p>
           </section>
 
