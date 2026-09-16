@@ -90,6 +90,53 @@ async function main() {
       { id: 'manual', specialTopics: ['ETHICS'], suggestedSpecialTopics: [], extractedSpecialTopics: [], topicHourAllocations: {} },
     ]);
     console.log('PASS: legacy extraction becomes a suggestion without inventing provenance');
+
+    // Run B: existing hashes/metadata survive, collisions fail without deleting evidence.
+    await db.exec('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
+    const billingName = '20260916100000_billing_integrity';
+    const certificateName = '20260916101000_certificate_integrity';
+    const storageName = '20260916102000_certificate_storage_status';
+    for (const name of names.filter((name) => name < billingName)) await db.exec(sql(name));
+    await db.exec(`INSERT INTO "User" (id,"updatedAt") VALUES ('one',now()),('two',now());
+      INSERT INTO "Certificate" (id,"userId","updatedAt","fileName","fileHash","creditHours","fileUrl") VALUES
+      ('original','one',now(),'original.pdf','same-hash',4,'https://example.invalid/original'),
+      ('collision','one',now(),'other.pdf','same-hash',4,NULL),
+      ('manual','one',now(),'Manual entry',NULL,2,NULL),
+      ('another-user','two',now(),'original.pdf','same-hash',4,NULL);`);
+    const beforeCertificates = (await db.query('SELECT * FROM "Certificate" ORDER BY id')).rows;
+    await assert.rejects(db.exec(sql(certificateName)), /reviewed resolution/);
+    await db.exec('ROLLBACK');
+    assert.deepEqual((await db.query('SELECT * FROM "Certificate" ORDER BY id')).rows, beforeCertificates);
+    console.log('PASS: duplicate legacy hashes abort Run B migration atomically without changing evidence');
+
+    await db.exec(`DELETE FROM "Certificate" WHERE id='collision'`); // Synthetic collision only.
+    await db.exec(sql(billingName));
+    await db.exec(sql(certificateName));
+    await db.exec(sql(storageName));
+    const originals = (await db.query('SELECT id,"creditHours","hoursEarned","activityFingerprint","fileHash","storageStatus" FROM "Certificate" ORDER BY id')).rows;
+    assert.deepEqual(originals, [
+      { id: 'another-user', creditHours: 4, hoursEarned: null, activityFingerprint: null, fileHash: 'same-hash', storageStatus: 'STORE_FAILED' },
+      { id: 'manual', creditHours: 2, hoursEarned: null, activityFingerprint: null, fileHash: null, storageStatus: 'STORE_FAILED' },
+      { id: 'original', creditHours: 4, hoursEarned: null, activityFingerprint: null, fileHash: 'same-hash', storageStatus: 'STORED' },
+    ]);
+    await assert.rejects(db.exec(`INSERT INTO "Certificate" (id,"userId","updatedAt","fileName","fileHash") VALUES ('duplicate','one',now(),'same.pdf','same-hash')`), /unique constraint/);
+    await db.exec(`INSERT INTO "Certificate" (id,"userId","updatedAt","fileName","fileHash") VALUES ('manual-2','one',now(),'Manual entry',NULL)`);
+    console.log('PASS: per-user hash uniqueness allows NULLs and different users; legacy hours/hash preserved and storage status backfilled');
+
+    await db.exec(`INSERT INTO "Subscription" (id,"userId","updatedAt","stripeSubId") VALUES ('subscription','one',now(),'sub_identity');
+      INSERT INTO "StripePriceMap" ("priceId",tier,label,active) VALUES ('price_retired','ESSENTIAL','Founding',false);`);
+    await assert.rejects(db.exec(`INSERT INTO "Subscription" (id,"userId","updatedAt","stripeSubId") VALUES ('other','two',now(),'sub_identity')`), /unique constraint/);
+    const billing = (await db.query('SELECT "paymentFailureGraceUntil", "stripeCreatedAt" FROM "Subscription"')).rows[0];
+    assert.deepEqual(billing, { paymentFailureGraceUntil: null, stripeCreatedAt: null });
+    await db.exec(`BEGIN; INSERT INTO "StripeEvent" ("stripeEventId",type) VALUES ('evt_rollback','customer.subscription.updated'); UPDATE "Subscription" SET tier='PRO'; ROLLBACK;`);
+    assert.equal((await db.query('SELECT count(*)::int n FROM "StripeEvent"')).rows[0].n, 0);
+    assert.equal((await db.query('SELECT tier FROM "Subscription"')).rows[0].tier, 'FREE');
+    await db.exec(`BEGIN; INSERT INTO "StripeEvent" ("stripeEventId",type) VALUES ('evt_commit','customer.subscription.updated'); UPDATE "Subscription" SET tier='ESSENTIAL'; COMMIT;`);
+    await assert.rejects(db.exec(`INSERT INTO "StripeEvent" ("stripeEventId",type) VALUES ('evt_commit','customer.subscription.updated')`), /unique constraint/);
+    await db.exec(`INSERT INTO "BillingAnomaly" (id,"priceId",message) VALUES ('anomaly','price_missing','Unknown price')`);
+    assert.equal((await db.query('SELECT tier FROM "StripePriceMap" WHERE "priceId"=\'price_retired\'')).rows[0].tier, 'ESSENTIAL');
+    console.log('PASS: Stripe identity/event uniqueness, receipt+effect atomicity, persistent retired prices and billing anomalies');
+
   } finally { await db.close(); }
 }
 

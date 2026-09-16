@@ -6,7 +6,7 @@ import { evaluateRequirementFulfillment, linkedCertificateId, NOT_APPLICABLE_REQ
 export type OverallStatus = "COMPLIANT" | "ACTION_NEEDED" | "UNKNOWN" | "NOT_COMPUTED";
 export type RequirementStatus = "MET" | "NOT_MET" | "UNKNOWN" | "NOT_APPLICABLE" | "EXPIRED";
 export type EngineRequirement = Pick<MandatoryRequirement, "id" | "topic" | "hoursRequired" | "cadence" | "firstRenewalOnly" | "intervalYears" | "lookbackYears" | "attestationAllowed" | "description" | "notes"> & { retiredAt?: Date | null };
-export type EngineCertificate = Pick<Certificate, "id" | "activityDate" | "creditHours" | "extractionStatus" | "specialTopics" | "manuallyVerified" | "title" | "topics" | "creditType" | "accreditation"> & Partial<Pick<Certificate, "extractedSpecialTopics" | "suggestedSpecialTopics" | "topicHourAllocations">>;
+export type EngineCertificate = Pick<Certificate, "id" | "activityDate" | "creditHours" | "extractionStatus" | "specialTopics" | "manuallyVerified" | "title" | "topics" | "creditType" | "accreditation"> & Partial<Pick<Certificate, "extractedSpecialTopics" | "suggestedSpecialTopics" | "topicHourAllocations" | "possibleDuplicateOfId">>;
 export interface EngineCompletion {
   mandatoryRequirementId: string;
   createdAt?: Date;
@@ -65,7 +65,7 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     // Text fallback is only for unspecified state categories; explicit lists win.
     return !rule.acceptedCreditTypes?.length && /AMA PRA Category 1\b|AOA Category 1[- ]A\b/i.test(cert.accreditation ?? "");
   };
-  const usable = (cert: EngineCertificate) => (cert.extractionStatus === "COMPLETED" || (cert.extractionStatus === "MANUAL" && cert.manuallyVerified)) && eligible(cert) && Number.isFinite(cert.creditHours) && (cert.creditHours ?? 0) > 0 && cert.activityDate !== null && cert.activityDate <= today;
+  const usable = (cert: EngineCertificate) => !cert.possibleDuplicateOfId && (cert.extractionStatus === "COMPLETED" || (cert.extractionStatus === "MANUAL" && cert.manuallyVerified)) && eligible(cert) && Number.isFinite(cert.creditHours) && (cert.creditHours ?? 0) > 0 && cert.activityDate !== null && cert.activityDate <= today;
   const topicHours = (cert: EngineCertificate, topic: string): number => {
     if (!usable(cert)) return 0;
     const linkedTopics = completions.filter((c) => (c.physicianLicenseId === license.id || c.physicianLicenseId === null) && linkedCertificateId(c.notes) === cert.id)

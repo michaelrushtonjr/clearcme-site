@@ -301,6 +301,14 @@ export default async function DashboardPage() {
         />
       </div>
 
+      {certificates.some((c) => ["STORE_FAILED", "DELETED"].includes(c.storageStatus) && c.fileName !== "Manual entry") && (
+        <div className="product-card p-4">
+          <p className="font-medium">Original not saved — re-attach</p>
+          <p className="text-sm">Your extracted details are saved. Attach the original document to include it in audit exports.</p>
+          <Link href="/dashboard/certificates" className="text-sm text-[var(--primary)]">Review certificate originals →</Link>
+        </div>
+      )}
+
       {/* No certificates yet: upload CTA */}
       {!hasCertificates && (
         <div className="card" style={{ marginTop: 20, padding: "28px 24px", textAlign: "center" }}>

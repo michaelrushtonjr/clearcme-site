@@ -1,3 +1,4 @@
+import { effectiveSubscriptionTier } from "@/lib/entitlements";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -308,7 +309,7 @@ export default async function CompliancePage() {
     }),
   ]);
 
-  const hasFullCourseChoice = subscription?.tier === "ESSENTIAL" || subscription?.tier === "PRO";
+  const hasFullCourseChoice = effectiveSubscriptionTier(subscription) !== "FREE";
 
   const completionByRequirementAndLicense = new Map(
     requirementCompletions.map((completion) => [

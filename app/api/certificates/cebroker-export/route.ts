@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId,
         extractionStatus: "COMPLETED",
+        possibleDuplicateOfId: null,
         activityDate: {
           gte: cycleStart,
           lte: cycleEnd,

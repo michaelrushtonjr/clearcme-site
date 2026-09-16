@@ -84,7 +84,7 @@ export default function ManualCertificateEntry() {
               clipRule="evenodd"
             />
           </svg>
-          Saved — these hours now count toward your requirements.
+          Saved — review your certificate details and compliance map for counted hours.
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button onClick={reset} className="product-btn product-btn-secondary flex-1">
@@ -111,7 +111,7 @@ export default function ManualCertificateEntry() {
         />
       </div>
       <div>
-        <label className="product-label">Provider / Accreditor (optional)</label>
+        <label className="product-label">Provider / Accreditor</label>
         <input
           type="text"
           value={fields.provider}
@@ -131,10 +131,11 @@ export default function ManualCertificateEntry() {
           />
         </div>
         <div>
-          <label className="product-label">Credit Hours</label>
+          <label className="product-label">Hours of CME</label>
           <input
             type="number"
-            min="0"
+            min="0.25"
+            max="100"
             step="0.25"
             value={fields.creditHours}
             onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}

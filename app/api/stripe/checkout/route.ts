@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       email: true,
       name: true,
       subscription: {
-        select: { id: true, stripeCustomerId: true },
+        select: { id: true, stripeCustomerId: true, stripeSubId: true, status: true },
       },
     },
   });
@@ -41,6 +41,12 @@ export async function POST(req: Request) {
 
   const stripe = getStripe();
   let stripeCustomerId = user.subscription?.stripeCustomerId ?? null;
+
+  if (user.subscription?.stripeSubId && ["ACTIVE", "TRIALING", "PAST_DUE"].includes(user.subscription.status)) {
+    if (!stripeCustomerId) return NextResponse.json({ error: "Subscription has no billing customer" }, { status: 409 });
+    const portal = await stripe.billingPortal.sessions.create({ customer: stripeCustomerId, return_url: `${appUrl(req)}/dashboard/settings` });
+    return NextResponse.json({ url: portal.url, portal: true });
+  }
 
   if (!stripeCustomerId) {
     const customer = await stripe.customers.create({

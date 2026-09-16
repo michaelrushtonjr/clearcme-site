@@ -12,7 +12,9 @@ import {
   upgradeRequiredResponse,
 } from "@/lib/entitlements";
 import Anthropic from "@anthropic-ai/sdk";
-import { put } from "@vercel/blob";
+import { storeCertificateOriginal } from "@/lib/certificate-storage";
+import { activityFingerprint, parseExtraction, validateCertificateFields, earnedHoursSchema, type ExtractedCredit } from "@/lib/certificate-validation";
+import { findActivityDuplicate, lockCertificateUser } from "@/lib/certificate-duplicates";
 import { createHash } from "crypto";
 import { inflateSync } from "zlib";
 import type { CreditType } from "@prisma/client";
@@ -91,6 +93,7 @@ export async function POST(req: NextRequest) {
   }
 
   let createdCertificateId: string | null = null;
+  let uploadHash: string | null = null;
 
   try {
     const formData = await req.formData();
@@ -124,6 +127,7 @@ export async function POST(req: NextRequest) {
     const fileHash = createHash("sha256")
       .update(Buffer.from(await file.arrayBuffer()))
       .digest("hex");
+    uploadHash = fileHash;
     const duplicate = await prisma.certificate.findFirst({
       where: { userId, fileHash },
       select: { id: true, title: true, fileName: true },
@@ -141,49 +145,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Retain the original document in Vercel Blob (gracefully skip if token
-    // not configured). The store is private — these are physicians' personal
-    // certificates — so reads require the RW token or a signed URL, and
-    // `access: "public"` throws on it. Pathname is namespaced per user with a
-    // random suffix because put() refuses to overwrite an existing blob and
-    // two users will eventually both upload "Certificate.pdf".
-    let fileUrl: string | null = null;
-    try {
-      if (process.env.BLOB_READ_WRITE_TOKEN) {
-        const blob = await put(`certificates/${userId}/${file.name}`, file, {
-          access: "private",
-          addRandomSuffix: true,
-        });
-        fileUrl = blob.url;
-      }
-    } catch (blobErr) {
-      console.warn("Vercel Blob upload skipped:", blobErr);
-    }
-
-    // Create certificate record
+    // Reserve the unique user/hash before storage, so simultaneous identical
+    // uploads cannot create a second blob or spend another scan.
     const certificate = await prisma.certificate.create({
       data: {
-        userId: userId,
-        fileName: file.name,
-        fileUrl,
-        fileSize: file.size,
-        mimeType: file.type,
-        fileHash,
-        extractionStatus: "PROCESSING",
+        userId, fileName: file.name, fileSize: file.size, mimeType: file.type,
+        fileHash, storageStatus: "STORE_FAILED", extractionStatus: "PROCESSING",
       },
     });
     createdCertificateId = certificate.id;
+    try {
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        // Keep the user lock through blob write and row update, sharing the
+        // same lock as DELETE/reattach. A failed row write cleans up the blob.
+        await storeCertificateOriginal(certificate.id, userId, file);
+      }
+    } catch (blobErr) {
+      console.warn("Certificate original not saved:", blobErr);
+    }
 
     await recordExtractionAttempt(userId);
 
     // Never strand a row in PROCESSING: crashes and timeouts resolve to a
     // FAILED extraction result, which the branches below persist properly.
     let extractionResult: ExtractionResult;
+    let extractionTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       extractionResult = await Promise.race([
         extractCertificate(file),
         new Promise<ExtractionResult>((resolve) =>
-          setTimeout(
+          extractionTimer = setTimeout(
             () => resolve({ success: false, error: "Extraction timed out" }),
             EXTRACTION_TIMEOUT_MS
           )
@@ -199,6 +190,8 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    if (extractionTimer) clearTimeout(extractionTimer);
+
     // Cheap observability: which extractor produced this result. A months-old
     // bug (topics-only partials starving the AI pass) was invisible because
     // nothing recorded the path taken. "none" = timed out or threw.
@@ -208,84 +201,34 @@ export async function POST(req: NextRequest) {
         (extractionResult.error ? ` error="${extractionResult.error.slice(0, 120)}"` : "")
     );
 
-    if (extractionResult.success && extractionResult.data) {
-      const extracted = extractionResult.data;
-
-      // Determine confidence: low if critical field (creditHours) is null
-      const isLowConfidence = extracted.creditHours === null;
-      const confidence = isLowConfidence ? 0.5 : 1.0;
-      const status = isLowConfidence ? "NEEDS_REVIEW" : "COMPLETED";
-
-      // Only a clean, full-confidence extraction consumes a trial slot;
-      // NEEDS_REVIEW results the user must fix by hand stay free.
-      if (!isLowConfidence) {
-        await recordExtractionUse(userId);
-      }
-
-      // Update with extracted data
-      const updated = await prisma.certificate.update({
-        where: { id: certificate.id },
-        data: {
-          extractedAt: new Date(),
-          extractionStatus: status,
-          extractionConfidence: confidence,
-          title: extracted.title,
-          provider: extracted.provider,
-          activityDate: extracted.date ? new Date(extracted.date) : null,
-          creditHours: extracted.creditHours,
-          creditType: normalizeCreditType(extracted.creditType),
-          accreditation: extracted.accreditation,
-          topics: extracted.topics,
-          specialTopics: extractedTopicFlags(extracted.specialTopics, extracted),
-          extractedSpecialTopics: extractedTopicFlags(extracted.specialTopics, extracted),
-          suggestedSpecialTopics: inferSpecialTopics(extracted),
-        },
-      });
-
-      if (isLowConfidence) {
-        return NextResponse.json(
-          {
-            certificate: updated,
-            warning: "Some fields could not be extracted with confidence. Please review and confirm.",
-          },
-          { status: 201 }
-        );
-      }
-
-      return NextResponse.json({ certificate: updated }, { status: 201 });
-    } else {
-      // Check if partial data was extracted despite parse failure
-      const hasPartialData = extractionResult.partialData !== undefined;
-
-      if (hasPartialData && extractionResult.partialData) {
-        const partial = extractionResult.partialData;
-        const updated = await prisma.certificate.update({
+    const extracted = extractionResult.data ?? extractionResult.partialData;
+    if (extracted) {
+      const fields = validateCertificateFields({ ...extracted, activityDate: extracted.date });
+      const clean = extractionResult.success && fields.valid;
+      const fingerprint = activityFingerprint(fields);
+      const updated = await prisma.$transaction(async (tx) => {
+        await lockCertificateUser(tx, userId);
+        const duplicate = await findActivityDuplicate(tx, userId, fingerprint, certificate.id, fields);
+        return tx.certificate.update({
           where: { id: certificate.id },
           data: {
-            extractedAt: new Date(),
-            extractionStatus: "NEEDS_REVIEW",
-            extractionConfidence: 0.3,
-            title: partial.title,
-            provider: partial.provider,
-            activityDate: partial.date ? new Date(partial.date) : null,
-            creditHours: partial.creditHours,
-            creditType: normalizeCreditType(partial.creditType),
-            accreditation: partial.accreditation,
-            topics: partial.topics ?? [],
-            specialTopics: [],
-            suggestedSpecialTopics: inferSpecialTopics(partial),
+            extractedAt: new Date(), extractionStatus: clean ? "COMPLETED" : "NEEDS_REVIEW",
+            extractionConfidence: clean ? 1 : 0.5,
+            title: fields.title, provider: fields.provider, activityDate: fields.activityDate,
+            hoursEarned: fields.hoursEarned, activityMaxHours: fields.activityMaxHours,
+            creditHours: fields.creditHours, activityFingerprint: fingerprint,
+            possibleDuplicateOfId: duplicate?.id ?? null,
+            creditType: normalizeCreditType(extracted.creditType), accreditation: extracted.accreditation,
+            topics: extracted.topics ?? [],
+            specialTopics: clean ? extractedTopicFlags(extracted.specialTopics, extracted) : [],
+            extractedSpecialTopics: extractedTopicFlags(extracted.specialTopics, extracted),
+            suggestedSpecialTopics: inferSpecialTopics(extracted),
           },
         });
-
-        return NextResponse.json(
-          {
-            certificate: updated,
-            warning: "Some fields could not be extracted with confidence. Please review and confirm.",
-          },
-          { status: 201 }
-        );
-      }
-
+      });
+      if (clean) await recordExtractionUse(userId);
+      return NextResponse.json({ certificate: updated, ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
+    } else {
       // Full extraction failed — store certificate but mark for manual review.
       // Persist the error so the UI and support can say why it failed.
       const updated = await prisma.certificate.update({
@@ -308,6 +251,10 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
+    if (!createdCertificateId && (error as { code?: string }).code === "P2002") {
+      const duplicate = uploadHash ? await prisma.certificate.findFirst({ where: { userId, fileHash: uploadHash }, select: { id: true } }) : null;
+      if (duplicate) return NextResponse.json({ error: "This exact file is already on file.", code: "duplicate_file", certificateId: duplicate.id }, { status: 409 });
+    }
     console.error("Certificate upload error:", error);
     // Best effort: if the record was already created, park it in FAILED so it
     // surfaces the manual-entry recovery path instead of "Processing" forever.
@@ -361,15 +308,17 @@ async function createManualCertificate(req: NextRequest, userId: string) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+
   const title = typeof body.title === "string" ? body.title.trim().slice(0, 500) : "";
   if (!title) {
     return NextResponse.json({ error: "Course title is required" }, { status: 400 });
   }
 
   const creditHours = Number(body.creditHours);
-  if (!Number.isFinite(creditHours) || creditHours <= 0 || creditHours > 1000) {
+  if (!earnedHoursSchema.safeParse(creditHours).success) {
     return NextResponse.json(
-      { error: "Credit hours must be a number greater than 0" },
+      { error: "Hours of CME must be greater than 0, no more than 100, in increments of 0.25" },
       { status: 400 }
     );
   }
@@ -431,7 +380,12 @@ async function createManualCertificate(req: NextRequest, userId: string) {
   // mandatory-topic requirements (and attestation pre-fill can find them).
   const topics = inferTopicLabels(title);
 
-  const certificate = await prisma.certificate.create({
+  const fields = validateCertificateFields({ title, provider, activityDate, hoursEarned: creditHours });
+  const fingerprint = activityFingerprint(fields);
+  const certificate = await prisma.$transaction(async (tx) => {
+    await lockCertificateUser(tx, userId);
+    const duplicate = await findActivityDuplicate(tx, userId, fingerprint, undefined, fields);
+    return tx.certificate.create({
     data: {
       userId,
       fileName: "Manual entry",
@@ -442,6 +396,9 @@ async function createManualCertificate(req: NextRequest, userId: string) {
       provider,
       activityDate,
       creditHours,
+      hoursEarned: creditHours,
+      activityFingerprint: fingerprint,
+      possibleDuplicateOfId: confirmDuplicate ? null : duplicate?.id ?? null,
       creditType,
       topics,
       specialTopics: [],
@@ -449,26 +406,16 @@ async function createManualCertificate(req: NextRequest, userId: string) {
       // COMPLETED + manuallyVerified is the same shape the confirm-edit PATCH
       // writes; compliance math only counts COMPLETED rows.
       manuallyVerified: true,
-      extractionStatus: "COMPLETED",
+      extractionStatus: fields.valid ? "COMPLETED" : "NEEDS_REVIEW",
       extractedAt: new Date(),
     },
+    });
   });
 
   return NextResponse.json({ certificate }, { status: 201 });
 }
 
 // ─── Certificate Extraction ───────────────────────────────────────────────────
-
-interface ExtractedCredit {
-  title: string | null;
-  provider: string | null;
-  date: string | null;
-  creditHours: number | null;
-  creditType: string | null;
-  topics: string[];
-  accreditation: string | null;
-  specialTopics?: string[];
-}
 
 interface ExtractionResult {
   success: boolean;
@@ -485,23 +432,25 @@ const EXTRACTION_PROMPT = `You are extracting data from a CME/CE certificate. Re
   "title": "exact course/activity title",
   "provider": "name of providing organization",
   "date": "YYYY-MM-DD completion date",
-  "creditHours": 0.0,
+  "hoursEarned": null,
+  "activityMaxHours": null,
   "creditType": "AMA_PRA_1 | AOA_1A | AAFP | ANCC | OTHER",
   "topics": ["list", "of", "topics"],
   "specialTopics": ["enum flags explicitly supported by the title or activity topics; otherwise empty"],
   "accreditation": "full accreditation statement"
 }
+hoursEarned is ONLY what this participant earned, claimed, or was awarded. activityMaxHours is the activity designation or maximum available hours. Never substitute a maximum for hoursEarned. If only a maximum is stated, hoursEarned must be null. For example, "participant earned 1.0 hour" and "maximum of 20" means hoursEarned: 1.0, activityMaxHours: 20.
 specialTopics may contain only OPIOID_PRESCRIBING, PAIN_MANAGEMENT, IMPLICIT_BIAS, END_OF_LIFE_CARE, DOMESTIC_VIOLENCE, CHILD_ABUSE, ELDER_ABUSE, HUMAN_TRAFFICKING, INFECTION_CONTROL, PATIENT_SAFETY, ETHICS, CULTURAL_COMPETENCY, SUBSTANCE_USE, SUICIDE_PREVENTION, OTHER_MANDATORY. Use [] when uncertain. Generic prescribing does not mean opioid prescribing. If a field cannot be determined, use null. Do not include any text outside the JSON.`;
 
 // A deterministic partial only counts as "good enough to stop" when it holds a
-// critical field: creditHours, or title AND date. Anything weaker — notably a
+// critical field: hoursEarned, or title AND date. Anything weaker — notably a
 // topics-only partial, since topics are keyword-inferred rather than extracted —
 // must fall through to the AI pass. (Before 2026-08-13 any non-empty partial
 // short-circuited, so one topic-keyword hit suppressed the AI extractor and the
 // user got an all-null NEEDS_REVIEW row.)
 function hasCriticalFields(partial: Partial<ExtractedCredit> | undefined): boolean {
   if (!partial) return false;
-  return partial.creditHours != null || Boolean(partial.title && partial.date);
+  return partial.hoursEarned != null || Boolean(partial.title && partial.date);
 }
 
 function mergeTopics(primary: string[] | undefined, fallback: string[]): string[] {
@@ -622,7 +571,9 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
 
     let parsed: ExtractedCredit;
     try {
-      parsed = JSON.parse(cleaned) as ExtractedCredit;
+      const result = parseExtraction(JSON.parse(cleaned));
+      if (!result.valid) return { success: false, partialData: result.data, error: "Extracted fields need review" };
+      parsed = result.data;
     } catch (jsonError) {
       // JSON parse failed — try to recover partial data via regex
       console.warn("JSON parse failed, attempting partial extraction:", jsonError);
@@ -637,8 +588,10 @@ async function extractCertificateWithClaude(file: File): Promise<ExtractionResul
       const dateMatch = cleaned.match(/"date"\s*:\s*"([^"]+)"/);
       if (dateMatch) partial.date = dateMatch[1];
 
-      const hoursMatch = cleaned.match(/"creditHours"\s*:\s*([\d.]+)/);
-      if (hoursMatch) partial.creditHours = parseFloat(hoursMatch[1]);
+      const hoursMatch = cleaned.match(/"hoursEarned"\s*:\s*([\d.]+)/);
+      if (hoursMatch) partial.hoursEarned = parseFloat(hoursMatch[1]);
+      const maxMatch = cleaned.match(/"activityMaxHours"\s*:\s*([\d.]+)/);
+      if (maxMatch) partial.activityMaxHours = parseFloat(maxMatch[1]);
 
       if (Object.keys(partial).length > 0) {
         return { success: false, partialData: partial, error: "JSON parse failed but partial data recovered" };
@@ -678,7 +631,7 @@ async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResu
     }
 
     const extracted = parseCertificateText(text);
-    const hasCriticalFields = Boolean(extracted.title && extracted.provider && extracted.date && extracted.creditHours !== null);
+    const hasCriticalFields = Boolean(extracted.title && extracted.provider && extracted.date && extracted.hoursEarned !== null);
 
     if (hasCriticalFields) {
       return { success: true, data: extracted };
@@ -828,16 +781,15 @@ function parseCertificateText(text: string): ExtractedCredit {
   const provider = /American Society of Addiction Medicine|ASAM/i.test(text)
     ? "American Society of Addiction Medicine"
     : cleanProvider(
-        matchFirst(text, /(?:provider|accredited provider|provided by)\s*:\s*(.+?)(?:\s+(?:course|activity|date|completion|credit|hours)\s*:|$)/i) ??
+        matchFirst(text, /(?:provider|accredited provider|provided by)\s*:\s*(.+?)(?:\s+(?:course|activity(?: date)?|date|completion|credit|hours)\s*:|$)/i) ??
         matchFirst(text, /(.*?)\s+certifies that/i) ??
         matchFirst(text, /(.*?)\s+(?:awards|designates|grants)\s+this/i)
       );
-  const creditHours =
-    parseNumber(matchFirst(text, /awarded\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
-    parseNumber(matchFirst(text, /maximum of\s+(\d+(?:\.\d+)?)\s+AMA PRA Category 1 Credit/i)) ??
-    parseNumber(matchFirst(text, /(?:credit hours|credits?|hours awarded|total hours)\s*:\s*(\d+(?:\.\d+)?)/i)) ??
-    parseNumber(matchFirst(text, /(?:is|are)\s+(?:awarded|granted)\s+(\d+(?:\.\d+)?)\s+(?:credit|hour)/i)) ??
-    parseNumber(matchFirst(text, /(?:for|awards?)\s+(\d+(?:\.\d+)?)\s+(?:AMA PRA Category 1\s+)?(?:credit|hour)/i));
+  const activityMaxHours = parseNumber(matchFirst(text, /maximum(?: of)?\s+(\d+(?:\.\d+)?)\s+(?:AMA PRA Category 1\s+)?(?:credits?|hours?)/i));
+  const hoursEarned =
+    parseNumber(matchFirst(text, /(?:earned|claimed|awarded|granted)\s*:?\s*(\d+(?:\.\d+)?)\s+(?:AMA PRA Category 1\s+)?(?:credits?|hours?)/i)) ??
+    parseNumber(matchFirst(text, /(?:hours earned|hours awarded|hours claimed|credit hours earned)\s*:\s*(\d+(?:\.\d+)?)/i)) ??
+    parseNumber(matchFirst(text, /\bcompleted\s+.+?\s+for\s+(\d+(?:\.\d+)?)\s+(?:AMA PRA Category 1\s+)?(?:credits?|hours?)/i));
   const date = parseCertificateDate(
     matchFirst(text, /([A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s+Date of Completion/i) ??
       matchFirst(text, /(?:Date of Completion|Completion Date|Completed on|Activity Date|Date)\s*:?\s*([A-Z][a-z]+\s+\d{1,2},\s+\d{4})/i) ??
@@ -857,7 +809,8 @@ function parseCertificateText(text: string): ExtractedCredit {
     title,
     provider,
     date,
-    creditHours,
+    hoursEarned,
+    activityMaxHours,
     creditType,
     topics,
     accreditation,

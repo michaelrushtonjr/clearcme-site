@@ -202,7 +202,7 @@ export async function GET(req: NextRequest) {
       }
 
       lines.push(
-        `   Status: ${certificate.extractionStatus}${certificate.manuallyVerified ? " | Manually verified" : ""}`
+        `   Status: ${certificate.extractionStatus}${certificate.possibleDuplicateOfId ? " | Possible duplicate - excluded from counted hours" : ""}${certificate.manuallyVerified ? " | Manually verified" : ""}`
       );
     });
   }
