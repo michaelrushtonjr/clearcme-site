@@ -4,7 +4,7 @@ No compliance facts were populated. Source line numbers refer to lib/state-requi
 
 ## Migration identity collisions
 
-The local sandbox has the following duplicate natural keys. Production was not queried. The migration rejects all duplicates before any backfill; Vera/Roz must assign explicit identities in a reviewed follow-up.
+Resolved locally September 16, 2026: Michael explicitly approved the eight-row mapping in `requirement-key-resolution-a.json`. The migration assigned description-based discriminators while preserving every ID, completion link and compliance fact. These four groups have no remaining key collisions. Unapproved groups or a changed approved row still fail before backfill. Production was not queried. See `MIGRATION-REPAIR-A.md` and `local-migration-verification-a.json`.
 
 - MI:MD:OTHER_MANDATORY: 2 existing rows.
 - NV:MD:OTHER_MANDATORY: 2 existing rows.

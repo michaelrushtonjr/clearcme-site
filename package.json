@@ -12,7 +12,10 @@
     "sync-courses": "node scripts/sync-courses.js",
     "audit-course-pricing": "node scripts/audit-course-pricing.mjs",
     "test": "vitest run",
-    "secrets": "node scripts/check-secrets.mjs"
+    "secrets": "node scripts/check-secrets.mjs",
+    "db:local": "node scripts/local-prisma.js",
+    "db:baseline-local": "node scripts/baseline-local-history.js",
+    "test:migrations": "node scripts/test-migrations.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

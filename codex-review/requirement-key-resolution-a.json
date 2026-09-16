@@ -1,11 +1,4 @@
--- Review #1 / A2. Eight local identities explicitly approved by Michael on 2026-09-16.
--- All unlisted collisions still fail. No hours, cadence, topics, IDs or completion links change.
-BEGIN;
-LOCK TABLE "ComplianceRule", "MandatoryRequirement" IN SHARE ROW EXCLUSIVE MODE;
-
-CREATE TEMP TABLE _clearcme_requirement_keys ON COMMIT DROP AS
-WITH resolution AS (
-  SELECT * FROM jsonb_to_recordset($approved$[
+[
   {
     "id": "cmsmh3q48000hasbqojfta4se",
     "complianceRuleId": "cmsmh3q3v000fasbqrobumrv2",
@@ -78,49 +71,4 @@ WITH resolution AS (
     "description": "DEA MATE Act — 8 hr one-time (if DEA registered)",
     "requirementKey": "NV:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
   }
-]$approved$::jsonb)
-  AS x(id text, "complianceRuleId" text, state text, "licenseType" text,
-       topic text, description text, "requirementKey" text)
-)
-SELECT m.id, m."complianceRuleId",
-       COALESCE(x."requirementKey", r.state || ':' || r."licenseType"::text || ':' || m.topic::text) AS "requirementKey",
-       count(*) OVER (PARTITION BY m."complianceRuleId", m.topic) > 1 AND x.id IS NULL AS "unreviewedCollision",
-       x.id IS NULL OR (
-         x."complianceRuleId" = m."complianceRuleId" AND x.state = r.state
-         AND x."licenseType" = r."licenseType"::text AND x.topic = m.topic::text
-         AND x.description IS NOT DISTINCT FROM m.description
-       ) AS "resolutionMatches"
-FROM "MandatoryRequirement" m
-JOIN "ComplianceRule" r ON r.id = m."complianceRuleId"
-LEFT JOIN resolution x ON x.id = m.id;
-
-DO $$
-DECLARE duplicates TEXT;
-BEGIN
-  IF EXISTS (SELECT 1 FROM _clearcme_requirement_keys WHERE NOT "resolutionMatches") THEN
-    RAISE EXCEPTION 'Approved requirement identity no longer matches; review the mapping before migration';
-  END IF;
-  IF EXISTS (SELECT 1 FROM _clearcme_requirement_keys WHERE "unreviewedCollision") THEN
-    SELECT string_agg("requirementKey" || ' [row ' || id || ']', ', ' ORDER BY id)
-      INTO duplicates FROM _clearcme_requirement_keys WHERE "unreviewedCollision";
-    RAISE EXCEPTION 'Duplicate requirement keys need an approved mapping: %', duplicates;
-  END IF;
-  SELECT string_agg("requirementKey" || ' (' || count || ' rows)', ', ' ORDER BY "requirementKey")
-  INTO duplicates
-  FROM (
-    SELECT "complianceRuleId", "requirementKey", count(*)
-    FROM _clearcme_requirement_keys
-    GROUP BY "complianceRuleId", "requirementKey" HAVING count(*) > 1
-  ) collisions;
-  IF duplicates IS NOT NULL THEN
-    RAISE EXCEPTION 'Duplicate requirement keys; resolve through FACT-QUESTIONS-A.md before migration: %', duplicates;
-  END IF;
-END $$;
-
-ALTER TABLE "MandatoryRequirement" ADD COLUMN "requirementKey" TEXT;
-ALTER TABLE "MandatoryRequirement" ADD COLUMN "retiredAt" TIMESTAMP(3);
-UPDATE "MandatoryRequirement" m SET "requirementKey" = k."requirementKey"
-FROM _clearcme_requirement_keys k WHERE k.id = m.id;
-ALTER TABLE "MandatoryRequirement" ALTER COLUMN "requirementKey" SET NOT NULL;
-CREATE UNIQUE INDEX "MandatoryRequirement_complianceRuleId_requirementKey_key" ON "MandatoryRequirement"("complianceRuleId", "requirementKey");
-COMMIT;
+]
