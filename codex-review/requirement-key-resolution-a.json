@@ -1,74 +1,10 @@
-[
-  {
-    "id": "cmsmh3q48000hasbqojfta4se",
-    "complianceRuleId": "cmsmh3q3v000fasbqrobumrv2",
-    "state": "FL",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "Controlled substance prescribing — 2 hr required each 2-yr cycle (DEA holders)",
-    "requirementKey": "FL:MD:OTHER_MANDATORY:controlled-substance-prescribing-2-hr-required-each-2-yr-cycle-dea-holders"
-  },
-  {
-    "id": "cmsmh3q4n000jasbq2yjusxyv",
-    "complianceRuleId": "cmsmh3q3v000fasbqrobumrv2",
-    "state": "FL",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "DEA MATE Act — 8 hr one-time (if DEA registered)",
-    "requirementKey": "FL:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
-  },
-  {
-    "id": "cmsmh3qfq001rasbqkj95sffw",
-    "complianceRuleId": "cmsmh3qfm001qasbq5ih5ew0h",
-    "state": "LA",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "Controlled dangerous substances / prescribing — 3 hr required each cycle",
-    "requirementKey": "LA:MD:OTHER_MANDATORY:controlled-dangerous-substances-prescribing-3-hr-required-each-cycle"
-  },
-  {
-    "id": "cmsmh3qfy001sasbqy00kmwqs",
-    "complianceRuleId": "cmsmh3qfm001qasbq5ih5ew0h",
-    "state": "LA",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "DEA MATE Act — 8 hr one-time (if DEA registered)",
-    "requirementKey": "LA:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
-  },
-  {
-    "id": "cmsmh3qid0022asbqgrhzqqj5",
-    "complianceRuleId": "cmsmh3qi10020asbqvylc7ga0",
-    "state": "MI",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "DEA MATE Act — 8 hr one-time (if DEA registered)",
-    "requirementKey": "MI:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
-  },
-  {
-    "id": "cmsmh3qi50021asbq2yhm9307",
-    "complianceRuleId": "cmsmh3qi10020asbqvylc7ga0",
-    "state": "MI",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "Pain and symptom management — 1 hr required each cycle",
-    "requirementKey": "MI:MD:OTHER_MANDATORY:pain-and-symptom-management-1-hr-required-each-cycle"
-  },
-  {
-    "id": "cmsmh3pzv0003asbqpbgo2732",
-    "complianceRuleId": "cmsmh3pxh0000asbqz98yn8vw",
-    "state": "NV",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "Bioterrorism/WMD — one-time requirement",
-    "requirementKey": "NV:MD:OTHER_MANDATORY:bioterrorism-wmd-one-time-requirement"
-  },
-  {
-    "id": "cmsmh3q1b0006asbqdhenkh1k",
-    "complianceRuleId": "cmsmh3pxh0000asbqz98yn8vw",
-    "state": "NV",
-    "licenseType": "MD",
-    "topic": "OTHER_MANDATORY",
-    "description": "DEA MATE Act — 8 hr one-time (if DEA registered)",
-    "requirementKey": "NV:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
-  }
-]
+{
+  "FL:MD:OTHER_MANDATORY:Controlled substance prescribing — 2 hr required each 2-yr cycle (DEA holders)": "FL:MD:OTHER_MANDATORY:controlled-substance-prescribing-2-hr-required-each-2-yr-cycle-dea-holders",
+  "FL:MD:OTHER_MANDATORY:DEA MATE Act — 8 hr one-time (if DEA registered)": "FL:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered",
+  "LA:MD:OTHER_MANDATORY:Controlled dangerous substances / prescribing — 3 hr required each cycle": "LA:MD:OTHER_MANDATORY:controlled-dangerous-substances-prescribing-3-hr-required-each-cycle",
+  "LA:MD:OTHER_MANDATORY:DEA MATE Act — 8 hr one-time (if DEA registered)": "LA:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered",
+  "MI:MD:OTHER_MANDATORY:DEA MATE Act — 8 hr one-time (if DEA registered)": "MI:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered",
+  "MI:MD:OTHER_MANDATORY:Pain and symptom management — 1 hr required each cycle": "MI:MD:OTHER_MANDATORY:pain-and-symptom-management-1-hr-required-each-cycle",
+  "NV:MD:OTHER_MANDATORY:Bioterrorism/WMD — one-time requirement": "NV:MD:OTHER_MANDATORY:bioterrorism-wmd-one-time-requirement",
+  "NV:MD:OTHER_MANDATORY:DEA MATE Act — 8 hr one-time (if DEA registered)": "NV:MD:OTHER_MANDATORY:dea-mate-act-8-hr-one-time-if-dea-registered"
+}
