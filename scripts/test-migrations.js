@@ -137,7 +137,88 @@ async function main() {
     assert.equal((await db.query('SELECT tier FROM "StripePriceMap" WHERE "priceId"=\'price_retired\'')).rows[0].tier, 'ESSENTIAL');
     console.log('PASS: Stripe identity/event uniqueness, receipt+effect atomicity, persistent retired prices and billing anomalies');
 
+    // Run C: execute the application's actual parameterized SQL in PostgreSQL.
+    const transportName = '20260916110000_extraction_reservations';
+    const deliveryName = '20260916111000_email_delivery';
+    const federalName = '20260916112000_federal_training';
+    const taggedQuery = (file, start, bindings) => {
+      const source = fs.readFileSync(path.join(root, file), 'utf8');
+      const query = source.slice(source.indexOf(start)).split('`')[0];
+      const parameters = [];
+      const text = query.replace(/\$\{([^}]+)\}/g, (_, expression) => {
+        assert.ok(Object.hasOwn(bindings, expression), `Missing SQL binding ${expression}`);
+        parameters.push(bindings[expression]); return `$${parameters.length}`;
+      });
+      return db.query(text, parameters);
+    };
+    await db.exec(sql(transportName));
+    const quota = (ungated = false) => taggedQuery('lib/entitlements.ts', 'UPDATE "User" SET "extractionAttempts"', {
+      userId: 'one', 'entitlements.ungated': ungated, FREE_SCAN_ATTEMPT_LIMIT: 10, FREE_EXTRACTION_LIMIT: 3, now: '2026-09-16T12:00:00.000Z',
+    });
+    for (let index = 0; index < 3; index++) {
+      assert.equal((await quota()).rows.length, 1);
+      await db.query(`INSERT INTO "ExtractionReservation" (id,"userId","expiresAt") VALUES ($1,'one',TIMESTAMP '2026-09-16 12:02:00')`, [`scan-${index}`]);
+    }
+    assert.equal((await quota()).rows.length, 0); // Last clean slot reserved.
+    await db.exec(`DELETE FROM "ExtractionReservation" WHERE id='scan-0'; UPDATE "User" SET "extractionsUsed"=1 WHERE id='one'`);
+    assert.equal((await quota()).rows.length, 0); // Clean result replaces its reservation.
+    await db.exec(`DELETE FROM "ExtractionReservation" WHERE id='scan-1'`);
+    assert.equal((await quota()).rows.length, 1); // Failed scan releases clean slot, attempt stays spent.
+    await db.exec(`UPDATE "ExtractionReservation" SET "expiresAt"=TIMESTAMP '2026-09-16 11:59:00'; UPDATE "User" SET "extractionAttempts"=9 WHERE id='one'`);
+    assert.equal((await quota()).rows.length, 1); // Expired leases cannot strand a clean slot.
+    assert.equal((await quota()).rows.length, 0); // Atomic ten-attempt cap.
+    assert.equal((await quota(true)).rows.length, 1); // Paid/grandfathered remain ungated.
+    assert.deepEqual((await db.query(`SELECT "extractionsUsed","extractionAttempts" FROM "User" WHERE id='one'`)).rows[0], { extractionsUsed: 1, extractionAttempts: 11 });
+    console.log('PASS: actual quota SQL caps reservations and attempts, preserves monotonic counters, releases failed/expired leases, and bypasses paid/grandfathered users');
+
+    await db.exec(`INSERT INTO "EmailLog" (id,"userId",kind,"dedupeKey") VALUES ('legacy-email','one','RENEWAL_REMINDER','renewal:license:30:2026-10-16')`);
+    const oldLog = (await db.query('SELECT * FROM "EmailLog"')).rows[0];
+    await db.exec(sql(deliveryName));
+    const newLog = (await db.query('SELECT * FROM "EmailLog"')).rows[0];
+    assert.equal(newLog.status, 'SENT'); assert.equal(newLog.cycleKey, 'license:2026-10-16'); assert.deepEqual(newLog.sentAt, oldLog.sentAt);
+    const claim = (key) => taggedQuery('lib/email-delivery.ts', 'INSERT INTO "EmailLog" (id,', {
+      'crypto.randomUUID()': require('node:crypto').randomUUID(), 'input.userId': 'one', 'input.kind': 'RENEWAL_REMINDER',
+      'input.dedupeKey': key, 'input.cycleKey': 'license:2026-10-16', now: '2026-09-16T12:00:00.000Z', stale: '2026-09-16T11:45:00.000Z',
+    });
+    assert.equal((await claim(newLog.dedupeKey)).rows.length, 0);
+    assert.equal((await claim('retry')).rows.length, 1);
+    assert.equal((await claim('retry')).rows.length, 0); // Cannot claim another live worker's PENDING.
+    for (let attempt = 2; attempt <= 5; attempt++) {
+      await db.exec(`UPDATE "EmailLog" SET status='FAILED',"lastError"='synthetic outage' WHERE "dedupeKey"='retry'`);
+      assert.equal((await claim('retry')).rows.length, 1);
+    }
+    await db.exec(`UPDATE "EmailLog" SET status='FAILED' WHERE "dedupeKey"='retry'`);
+    assert.equal((await claim('retry')).rows.length, 0);
+    assert.equal((await db.query(`SELECT attempts FROM "EmailLog" WHERE "dedupeKey"='retry'`)).rows[0].attempts, 5);
+    assert.equal((await claim('stale')).rows.length, 1);
+    await db.exec(`UPDATE "EmailLog" SET "lastAttemptAt"=TIMESTAMP '2026-09-16 11:44:00' WHERE "dedupeKey"='stale'`);
+    assert.equal((await claim('stale')).rows.length, 1);
+    console.log('PASS: historical SENT/cycle keys preserved; actual delivery SQL blocks concurrent claims/duplicates and retries failed or stale PENDING rows up to five attempts');
+
+    await db.exec(`INSERT INTO "User" (id,"updatedAt") VALUES ('registration-only',now());
+      INSERT INTO "PhysicianLicense" (id,"userId",state,"licenseType","updatedAt","mateActCompleted","deaRegisteredAt") VALUES
+      ('legacy-one','one','ZZ','MD',now(),true,'2020-01-01'), ('legacy-two','one','ZY','MD',now(),true,NULL),
+      ('registration-only','registration-only','ZZ','MD',now(),NULL,'2024-01-01');
+      INSERT INTO "ComplianceRule" (id,state,"licenseType","renewalCycle","totalHours","updatedAt") VALUES ('mate-rule','ZZ','MD',24,0,now());
+      INSERT INTO "MandatoryRequirement" (id,"complianceRuleId",topic,"hoursRequired",description,"requirementKey") VALUES ('mate','mate-rule','SUBSTANCE_USE',8,'Federal MATE Act','ZZ:MD:SUBSTANCE_USE');
+      INSERT INTO "UserRequirementCompletion" (id,"userId","mandatoryRequirementId",topic,"completedAt",notes,"updatedAt") VALUES
+      ('mate-evidence','two','mate','SUBSTANCE_USE','2025-01-15','__CLEARCME_CERT__:another-user',now());`);
+    const priorLicenses = (await db.query('SELECT * FROM "PhysicianLicense" ORDER BY id')).rows;
+    const priorFacts = (await db.query('SELECT * FROM "MandatoryRequirement" ORDER BY id')).rows;
+    await db.exec(sql(federalName));
+    const records = (await db.query('SELECT "userId",basis,"completedAt","evidenceCertificateId" FROM "FederalTrainingRecord" ORDER BY "userId"')).rows;
+    assert.equal(records.length, 2);
+    assert.deepEqual(records[0], { userId: 'one', basis: 'OTHER', completedAt: null, evidenceCertificateId: null });
+    assert.equal(records[1].basis, 'EIGHT_HOUR_TRAINING'); assert.equal(records[1].evidenceCertificateId, 'another-user');
+    assert.equal(new Date(records[1].completedAt).toISOString().slice(0,10), '2025-01-15');
+    assert.deepEqual((await db.query('SELECT * FROM "PhysicianLicense" ORDER BY id')).rows, priorLicenses);
+    assert.deepEqual((await db.query('SELECT * FROM "MandatoryRequirement" ORDER BY id')).rows, priorFacts);
+    await assert.rejects(db.exec(`INSERT INTO "FederalTrainingRecord" (id,"userId",basis) VALUES ('duplicate-federal','one','OTHER')`), /unique constraint/);
+    await db.exec(`DELETE FROM "Certificate" WHERE id='another-user'`);
+    assert.equal((await db.query(`SELECT "evidenceCertificateId" FROM "FederalTrainingRecord" WHERE "userId"='two'`)).rows[0].evidenceCertificateId, null);
+    console.log('PASS: one federal record per physician, explicit legacy attestation/evidence preserved, registration-only records excluded, state facts/legacy fields unchanged, evidence deletion retains attestation');
+
   } finally { await db.close(); }
 }
 
-main().catch((error) => { console.error(error.message); process.exitCode = 1; });
+main().catch((error) => { console.error(error.stack ?? error.message); process.exitCode = 1; });
