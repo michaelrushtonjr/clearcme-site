@@ -29,6 +29,9 @@ async function main() {
       await db.query('INSERT INTO "ComplianceRule" (id,state,"licenseType","renewalCycle","totalHours","updatedAt") VALUES ($1,$2,$3,24,100,now()) ON CONFLICT DO NOTHING', [row.complianceRuleId, row.state, row.licenseType]);
       await db.query('INSERT INTO "MandatoryRequirement" (id,"complianceRuleId",topic,"hoursRequired",description,cadence,"intervalYears","lookbackYears","attestationAllowed",notes) VALUES ($1,$2,$3,17,$4,\'CONDITIONAL\',3,5,false,\'synthetic fixture\')', [row.id, row.complianceRuleId, row.topic, row.description]);
     }
+    // A lone topic (no sibling) must receive the bare base key.
+    await db.query('INSERT INTO "ComplianceRule" (id,state,"licenseType","renewalCycle","totalHours","updatedAt") VALUES (\'rule-ZZ-MD\',\'ZZ\',\'MD\',24,100,now())');
+    await db.query('INSERT INTO "MandatoryRequirement" (id,"complianceRuleId",topic,"hoursRequired",description) VALUES (\'lone\',\'rule-ZZ-MD\',\'ETHICS\',1,\'Ethics — 1 hr\')');
     await db.exec(`INSERT INTO "User" (id,"updatedAt") VALUES ('fixture-user',now());
       INSERT INTO "PhysicianLicense" (id,"userId",state,"licenseType","updatedAt") VALUES ('fixture-license','fixture-user','FL','MD',now());`);
     for (const row of fixtures) await db.query('INSERT INTO "UserRequirementCompletion" (id,"userId","physicianLicenseId","mandatoryRequirementId",topic,"updatedAt") VALUES ($1,\'fixture-user\',\'fixture-license\',$2,$3,now())', [`completion-${row.id}`, row.id, row.topic]);
@@ -36,38 +39,46 @@ async function main() {
     const completions = (await db.query('SELECT * FROM "UserRequirementCompletion" ORDER BY id')).rows;
     await db.exec(sql(identityName));
     const noKeys = async () => assert.equal((await db.query('SELECT count(*)::int n FROM "MandatoryRequirement" WHERE "requirementKey" IS NOT NULL')).rows[0].n, 0);
-    // Constraints refuse an omitted backfill and leave the schema/data intact.
-    await assert.rejects(db.exec(sql(constraintsName)), /null/i);
-    await db.exec('ROLLBACK');
     await noKeys();
 
+    // Identical topic AND description under one rule cannot be keyed: constraints abort atomically.
+    await db.query('INSERT INTO "MandatoryRequirement" (id,"complianceRuleId",topic,"hoursRequired",description) VALUES (\'ambiguous\',$1,$2,1,$3)', [fixtures[0].complianceRuleId, fixtures[0].topic, fixtures[0].description]);
+    await assert.rejects(db.exec(sql(constraintsName)), /share a key/i);
+    await db.exec('ROLLBACK');
+    await noKeys();
+    assert.deepEqual((await db.query('SELECT * FROM "UserRequirementCompletion" ORDER BY id')).rows, completions);
+    await db.exec("DELETE FROM \"MandatoryRequirement\" WHERE id = 'ambiguous'");
+    console.log('PASS: identical-description siblings abort the constraints migration atomically without losing completions');
+
+    // The optional operator script still refuses unreviewed collisions and stale mappings.
     await db.query('INSERT INTO "MandatoryRequirement" (id,"complianceRuleId",topic,"hoursRequired",description) VALUES (\'unapproved\',$1,$2,1,\'Unreviewed extra obligation\')', [fixtures[0].complianceRuleId, fixtures[0].topic]);
     const inventory = planBackfill(await readRows(db));
     assert.equal(inventory.collisions.length, 4);
     assert.equal(inventory.unresolvedCollisions.length, 4);
     await assert.rejects(applyBackfill(db, mapping), /Unresolved collision/);
     await noKeys();
-    assert.deepEqual((await db.query('SELECT * FROM "UserRequirementCompletion" ORDER BY id')).rows, completions);
     await db.exec("DELETE FROM \"MandatoryRequirement\" WHERE id = 'unapproved'");
-    console.log('PASS: unapproved collisions and missing backfill fail atomically without losing completions');
-
     await db.query('UPDATE "MandatoryRequirement" SET description=\'changed since approval\' WHERE id=$1', [fixtures[0].id]);
     await assert.rejects(applyBackfill(db, mapping), /stale mapping/);
     await noKeys();
     await db.query('UPDATE "MandatoryRequirement" SET description=$1 WHERE id=$2', [fixtures[0].description, fixtures[0].id]);
-    console.log('PASS: stale approved mappings fail atomically');
+    console.log('PASS: operator script refuses unreviewed collisions and stale mappings atomically');
 
-    await applyBackfill(db, mapping);
+    // The constraints migration alone backfills deterministically, matching the reviewed mapping exactly.
     await db.exec(sql(constraintsName));
-    await applyBackfill(db, mapping); // Idempotent with the constraint installed.
-    const after = (await db.query('SELECT * FROM "MandatoryRequirement" ORDER BY id')).rows;
+    const lone = (await db.query('SELECT "requirementKey" FROM "MandatoryRequirement" WHERE id=\'lone\'')).rows[0].requirementKey;
+    assert.equal(lone, 'ZZ:MD:ETHICS');
+    await applyBackfill(db, mapping); // Idempotent with keys and constraint already present.
+    await assert.rejects(db.exec(sql(constraintsName)), /already exists|NOT NULL|duplicate/i); // Re-running is refused by PostgreSQL, never silently repeated.
+    await db.exec('ROLLBACK');
+    const after = (await db.query('SELECT * FROM "MandatoryRequirement" WHERE id <> \'lone\' ORDER BY id')).rows;
     assert.deepEqual(after.map((row) => {
       assert.equal(row.requirementKey, fixtures.find((item) => item.id === row.id).requirementKey);
       assert.equal(row.retiredAt, null);
       const prior = { ...row }; delete prior.requirementKey; delete prior.retiredAt; return prior;
-    }), before);
+    }), before.filter((row) => row.id !== 'lone'));
     assert.deepEqual((await db.query('SELECT * FROM "UserRequirementCompletion" ORDER BY id')).rows, completions);
-    console.log('PASS: all eight description-mapped keys preserve every field, foreign-environment ID and completion');
+    console.log('PASS: constraints migration self-backfills all eight sibling keys and the lone base key, preserving every field and completion');
 
     await db.exec(`INSERT INTO "Certificate" (id,"userId","updatedAt","fileName","specialTopics","manuallyVerified") VALUES
       ('extracted','fixture-user',now(),'synthetic.pdf',ARRAY['ETHICS']::"SpecialTopic"[],false),
