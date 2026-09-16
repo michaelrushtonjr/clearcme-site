@@ -62,6 +62,8 @@ model User {
   // Physician profile
   licenseType   LicenseType?
   specialty     String?
+  hasDeaRegistration Boolean? // null = not answered
+  deaFirstQualifyingAt DateTime? // Explicitly confirmed first qualifying DEA event; never inferred from legacy issue/expiry dates.
   practiceArea  String?
   npi           String?       @unique // National Provider Identifier
 
@@ -88,6 +90,8 @@ model User {
   complianceDiffs  UserComplianceDiff[]
   subscription    Subscription?
   requirementCompletions UserRequirementCompletion[]
+  extractionReservations ExtractionReservation[]
+  federalTrainingRecord FederalTrainingRecord?
 
   @@index([email])
 }
@@ -117,7 +121,8 @@ model PhysicianLicense {
   deaNumber        String?
   deaRegisteredAt  DateTime?  // original registration date
   deaExpiresAt     DateTime?  // expiration date
-  mateActRequired  Boolean?   // computed: deaRegisteredAt < June 27 2023 = needed at next renewal
+  // Legacy fields remain readable for one release; remove after all clients use FederalTrainingRecord.
+  mateActRequired  Boolean?
   mateActCompleted Boolean?   // physician self-attests completion
 
   // NPPES verification
@@ -179,6 +184,7 @@ model Certificate {
   notes            String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  federalTrainingEvidence FederalTrainingRecord[]
 
   @@index([userId])
   @@index([activityDate])
@@ -312,7 +318,12 @@ model EmailLog {
   userId    String
   kind      String   // RENEWAL_REMINDER | MONTHLY_DIGEST
   dedupeKey String   @unique // e.g. "renewal:<licenseId>:90:2026-10-01" or "digest:<userId>:2026-07"
-  sentAt    DateTime @default(now())
+  sentAt    DateTime?
+  status    EmailDeliveryStatus @default(PENDING)
+  attempts  Int @default(0)
+  lastError String?
+  cycleKey  String
+  lastAttemptAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -475,4 +486,41 @@ model StripeEvent {
   stripeEventId String @id
   type String
   createdAt DateTime @default(now())
+}
+
+// Short leases reserve a clean slot while a scan runs; lifetime counters never decrease.
+model ExtractionReservation {
+  id String @id
+  userId String
+  expiresAt DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model FederalTrainingRecord {
+  id String @id @default(cuid())
+  userId String @unique
+  kind FederalTrainingKind @default(MATE_ACT)
+  completedAt DateTime? // Historical attestations may not contain a completion date.
+  basis FederalTrainingBasis
+  evidenceCertificateId String?
+  attestedAt DateTime @default(now())
+  notes String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evidence Certificate? @relation(fields: [evidenceCertificateId], references: [id], onDelete: SetNull)
+}
+enum FederalTrainingKind {
+  MATE_ACT
+}
+enum FederalTrainingBasis {
+  EIGHT_HOUR_TRAINING
+  BOARD_CERT_ADDICTION
+  GRADUATED_AFTER_2023
+  OTHER
 }
