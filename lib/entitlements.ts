@@ -72,22 +72,42 @@ export async function getEntitlements(userId: string): Promise<Entitlements> {
   };
 }
 
-// Call once per scan that runs, before the outcome is known — every attempt
-// spends the extraction work, so every attempt counts toward the backstop.
-export async function recordExtractionAttempt(userId: string): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { extractionAttempts: { increment: 1 } },
+// The row lock serializes the reservation count and conditional increment across
+// both upload routes. Leases recover slots after a killed serverless function.
+export async function reserveExtractionAttempt(userId: string): Promise<{ id: string } | NextResponse> {
+  const entitlements = await getEntitlements(userId);
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+    const now = new Date();
+    const updated = await tx.$queryRaw<{ id: string }[]>`
+      UPDATE "User" SET "extractionAttempts" = "extractionAttempts" + 1
+      WHERE id = ${userId} AND (${entitlements.ungated} OR (
+        "extractionAttempts" < ${FREE_SCAN_ATTEMPT_LIMIT} AND
+        "extractionsUsed" + (SELECT count(*) FROM "ExtractionReservation"
+          WHERE "userId" = ${userId} AND "expiresAt" > ${now}) < ${FREE_EXTRACTION_LIMIT}
+      )) RETURNING id`;
+    if (!updated.length) {
+      const user = await tx.user.findUnique({ where: { id: userId }, select: { extractionsUsed: true, extractionAttempts: true } });
+      if (user && user.extractionsUsed < FREE_EXTRACTION_LIMIT && user.extractionAttempts < FREE_SCAN_ATTEMPT_LIMIT) return NextResponse.json({ error: "Your remaining free scans are in progress. Please wait for them to finish." }, { status: 429, headers: { "Retry-After": "120" } });
+      const reason = (user?.extractionsUsed ?? 0) >= FREE_EXTRACTION_LIMIT ? "slots" : "attempts";
+      return upgradeRequiredResponse("extraction", {}, reason);
+    }
+    const id = crypto.randomUUID();
+    await tx.extractionReservation.create({ data: { id, userId, expiresAt: new Date(now.getTime() + 120_000) } });
+    return { id };
   });
 }
 
-// Call only when extraction came back clean at full confidence. Imperfect
-// (NEEDS_REVIEW / partial) and FAILED extractions must NOT consume a trial
-// slot — a physician shouldn't burn one on a scan they had to fix by hand.
-export async function recordExtractionUse(userId: string): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { extractionsUsed: { increment: 1 } },
+export async function finishExtractionAttempt(userId: string, id: string, clean: boolean): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+    const reservation = await tx.extractionReservation.findUnique({ where: { id } });
+    if (!reservation || reservation.userId !== userId) return;
+    // Never accept a clean result after its lease has been reused by another scan.
+    if (clean && reservation.expiresAt <= new Date()) throw new Error("Extraction reservation expired; retry the scan.");
+    if (clean) await tx.user.update({ where: { id: userId }, data: { extractionsUsed: { increment: 1 } } });
+    await tx.extractionReservation.delete({ where: { id } });
+    await tx.extractionReservation.deleteMany({ where: { userId, expiresAt: { lte: new Date() } } });
   });
 }
 
