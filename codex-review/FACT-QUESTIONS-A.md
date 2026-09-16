@@ -701,3 +701,48 @@ Current acceptedCreditTypes: new column defaults to empty. Proposed values: unkn
 - WV DO (source line 1024): 32 hours (at least 16 AOA Category 1A/1B)
 - WY MD (source line 846): 60 hours over the 3-year CME lookback (AMA Category I/II, AOA, or Board-recognized equivalents)
 - WY DO (source line 846): 60 hours over the 3-year CME lookback (AMA Category I/II, AOA, or Board-recognized equivalents)
+
+## Transcribed cadences — re-confirm
+
+A2-1: Michael authorized transcription from `scripts/sync-verified-md-rules.js @c367a36`, pending Vera/Roz re-confirmation. Only MD `cadence` / non-null `intervalYears` fields are added. Cadences include the exact outputs of the deleted script’s `req()` defaults (`oneTime: true` → `ONE_TIME`; default → `EVERY_RENEWAL`). Existing hours, topic text, notes and all DO data remain unchanged. Historical notes below are copied verbatim for review, not installed over current source notes.
+
+| State | Matching MD source topic | Cadence | intervalYears | Deleted-script notes (verbatim) |
+| --- | --- | --- | --- | --- |
+| CT | Infectious diseases / HIV | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | Risk management | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | Sexual assault | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | Domestic violence | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | Cultural competency | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | Behavioral health | EVERY_N_YEARS | 6 | Required at first renewal and every 6 years thereafter. |
+| CT | DEA MATE Act / SUD training | ONE_TIME | null (omitted) | One-time federal requirement if DEA-registered. |
+| MA | Risk management | EVERY_RENEWAL | null (omitted) | Required each renewal cycle. |
+| MA | Board regulations review | EVERY_RENEWAL | null (omitted) | Required each renewal cycle. |
+| MA | Opioid education and pain management | EVERY_RENEWAL | null (omitted) | Required each renewal cycle if prescribing controlled substances. |
+| MA | Implicit bias in health care | ONE_TIME | null (omitted) | One-time if not completed previously. |
+| MA | End-of-life care | ONE_TIME | null (omitted) | null |
+| MA | Child abuse recognition and reporting | ONE_TIME | null (omitted) | One-time training; no fixed CME hour value in ClearCME rule data. |
+| MA | Domestic and sexual violence | ONE_TIME | null (omitted) | One-time training; no fixed CME hour value in ClearCME rule data. |
+| MA | Alzheimer's disease / dementias | ONE_TIME | null (omitted) | If serving adult populations and not previously completed. |
+| MA | EHR proficiency | ONE_TIME | null (omitted) | Course or demonstration-of-proficiency pathway may satisfy. |
+| MA | DEA MATE Act / SUD training | ONE_TIME | null (omitted) | One-time federal requirement if DEA-registered. |
+| UT | Controlled substance prescribing | EVERY_RENEWAL | null (omitted) | Required every renewal if prescribing controlled substances. |
+| UT | SBIRT | ONE_TIME | null (omitted) | One-time beginning after Jan. 1, 2024; satisfies controlled-substance CE for the cycle taken. |
+| UT | DEA MATE Act / SUD training | ONE_TIME | null (omitted) | One-time federal requirement if DEA-registered. |
+| WV | Risk assessment and responsible prescribing / controlled substances | EVERY_RENEWAL | null (omitted) | For 2026 renewal if prescribing, administering, or dispensing controlled substances in WV; post-2026 becomes initial-license/one-time logic for new prescribers/dispensers. |
+| WV | Nutrition education | CONDITIONAL | null (omitted) | HB 4951 effective June 12, 2026; board implementation/hour details pending. |
+| WV | DEA MATE Act / SUD training | ONE_TIME | null (omitted) | One-time federal requirement if DEA-registered. |
+| KY | KASPER / pain management / addiction | EVERY_N_YEARS | 3 | Every 3-year CME cycle if authorized to prescribe or dispense controlled substances. |
+| KY | Addiction medicine | EVERY_N_YEARS | 3 | Every 3-year CME cycle if DEA-licensed to prescribe buprenorphine. |
+| KY | Domestic violence | EVERY_N_YEARS | 3 | Within 3 years if primary care physician. |
+| KY | Pediatric abusive head trauma | EVERY_N_YEARS | 5 | Within 5 years for EM, FM, pediatrics, radiology, urgent care. |
+| KY | DEA MATE Act / SUD training | ONE_TIME | null (omitted) | One-time federal requirement if DEA-registered. |
+
+### Unmatched
+
+- UT MD — Suicide prevention training: cadence `EVERY_RENEWAL`, intervalYears `null`, notes: "Required every renewal." No matching current MD mandatory topic; nothing added.
+
+### Conflicts requiring re-confirmation
+
+- `lib/state-requirements.ts:478` — KY MD Domestic violence: transcribed `EVERY_N_YEARS` / `3` as expressly instructed, but the current hours/note say one-time and not recurring. No text or database value changed. Fleet must reconcile this before applying sync.
+- `lib/state-requirements.ts:839` — WV MD prescribing: the deleted notes predict a post-2026 sunset; current verified text explicitly says recurring. Only the old `EVERY_RENEWAL` cadence was copied; current notes retained.
+- `lib/state-requirements.ts:784` — UT MD suicide training is absent from current source; left unmatched. No requirement recreated.
