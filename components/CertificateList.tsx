@@ -18,6 +18,10 @@ interface Cert {
   providerName?: string | null;
   activityDate: Date | string | null;
   creditHours: number | null;
+  hoursEarned?: number | null;
+  activityMaxHours?: number | null;
+  possibleDuplicateOfId?: string | null;
+  storageStatus?: string;
   extractionStatus: string;
   extractionError?: string | null;
   specialTopics?: string[];
@@ -112,7 +116,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
         const err = await res.json().catch(() => ({}));
         setSaveError(err.error ?? "Save failed");
       } else {
-        onSaved();
+        const data = await res.json();
+        if (data.certificate?.extractionStatus === "NEEDS_REVIEW") setSaveError("Saved for review. Enter earned hours from 0.25 to 100 in steps of 0.25, a valid past completion date, and a provider.");
+        else onSaved();
       }
     } catch {
       setSaveError("Network error — please try again");
@@ -156,7 +162,8 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
           <label className="product-label">Hours of CME</label>
           <input
             type="number"
-            min="0"
+            min="0.25"
+            max="100"
             step="0.25"
             value={fields.creditHours}
             onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
@@ -165,6 +172,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
           />
         </div>
       </div>
+      {cert.activityMaxHours != null && (
+        <p className="text-xs text-[var(--ink-2)]">Activity maximum: {cert.activityMaxHours} hours. Enter the hours you personally earned.</p>
+      )}
       <div>
         <label className="product-label">Credit Type</label>
         <select
@@ -218,7 +228,7 @@ function ReuploadSourceDoc({ cert }: { cert: Cert }) {
     try {
       const body = new FormData();
       body.append("file", file);
-      const res = await fetch(`/api/certificates/${cert.id}/file`, {
+      const res = await fetch(`/api/certificates/${cert.id}/reattach`, {
         method: "POST",
         body,
       });
@@ -273,21 +283,45 @@ function ReuploadSourceDoc({ cert }: { cert: Cert }) {
           ? "Uploading…"
           : isManualEntry
             ? "Attach source document"
-            : "Re-upload source document"}
+            : "Original not saved — re-attach"}
       </button>
       {error && <p className="mt-1 text-xs text-[var(--status-miss)]">{error}</p>}
     </div>
   );
 }
 
+function DuplicateResolution({ cert, title }: { cert: Cert; title: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function resolve(duplicateResolution: "keep_both" | "merge") {
+    setBusy(true); setError("");
+    try {
+      const response = await fetch(`/api/certificates/${cert.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ duplicateResolution }) });
+      if (!response.ok) setError((await response.json()).error ?? "Could not resolve duplicate");
+      else router.refresh();
+    } catch { setError("Network error — please try again."); }
+    setBusy(false);
+  }
+  return <div className="mt-2 text-sm text-[var(--ink-2)]">
+    <p>Looks like a duplicate of {title}. These hours are pending review.</p>
+    <p className="text-xs">Keep both for separate completions. Merge keeps the original entry and removes this one, retaining its file if the original has none.</p>
+    <button disabled={busy} onClick={() => resolve("keep_both")} className="mr-4 mt-1 text-[var(--primary)]">Keep both</button>
+    <button disabled={busy} onClick={() => resolve("merge")} className="text-[var(--primary)]">Merge</button>
+    {error && <p role="alert">{error}</p>}
+  </div>;
+}
+
 function CertificateRow({
   cert,
   sharedStates,
   autoOpen,
+  duplicateTitle,
 }: {
   cert: Cert;
   sharedStates?: string[];
   autoOpen: boolean;
+  duplicateTitle?: string;
 }) {
   const router = useRouter();
   const [manualEdit, setManualEdit] = useState(false);
@@ -342,6 +376,8 @@ function CertificateRow({
         </div>
       </div>
 
+      {cert.possibleDuplicateOfId && <DuplicateResolution cert={cert} title={duplicateTitle ?? cert.possibleDuplicateOfId} />}
+      {cert.hoursEarned === null && cert.activityMaxHours != null && !editing && <p className="mt-2 text-xs text-[var(--ink-2)]">Enter your earned hours. Activity maximum: {cert.activityMaxHours} hours.</p>}
       <CertificateTopicConfirmation certificateId={cert.id} suggestions={cert.suggestedSpecialTopics ?? []} confirmedTopics={cert.specialTopics ?? []} hours={cert.creditHours} allocations={cert.topicHourAllocations} />
       {needsAttention && !justSaved && (
         <div className="mt-2">
@@ -372,7 +408,7 @@ function CertificateRow({
           )}
         </div>
       )}
-      {cert.fileUrl == null && !needsAttention && !justSaved && (
+      {cert.fileUrl == null && (
         <ReuploadSourceDoc cert={cert} />
       )}
       {justSaved && (
@@ -429,6 +465,7 @@ export default function CertificateList({ certs, totalCount, showViewAll = false
           <CertificateRow
             key={cert.id}
             cert={cert}
+            duplicateTitle={certs.find((other) => other.id === cert.possibleDuplicateOfId)?.title ?? undefined}
             sharedStates={sharedCredits?.[cert.id]}
             autoOpen={
               attentionId === cert.id &&

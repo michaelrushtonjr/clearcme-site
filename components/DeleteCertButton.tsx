@@ -12,14 +12,17 @@ export default function DeleteCertButton({ certId, certTitle }: DeleteCertButton
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
+  const [error, setError] = useState("");
 
   const handleDelete = async () => {
     setDeleting(true);
+    setError("");
     try {
-      await fetch(`/api/certificates/${certId}`, { method: "DELETE" });
+      const response = await fetch(`/api/certificates/${certId}`, { method: "DELETE" });
+      if (!response.ok) setError((await response.json()).error ?? "Deletion failed. Please try again.");
       router.refresh();
     } catch {
-      // silently fail — router.refresh will show stale state
+      setError("Network error — please try again.");
     } finally {
       setDeleting(false);
       setConfirming(false);
@@ -48,6 +51,8 @@ export default function DeleteCertButton({ certId, certTitle }: DeleteCertButton
   }
 
   return (
+    <span>
+    {error && <span role="alert" className="text-xs text-[var(--status-miss)]">{error}</span>}
     <button
       onClick={() => setConfirming(true)}
       title={`Delete ${certTitle ?? "certificate"}`}
@@ -58,5 +63,6 @@ export default function DeleteCertButton({ certId, certTitle }: DeleteCertButton
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
       </svg>
     </button>
+    </span>
   );
 }
