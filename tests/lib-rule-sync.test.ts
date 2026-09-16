@@ -19,11 +19,28 @@ describe("non-destructive sync planner", () => {
     const rows = withRequirementKeys("NV", "MD", [row, { ...row, description: "Other ethics" }], [row]);
     expect(rows.map((r: { requirementKey: string }) => r.requirementKey)).toEqual(["NV:MD:ETHICS", "NV:MD:ETHICS:other-ethics"]);
   });
-  test("missing cadence never uses prose to assert a renewal frequency", () => {
+  test("missing source cadence preserves every existing cadence field and produces zero updates", () => {
+    const existing = { ...row, cadence: "EVERY_N_YEARS", intervalYears: 6, lookbackYears: null, firstRenewalOnly: true, attestationAllowed: false, notes: "Fleet verified notes" };
     const questions: string[] = [];
-    const rows = sourceRows("PA", "MD", [{ topic: "Child abuse", hours: "2", note: "initial training" }], [{ topic: "CHILD_ABUSE", description: "Child abuse", requirementKey: "PA:MD:CHILD_ABUSE", attestationAllowed: false }], questions);
-    expect(rows[0]).toMatchObject({ cadence: "CONDITIONAL", attestationAllowed: false, notes: expect.stringContaining("UNVERIFIED-CADENCE:") });
+    const rows = sourceRows("NV", "MD", [{ topic: "Ethics", hours: "1", note: "initial training" }], [existing], questions);
+    expect(rows[0]).toEqual(existing);
+    expect(planSync(rows, [existing])).toEqual({ creates: [], updates: [], retires: [] });
     expect(questions).toHaveLength(1);
+  });
+  test("planner treats silent cadence as no change for all protected fields", () => {
+    const existing = { ...row, cadence: "EVERY_N_YEARS", intervalYears: 6, firstRenewalOnly: true, notes: "verified" };
+    expect(planSync([{ ...row, intervalYears: null, firstRenewalOnly: false, notes: "source prose" }], [existing]).updates).toEqual([]);
+  });
+  test("only new missing-cadence topics get the unverified conditional marker", () => {
+    const rows = sourceRows("PA", "MD", [{ topic: "Child abuse", hours: "2", note: "initial training" }], [], []);
+    expect(planSync(rows, []).creates[0]).toMatchObject({ cadence: "CONDITIONAL", notes: expect.stringMatching(/^UNVERIFIED-CADENCE:/) });
+  });
+  test("explicit source cadence replaces an unverified cadence and strips its marker", () => {
+    const existing = { ...row, cadence: "CONDITIONAL", intervalYears: null, notes: "UNVERIFIED-CADENCE: old" };
+    const source = sourceRows("NV", "MD", [{ topic: "Ethics", hours: "1", cadence: "EVERY_N_YEARS", intervalYears: 6 }], [existing], []);
+    const plan = planSync(source, [existing]);
+    expect(plan.updates[0].changes).toMatchObject({ cadence: { to: "EVERY_N_YEARS" }, intervalYears: { to: 6 }, notes: { to: "1" } });
+    expect(planSync(source, source)).toEqual({ creates: [], updates: [], retires: [] });
   });
   test("sync writes and retirement use the same serializable transaction", async () => {
     const tx = { complianceRule: { findUnique: vi.fn().mockResolvedValue({ id: "rule", mandatoryRequirements: [row], state: "NV", licenseType: "MD", totalHours: 0, renewalCycle: 24, notes: "0; two years" }), upsert: vi.fn() }, mandatoryRequirement: { update: vi.fn(), upsert: vi.fn() } };

@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { loadStateRequirements, parseHours, specialTopic } = require('./rule-source');
 const { planSync, withRequirementKeys } = require('./rule-sync-planner');
+const { databaseTarget, checksum, savePlan, requirePlan } = require('./reviewed-db-plan');
 
 function sourceRows(state, licenseType, topics, existingRows, questions) {
   const rows = topics.map((topic) => {
@@ -10,16 +11,16 @@ function sourceRows(state, licenseType, topics, existingRows, questions) {
     const candidates = existingRows.filter((row) => row.topic === mapped);
     const existing = candidates.find((row) => row.description === topic.topic) ?? (candidates.length === 1 ? candidates[0] : undefined);
     const explicit = Boolean(topic.cadence) && (topic.cadence !== 'EVERY_N_YEARS' || topic.intervalYears > 0);
-    if (!explicit) questions.push(`${state} ${licenseType}: ${topic.topic} — cadence/interval missing; proposed value requires Vera/Roz verification. Stored as CONDITIONAL with UNVERIFIED-CADENCE.`);
-    const cadence = explicit ? topic.cadence : 'CONDITIONAL';
+    if (!explicit) questions.push(`${state} ${licenseType}: ${topic.topic} — cadence/interval missing; proposed value requires Vera/Roz verification. Existing cadence fields are preserved; new rows use CONDITIONAL with UNVERIFIED-CADENCE.`);
+    const cadence = explicit ? topic.cadence : existing ? existing.cadence : 'CONDITIONAL';
     return {
       topic: mapped, hoursRequired: parseHours(topic.hours), description: topic.topic,
-      firstRenewalOnly: explicit ? ['ONE_TIME', 'FIRST_RENEWAL_ONLY', 'INITIAL_LICENSE_ONLY'].includes(cadence) : existing?.firstRenewalOnly ?? false,
+      firstRenewalOnly: explicit ? ['ONE_TIME', 'FIRST_RENEWAL_ONLY', 'INITIAL_LICENSE_ONLY'].includes(cadence) : existing ? existing.firstRenewalOnly : false,
       cadence,
-      intervalYears: explicit ? topic.intervalYears ?? null : existing?.intervalYears ?? null,
-      lookbackYears: existing?.lookbackYears ?? topic.intervalYears ?? null,
-      attestationAllowed: existing?.attestationAllowed ?? true,
-      notes: `${explicit ? '' : 'UNVERIFIED-CADENCE: '}${[topic.hours, topic.note].filter(Boolean).join(' — ')}` || null,
+      intervalYears: explicit ? topic.intervalYears ?? null : existing ? existing.intervalYears : null,
+      lookbackYears: !explicit && existing ? existing.lookbackYears : existing?.lookbackYears ?? topic.intervalYears ?? null,
+      attestationAllowed: existing ? existing.attestationAllowed : true,
+      notes: !explicit && existing ? existing.notes : `${explicit ? '' : 'UNVERIFIED-CADENCE: '}${[topic.hours, topic.note].filter(Boolean).join(' — ')}` || null,
     };
   });
   return withRequirementKeys(state, licenseType, rows, existingRows);
@@ -67,6 +68,11 @@ async function main() {
   if (!['MD', 'DO'].includes(licenseType)) throw new Error('--license must be MD or DO');
   const requirements = loadStateRequirements();
   const questions = [];
+  const args = process.argv.slice(2);
+  const planPath = args.find((arg) => arg.startsWith('--plan='))?.slice('--plan='.length);
+  const sourceChecksum = checksum(['rule-source.js', 'rule-sync-planner.js', 'sync-rules-from-source.js', '../lib/state-requirements.ts'].map((file) => fs.readFileSync(path.join(__dirname, file), 'utf8')));
+  const target = process.env.DATABASE_URL ? databaseTarget(process.env.DATABASE_URL, args) : null;
+  const identity = { kind: 'rule-sync', licenseType, sourceChecksum };
   if (dryRun) {
     const snapshotPath = process.argv.find((arg) => arg.startsWith('--existing='))?.slice('--existing='.length);
     if (!snapshotPath) throw new Error('--dry-run requires --existing=<JSON snapshot of ComplianceRule[] including mandatoryRequirements>; use [] only for an empty baseline. No database is contacted.');
@@ -79,13 +85,14 @@ async function main() {
       const rule = { state, licenseType, totalHours: requirement.totalHours ?? 0, renewalCycle: requirement.cycleYears * 12, notes: `${requirement.totalHoursLabel}; ${requirement.cycleLabel}` };
       return { state, ruleDiff: Object.fromEntries(Object.entries(rule).filter(([key, value]) => before?.[key] !== value).map(([key, value]) => [key, { from: before?.[key] ?? null, to: value }])), ...planSync(sourceRows(state, licenseType, requirement.mandatoryTopics, rows, questions), rows) };
     });
-    console.log(JSON.stringify({ dryRun: true, baseline: snapshotPath, licenseType, states: results }, null, 2));
+    const plan = { ...identity, dryRun: true, baseline: snapshotPath, states: results };
+    savePlan(plan, planPath);
     appendQuestions(questions);
     return;
   }
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL environment variable is required');
-  if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(connectionString).hostname)) throw new Error('Rule sync requires a local sandbox DATABASE_URL');
+  if (target.remote || planPath) requirePlan(planPath, identity);
   const { PrismaClient } = require('@prisma/client');
   const { PrismaPg } = require('@prisma/adapter-pg');
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });

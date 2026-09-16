@@ -1,5 +1,6 @@
 // Pure planning: no Prisma client, clock, network, or deletion operations.
 const FIELDS = ['topic', 'hoursRequired', 'description', 'firstRenewalOnly', 'cadence', 'intervalYears', 'lookbackYears', 'attestationAllowed', 'notes', 'retiredAt'];
+const CADENCE_FIELDS = new Set(['cadence', 'intervalYears', 'lookbackYears', 'firstRenewalOnly', 'attestationAllowed', 'notes']);
 const slug = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 function withRequirementKeys(state, licenseType, rows, existingRows = []) {
@@ -30,6 +31,7 @@ function planSync(sourceRequirements, existingRows) {
     if (!before) { creates.push(row); continue; }
     const changes = {};
     for (const field of FIELDS) {
+      if (!row.cadence && CADENCE_FIELDS.has(field)) continue;
       if (field in row && JSON.stringify(before[field] ?? null) !== JSON.stringify(row[field] ?? null)) {
         changes[field] = { from: before[field] ?? null, to: row[field] ?? null };
       }
