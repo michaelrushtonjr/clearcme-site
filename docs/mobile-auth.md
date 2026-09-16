@@ -4,6 +4,13 @@ Native Google sign-in POSTs `idToken` to `/api/auth/mobile-google`. The Google a
 
 Native Apple sign-in POSTs `identityToken` to `/api/auth/mobile-apple`. Signature verification uses Apple's JWKS, RS256, the Apple issuer, expiry, and the exact configured `APPLE_BUNDLE_ID`. There is no hardcoded audience fallback. Set this environment variable before rollout; the former `APPLE_IOS_BUNDLE_ID` name is no longer used. Apple's boolean true or string "true" email verification claims are accepted.
 
+On September 16, the read-only native reference's `app.json` and `app/(auth)/login.tsx` confirmed the following public audience identifiers. Both were missing from the web sandbox and have now been set in `.env.local`. Production configuration was not read or changed; its owner must verify these match the native build being released:
+
+```dotenv
+APPLE_BUNDLE_ID=ai.clearcme.app
+GOOGLE_IOS_CLIENT_ID=925639150574-v8gm73h4nkikrahp2l8gsa8t5c2f071q.apps.googleusercontent.com
+```
+
 Accounts resolve by `(provider, providerAccountId)` before considering email. Verified email can link an existing user without creating a duplicate, unless another account from that provider is already linked. Creation/linking is transactional. The web OAuth sign-in callback also requires verified email before automatic linking. The existing Apple cross-site cookie configuration is preserved.
 
 The native app receives its usual mobile JWT. To open an authenticated web view:
