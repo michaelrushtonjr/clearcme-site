@@ -67,6 +67,13 @@ export async function sendEmail({
   return { ok: true };
 }
 
+function federalStatusLine(license: LicenseSnapshot): string {
+  const federal = license.mandatoryTopics.find((topic) => topic.scope === "FEDERAL");
+  if (!federal) return "";
+  const status = federal.isMet ? "Met" : federal.isNotApplicable ? "Not applicable" : federal.isUnknown ? "Needs your answer" : "Action needed";
+  return `<p style="font-size:13px;">Federal training record (DEA MATE Act): <strong>${status}</strong>. Shared across all licenses. <a href="${siteUrl()}/dashboard/profile#federal-training">Review federal record</a></p>`;
+}
+
 // ── Shared layout ─────────────────────────────────────────────────────────────
 
 function layout({ body, unsubscribeUrl }: { body: string; unsubscribeUrl: string }): string {
@@ -206,6 +213,7 @@ export function renderRenewalReminderEmail({
     body: `
       ${greeting(firstName)}
       ${statusBlock}
+      ${federalStatusLine(license)}
       ${ctaButton(`${base}/dashboard/compliance`, license.isCompliant ? "View your compliance map" : "View your plan")}
     `,
     unsubscribeUrl,
@@ -291,6 +299,7 @@ export function renderMonthlyDigestEmail({
               : ""
           }`
           }
+          ${federalStatusLine(license)}
         </td></tr>
       </table>`;
     })
@@ -388,4 +397,17 @@ ${url}
 If you didn't request this email, you can safely ignore it.
 `;
   return { subject, html, text };
+}
+
+// Notification to Michael: use the existing transport and keep user details out
+// of the alert. If ALERT_EMAIL is absent, the failed cron still logs/returns 500.
+export async function notifyReminderFailures(run: string, failed: number): Promise<void> {
+  if (!failed) return;
+  console.error(`[${run}] ${failed} delivery failure(s)`);
+  if (!process.env.ALERT_EMAIL) return;
+  try {
+    const result = await sendEmail({ to: process.env.ALERT_EMAIL, subject: `ClearCME notification failure: ${run}`,
+      html: `<p>${run}: ${failed} notification(s) failed. Review cron logs and EmailLog for retries and exhausted attempts.</p>` });
+    if (!result.ok) console.error("[notifications] Failure alert could not be delivered", result.error);
+  } catch { console.error("[notifications] Failure alert transport threw"); }
 }

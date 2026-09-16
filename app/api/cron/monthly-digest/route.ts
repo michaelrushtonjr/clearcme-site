@@ -1,104 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getComplianceSnapshot } from "@/lib/compliance-snapshot";
-import { isEmailConfigured, renderMonthlyDigestEmail, sendEmail } from "@/lib/email";
+import { renderMonthlyDigestEmail, sendEmail, notifyReminderFailures } from "@/lib/email";
 import { getOrCreateEmailPreference, unsubscribeUrlFor } from "@/lib/email-preferences";
+import { deliverEmail } from "@/lib/email-delivery";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
-/**
- * GET/POST /api/cron/monthly-digest
- * Vercel Cron, 1st of each month. Sends the monthly compliance digest:
- * per-license status, completed vs. outstanding required CME, and the
- * hours-per-month pace that finishes everything before renewal.
- * EmailLog dedupe key (one per user per calendar month) makes re-runs safe.
- */
-
-const SEND_DELAY_MS = 700;
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
+// Runs daily: one SENT digest per month; failed sends retry on subsequent days.
 async function handle(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!isEmailConfigured()) {
-    return NextResponse.json({ sent: 0, skipped: "RESEND_API_KEY not configured" });
-  }
-
-  const monthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
-  const results: { sent: number; deduped: number; optedOut: number; errors: string[] } = {
-    sent: 0,
-    deduped: 0,
-    optedOut: 0,
-    errors: [],
-  };
-
-  const users = await prisma.user.findMany({
-    where: {
-      email: { not: null },
-      licenses: { some: { isActive: true } },
-    },
-    select: { id: true },
-  });
-
-  for (const user of users) {
-    try {
-      const pref = await getOrCreateEmailPreference(user.id);
-      if (!pref.monthlyDigest) {
-        results.optedOut += 1;
-        continue;
-      }
-
-      const dedupeKey = `digest:${user.id}:${monthKey}`;
-      let log;
+  if (!process.env.CRON_SECRET || req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const monthKey = new Date().toISOString().slice(0, 7);
+  const results = { sent: 0, deduped: 0, optedOut: 0, failed: 0, errors: [] as string[] };
+  try {
+    const users = await prisma.user.findMany({ where: { email: { not: null }, licenses: { some: { isActive: true } } }, select: { id: true } });
+    for (const user of users) {
       try {
-        log = await prisma.emailLog.create({
-          data: { userId: user.id, kind: "MONTHLY_DIGEST", dedupeKey },
+        const pref = await getOrCreateEmailPreference(user.id);
+        if (!pref.monthlyDigest) { results.optedOut++; continue; }
+        const currentKey = `digest:${user.id}:${monthKey}`;
+        // Retry a prior month's unfinished delivery before starting this month;
+        // at most one digest per user per run, always using current engine data.
+        const pending = await prisma.emailLog.findFirst({ where: { userId: user.id, kind: "MONTHLY_DIGEST", status: { in: ["FAILED", "PENDING"] }, attempts: { lt: 5 }, dedupeKey: { not: currentKey } }, orderBy: { lastAttemptAt: "asc" } });
+        const dedupeKey = pending?.dedupeKey ?? currentKey;
+        const delivery = await deliverEmail({ userId: user.id, kind: "MONTHLY_DIGEST", dedupeKey, cycleKey: dedupeKey }, async () => {
+          const snapshot = await getComplianceSnapshot(user.id);
+          if (!snapshot || !snapshot.licenses.length) throw new Error("Compliance snapshot unavailable");
+          const unsubscribeUrl = unsubscribeUrlFor(pref.unsubscribeToken);
+          const { subject, html } = renderMonthlyDigestEmail({ snapshot, unsubscribeUrl });
+          const sent = await sendEmail({ to: snapshot.email, subject, html, unsubscribeUrl });
+          if (!sent.ok) throw new Error(sent.error ?? "Email delivery failed");
         });
-      } catch (err) {
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-          results.deduped += 1;
-          continue;
-        }
-        throw err;
-      }
-
-      const snapshot = await getComplianceSnapshot(user.id);
-      if (!snapshot || snapshot.licenses.length === 0) {
-        await prisma.emailLog.delete({ where: { id: log.id } }).catch(() => {});
-        continue;
-      }
-
-      const unsubscribeUrl = unsubscribeUrlFor(pref.unsubscribeToken);
-      const { subject, html } = renderMonthlyDigestEmail({ snapshot, unsubscribeUrl });
-
-      const sendResult = await sendEmail({ to: snapshot.email, subject, html, unsubscribeUrl });
-      if (!sendResult.ok) {
-        await prisma.emailLog.delete({ where: { id: log.id } }).catch(() => {});
-        results.errors.push(`${user.id}: ${sendResult.error}`);
-        continue;
-      }
-
-      results.sent += 1;
-      await sleep(SEND_DELAY_MS);
-    } catch (err) {
-      results.errors.push(`${user.id}: ${err instanceof Error ? err.message : "unknown error"}`);
+        if (delivery.status === "failed") results.errors.push(`${user.id}: ${delivery.error}`);
+        else results[delivery.status]++;
+        if (delivery.status !== "deduped") await new Promise((resolve) => setTimeout(resolve, 700));
+      } catch (error) { results.errors.push(`${user.id}: ${error instanceof Error ? error.message : "Unknown failure"}`); }
     }
-  }
-
-  console.log(
-    `[monthly-digest] sent=${results.sent} deduped=${results.deduped} optedOut=${results.optedOut} errors=${results.errors.length}`
-  );
-  return NextResponse.json(results);
+  } catch (error) { results.errors.push(error instanceof Error ? error.message : "Cron failed"); }
+  results.failed = results.errors.length;
+  await notifyReminderFailures("monthly-digest", results.failed);
+  return NextResponse.json(results, { status: results.failed ? 500 : 200 });
 }
-
-export async function GET(req: NextRequest) {
-  return handle(req);
-}
-
-export async function POST(req: NextRequest) {
-  return handle(req);
-}
+export const GET = handle;
+export const POST = handle;

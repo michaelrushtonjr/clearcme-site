@@ -1,3 +1,4 @@
+import { notifyReminderFailures } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { getComplianceSnapshot } from "@/lib/compliance-snapshot";
 import { prisma } from "@/lib/prisma";
@@ -14,10 +15,12 @@ interface ExpoMessage {
   sound?: string;
 }
 
-async function sendExpoBatch(messages: ExpoMessage[]): Promise<void> {
+async function sendExpoBatch(messages: ExpoMessage[]) {
+  const result = { sent: 0, failed: 0 };
   // Chunk into batches of EXPO_BATCH_SIZE
   for (let i = 0; i < messages.length; i += EXPO_BATCH_SIZE) {
     const batch = messages.slice(i, i + EXPO_BATCH_SIZE);
+    try {
     const res = await fetch(EXPO_PUSH_URL, {
       method: "POST",
       headers: {
@@ -27,14 +30,17 @@ async function sendExpoBatch(messages: ExpoMessage[]): Promise<void> {
       body: JSON.stringify(batch),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(`Expo push batch failed (${res.status}): ${text}`);
-    } else {
+    if (!res.ok) result.failed += batch.length;
+    else {
       const json = await res.json();
-      console.log(`Expo push batch sent (${batch.length} msgs):`, JSON.stringify(json?.data?.slice?.(0, 3)));
+      const tickets: { status?: string }[] = Array.isArray(json.data) ? json.data : [];
+      const sent = tickets.slice(0, batch.length).filter((ticket) => ticket.status === "ok").length;
+      result.sent += sent;
+      result.failed += batch.length - sent;
     }
+    } catch { result.failed += batch.length; }
   }
+  return result;
 }
 
 // GET/POST /api/cron/renewal-reminders
@@ -103,7 +109,7 @@ export async function POST(req: NextRequest) {
         const daysUntilRenewal = Math.ceil(msUntilRenewal / (1000 * 60 * 60 * 24));
 
         const compliance = snapshot?.licenses.find((entry) => entry.licenseId === license.id);
-        const gapHours = compliance && compliance.overall !== "NOT_COMPUTED" ? Math.max(compliance.generalGapHours, compliance.mandatoryTopics.reduce((sum, topic) => sum + topic.gap, 0)) : null;
+        const gapHours = compliance && compliance.overall !== "NOT_COMPUTED" ? Math.max(compliance.generalGapHours, compliance.mandatoryTopics.filter((topic) => topic.scope !== "FEDERAL").reduce((sum, topic) => sum + topic.gap, 0)) : null;
 
         // Determine designation label (MD / DO / etc.)
         const designation = license.licenseType === "DO" ? "DO" : "MD";
@@ -144,16 +150,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ sent: 0, message: "No upcoming renewals found." });
     }
 
-    await sendExpoBatch(messages);
+    const delivery = await sendExpoBatch(messages);
+    await notifyReminderFailures("renewal-reminders", delivery.failed);
 
-    console.log(`[renewal-reminders] Sent ${messages.length} push notifications to ${users.length} users.`);
+    console.log(`[renewal-reminders] sent=${delivery.sent} failed=${delivery.failed}`);
 
     return NextResponse.json({
-      sent: messages.length,
-      usersNotified: users.filter((u) => u.licenses.length > 0).length,
-    });
+      ...delivery,
+      usersAttempted: users.filter((u) => u.licenses.length > 0).length,
+    }, { status: delivery.failed ? 500 : 200 });
   } catch (error) {
     console.error("[renewal-reminders] Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    await notifyReminderFailures("renewal-reminders", 1);
+    return NextResponse.json({ sent: 0, failed: 1, error: "Internal server error" }, { status: 500 });
   }
 }
