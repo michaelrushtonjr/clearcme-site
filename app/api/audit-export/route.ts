@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
       // the request with BLOB_READ_WRITE_TOKEN.
       try {
         const result = await get(cert.fileUrl, { access: "private" });
-        if (result?.stream) {
+        if (result?.statusCode === 200 && result.stream) {
           const ab = await new Response(result.stream).arrayBuffer();
           certFileCache.set(cert.id, new Uint8Array(ab));
         } else {
@@ -221,7 +221,7 @@ export async function GET(req: NextRequest) {
       // Strip a trailing extension from the name source — fileName already
       // carries one, which produced "..._scan.pdf.pdf".
       const baseName = safeFileName(
-        `${dateStr}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
+        `${dateStr}_${cert.id}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
         ""
       );
 
@@ -259,7 +259,7 @@ export async function GET(req: NextRequest) {
     // Strip a trailing extension from the name source — fileName already
     // carries one, which produced "..._scan.pdf.pdf".
     const baseName = safeFileName(
-      `${dateStr}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
+      `${dateStr}_${cert.id}_${(cert.title ?? cert.fileName ?? cert.id).replace(/\.(pdf|jpe?g|png)$/i, "")}`,
       ""
     );
 
@@ -432,7 +432,8 @@ export async function GET(req: NextRequest) {
       creditHours: cert.creditHours,
       creditType: cert.creditType,
       status: cert.extractionStatus,
-      fileStored: !!cert.fileUrl,
+      possibleDuplicateOfId: cert.possibleDuplicateOfId,
+      fileStored: !!certFileCache.get(cert.id),
       fileIncluded: !!certFileCache.get(cert.id),
       folders: certFolderMap.get(cert.id) ?? [],
     })),
@@ -440,6 +441,12 @@ export async function GET(req: NextRequest) {
 
   root.file("Compliance_Summary.json", JSON.stringify(complianceSummary, null, 2));
   root.file("compliance.json", JSON.stringify(complianceSummary, null, 2));
+  root.file("manifest.json", JSON.stringify({ certificates: complianceSummary.certificates.map(({ id, title, fileStored, folders }) => ({ id, title, fileStored, folders })) }, null, 2));
+  if (undocumentedCerts.length) root.file("MISSING-ORIGINALS.txt", [
+    "Original documents unavailable during this export:",
+    ...undocumentedCerts.map((cert) => `${cert.id} | ${cert.title ?? cert.fileName}`),
+    "Re-attach the originals in your certificate library and export again.",
+  ].join("\n"));
 
   // ── Generate ZIP ─────────────────────────────────────────────────────────────
 
