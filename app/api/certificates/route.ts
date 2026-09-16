@@ -4,19 +4,19 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import {
-  FREE_EXTRACTION_LIMIT,
-  FREE_SCAN_ATTEMPT_LIMIT,
-  getEntitlements,
-  recordExtractionAttempt,
-  recordExtractionUse,
-  upgradeRequiredResponse,
+  reserveExtractionAttempt,
+  finishExtractionAttempt,
 } from "@/lib/entitlements";
 import Anthropic from "@anthropic-ai/sdk";
 import { storeCertificateOriginal } from "@/lib/certificate-storage";
 import { activityFingerprint, parseExtraction, validateCertificateFields, earnedHoursSchema, type ExtractedCredit } from "@/lib/certificate-validation";
 import { findActivityDuplicate, lockCertificateUser } from "@/lib/certificate-duplicates";
 import { createHash } from "crypto";
-import { inflateSync } from "zlib";
+import { boundedInflate, DecompressionLimitError, MAX_INFLATED_BYTES } from "@/lib/bounded-inflate";
+import { limitCertificateUpload } from "@/lib/upload-rate-limit";
+import { MAX_MULTIPART_BYTES } from "@/lib/upload-limits";
+import { readClientCertificate } from "@/lib/certificate-upload-blob";
+import { CertificateFileError } from "@/lib/certificate-storage";
 import type { CreditType } from "@prisma/client";
 
 // Extend Vercel function timeout for AI processing
@@ -63,63 +63,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Manual entry (JSON body): creates a record with user-supplied fields.
-  // Deliberately NOT fenced — the upgrade card promises "you can still add
-  // CME manually, as much as you like", and manual adds run no extraction,
-  // spend no Anthropic call, and consume no trial slot.
+  const limited = limitCertificateUpload(userId);
+  if (limited) return limited;
+  let jsonBody: Record<string, unknown> | null = null;
   if (req.headers.get("content-type")?.includes("application/json")) {
-    return createManualCertificate(req, userId);
+    try { jsonBody = await req.clone().json(); } catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
+    if (!jsonBody || typeof jsonBody !== "object" || Array.isArray(jsonBody) || !("blobUrl" in jsonBody)) return createManualCertificate(req, userId);
   }
 
-  // Fence: 3 lifetime clean extractions, backstopped by 10 total scans.
-  // Reject before touching the file so a blocked upload creates no record
-  // and spends no Anthropic call.
-  const entitlements = await getEntitlements(userId);
-  if (!entitlements.ungated) {
-    if (entitlements.extractionsUsed >= FREE_EXTRACTION_LIMIT) {
-      return upgradeRequiredResponse(
-        "extraction",
-        { used: entitlements.extractionsUsed, limit: FREE_EXTRACTION_LIMIT },
-        "slots"
-      );
-    }
-    if (entitlements.extractionAttempts >= FREE_SCAN_ATTEMPT_LIMIT) {
-      return upgradeRequiredResponse(
-        "extraction",
-        { used: entitlements.extractionAttempts, limit: FREE_SCAN_ATTEMPT_LIMIT },
-        "attempts"
-      );
-    }
-  }
-
+  let reservationId: string | null = null;
   let createdCertificateId: string | null = null;
   let uploadHash: string | null = null;
 
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    // Validate file type
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Accepts PDF, JPG, PNG." },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: "File too large. Maximum 10MB." },
-        { status: 400 }
-      );
-    }
+    const incoming = jsonBody ? await readClientCertificate(jsonBody, userId) : null;
+    const file = incoming?.file ?? (await req.formData()).get("file");
+    if (!(file instanceof File)) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!["application/pdf", "image/jpeg", "image/png", "image/jpg"].includes(file.type)) return NextResponse.json({ error: "Invalid file type. Accepts PDF, JPG, PNG." }, { status: 400 });
+    if (!incoming && file.size > MAX_MULTIPART_BYTES) return NextResponse.json({ error: "Server upload is limited to 4 MB. Use direct upload for files up to 10 MB." }, { status: 413 });
 
     // Same bytes, same user -> the certificate is already on file. Block
     // before the blob write and the attempt counter, so a duplicate never
@@ -154,17 +115,23 @@ export async function POST(req: NextRequest) {
       },
     });
     createdCertificateId = certificate.id;
+    const reservation = await reserveExtractionAttempt(userId);
+    if (reservation instanceof Response) {
+      await prisma.certificate.delete({ where: { id: certificate.id } });
+      createdCertificateId = null;
+      return reservation;
+    }
+    reservationId = reservation.id;
     try {
       if (process.env.BLOB_READ_WRITE_TOKEN) {
         // Keep the user lock through blob write and row update, sharing the
         // same lock as DELETE/reattach. A failed row write cleans up the blob.
-        await storeCertificateOriginal(certificate.id, userId, file);
+        await storeCertificateOriginal(certificate.id, userId, file, incoming?.blobUrl);
       }
     } catch (blobErr) {
       console.warn("Certificate original not saved:", blobErr);
     }
 
-    await recordExtractionAttempt(userId);
 
     // Never strand a row in PROCESSING: crashes and timeouts resolve to a
     // FAILED extraction result, which the branches below persist properly.
@@ -226,7 +193,8 @@ export async function POST(req: NextRequest) {
           },
         });
       });
-      if (clean) await recordExtractionUse(userId);
+      await finishExtractionAttempt(userId, reservationId, clean);
+      reservationId = null;
       return NextResponse.json({ certificate: updated, ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
     } else {
       // Full extraction failed — store certificate but mark for manual review.
@@ -235,7 +203,7 @@ export async function POST(req: NextRequest) {
         where: { id: certificate.id },
         data: {
           extractedAt: new Date(),
-          extractionStatus: "FAILED",
+          extractionStatus: extractionResult.needsReview ? "NEEDS_REVIEW" : "FAILED",
           extractionConfidence: 0.0,
           extractionError: (extractionResult.error ?? "Unknown error").slice(0, 500),
         },
@@ -251,6 +219,7 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
+    if (error instanceof CertificateFileError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (!createdCertificateId && (error as { code?: string }).code === "P2002") {
       const duplicate = uploadHash ? await prisma.certificate.findFirst({ where: { userId, fileHash: uploadHash }, select: { id: true } }) : null;
       if (duplicate) return NextResponse.json({ error: "This exact file is already on file.", code: "duplicate_file", certificateId: duplicate.id }, { status: 409 });
@@ -277,6 +246,8 @@ export async function POST(req: NextRequest) {
       { error: "Failed to process certificate" },
       { status: 500 }
     );
+  } finally {
+    if (reservationId) await finishExtractionAttempt(userId, reservationId, false);
   }
 }
 
@@ -419,6 +390,7 @@ async function createManualCertificate(req: NextRequest, userId: string) {
 
 interface ExtractionResult {
   success: boolean;
+  needsReview?: boolean;
   data?: ExtractedCredit;
   partialData?: Partial<ExtractedCredit>;
   error?: string;
@@ -459,6 +431,7 @@ function mergeTopics(primary: string[] | undefined, fallback: string[]): string[
 
 async function extractCertificate(file: File): Promise<ExtractionResult> {
   const deterministic = await extractCertificateFromTextPdf(file);
+  if (deterministic.needsReview) return deterministic;
   if (deterministic.success || hasCriticalFields(deterministic.partialData)) {
     return { ...deterministic, via: "deterministic" };
   }
@@ -622,7 +595,7 @@ async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResu
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const text = normalizeWhitespace(extractPdfText(buffer)).slice(
+    const text = normalizeWhitespace(await extractPdfText(buffer)).slice(
       0,
       MAX_PARSE_TEXT_CHARS
     );
@@ -652,12 +625,14 @@ async function extractCertificateFromTextPdf(file: File): Promise<ExtractionResu
   } catch (error) {
     return {
       success: false,
+      needsReview: error instanceof DecompressionLimitError,
       error: error instanceof Error ? error.message : "PDF text extraction failed",
     };
   }
 }
 
-function extractPdfText(buffer: Buffer): string {
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  const budget = { remaining: MAX_INFLATED_BYTES };
   const chunks: string[] = [];
   // Only keep chunks that read as text. Binary decoded as a string (image
   // streams, encrypted content, fonts) is what fed the parser regexes
@@ -684,18 +659,19 @@ function extractPdfText(buffer: Buffer): string {
     }
 
     const stream = Buffer.from(match[2], "latin1");
-    let data = stream;
+    let data: Buffer = stream;
 
     if (/\/FlateDecode\b/.test(dict)) {
       try {
-        data = inflateSync(stream);
-      } catch {
+        data = await boundedInflate(stream, budget);
+      } catch (error) {
+        if (error instanceof DecompressionLimitError) throw error;
         // Keep the raw stream; some PDFs include plain text despite filter metadata.
       }
     }
 
     consider(data.toString("utf8"));
-    consider(extractPdfDrawingText(data.toString("latin1")));
+    consider(extractPdfDrawingText(data.toString("latin1").slice(0, MAX_PARSE_TEXT_CHARS)));
   }
 
   return chunks.join(" ");

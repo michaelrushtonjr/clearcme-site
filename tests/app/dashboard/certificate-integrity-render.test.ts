@@ -9,6 +9,7 @@ import CertificateList from "@/components/CertificateList";
 import Dashboard from "@/app/dashboard/page";
 import Privacy from "@/app/privacy/page";
 beforeEach(() => {
+  db.federalTrainingRecord.findUnique.mockResolvedValue({ kind: "MATE_ACT" });
   db.physicianLicense.findMany.mockResolvedValue([licenseInput().license]);
   db.certificate.findMany.mockResolvedValue([]);
   db.userRequirementCompletion.findMany.mockResolvedValue([]);

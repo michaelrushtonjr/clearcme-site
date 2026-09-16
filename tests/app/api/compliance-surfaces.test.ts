@@ -12,6 +12,7 @@ import { GET as auditGET } from "@/app/api/audit-export/route";
 import { getComplianceSnapshot } from "@/lib/compliance-snapshot";
 
 beforeEach(() => {
+  prismaMock.federalTrainingRecord.findUnique.mockResolvedValue({ kind: "MATE_ACT" });
   prismaMock.user.findUnique.mockResolvedValue({ id: "user", name: "Test Physician", email: "test@example.invalid" });
   prismaMock.physicianLicense.findMany.mockResolvedValue([{ ...licenseInput().license, licenseNumber: null }]);
   prismaMock.certificate.findMany.mockResolvedValue([]);

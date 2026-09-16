@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { downscaleCertificateImage } from "@/lib/certificate-upload-client";
+import { MAX_MULTIPART_BYTES } from "@/lib/upload-limits";
 import NpiVerifier from "@/components/NpiVerifier";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { formatDateUTC } from "@/lib/dates";
@@ -33,7 +35,7 @@ const PRACTICE_AREAS = [
   "Other",
 ];
 
-const MATE_ACT_CUTOFF = new Date("2023-06-27");
+
 
 interface DeaExtracted {
   deaNumber: string | null;
@@ -50,13 +52,6 @@ interface PhysicianMatch {
   state: string;
   specialty: string;
   city: string;
-}
-
-function computeMateActRequired(registrationDateStr: string | null): boolean | null {
-  if (!registrationDateStr) return null;
-  const d = new Date(registrationDateStr);
-  if (isNaN(d.getTime())) return null;
-  return d < MATE_ACT_CUTOFF;
 }
 
 interface AdditionalLicense {
@@ -134,7 +129,6 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
     renewalDate: "",
     hasDeaRegistration: "" as "" | "yes" | "no",
     deaRegistrationDate: "",
-    mateActCompleted: false,
   });
 
   // NPI verification state
@@ -150,11 +144,6 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
   const [deaUploadedFileName, setDeaUploadedFileName] = useState("");
   const deaFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Derived MATE Act state
-  const mateActDate =
-    deaExtracted?.registrationDate ?? (deaUploadMode === "manual" ? form.deaRegistrationDate : null);
-  const mateActRequired = computeMateActRequired(mateActDate);
-
   // Parse first/last name from Google session name
   const nameParts = (userName ?? "").trim().split(/\s+/);
   const firstName = nameParts[0] ?? "";
@@ -167,8 +156,10 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
     setDeaUploadedFileName(file.name);
 
     try {
+      const prepared = await downscaleCertificateImage(file);
+      if (prepared.size > MAX_MULTIPART_BYTES) throw new Error("DEA certificate uploads are limited to 4 MB.");
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", prepared);
       const res = await fetch("/api/dea-certificate", {
         method: "POST",
         body: fd,
@@ -178,9 +169,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         throw new Error(data.error || "Failed to extract DEA certificate data");
       }
       setDeaExtracted(data.extracted);
-      if (data.extracted?.registrationDate) {
-        setForm((f) => ({ ...f, deaRegistrationDate: data.extracted.registrationDate }));
-      }
+
     } catch (err: unknown) {
       setDeaUploadError(err instanceof Error ? err.message : "Upload failed");
       setDeaUploadedFileName("");
@@ -229,14 +218,11 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
         if (deaExtracted) {
           payload.deaNumber = deaExtracted.deaNumber;
           payload.deaExpiresAt = deaExtracted.expirationDate;
-          payload.deaRegisteredAt = deaExtracted.registrationDate ?? form.deaRegistrationDate;
+          payload.deaRegisteredAt = form.deaRegistrationDate || null;
         } else {
           payload.deaRegisteredAt = form.deaRegistrationDate || null;
         }
-        if (mateActRequired !== null) {
-          payload.mateActRequired = mateActRequired;
-        }
-        payload.mateActCompleted = form.mateActCompleted;
+
       }
 
       const res = await fetch("/api/licenses", {
@@ -557,7 +543,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                         <p className="text-sm text-[var(--ink-2)]">
                           <span className="font-medium text-[var(--primary)]">Click to upload</span> or drag & drop
                         </p>
-                        <p className="text-xs text-[var(--ink-3)] mt-1">PDF, JPG, or PNG — max 10MB</p>
+                        <p className="text-xs text-[var(--ink-3)] mt-1">PDF, JPG, or PNG — max 4 MB</p>
                       </>
                     )}
                   </div>
@@ -652,7 +638,7 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
               {(deaUploadMode === "manual" || deaExtracted) && (
                 <div>
                   <label className="product-label">
-                    When did you first register or most recently renew with DEA?
+                    When did you first register with DEA?
                     <span className="text-[var(--ink-4)] font-normal normal-case tracking-normal"> (approximate)</span>
                   </label>
                   <input
@@ -662,49 +648,12 @@ export default function ProfileClient({ userName }: ProfileClientProps) {
                     className="product-input"
                   />
                   <p className="text-xs text-[var(--ink-3)] mt-1">
-                    Used to determine if the DEA MATE Act 8-hour requirement applies to you.
+                    Record your initial registration date; leave it blank if unknown.
                   </p>
                 </div>
               )}
 
-              {/* MATE Act notice */}
-              {mateActRequired !== null && (
-                <div className="product-callout-warm p-4">
-                  <div className="flex items-start gap-2">
-                    <svg className="h-4 w-4 text-[var(--status-pending)] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--ink)]">DEA MATE Act Training Required</p>
-                      {mateActRequired ? (
-                        <p className="text-xs text-[var(--ink-2)] mt-0.5">
-                          Because your DEA registration predates June 27, 2023, you must complete the 8-hour MATE Act training
-                          {deaExtracted?.expirationDate
-                            ? ` before your next DEA renewal (${deaExtracted.expirationDate}).`
-                            : " at your next DEA renewal."}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-[var(--ink-2)] mt-0.5">
-                          Your DEA was registered on or after June 27, 2023. The 8-hour MATE Act training is required — complete before your next renewal.
-                        </p>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* MATE Act completion checkbox */}
-                  <label className="flex items-center gap-2 mt-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.mateActCompleted}
-                      onChange={(e) => setForm({ ...form, mateActCompleted: e.target.checked })}
-                      className="rounded border-[var(--line)] text-[var(--warm)] focus:ring-[var(--warm)]"
-                    />
-                    <span className="text-xs text-[var(--ink)] font-medium">
-                      I have completed the 8-hour DEA MATE Act training
-                    </span>
-                  </label>
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getMobileUserId } from "@/lib/mobile-auth";
+import { reserveExtractionAttempt, finishExtractionAttempt } from "@/lib/entitlements";
+import { limitCertificateUpload } from "@/lib/upload-rate-limit";
+import { MAX_MULTIPART_BYTES } from "@/lib/upload-limits";
+import { mateActDeadline } from "@/lib/mate-act";
+import { saveFederalAttestation } from "@/lib/federal-training";
+import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 
 // Extend Vercel function timeout for AI processing
@@ -24,139 +31,93 @@ interface DeaCertData {
   schedules: string[];
 }
 
-// POST /api/dea-certificate — extract DEA cert data via Claude (no file storage)
-export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const date = new Date(value);
+  return Number.isFinite(+date) && date.toISOString().slice(0, 10) === value;
+}, "Invalid date");
+const completedDate = dateString.refine((value) => new Date(value) <= new Date(), "Completion cannot be in the future");
+const patchSchema = z.object({
+  licenseId: z.string().min(1).optional(), deaNumber: z.string().max(30).nullable().optional(),
+  deaRegisteredAt: completedDate.nullable().optional(), deaExpiresAt: dateString.nullable().optional(),
+  deaFirstQualifyingAt: dateString.refine((value) => mateActDeadline({ firstQualifyingAt: value }).status === "KNOWN", "Date must be on or after the cutoff").nullable().optional(),
+  mateActCompleted: z.boolean().optional(), hasDeaRegistration: z.boolean().nullable().optional(),
+  trainingRecord: z.object({ completed: z.boolean(), basis: z.enum(["EIGHT_HOUR_TRAINING", "BOARD_CERT_ADDICTION", "GRADUATED_AFTER_2023", "OTHER"]),
+    completedAt: completedDate.nullable().optional(), evidenceCertificateId: z.string().min(1).nullable().optional(), notes: z.string().max(2000).nullable().optional() }).optional(),
+});
 
-  try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-    const licenseId = formData.get("licenseId") as string | null;
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    // Validate file type
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Accepts PDF, JPG, PNG." },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: "File too large. Maximum 10MB." },
-        { status: 400 }
-      );
-    }
-
-    // Extract DEA cert data with Claude — file is NOT stored (privacy)
-    const extractionResult = await extractDeaCertWithClaude(file);
-
-    if (!extractionResult.success || !extractionResult.data) {
-      return NextResponse.json(
-        { error: "Failed to extract DEA certificate data", details: extractionResult.error },
-        { status: 422 }
-      );
-    }
-
-    const extracted = extractionResult.data;
-
-    // Compute MATE Act requirement
-    const MATE_ACT_DATE = new Date("2023-06-27");
-    let mateActRequired: boolean | null = null;
-    if (extracted.registrationDate) {
-      const regDate = new Date(extracted.registrationDate);
-      mateActRequired = !isNaN(regDate.getTime()) ? regDate < MATE_ACT_DATE : null;
-    }
-
-    // If licenseId provided, persist DEA fields to the license record
-    if (licenseId) {
-      // Verify the license belongs to this user
-      const license = await prisma.physicianLicense.findFirst({
-        where: { id: licenseId, userId: session.user.id },
-      });
-
-      if (license) {
-        await prisma.physicianLicense.update({
-          where: { id: licenseId },
-          data: {
-            deaNumber: extracted.deaNumber ?? undefined,
-            deaRegisteredAt: extracted.registrationDate ? new Date(extracted.registrationDate) : undefined,
-            deaExpiresAt: extracted.expirationDate ? new Date(extracted.expirationDate) : undefined,
-            mateActRequired: mateActRequired ?? undefined,
-          },
-        });
-      }
-    }
-
-    return NextResponse.json({
-      extracted,
-      mateActRequired,
-    });
-  } catch (error) {
-    console.error("DEA certificate extraction error:", error);
-    return NextResponse.json(
-      { error: "Failed to process DEA certificate" },
-      { status: 500 }
-    );
-  }
+async function userFor(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  return mobileUserId ?? session?.user?.id;
 }
 
-// PATCH /api/dea-certificate — save confirmed DEA data + MATE Act attestation
-export async function PATCH(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+// DEA registration documents are scanned but never stored as training evidence.
+export async function POST(req: NextRequest) {
+  const userId = await userFor(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = limitCertificateUpload(userId);
+  if (limited) return limited;
+  let reservationId: string | null = null;
   try {
-    const body = await req.json();
-    const { licenseId, deaNumber, deaRegisteredAt, deaExpiresAt, mateActCompleted } = body;
+    const form = await req.formData();
+    const file = form.get("file");
+    const licenseId = form.get("licenseId");
+    if (!(file instanceof File)) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!["application/pdf", "image/jpeg", "image/png", "image/jpg"].includes(file.type)) return NextResponse.json({ error: "Invalid file type. Accepts PDF, JPG, PNG." }, { status: 400 });
+    if (file.size > MAX_MULTIPART_BYTES) return NextResponse.json({ error: "File too large. Maximum 4 MB." }, { status: 413 });
+    const license = typeof licenseId === "string" ? await prisma.physicianLicense.findFirst({ where: { id: licenseId, userId } }) : null;
+    if (licenseId && !license) return NextResponse.json({ error: "License not found" }, { status: 404 });
+    const reservation = await reserveExtractionAttempt(userId);
+    if (reservation instanceof Response) return reservation;
+    reservationId = reservation.id;
+    const result = await extractDeaCertWithClaude(file);
+    if (!result.success || !result.data) return NextResponse.json({ error: "Failed to extract DEA certificate data", details: result.error }, { status: 422 });
+    const extracted = result.data;
+    const valid = z.object({ deaNumber: z.string().min(1).max(30), registrationDate: completedDate, expirationDate: dateString }).safeParse(extracted).success;
+    await finishExtractionAttempt(userId, reservationId, valid);
+    reservationId = null;
+    if (license && valid) await prisma.physicianLicense.update({ where: { id: license.id }, data: {
+      deaNumber: extracted.deaNumber, deaExpiresAt: extracted.expirationDate ? new Date(extracted.expirationDate) : undefined,
+      // An issue date on a renewal certificate is not proof of first registration.
+    } });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { deaFirstQualifyingAt: true } });
+    const deadline = mateActDeadline({ firstQualifyingAt: user?.deaFirstQualifyingAt });
+    return NextResponse.json({ extracted, needsReview: !valid, mateActRequired: true, mateActDeadline: deadline });
+  } catch (error) {
+    console.error("DEA certificate extraction error:", error);
+    return NextResponse.json({ error: "Failed to process DEA certificate" }, { status: 500 });
+  } finally { if (reservationId) await finishExtractionAttempt(userId, reservationId, false); }
+}
 
-    if (!licenseId) {
-      return NextResponse.json({ error: "Missing licenseId" }, { status: 400 });
-    }
-
-    // Verify ownership
-    const license = await prisma.physicianLicense.findFirst({
-      where: { id: licenseId, userId: session.user.id },
+// Both native legacy attestations and the profile form write one federal row.
+export async function PATCH(req: NextRequest) {
+  const userId = await userFor(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const parsed = patchSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid DEA or training data" }, { status: 400 });
+  const body = parsed.data;
+  const license = body.licenseId ? await prisma.physicianLicense.findFirst({ where: { id: body.licenseId, userId } }) : null;
+  if (body.licenseId && !license) return NextResponse.json({ error: "License not found" }, { status: 404 });
+  if (!license && !body.trainingRecord && body.hasDeaRegistration === undefined) return NextResponse.json({ error: "Missing license or training record" }, { status: 400 });
+  if (body.trainingRecord?.evidenceCertificateId && !await prisma.certificate.findFirst({ where: { id: body.trainingRecord.evidenceCertificateId, userId } })) return NextResponse.json({ error: "Evidence certificate not found" }, { status: 404 });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { deaFirstQualifyingAt: true } });
+  const deadline = mateActDeadline({ firstQualifyingAt: body.deaFirstQualifyingAt === undefined ? user?.deaFirstQualifyingAt : body.deaFirstQualifyingAt });
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const updated = license ? await tx.physicianLicense.update({ where: { id: license.id }, data: {
+        deaNumber: body.deaNumber,
+        deaRegisteredAt: body.deaRegisteredAt === undefined ? undefined : body.deaRegisteredAt ? new Date(body.deaRegisteredAt) : null,
+        deaExpiresAt: body.deaExpiresAt === undefined ? undefined : body.deaExpiresAt ? new Date(body.deaExpiresAt) : null,
+        mateActRequired: true,
+      } }) : null;
+      if (body.hasDeaRegistration !== undefined || body.deaFirstQualifyingAt !== undefined) await tx.user.update({ where: { id: userId }, data: { hasDeaRegistration: body.hasDeaRegistration, deaFirstQualifyingAt: body.deaFirstQualifyingAt === undefined ? undefined : body.deaFirstQualifyingAt ? new Date(body.deaFirstQualifyingAt) : null } });
+      const training = body.trainingRecord ?? (body.mateActCompleted === undefined ? null : { completed: body.mateActCompleted });
+      const record = training ? await saveFederalAttestation(tx, userId, { ...training,
+        completedAt: "completedAt" in training ? training.completedAt ? new Date(training.completedAt) : null : undefined,
+      }) : await tx.federalTrainingRecord.findUnique({ where: { userId } });
+      return { license: updated, federalTrainingRecord: record, mateActDeadline: deadline };
     });
-
-    if (!license) {
-      return NextResponse.json({ error: "License not found" }, { status: 404 });
-    }
-
-    const MATE_ACT_DATE = new Date("2023-06-27");
-    let mateActRequired: boolean | null = license.mateActRequired ?? null;
-
-    if (deaRegisteredAt) {
-      const regDate = new Date(deaRegisteredAt);
-      if (!isNaN(regDate.getTime())) {
-        mateActRequired = regDate < MATE_ACT_DATE;
-      }
-    }
-
-    const updated = await prisma.physicianLicense.update({
-      where: { id: licenseId },
-      data: {
-        deaNumber: deaNumber ?? undefined,
-        deaRegisteredAt: deaRegisteredAt ? new Date(deaRegisteredAt) : undefined,
-        deaExpiresAt: deaExpiresAt ? new Date(deaExpiresAt) : undefined,
-        mateActRequired: mateActRequired ?? undefined,
-        mateActCompleted: typeof mateActCompleted === "boolean" ? mateActCompleted : undefined,
-      },
-    });
-
-    return NextResponse.json({ license: updated });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("DEA PATCH error:", error);
     return NextResponse.json({ error: "Failed to update DEA data" }, { status: 500 });
@@ -179,7 +140,7 @@ async function extractDeaCertWithClaude(file: File): Promise<ExtractionResult> {
   }
 
   try {
-    const client = new Anthropic({ apiKey });
+    const client = new Anthropic({ apiKey, timeout: 45_000, maxRetries: 0 });
 
     // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();

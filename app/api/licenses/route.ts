@@ -1,3 +1,4 @@
+import { saveFederalAttestation } from "@/lib/federal-training";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -37,7 +38,6 @@ export async function POST(req: NextRequest) {
     deaNumber,
     deaRegisteredAt,
     deaExpiresAt,
-    mateActRequired,
     mateActCompleted,
     npiNumber,
     specialty,
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
   if (deaNumber !== undefined) deaFields.deaNumber = deaNumber || null;
   if (deaRegisteredAt) deaFields.deaRegisteredAt = new Date(deaRegisteredAt);
   if (deaExpiresAt) deaFields.deaExpiresAt = new Date(deaExpiresAt);
-  if (typeof mateActRequired === "boolean") deaFields.mateActRequired = mateActRequired;
-  if (typeof mateActCompleted === "boolean") deaFields.mateActCompleted = mateActCompleted;
+
+
 
   const npiFields: Record<string, unknown> = {};
   if (npiNumber !== undefined) npiFields.npiNumber = npiNumber || null;
@@ -81,7 +81,8 @@ export async function POST(req: NextRequest) {
   if (specialty !== undefined) userFields.specialty = specialty || null;
   if (practiceArea !== undefined) userFields.practiceArea = practiceArea || null;
 
-  const license = await prisma.physicianLicense.upsert({
+  const license = await prisma.$transaction(async (tx) => {
+  const saved = await tx.physicianLicense.upsert({
     where: {
       userId_state_licenseType: {
         userId: userId,
@@ -112,13 +113,17 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  if (body.hasDeaRegistration === "yes" || body.hasDeaRegistration === "no") userFields.hasDeaRegistration = body.hasDeaRegistration === "yes";
+  if (typeof mateActCompleted === "boolean") await saveFederalAttestation(tx, userId, { completed: mateActCompleted });
   if (Object.keys(userFields).length > 0) {
-    await prisma.user.update({
+    await tx.user.update({
       where: { id: userId },
       data: userFields,
     });
   }
 
+  return saved;
+  });
   return NextResponse.json(license, { status: 201 });
 }
 

@@ -7,7 +7,7 @@ export class CertificateFileError extends Error {
   constructor(message: string, public status: number, public certificateId?: string) { super(message); }
 }
 
-export async function storeCertificateOriginal(id: string, userId: string, file: File) {
+export async function storeCertificateOriginal(id: string, userId: string, file: File, verifiedBlobUrl?: string) {
   if (!["application/pdf", "image/jpeg", "image/png", "image/jpg"].includes(file.type)) throw new CertificateFileError("Invalid file type. Accepts PDF, JPG, PNG.", 400);
   if (file.size > 10 * 1024 * 1024) throw new CertificateFileError("File too large. Maximum 10MB.", 400);
   const fileHash = createHash("sha256").update(Buffer.from(await file.arrayBuffer())).digest("hex");
@@ -22,8 +22,8 @@ export async function storeCertificateOriginal(id: string, userId: string, file:
       const duplicate = await tx.certificate.findFirst({ where: { userId, fileHash, id: { not: id } }, select: { id: true } });
       if (duplicate) throw new CertificateFileError("This exact file is already attached to another certificate.", 409, duplicate.id);
       if (!process.env.BLOB_READ_WRITE_TOKEN) throw new CertificateFileError("Document storage is not available right now. Please try again later.", 503);
-      const blob = await put(`certificates/${userId}/${file.name}`, file, { access: "private", addRandomSuffix: true });
-      uploadedUrl = blob.url;
+      const blob = verifiedBlobUrl ? { url: verifiedBlobUrl } : await put(`certificates/${userId}/${file.name}`, file, { access: "private", addRandomSuffix: true });
+      if (!verifiedBlobUrl) uploadedUrl = blob.url;
       return tx.certificate.update({ where: { id }, data: { fileUrl: blob.url, fileName: file.name, fileSize: file.size, mimeType: file.type, fileHash, storageStatus: "STORED" } });
     }, { timeout: 30_000 });
   } catch (error) {

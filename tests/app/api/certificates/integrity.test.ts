@@ -10,10 +10,11 @@ const ai = vi.hoisted(() => ({ create: vi.fn() }));
 const blobs = vi.hoisted(() => ({ put: vi.fn(), del: vi.fn(), get: vi.fn() }));
 vi.mock("@anthropic-ai/sdk", () => ({ default: class { messages = ai; } }));
 vi.mock("@vercel/blob", () => blobs);
+vi.mock("@/lib/upload-rate-limit", () => ({ limitCertificateUpload: () => null }));
 vi.mock("@/auth", () => ({ auth: vi.fn(async () => ({ user: { id: "user", name: "Test Physician" } })) }));
 vi.mock("@/lib/mobile-auth", () => ({ getMobileUserId: vi.fn(async () => null) }));
-vi.mock("@/lib/entitlements", () => ({ getEntitlements: vi.fn(async () => ({ ungated: true })), recordExtractionUse: vi.fn(), recordExtractionAttempt: vi.fn(), upgradeRequiredResponse: vi.fn() }));
-import { recordExtractionUse, recordExtractionAttempt } from "@/lib/entitlements";
+vi.mock("@/lib/entitlements", () => ({ getEntitlements: vi.fn(async () => ({ ungated: true })), finishExtractionAttempt: vi.fn(), reserveExtractionAttempt: vi.fn(async () => ({ id: "reservation" })), upgradeRequiredResponse: vi.fn() }));
+import { finishExtractionAttempt, reserveExtractionAttempt } from "@/lib/entitlements";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { POST as upload } from "@/app/api/certificates/route";
 import { PATCH, DELETE } from "@/app/api/certificates/[id]/route";
@@ -46,6 +47,7 @@ function addRow(overrides: Partial<Certificate> = {}) {
 }
 beforeEach(() => {
   rows = new Map(); sequence = 0;
+  db.federalTrainingRecord.findUnique.mockResolvedValue({ kind: "MATE_ACT" });
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "mock-token"); vi.stubEnv("ANTHROPIC_API_KEY", "mock-key");
   vi.mocked(getMobileUserId).mockResolvedValue(null);
   blobs.put.mockResolvedValue({ url: "https://blob.example.invalid/original" }); blobs.del.mockResolvedValue(undefined); blobs.get.mockResolvedValue(null);
@@ -93,17 +95,17 @@ test("maximum alone is never counted and asks for review", async () => {
   const onlyMax = fixture.replace("This participant earned 1.0 hour of AMA PRA Category 1 Credit.\n", "");
   const response = await upload(fileRequest(new File([onlyMax], "max.pdf", { type: "application/pdf" })));
   expect((await response.json()).certificate).toMatchObject({ hoursEarned: null, creditHours: null, activityMaxHours: 20, extractionStatus: "NEEDS_REVIEW" });
-  expect(recordExtractionUse).not.toHaveBeenCalled();
+  expect(finishExtractionAttempt).not.toHaveBeenCalledWith("user", "reservation", true);
 });
 test.each([0, -1, 100.25, 1.1, "4"])("invalid model hours %s require review and never populate compatibility hours", async (hoursEarned) => {
   const response = await imageUpload({ ...valid, hoursEarned });
   expect((await response.json()).certificate).toMatchObject({ creditHours: null, hoursEarned: null, extractionStatus: "NEEDS_REVIEW" });
-  expect(recordExtractionUse).not.toHaveBeenCalled();
+  expect(finishExtractionAttempt).not.toHaveBeenCalledWith("user", "reservation", true);
 });
 test.each([{ date: "2999-01-01" }, { date: "not a date" }, { provider: " " }, { date: null }, { topics: "wrong JSON type" }])("incomplete or malformed model JSON cannot be full confidence: %j", async (overrides) => {
   const response = await imageUpload({ ...valid, ...overrides });
   expect((await response.json()).certificate.extractionStatus).toBe("NEEDS_REVIEW");
-  expect(recordExtractionUse).not.toHaveBeenCalled();
+  expect(finishExtractionAttempt).not.toHaveBeenCalledWith("user", "reservation", true);
 });
 test("regex recovery reads earned and maximum separately and ignores obsolete creditHours", async () => {
   const response = await imageUpload('{"title":"Clinical Update","provider":"Test Medical Education","date":"2026-01-15","hoursEarned":1,"activityMaxHours":20,"creditHours":20,');
@@ -131,7 +133,7 @@ test("same bytes return 409 with ID before another blob or extraction attempt", 
   await upload(fileRequest());
   const response = await upload(fileRequest());
   expect(response.status).toBe(409); expect(await response.json()).toMatchObject({ certificateId: "cert-1", code: "duplicate_file" });
-  expect(blobs.put).toHaveBeenCalledTimes(1); expect(recordExtractionAttempt).toHaveBeenCalledTimes(1);
+  expect(blobs.put).toHaveBeenCalledTimes(1); expect(reserveExtractionAttempt).toHaveBeenCalledTimes(1);
 });
 test("concurrent unique-hash conflict also returns 409 without storing a blob", async () => {
   addRow({ fileHash: createHash("sha256").update(fixture).digest("hex") });
@@ -177,7 +179,7 @@ test("reattach validates known hash before storing, supports mobile, and consume
   expect(blobs.put).not.toHaveBeenCalled();
   expect((await reattach(fileRequest(), context("cert"))).status).toBe(200);
   expect(rows.get("cert")).toMatchObject({ storageStatus: "STORED", creditHours: 1 });
-  expect(recordExtractionAttempt).not.toHaveBeenCalled(); expect(ai.create).not.toHaveBeenCalled();
+  expect(reserveExtractionAttempt).not.toHaveBeenCalled(); expect(ai.create).not.toHaveBeenCalled();
 });
 test("reattach cleans up newly stored blob if row update fails", async () => {
   addRow(); db.certificate.update.mockRejectedValueOnce(new Error("mock DB failure"));
@@ -272,4 +274,57 @@ test("topic-only PATCH also downgrades an invalid legacy completed record", asyn
   const response = await PATCH(patchRequest({ topics: ["ethics"] }), context("cert"));
   expect((await response.json()).certificate.extractionStatus).toBe("NEEDS_REVIEW");
   expect(evaluateLicense(licenseInput({ certificates: [...rows.values()] })).generalHours.counted).toBe(0);
+});
+
+test("direct private upload verifies bytes and converges on the same duplicate/extraction path", async () => {
+  const pathname = "certificates/user/incoming/12345678-1234-1234-1234-123456789012/test.pdf";
+  const blobUrl = `https://test.private.blob.vercel-storage.com/${pathname}`;
+  blobs.get.mockImplementation(async () => ({ statusCode: 200, blob: { url: blobUrl, contentType: "application/pdf", size: Buffer.byteLength(fixture) }, stream: new Response(fixture).body }));
+  const body = { blobUrl, sha256: createHash("sha256").update(fixture).digest("hex") };
+  const request = () => new NextRequest("http://localhost/api/certificates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const response = await upload(request());
+  expect(response.status).toBe(201);
+  expect((await response.json()).certificate).toMatchObject({ hoursEarned: 1, fileUrl: blobUrl, storageStatus: "STORED" });
+  expect(blobs.put).not.toHaveBeenCalled();
+  expect(blobs.get).toHaveBeenCalledWith(pathname, { access: "private", useCache: false });
+  expect((await upload(request())).status).toBe(409);
+  expect(reserveExtractionAttempt).toHaveBeenCalledTimes(1);
+});
+test("private upload rejects cross-user paths, foreign hosts and mismatched hashes before reservation", async () => {
+  const path = "certificates/user/incoming/12345678-1234-1234-1234-123456789012/test.pdf";
+  const goodUrl = `https://test.private.blob.vercel-storage.com/${path}`;
+  blobs.get.mockImplementation(async () => ({ statusCode: 200, blob: { url: goodUrl, contentType: "application/pdf", size: 7 }, stream: new Response("changed").body }));
+  for (const [url, status] of [[goodUrl.replace("/user/", "/someone-else/"), 403], ["https://attacker.invalid/test.pdf", 403], [goodUrl, 400]] as const) {
+    const response = await upload(new NextRequest("http://localhost/api/certificates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ blobUrl: url, sha256: "0".repeat(64) }) }));
+    expect(response.status).toBe(status);
+  }
+  expect(reserveExtractionAttempt).not.toHaveBeenCalled(); expect(db.certificate.create).not.toHaveBeenCalled();
+});
+test("multipart fallback enforces 4 MB before storage and quota", async () => {
+  const response = await upload(fileRequest(new File([new Uint8Array(4 * 1024 * 1024 + 1)], "large.pdf", { type: "application/pdf" })));
+  expect(response.status).toBe(413); expect(reserveExtractionAttempt).not.toHaveBeenCalled();
+});
+test("decompression bomb becomes NEEDS_REVIEW without an AI call or clean slot", async () => {
+  const { deflateSync } = await import("node:zlib");
+  const compressed = deflateSync(Buffer.alloc(26 * 1024 * 1024, 65));
+  const pdf = Buffer.concat([Buffer.from("%PDF\n<< /Filter /FlateDecode >>\nstream\n"), compressed, Buffer.from("\nendstream")]);
+  const response = await upload(fileRequest(new File([pdf], "bomb.pdf", { type: "application/pdf" })));
+  expect((await response.json()).certificate).toMatchObject({ extractionStatus: "NEEDS_REVIEW", extractionError: expect.stringContaining("25 MB") });
+  expect(ai.create).not.toHaveBeenCalled(); expect(finishExtractionAttempt).not.toHaveBeenCalledWith("user", "reservation", true);
+});
+test("large audit exports stream into a private blob and return an expiring authenticated link", async () => {
+  addRow({ fileUrl: "https://blob.example.invalid/large", fileSize: 21 * 1024 * 1024 });
+  blobs.get.mockImplementation(async () => ({ statusCode: 200, stream: new Response(new Uint8Array(21 * 1024 * 1024)).body }));
+  blobs.put.mockImplementation(async (_path, stream, options) => {
+    expect(options.access).toBe("private");
+    const chunks = []; for await (const chunk of stream) chunks.push(chunk);
+    const zip = await JSZip.loadAsync(Buffer.concat(chunks));
+    expect(Object.keys(zip.files).some((name) => name.endsWith("manifest.json"))).toBe(true);
+    return { url: "https://test.private.blob.vercel-storage.com/export.zip" };
+  });
+  const response = await audit(new NextRequest("http://localhost/api/audit-export"));
+  const json = await response.json();
+  expect(json.downloadUrl).toMatch(/^\/api\/audit-export\/download\?token=/);
+  expect(new Date(json.expiresAt).getTime()).toBeGreaterThan(Date.now());
+  expect(blobs.put).toHaveBeenCalledTimes(1);
 });

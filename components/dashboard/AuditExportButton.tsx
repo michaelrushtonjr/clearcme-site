@@ -41,6 +41,11 @@ export default function AuditExportButton({
         throw new Error((body as { error?: string }).error ?? `Server error ${resp.status}`);
       }
 
+      if (resp.headers.get("Content-Type")?.includes("application/json")) {
+        const { downloadUrl } = await resp.json();
+        window.location.assign(downloadUrl);
+        return;
+      }
       const blob = await resp.blob();
       const disposition = resp.headers.get("Content-Disposition") ?? "";
       const match = disposition.match(/filename="([^"]+)"/);

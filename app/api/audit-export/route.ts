@@ -1,3 +1,4 @@
+import { getFederalTraining } from "@/lib/federal-training";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
@@ -6,11 +7,13 @@ import { prisma } from "@/lib/prisma";
 import { auditCompliance, licensePractice } from "@/lib/compliance-adapters";
 import type { LicenseEvaluation, OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
 import JSZip from "jszip";
-import { get } from "@vercel/blob";
+import { put } from "@vercel/blob";
+import { Readable } from "node:stream";
+import { auditDownloadToken, auditFileStream, LARGE_AUDIT_BYTES, spoolAuditOriginals } from "@/lib/audit-export-storage";
 import { requirementDisplayName } from "@/lib/requirement-display";
 import { formatDateUTC } from "@/lib/dates";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 // Safely-named folder for a requirement topic
 function topicFolder(topic: string): string {
@@ -141,6 +144,7 @@ export async function GET(req: NextRequest) {
     cycleCertIds: string[];
   }
 
+  const federalTraining = await getFederalTraining(userId);
   const licenseSummaries: LicenseSummary[] = [];
 
   for (const lic of licenses) {
@@ -152,10 +156,10 @@ export async function GET(req: NextRequest) {
           include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
-    const view = auditCompliance({ license: lic, practice: licensePractice(lic, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates: allCerts, completions: requirementCompletions, today: new Date() });
+    const view = auditCompliance({ federalTraining, license: lic, practice: licensePractice(lic, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates: allCerts, completions: requirementCompletions, today: new Date() });
     const mandatoryStatus: MandatoryStatus[] = view.mandatoryGaps.map((result) => {
-      const req = rule!.mandatoryRequirements.find((r) => r.id === result.requirementId)!;
-      return { topic: result.topic, label: requirementDisplayName(req.topic, req.description), hoursRequired: result.needed,
+      const req = rule?.mandatoryRequirements.find((r) => r.id === result.requirementId);
+      return { topic: result.topic, label: requirementDisplayName(result.topic, req?.description), hoursRequired: result.needed,
         earned: result.earned, status: result.status, isMet: result.isMet,
         attested: result.isMet && result.earned < result.needed };
     });
@@ -188,28 +192,13 @@ export async function GET(req: NextRequest) {
     certFolderMap.set(cert.id, folders);
   }
 
-  // Fetch remote files if available
-  const certFileCache = new Map<string, Uint8Array | null>();
-  for (const cert of allCerts) {
-    if (cert.fileUrl) {
-      // Blobs live in a private store, so a plain fetch() 403s — get() signs
-      // the request with BLOB_READ_WRITE_TOKEN.
-      try {
-        const result = await get(cert.fileUrl, { access: "private" });
-        if (result?.statusCode === 200 && result.stream) {
-          const ab = await new Response(result.stream).arrayBuffer();
-          certFileCache.set(cert.id, new Uint8Array(ab));
-        } else {
-          certFileCache.set(cert.id, null);
-        }
-      } catch {
-        certFileCache.set(cert.id, null);
-      }
-    } else {
-      certFileCache.set(cert.id, null);
-    }
-  }
-
+  const spool = await spoolAuditOriginals(allCerts);
+  const certFileCache = spool.files;
+  const sources: Readable[] = [];
+  const fileStream = (path: string) => {
+    const source = auditFileStream(path); sources.push(source); return source;
+  };
+  try {
   // ── by_requirement folders ───────────────────────────────────────────────────
 
   for (const cert of allCerts) {
@@ -234,7 +223,7 @@ export async function GET(req: NextRequest) {
           const m = cert.fileName.match(/\.[a-zA-Z0-9]+$/);
           if (m) ext = m[0];
         }
-        folder.file(baseName + ext, fileBuffer);
+        folder.file(baseName + ext, fileStream(fileBuffer.path));
       } else {
         const placeholder = [
           `Certificate: ${cert.title ?? "Unknown"}`,
@@ -271,7 +260,7 @@ export async function GET(req: NextRequest) {
         const m = cert.fileName.match(/\.[a-zA-Z0-9]+$/);
         if (m) ext = m[0];
       }
-      folder.file(baseName + ext, fileBuffer);
+      folder.file(baseName + ext, fileStream(fileBuffer.path));
     } else {
       const placeholder = [
         `Certificate: ${cert.title ?? "Unknown"}`,
@@ -450,16 +439,26 @@ export async function GET(req: NextRequest) {
 
   // ── Generate ZIP ─────────────────────────────────────────────────────────────
 
-  const zipArrayBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
-  const zipBlob = new Blob([zipArrayBuffer], { type: "application/zip" });
-
   const zipFileName = `${rootFolder}.zip`;
-  return new NextResponse(zipBlob, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="${zipFileName}"`,
-      "Content-Length": zipArrayBuffer.byteLength.toString(),
-    },
+  const estimate = allCerts.reduce((sum, cert) => sum + (certFileCache.get(cert.id)?.size ?? 0) * (1 + (certFolderMap.get(cert.id)?.length ?? 1)), 0);
+  const zipStream = zip.generateNodeStream({ streamFiles: true, compression: "DEFLATE" });
+  const stream = new Readable().wrap(zipStream);
+  stream.once("close", () => {
+    (zipStream as Readable).destroy();
+    sources.forEach((source) => source.destroy());
+    void spool.dispose().catch(() => console.error("[audit-export] Temporary file cleanup failed"));
   });
+  if (estimate > LARGE_AUDIT_BYTES) {
+    const expiresAt = Date.now() + 15 * 60_000;
+    try {
+      const blob = await put(`audit-exports/${userId}/${expiresAt}/${zipFileName}`, stream, { access: "private", addRandomSuffix: true, contentType: "application/zip" });
+      const token = auditDownloadToken(userId, blob.url, zipFileName, expiresAt);
+      return NextResponse.json({ downloadUrl: `/api/audit-export/download?token=${encodeURIComponent(token)}`, expiresAt: new Date(expiresAt).toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
+    } finally { stream.destroy(); await spool.dispose(); }
+  }
+  // Readable.toWeb propagates response cancellation back to the ZIP stream.
+  return new Response(Readable.toWeb(stream) as ReadableStream<Uint8Array>, {
+    headers: { "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="${zipFileName}"`, "Cache-Control": "private, no-store" },
+  });
+  } catch (error) { sources.forEach((source) => source.destroy()); await spool.dispose(); throw error; }
 }

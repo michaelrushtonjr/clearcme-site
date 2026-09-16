@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: 
 import Dashboard from "@/app/dashboard/page";
 import Compliance from "@/app/dashboard/compliance/page";
 beforeEach(() => {
+  prismaMock.federalTrainingRecord.findUnique.mockResolvedValue({ kind: "MATE_ACT" });
   prismaMock.physicianLicense.findMany.mockResolvedValue([licenseInput().license]);
   prismaMock.certificate.findMany.mockResolvedValue([]);
   prismaMock.userRequirementCompletion.findMany.mockResolvedValue([]);

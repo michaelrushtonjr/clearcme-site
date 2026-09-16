@@ -1,3 +1,4 @@
+import { isStateRequirement } from "@/lib/mate-act";
 import { inferSpecialTopics, validateTopicAllocations } from "@/lib/certificate-topics";
 import type { MandatoryRequirement, Certificate } from "@prisma/client";
 import { computedComplianceBlockedMessage, isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
@@ -15,7 +16,15 @@ export interface EngineCompletion {
   completedYear: number | null;
   notes: string | null;
 }
+export function evaluateFederalTraining(input: { record: { kind: string } | null; registered: boolean | null; deadline: Date | null }): RequirementEvaluation {
+  const status: RequirementStatus = input.record?.kind === "MATE_ACT" ? "MET" : input.registered === false ? "NOT_APPLICABLE" : input.registered === true && input.deadline ? "NOT_MET" : "UNKNOWN";
+  return { requirementId: "federal:MATE_ACT", topic: "MATE_ACT", scope: "FEDERAL", status, earned: 0,
+    required: 8, gap: status === "NOT_MET" ? 8 : 0, isAttestable: true, satisfiedUntil: null,
+    prompt: status === "UNKNOWN" ? "Confirm your DEA registration history and federal training record." : null };
+}
+
 export interface LicenseInput {
+  federalTraining?: RequirementEvaluation;
   license: { id: string; state: string; licenseType: string; renewalDate: Date | null; issueDate?: Date | null };
   practice?: { specialty?: string | null; practiceArea?: string | null };
   rule: { totalHours: number; renewalCycle: number; acceptedCreditTypes?: string[] } | null;
@@ -25,6 +34,7 @@ export interface LicenseInput {
   today: Date;
 }
 export interface RequirementEvaluation {
+  scope?: "FEDERAL";
   requirementId: string;
   reason?: string;
   topic: string;
@@ -48,6 +58,8 @@ export interface LicenseEvaluation {
 
 export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
   const { license, rule, certificates, completions, today } = input;
+  const federalTraining = input.federalTraining ?? (input.requirements.some((r) => !isStateRequirement(r))
+    ? evaluateFederalTraining({ record: null, registered: null, deadline: null }) : undefined);
   const cycleEnd = license.renewalDate ?? today;
   const cycleStart = new Date(cycleEnd);
   cycleStart.setUTCMonth(cycleStart.getUTCMonth() - (rule?.renewalCycle ?? 0));
@@ -56,6 +68,7 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     reasons: [], cycleStart, cycleEnd, countedCertificateIds: [],
   };
   if (!rule || isComputedComplianceBlocked(license.state, license.licenseType)) {
+    if (federalTraining) result.requirements.push(federalTraining);
     result.reasons.push(computedComplianceBlockedMessage(license.state, license.licenseType));
     return result;
   }
@@ -92,7 +105,7 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     if (usable(cert)) { result.generalHours.counted += hours; result.countedCertificateIds.push(cert.id); }
     else result.generalHours.uncertain += hours;
   }
-  for (const req of input.requirements.filter((r) => !r.retiredAt)) {
+  for (const req of input.requirements.filter((r) => !r.retiredAt && isStateRequirement(r))) {
     const isPsychiatry = `${input.practice?.specialty ?? ""} ${input.practice?.practiceArea ?? ""}`.toLowerCase().includes("psychiat");
     const isNvDoPsychiatryCulturalCompetency = license.state === "NV"
       && license.licenseType === "DO"
@@ -136,6 +149,7 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     result.requirements.push({ requirementId: req.id, topic: req.topic, status, earned, required: req.hoursRequired, gap: status === "NOT_MET" || status === "EXPIRED" ? Math.max(0, req.hoursRequired - earned) : 0, isAttestable: req.hoursRequired === 0 || fulfillment.isAttestable, satisfiedUntil: expiry ?? fulfillment.satisfiedUntil, prompt });
     if (status === "UNKNOWN" || status === "EXPIRED" || status === "NOT_MET") result.reasons.push(`${req.id}: ${status}`);
   }
+  if (federalTraining) result.requirements.push(federalTraining);
   const unknown = result.requirements.some((r) => r.status === "UNKNOWN") || !license.renewalDate || (result.generalHours.counted < result.generalHours.required && result.generalHours.uncertain > 0);
   const gap = result.generalHours.counted < result.generalHours.required || result.requirements.some((r) => r.status === "NOT_MET" || r.status === "EXPIRED");
   if (!license.renewalDate) result.reasons.push("Renewal date is missing; the cycle needs your answer.");

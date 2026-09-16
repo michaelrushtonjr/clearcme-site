@@ -1,3 +1,6 @@
+import FederalTrainingStatus from "@/components/FederalTrainingStatus";
+import { getFederalTraining } from "@/lib/federal-training";
+import { isStateRequirement } from "@/lib/mate-act";
 import { effectiveSubscriptionTier } from "@/lib/entitlements";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -318,6 +321,7 @@ export default async function CompliancePage() {
     ])
   );
 
+  const federalTraining = await getFederalTraining(userId);
   // For each license, compute compliance inline (so page always shows fresh data)
   const complianceData = await Promise.all(
     licenses.map(async (license) => {
@@ -334,7 +338,7 @@ export default async function CompliancePage() {
             include: { mandatoryRequirements: { where: { retiredAt: null } } },
           });
 
-      const view = compliancePageCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+      const view = compliancePageCompliance({ federalTraining, license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
       if (!rule) {
         return {
           license,
@@ -365,7 +369,7 @@ export default async function CompliancePage() {
       );
 
       // Pre-compute mandatory gaps to determine true compliance
-      const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.map((req) => {
+      const mandatoryGapsPreview: MandatoryGap[] = rule.mandatoryRequirements.filter(isStateRequirement).map((req) => {
         const result = view.mandatoryGaps.find((r) => r.requirementId === req.id)!;
         const earnedForTopic = result.earned;
         const completion =
@@ -500,7 +504,7 @@ export default async function CompliancePage() {
             d.rule?.mandatoryRequirements.find((r) => r.id === g.requirementId)
               ?.firstRenewalOnly ?? false,
         })),
-      }))
+      })), federalTraining
   );
 
   // The user's full open-gap set — the matcher needs it for cross-credit badges
@@ -963,6 +967,7 @@ export default async function CompliancePage() {
               No mandatory topic requirements configured for this license.
             </p>
           )}
+        <FederalTrainingStatus requirement={federalTraining} />
         </section>
 
         {/* "Fill what's left" — verified course matches per open gap (Track B

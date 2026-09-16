@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
 
@@ -46,6 +47,7 @@ interface ComplianceImpact {
 }
 
 interface MobileCameraUploadProps {
+  userId: string;
   onUploadComplete?: () => void;
 }
 
@@ -142,7 +144,7 @@ function summarizeComplianceImpact(
   };
 }
 
-export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUploadProps) {
+export default function MobileCameraUpload({ onUploadComplete, userId }: MobileCameraUploadProps) {
   const router = useRouter();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -200,9 +202,7 @@ export default function MobileCameraUpload({ onUploadComplete }: MobileCameraUpl
       const results: MobileUploadResult[] = [];
 
       for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/certificates", { method: "POST", body: formData });
+        const res = await uploadCertificate(file, userId);
         if (res.status === 402) {
           // Free extraction limit reached — show an upgrade prompt, not an error
           const err = await res.json().catch(() => ({}));

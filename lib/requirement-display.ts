@@ -5,6 +5,7 @@
 
 // Labels the generic Title Case transform gets wrong.
 const TOPIC_LABELS: Record<string, string> = {
+  MATE_ACT: "DEA MATE Act",
   END_OF_LIFE_CARE: "End-of-Life Care",
 };
 
