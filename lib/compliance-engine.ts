@@ -17,6 +17,7 @@ export interface EngineCompletion {
 }
 export interface LicenseInput {
   license: { id: string; state: string; licenseType: string; renewalDate: Date | null; issueDate?: Date | null };
+  practice?: { specialty?: string | null; practiceArea?: string | null };
   rule: { totalHours: number; renewalCycle: number; acceptedCreditTypes?: string[] } | null;
   requirements: EngineRequirement[];
   certificates: EngineCertificate[];
@@ -25,6 +26,7 @@ export interface LicenseInput {
 }
 export interface RequirementEvaluation {
   requirementId: string;
+  reason?: string;
   topic: string;
   status: RequirementStatus;
   earned: number;
@@ -91,6 +93,17 @@ export function evaluateLicense(input: LicenseInput): LicenseEvaluation {
     else result.generalHours.uncertain += hours;
   }
   for (const req of input.requirements.filter((r) => !r.retiredAt)) {
+    const isPsychiatry = `${input.practice?.specialty ?? ""} ${input.practice?.practiceArea ?? ""}`.toLowerCase().includes("psychiat");
+    const isNvDoPsychiatryCulturalCompetency = license.state === "NV"
+      && license.licenseType === "DO"
+      && req.topic === "CULTURAL_COMPETENCY"
+      && `${req.description ?? ""} ${req.notes ?? ""}`.toLowerCase().includes("psychiat");
+    if (isNvDoPsychiatryCulturalCompetency && !isPsychiatry) {
+      const reason = "psychiatry-only requirement; not your specialty";
+      result.requirements.push({ requirementId: req.id, topic: req.topic, status: "NOT_APPLICABLE", reason, earned: 0, required: req.hoursRequired, gap: 0, isAttestable: false, satisfiedUntil: null, prompt: reason });
+      result.reasons.push(`${req.id}: ${reason}`);
+      continue;
+    }
     const completion = completions.find((c) => c.mandatoryRequirementId === req.id && c.physicianLicenseId === license.id)
       ?? completions.find((c) => c.mandatoryRequirementId === req.id && c.physicianLicenseId === null);
     const fulfillment = evaluateRequirementFulfillment({ requirement: req, completion, cycleEnd, licenseState: license.state, licenseIssueDate: license.issueDate, daysUntilRenewal: Math.ceil((cycleEnd.getTime() - today.getTime()) / 86400000) });

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { compliancePageCompliance } from "@/lib/compliance-adapters";
+import { compliancePageCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -61,6 +61,7 @@ interface RequirementSourceMeta {
 interface MandatoryGap {
   status: import("@/lib/compliance-engine").RequirementStatus;
   requirementId: string;
+  reason?: string;
   topic: string;
   /** The state's own name for the requirement, e.g. "Geriatric medicine" */
   displayName: string;
@@ -286,7 +287,7 @@ export default async function CompliancePage() {
   const userId = session!.user!.id!;
 
   // Fetch compliance data + licenses with their rules
-  const [licenses, certificates, requirementCompletions, subscription] = await Promise.all([
+  const [licenses, certificates, requirementCompletions, subscription, userProfile] = await Promise.all([
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
@@ -300,6 +301,10 @@ export default async function CompliancePage() {
     }),
     prisma.subscription.findUnique({
       where: { userId },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { specialty: true, practiceArea: true },
     }),
   ]);
 
@@ -328,7 +333,7 @@ export default async function CompliancePage() {
             include: { mandatoryRequirements: { where: { retiredAt: null } } },
           });
 
-      const view = compliancePageCompliance({ license, rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+      const view = compliancePageCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
       if (!rule) {
         return {
           license,
@@ -406,6 +411,7 @@ export default async function CompliancePage() {
           : undefined;
         return {
           status: result.status,
+          reason: result.reason,
           requirementId: req.id,
           topic: req.topic,
           displayName,
@@ -722,7 +728,7 @@ export default async function CompliancePage() {
           } else if (gap.completionStatus === "completed") {
             srcLine = `You attested completion${gap.completedYear ? ` · ${gap.completedYear}` : ""}`;
           } else if (gap.isNotApplicable) {
-            srcLine = "You marked this as not applicable";
+            srcLine = gap.reason ?? "You marked this as not applicable";
           } else if (gap.suggestedCert && !gap.isMet) {
             srcLine = `Looks satisfied by ${gap.suggestedCert.title} — open this row to confirm`;
           }

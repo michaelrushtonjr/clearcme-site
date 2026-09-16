@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/lib/dates";
-import { notificationCompliance } from "@/lib/compliance-adapters";
+import { notificationCompliance, licensePractice } from "@/lib/compliance-adapters";
 import type { OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
 
 /**
@@ -64,7 +64,7 @@ export function formatTopicLabel(topic: string): string {
 export async function getComplianceSnapshot(userId: string): Promise<UserComplianceSnapshot | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, specialty: true, practiceArea: true },
   });
   if (!user?.email) return null;
 
@@ -93,7 +93,7 @@ export async function getComplianceSnapshot(userId: string): Promise<UserComplia
       },
       include: { mandatoryRequirements: { where: { retiredAt: null } } },
     });
-    const view = notificationCompliance({ license, rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+    const view = notificationCompliance({ license, practice: licensePractice(license, user), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
     const hoursEarned = view.hoursEarned;
     const generalGapHours = view.generalGapHours;
     const daysUntilRenewal = daysUntil(license.renewalDate);

@@ -1,5 +1,11 @@
 import { evaluateLicense, type LicenseInput, type OverallStatus } from "@/lib/compliance-engine";
 
+type Practice = NonNullable<LicenseInput["practice"]>;
+// Preserve the old API's per-field nullish fallback, including empty strings.
+export function licensePractice(license: Practice, user?: Practice | null): Practice {
+  return { specialty: license.specialty ?? user?.specialty ?? "", practiceArea: license.practiceArea ?? user?.practiceArea ?? "" };
+}
+
 export function complianceStatusLabel(status: OverallStatus): string {
   return { COMPLIANT: "Audit-ready", ACTION_NEEDED: "Action needed", UNKNOWN: "Needs your answer", NOT_COMPUTED: "Rules pending" }[status];
 }

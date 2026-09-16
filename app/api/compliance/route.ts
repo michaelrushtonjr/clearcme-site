@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiCompliance } from "@/lib/compliance-adapters";
+import { apiCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
@@ -32,6 +32,11 @@ export async function GET(req: NextRequest) {
   if (licenses.length === 0) {
     return NextResponse.json({ compliance: [], message: "No active licenses found." });
   }
+
+  const userProfile = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { specialty: true, practiceArea: true },
+  });
 
   // Get all certificates for this user
   const certificates = await prisma.certificate.findMany({
@@ -66,7 +71,7 @@ export async function GET(req: NextRequest) {
           include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
-    const view = apiCompliance({ license, rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
+    const view = apiCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates, completions: requirementCompletions, today: new Date() });
     if (!rule) {
       // No rule configured yet, or computed compliance is intentionally blocked for this state.
       complianceResults.push({

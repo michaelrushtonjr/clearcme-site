@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
 import { prisma } from "@/lib/prisma";
-import { auditCompliance } from "@/lib/compliance-adapters";
+import { auditCompliance, licensePractice } from "@/lib/compliance-adapters";
 import type { LicenseEvaluation, OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
 import JSZip from "jszip";
 import { get } from "@vercel/blob";
@@ -63,6 +63,11 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const licenseId = searchParams.get("licenseId");
+
+  const userProfile = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { specialty: true, practiceArea: true },
+  });
 
   // Fetch licenses
   const licenses = await prisma.physicianLicense.findMany({
@@ -147,7 +152,7 @@ export async function GET(req: NextRequest) {
           include: { mandatoryRequirements: { where: { retiredAt: null } } },
         });
 
-    const view = auditCompliance({ license: lic, rule, requirements: rule?.mandatoryRequirements ?? [], certificates: allCerts, completions: requirementCompletions, today: new Date() });
+    const view = auditCompliance({ license: lic, practice: licensePractice(lic, userProfile), rule, requirements: rule?.mandatoryRequirements ?? [], certificates: allCerts, completions: requirementCompletions, today: new Date() });
     const mandatoryStatus: MandatoryStatus[] = view.mandatoryGaps.map((result) => {
       const req = rule!.mandatoryRequirements.find((r) => r.id === result.requirementId)!;
       return { topic: result.topic, label: requirementDisplayName(req.topic, req.description), hoursRequired: result.needed,

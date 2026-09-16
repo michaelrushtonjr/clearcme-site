@@ -13,7 +13,7 @@ import { courseDestination } from "@/lib/course-routing";
 import { daysUntil, formatDateUTC } from "@/lib/dates";
 import { buildNextAction } from "@/lib/next-action";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
-import { dashboardCompliance } from "@/lib/compliance-adapters";
+import { dashboardCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import { formatStateName } from "@/lib/state-names";
 
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [certificates, licenses, requirementCompletions, emailPreference] = await Promise.all([
+  const [certificates, licenses, requirementCompletions, emailPreference, userProfile] = await Promise.all([
     prisma.certificate.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -36,6 +36,10 @@ export default async function DashboardPage() {
     prisma.emailPreference.findUnique({
       where: { userId },
       select: { renewalReminders: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { specialty: true, practiceArea: true },
     }),
   ]);
 
@@ -62,7 +66,7 @@ export default async function DashboardPage() {
       });
       if (!rule) return null;
 
-      const view = dashboardCompliance({ license, rule, requirements: rule.mandatoryRequirements, certificates, completions: requirementCompletions, today: new Date() });
+      const view = dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule, requirements: rule.mandatoryRequirements, certificates, completions: requirementCompletions, today: new Date() });
       const hoursEarned = view.hoursEarned;
       const hoursNeeded = view.generalGapHours;
 
@@ -144,7 +148,7 @@ export default async function DashboardPage() {
 
   // Shared next-action engine — same recommendation as the Compliance page
   const unavailableCompliance = licenses.filter((license) => !validCompliance.some((d) => d.license.id === license.id)).map((license) => ({
-    license, view: dashboardCompliance({ license, rule: null, requirements: [], certificates, completions: requirementCompletions, today: new Date() }),
+    license, view: dashboardCompliance({ license, practice: licensePractice(license, userProfile), rule: null, requirements: [], certificates, completions: requirementCompletions, today: new Date() }),
   }));
   const nextAction = buildNextAction(
     [...unavailableCompliance.map(({ license, view }) => ({ state: license.state, licenseType: license.licenseType, daysUntilRenewal: daysUntil(license.renewalDate), renewalDateLabel: "your renewal date", generalGapHours: 0, isCompliant: false, overall: view.overall, mandatoryGaps: [] })), ...validCompliance.map((d) => ({
