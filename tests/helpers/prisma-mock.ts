@@ -6,7 +6,7 @@ const prismaMock = vi.hoisted(() => {
   );
   const db = {
     emailLog: model(), extractionReservation: model(), federalTrainingRecord: model(),
-    user: model(), account: model(), session: model(), verificationToken: model(),
+    user: model(), account: model(), session: model(), verificationToken: model(), mobileEmailCode: model(),
     physicianLicense: model(), certificate: model(), complianceRule: model(),
     mandatoryRequirement: model(), userRequirementCompletion: model(),
     subscription: model(), stripePriceMap: model(), stripeEvent: model(), billingAnomaly: model(), complianceStatus: model(), emailPreference: model(),

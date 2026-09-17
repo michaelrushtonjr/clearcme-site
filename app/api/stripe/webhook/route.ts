@@ -36,6 +36,9 @@ async function syncSubscription(tx: Prisma.TransactionClient, subscription: Stri
   let byId = await tx.subscription.findUnique({ where: { stripeSubId: subscription.id } });
   const userId = byId?.userId ?? subscription.metadata.userId ?? (await tx.subscription.findUnique({ where: { stripeCustomerId: customerId } }))?.userId;
   if (!userId) throw new Error("Stripe subscription has no known user");
+  // Account deletion cancels in Stripe and then removes the user, so the
+  // resulting subscription.deleted event has nobody to sync to. Acknowledge it.
+  if (!byId && !(await tx.user.findUnique({ where: { id: userId }, select: { id: true } }))) return;
   // A customer can change after a recovery/recreated checkout. Serialize the
   // current-user pointer too, before comparing creation times or replacing it.
   await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtextextended(${`billing-user:${userId}`}, 0))`;

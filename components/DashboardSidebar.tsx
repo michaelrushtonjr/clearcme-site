@@ -104,7 +104,7 @@ function SidebarContent({
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all ${
+            className={`${item.href === "/pricing" ? "app-hide " : ""}flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all ${
               isActive(item.href)
                 ? "bg-[var(--paper)] text-[var(--primary)] border border-[var(--line)] shadow-[var(--shadow-sm)]"
                 : "text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)]"

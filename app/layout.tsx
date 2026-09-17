@@ -33,7 +33,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Inside the iOS app the web view's user agent carries "ClearCMEApp".
+            Tagging <html> before first paint lets plain CSS drop purchase UI
+            (App Store 3.1.1) with no flash and no dynamic rendering. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(/ClearCMEApp/.test(navigator.userAgent))document.documentElement.setAttribute('data-app-shell','ios')}catch(e){}",
+          }}
+        />
+      </head>
       <body className={consoleFontVars}>{children}</body>
     </html>
   );

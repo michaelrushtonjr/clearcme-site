@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 // Expo Push API endpoint
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const EXPO_BATCH_SIZE = 100;
+// The job runs daily, but a physician hears from it on these days only —
+// a push every morning for two months would be noise (and App Store 4.5.4).
+const PUSH_DAYS_BEFORE_RENEWAL = new Set([60, 45, 30, 21, 14, 7, 3, 1]);
 
 interface ExpoMessage {
   to: string;
@@ -16,7 +19,7 @@ interface ExpoMessage {
 }
 
 async function sendExpoBatch(messages: ExpoMessage[]) {
-  const result = { sent: 0, failed: 0 };
+  const result = { sent: 0, failed: 0, deadTokens: [] as string[] };
   // Chunk into batches of EXPO_BATCH_SIZE
   for (let i = 0; i < messages.length; i += EXPO_BATCH_SIZE) {
     const batch = messages.slice(i, i + EXPO_BATCH_SIZE);
@@ -33,7 +36,11 @@ async function sendExpoBatch(messages: ExpoMessage[]) {
     if (!res.ok) result.failed += batch.length;
     else {
       const json = await res.json();
-      const tickets: { status?: string }[] = Array.isArray(json.data) ? json.data : [];
+      const tickets: { status?: string; details?: { error?: string } }[] = Array.isArray(json.data) ? json.data : [];
+      // The app was removed or notifications were revoked: stop sending to that device.
+      tickets.slice(0, batch.length).forEach((ticket, index) => {
+        if (ticket.details?.error === "DeviceNotRegistered") result.deadTokens.push(batch[index].to);
+      });
       const sent = tickets.slice(0, batch.length).filter((ticket) => ticket.status === "ok").length;
       result.sent += sent;
       result.failed += batch.length - sent;
@@ -107,6 +114,8 @@ export async function POST(req: NextRequest) {
 
         const msUntilRenewal = license.renewalDate.getTime() - now.getTime();
         const daysUntilRenewal = Math.ceil(msUntilRenewal / (1000 * 60 * 60 * 24));
+        if (!PUSH_DAYS_BEFORE_RENEWAL.has(daysUntilRenewal)) continue;
+        const inDays = `in ${daysUntilRenewal} day${daysUntilRenewal === 1 ? "" : "s"}`;
 
         const compliance = snapshot?.licenses.find((entry) => entry.licenseId === license.id);
         const gapHours = compliance && compliance.overall !== "NOT_COMPUTED" ? Math.max(compliance.generalGapHours, compliance.mandatoryTopics.filter((topic) => topic.scope !== "FEDERAL").reduce((sum, topic) => sum + topic.gap, 0)) : null;
@@ -121,17 +130,17 @@ export async function POST(req: NextRequest) {
           // Urgent
           title = "Renewal alert";
           if (gapHours !== null && gapHours > 0) {
-            body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. You still need ${gapHours} CME hours.`;
+            body = `Your ${license.state} ${designation} license renews ${inDays}. You still need ${gapHours} CME hours.`;
           } else {
-            body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Review your compliance now.`;
+            body = `Your ${license.state} ${designation} license renews ${inDays}. Review your compliance now.`;
           }
         } else {
           // 30–60 day heads-up
           title = "CME reminder";
-          body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Start tracking your CME now.`;
+          body = `Your ${license.state} ${designation} license renews ${inDays}. Start tracking your CME now.`;
         }
 
-        if (compliance?.overall === "UNKNOWN") body = `Your ${license.state} ${designation} license renews in ${daysUntilRenewal} days. Needs your answer — review your compliance map.`;
+        if (compliance?.overall === "UNKNOWN") body = `Your ${license.state} ${designation} license renews ${inDays}. Needs your answer — review your compliance map.`;
 
         messages.push({
           to: user.pushToken,
@@ -141,6 +150,7 @@ export async function POST(req: NextRequest) {
           data: {
             licenseId: license.id,
             screen: "compliance",
+            path: "/dashboard/compliance",
           },
         });
       }
@@ -150,7 +160,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ sent: 0, message: "No upcoming renewals found." });
     }
 
-    const delivery = await sendExpoBatch(messages);
+    const { deadTokens, ...delivery } = await sendExpoBatch(messages);
+    if (deadTokens.length) await prisma.user.updateMany({ where: { pushToken: { in: deadTokens } }, data: { pushToken: null, pushPlatform: null } });
     await notifyReminderFailures("renewal-reminders", delivery.failed);
 
     console.log(`[renewal-reminders] sent=${delivery.sent} failed=${delivery.failed}`);

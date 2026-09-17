@@ -99,15 +99,18 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3, showUpgradePrompt
               background: "var(--c1b-card, #FBFAF5)",
             }}
           >
-            <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>
+            <p className="app-hide" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>
               Free includes one strong course match.
             </p>
-            <p className="mt-1" style={{ fontSize: 12, color: "var(--c1b-muted, #656C60)" }}>
+            <p className="app-hide mt-1" style={{ fontSize: 12, color: "var(--c1b-muted, #656C60)" }}>
               Upgrade to Essential to compare all {catalog.courses.length} verified options, sort by price/time, and export your audit-ready record.
+            </p>
+            <p className="app-only" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--c1b-ink, #101613)" }}>
+              Your current plan shows one strong course match per gap.
             </p>
             <Link
               href="/pricing?checkout=essential"
-              className="mt-2 inline-flex items-center gap-1 hover:underline"
+              className="app-hide mt-2 inline-flex items-center gap-1 hover:underline"
               style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-green, #2E4A2C)" }}
             >
               Unlock full course choice →

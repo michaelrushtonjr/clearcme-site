@@ -399,6 +399,48 @@ If you didn't request this email, you can safely ignore it.
   return { subject, html, text };
 }
 
+/** Sign-in code for the iOS app's "Continue with email" path. */
+export function renderSignInCodeEmail({ code }: { code: string }): { subject: string; html: string } {
+  const base = siteUrl();
+  const subject = `${code} is your ClearCME sign-in code`;
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:${C1B_CANVAS};font-family:${JAKARTA_STACK};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${C1B_CANVAS};padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:${C1B_CARD};border-radius:12px;border:1px solid ${C1B_BORDER};overflow:hidden;">
+        <tr>
+          <td style="background-color:${C1B_FOREST};padding:20px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding-right:10px;"><img src="${base}/clearcme-mark-tile.png" width="28" height="28" alt="" style="display:block;border:0;" /></td>
+              <td><span style="color:#FFFFFF;font-size:18px;font-weight:700;letter-spacing:0.3px;font-family:${JAKARTA_STACK};">Clear<span style="color:#9FBE93;">CME</span></span></td>
+            </tr></table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:${C1B_INK};">Your sign-in code</h1>
+            <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:${C1B_INK};">
+              Enter this code in the ClearCME app. It expires in 10 minutes and can be used once.
+            </p>
+            <p style="margin:20px 0 4px;font-size:32px;font-weight:700;letter-spacing:6px;color:${C1B_INK};">${code}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid ${C1B_BORDER};">
+            <p style="margin:0;font-size:12px;color:${C1B_MUTED};line-height:1.5;">
+              If you didn't request this code, you can safely ignore this email — no one can sign in without it.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  return { subject, html };
+}
+
 // Notification to Michael: use the existing transport and keep user details out
 // of the alert. If ALERT_EMAIL is absent, the failed cron still logs/returns 500.
 export async function notifyReminderFailures(run: string, failed: number): Promise<void> {

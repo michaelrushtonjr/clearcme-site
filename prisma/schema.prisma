@@ -47,6 +47,19 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// One active sign-in code per email for the iOS app's "Continue with email"
+// path. Codes are stored hashed; attempts and sends are counted here so guess
+// and resend limits hold across server instances.
+model MobileEmailCode {
+  email       String   @id // lower-cased
+  codeHash    String
+  expires     DateTime
+  attempts    Int      @default(0)
+  sendCount   Int      @default(1)
+  windowStart DateTime @default(now())
+  lastSentAt  DateTime @default(now())
+}
+
 // ─── Core: Users (Physicians) ─────────────────────────────────────────────────
 
 model User {

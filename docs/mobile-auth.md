@@ -24,3 +24,24 @@ Codes contain 32 random bytes; only their SHA-256 hash is stored in the existing
 For one release, requests containing the old `?token=` parameter return 410 Gone and log a deprecation message without the token. The read-only iOS reference still builds that URL in `app/dashboard.tsx:26`; Michael must coordinate the wrapper update before rolling out this breaking bridge change. The iOS repository was not edited.
 
 Verification references: [Google ID token verification](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token), [Apple identity verification](https://developer.apple.com/documentation/signinwithapple/verifying-a-user). Tests use locally signed tokens and mocked public-key retrieval; no provider authentication service is called.
+
+## Email sign-in codes (added 2026-09-16)
+
+The iOS app also offers "Continue with email" so physicians who joined on the web with an email link can get into the app, and so App Review has working credentials.
+
+1. POST `/api/auth/mobile-email/start` with `{ "email" }`. The server stores a SHA-256 hash of a random six-digit code in `MobileEmailCode` (one row per lower-cased email) and emails the code through the existing Resend transport. Codes last 10 minutes. Resends are limited to one per 30 seconds and five per 15 minutes.
+2. POST `/api/auth/mobile-email/verify` with `{ "email", "code" }`. Five wrong guesses retire the code. A correct code is spent atomically, the user is found or created with a verified email, and the response is the same 30-day mobile JWT the Apple and Google routes return. The web view then uses the exchange flow above.
+
+**App Review account.** When both `REVIEW_DEMO_EMAIL` and `REVIEW_DEMO_CODE` (8+ characters) are set, that one address signs in with the fixed code and no email is sent. The account must already exist and must hold fictional data only. Ten wrong guesses lock it for 15 minutes. Unset either variable to switch it off between reviews.
+
+## Running inside the iOS app
+
+The wrapper appends `ClearCMEApp/<version>` to the web view's user agent. `app/layout.tsx` tags `<html data-app-shell="ios">` before first paint, and two CSS utilities do the rest: `.app-hide` (pricing, plan names with prices, upgrade and checkout links, the billing portal) and `.app-only` (neutral replacement copy). Server-side, `/pricing` redirects to `/dashboard` and the Stripe checkout and portal routes return 403 for app requests. This is App Store guideline 3.1.1: the app contains no purchase flows, prices, or links to buy. Anything new that sells or prices a plan needs `.app-hide`.
+
+## Account deletion
+
+`DELETE /api/account` with `{ "confirm": "DELETE" }` (Settings → Delete account, reachable in the app) cancels any Stripe subscription first, removes the user's private blobs (`certificates/<userId>/`, `audit-exports/<userId>/`), then deletes the user row, which cascades to everything else. Each step is safe to repeat; if billing or storage fails, nothing after it runs. The Stripe webhook acknowledges events for users that no longer exist.
+
+## Push alerts
+
+The app registers its Expo push token at `POST /api/devices/push-token` and clears it with `DELETE` on sign-out. `/api/cron/renewal-reminders` runs daily but only sends on days 60, 45, 30, 21, 14, 7, 3, and 1 before a renewal. Tokens Expo reports as `DeviceNotRegistered` are cleared.

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getPriceIdForTier, getStripe, type PaidTier } from "@/lib/stripe";
+import { isAppShellRequest } from "@/lib/app-shell-server";
 
 function isPaidTier(value: unknown): value is PaidTier {
   return value === "ESSENTIAL" || value === "PRO";
@@ -12,6 +13,9 @@ function appUrl(req: Request) {
 }
 
 export async function POST(req: Request) {
+  // No purchase flows inside the iOS app (App Store 3.1.1); the UI never offers
+  // one there, and this keeps the rule true even if a stale page does.
+  if (isAppShellRequest(req)) return NextResponse.json({ error: "Not available in the app." }, { status: 403 });
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

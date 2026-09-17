@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { isAppShellRequest } from "@/lib/app-shell-server";
 
 function appUrl(req: Request) {
   return process.env.NEXTAUTH_URL ?? new URL(req.url).origin;
 }
 
 export async function POST(req: Request) {
+  if (isAppShellRequest(req)) return NextResponse.json({ error: "Not available in the app." }, { status: 403 });
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

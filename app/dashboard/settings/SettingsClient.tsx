@@ -11,6 +11,8 @@ import {
 import RequirementAttestation from "@/components/dashboard/RequirementAttestation";
 import { formatDateUTC } from "@/lib/dates";
 import { formatStateName } from "@/lib/state-names";
+import { useAppShell } from "@/lib/app-shell";
+import { signOutAndClear } from "@/lib/client-sign-out";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -131,6 +133,8 @@ export default function SettingsClient({
   emailPreference: EmailPreferenceState;
 }) {
   const router = useRouter();
+  // Inside the iOS app: no prices, checkout, or billing portal (App Store 3.1.1).
+  const inApp = useAppShell();
   const [name, setName] = useState(user.name ?? "");
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -174,7 +178,8 @@ export default function SettingsClient({
     ESSENTIAL: "Essential — $99/year",
     PRO: "Pro — $199/year",
   };
-  const planLabel = `${PLAN_DISPLAY[subscription?.tier ?? "FREE"] ?? subscription?.tier ?? "Free"}${
+  const APP_PLAN_DISPLAY: Record<string, string> = { FREE: "Free", ESSENTIAL: "Essential", PRO: "Pro" };
+  const planLabel = `${(inApp ? APP_PLAN_DISPLAY : PLAN_DISPLAY)[subscription?.tier ?? "FREE"] ?? subscription?.tier ?? "Free"}${
     subscription && subscription.status !== "ACTIVE" ? ` · ${subscription.status.toLowerCase()}` : ""
   }`;
 
@@ -395,7 +400,7 @@ export default function SettingsClient({
                 </p>
               )}
             </div>
-            {subscription?.stripeCustomerId && (
+            {subscription?.stripeCustomerId && !inApp && (
               <button
                 type="button"
                 onClick={openBillingPortal}
@@ -408,7 +413,7 @@ export default function SettingsClient({
             )}
           </div>
 
-          {isPaidPlan ? (
+          {inApp ? null : isPaidPlan ? (
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/pricing"
@@ -695,6 +700,13 @@ export default function SettingsClient({
           </div>
         )}
       </section>
+
+      <DeleteAccountSection hasPaidPlan={isPaidPlan} />
+
+      <p style={{ fontSize: 12, lineHeight: 1.6, color: "var(--c1b-muted)" }}>
+        ClearCME is a tracking tool, not legal or licensing advice. Your state medical board is the final
+        authority on what your license requires — confirm anything that matters with the board directly.
+      </p>
     </div>
   );
 }
@@ -808,6 +820,104 @@ function HistoryRow({
         </div>
       )}
     </div>
+  );
+}
+
+function DeleteAccountSection({ hasPaidPlan }: { hasPaidPlan: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+  const confirmed = confirmText.trim().toUpperCase() === "DELETE";
+
+  const handleDelete = async () => {
+    if (!confirmed || deleting) return;
+    setDeleting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: "DELETE" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Your account was not deleted. Try again.");
+      // The session rows are already gone; this clears the cookie and local
+      // state, then lands on "/" (the iOS app returns to its sign-in screen).
+      await signOutAndClear({ callbackUrl: "/" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Your account was not deleted. Try again.");
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <section id="delete-account" className="card overflow-hidden">
+      <div className="card-head">
+        <h2 className="card-title">Delete account</h2>
+      </div>
+      <div className="space-y-3" style={{ padding: "4px 18px 18px" }}>
+        <p className="text-sm text-[var(--ink-2)]">
+          Permanently deletes your ClearCME account and everything in it: licenses, certificates, uploaded
+          documents, and compliance history.{hasPaidPlan ? " Your subscription is canceled immediately and will not renew." : ""} This
+          can&apos;t be undone.
+        </p>
+        {!open ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="product-btn product-btn-secondary"
+            style={{ color: "var(--status-miss)" }}
+          >
+            Delete my account…
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-[var(--ink-2)]">
+              If you want a copy of your records, export them first. To confirm, type <strong>DELETE</strong> below.
+            </p>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(event) => setConfirmText(event.target.value)}
+              placeholder="DELETE"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-label="Type DELETE to confirm"
+              className="product-input"
+              style={{ maxWidth: 240 }}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={!confirmed || deleting}
+                className="product-btn disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ background: "var(--status-miss)", color: "#fff" }}
+              >
+                {deleting ? "Deleting…" : "Permanently delete account"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setConfirmText("");
+                  setError("");
+                }}
+                disabled={deleting}
+                className="product-btn product-btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+            {error && (
+              <p className="rounded-[var(--radius-sm)] bg-[var(--status-miss-bg)] px-3 py-2 text-sm text-[var(--status-miss)]">{error}</p>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

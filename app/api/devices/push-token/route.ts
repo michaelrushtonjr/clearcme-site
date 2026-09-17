@@ -52,3 +52,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to register push token" }, { status: 500 });
   }
 }
+
+// DELETE /api/devices/push-token
+// Called on native sign-out so a signed-out phone stops receiving this account's alerts.
+export async function DELETE(req: NextRequest) {
+  const userId = await getMobileUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  await prisma.user.updateMany({ where: { id: userId }, data: { pushToken: null, pushPlatform: null } });
+  return NextResponse.json({ success: true });
+}

@@ -59,19 +59,47 @@ function noticeCopy(
   }
 }
 
+/** In-app copy: states the limit, never names a plan, price, or place to buy (App Store 3.1.1). */
+function appNoticeCopy(feature: FencedFeature): { title: string; body: string } {
+  switch (feature) {
+    case "export":
+      return {
+        title: "Export isn't included in your current plan.",
+        body: "Your compliance map and course matches are fully available here.",
+      };
+    case "extraction":
+      return {
+        title: "You've used the certificate scans included in your current plan.",
+        body: "You can still add CME manually, as much as you like.",
+      };
+    case "licenses":
+      return {
+        title: "You've reached the number of state licenses included in your current plan.",
+        body: "Your existing licenses keep tracking as usual.",
+      };
+  }
+}
+
 /** Renders a blocked-by-tier state as an upgrade prompt, never a raw error. */
 export default function UpgradeNotice({ feature, limit, reason }: UpgradeNoticeProps) {
   const copy = noticeCopy(feature, limit, reason);
+  const appCopy = appNoticeCopy(feature);
 
   return (
     <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] px-4 py-3 text-left">
-      <p className="text-sm font-semibold text-[var(--ink)]">{copy.title}</p>
-      <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{copy.body}</p>
-      {copy.rate && <p className="mt-1 text-xs italic text-[var(--ink-3)]">{copy.rate}</p>}
+      <div className="app-hide">
+        <p className="text-sm font-semibold text-[var(--ink)]">{copy.title}</p>
+        <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{copy.body}</p>
+        {copy.rate && <p className="mt-1 text-xs italic text-[var(--ink-3)]">{copy.rate}</p>}
+      </div>
+      <div className="app-only">
+        <p className="text-sm font-semibold text-[var(--ink)]">{appCopy.title}</p>
+        <p className="mt-1 text-xs leading-relaxed text-[var(--ink-2)]">{appCopy.body}</p>
+      </div>
       <div className="mt-2 flex items-center gap-4">
         <Link
           href={copy.href}
-          className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)]"
+          className="app-hide inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-2)]"
         >
           See plans →
         </Link>

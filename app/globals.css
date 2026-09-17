@@ -3126,3 +3126,17 @@ body {
     white-space: normal;
   }
 }
+
+/* ── iOS app shell ─────────────────────────────────────────────────────────
+   app/layout.tsx sets html[data-app-shell] inside the native wrapper.
+   .app-hide: purchase/pricing UI that must not render in the app.
+   .app-only: neutral replacement copy shown only in the app. */
+.app-only {
+  display: none !important;
+}
+html[data-app-shell] .app-hide {
+  display: none !important;
+}
+html[data-app-shell] .app-only {
+  display: block !important;
+}
