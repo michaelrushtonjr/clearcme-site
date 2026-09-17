@@ -241,7 +241,7 @@ export default function CertificateUpload({ userId }: { userId: string }) {
                 or click to browse files
               </p>
               <p className="text-xs text-[var(--ink-3)]">
-                PDF, JPG, PNG — up to 10MB each
+                PDF, JPG, PNG — up to 10MB each. CME certificates only — never upload patient information.
               </p>
             </>
           )}

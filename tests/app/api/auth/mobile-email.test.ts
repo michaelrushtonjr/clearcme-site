@@ -9,7 +9,7 @@ import { POST as verifyPOST } from "@/app/api/auth/mobile-email/verify/route";
 const email = "doc@example.invalid";
 const hash = (code: string) => createHash("sha256").update(`${email}:${code}`).digest("hex");
 const user = { id: "user", email, name: null, image: null, emailVerified: null };
-const post = (handler: typeof startPOST, body: unknown) => handler(new Request("http://localhost/api/auth/mobile-email", { method: "POST", body: JSON.stringify(body) }));
+const post = (handler: (req: Request) => Promise<Response>, body: unknown) => handler(new Request("http://localhost/api/auth/mobile-email", { method: "POST", body: JSON.stringify(body) }));
 const row = (overrides: Record<string, unknown> = {}) => ({ email, codeHash: hash("123456"), expires: new Date(Date.now() + 60_000), attempts: 0, sendCount: 1, windowStart: new Date(), lastSentAt: new Date(Date.now() - 60_000), ...overrides });
 beforeEach(() => {
   vi.clearAllMocks(); vi.unstubAllEnvs(); mail.configured = true; mail.sendEmail.mockResolvedValue({ ok: true });

@@ -64,7 +64,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">7. Your Rights</h2>
-            <p>You may request access to, correction of, export of, or deletion of your personal data at any time by contacting us at <a href="mailto:hello@clearcme.ai" className="text-[#3f5f33] hover:underline">hello@clearcme.ai</a>. Account deletion will remove associated active account data within 30 days, except where limited backup retention, fraud prevention, tax, accounting, security, or legal obligations require temporary retention.</p>
+            <p>You can delete your account yourself at any time in Settings → Delete account, on the web or in the iPhone app; deletion removes your licenses, certificates, uploaded documents, and compliance history immediately. You may also request access to, correction of, export of, or deletion of your personal data at any time by contacting us at <a href="mailto:hello@clearcme.ai" className="text-[#3f5f33] hover:underline">hello@clearcme.ai</a>. Account deletion will remove associated active account data within 30 days, except where limited backup retention, fraud prevention, tax, accounting, security, or legal obligations require temporary retention.</p>
           </section>
 
           <section>

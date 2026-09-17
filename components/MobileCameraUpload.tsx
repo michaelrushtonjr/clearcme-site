@@ -467,6 +467,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
         </svg>
         Upload a PDF
       </button>
+      <p className="text-center text-xs text-[var(--ink-3)]">CME certificates only — never upload patient information.</p>
       <input
         ref={fileInputRef}
         type="file"
