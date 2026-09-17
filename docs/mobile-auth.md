@@ -45,3 +45,7 @@ The wrapper appends `ClearCMEApp/<version>` to the web view's user agent. `app/l
 ## Push alerts
 
 The app registers its Expo push token at `POST /api/devices/push-token` and clears it with `DELETE` on sign-out. `/api/cron/renewal-reminders` runs daily but only sends on days 60, 45, 30, 21, 14, 7, 3, and 1 before a renewal. Tokens Expo reports as `DeviceNotRegistered` are cleared.
+
+## Sign in with Apple token revocation
+
+Apple requires apps that offer Sign in with Apple to revoke the user's tokens when the account is deleted. The app sends Apple's one-time `authorizationCode` with the identity token; `lib/apple-tokens.ts` exchanges it for a refresh token (stored on the Apple `Account` row) and `deleteAccount` revokes it before the rows go. All of it is best-effort and **dormant until four production variables exist**: `APPLE_TEAM_ID` (8G6L4CAB73), `APPLE_KEY_ID` (L2RTSJX35M), `APPLE_BUNDLE_ID` (already set), and `APPLE_PRIVATE_KEY` (the contents of `AuthKey_L2RTSJX35M.p8`; literal `\n` line breaks are accepted). The key must have Sign in with Apple enabled for the `ai.clearcme.app` App ID. Unlike `AUTH_APPLE_SECRET`, this does not expire: client secrets are minted per call and live five minutes.

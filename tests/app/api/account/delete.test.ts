@@ -8,12 +8,13 @@ vi.mock("@/lib/email", () => ({ sendEmail: vi.fn(async () => ({ ok: true })) }))
 import { DELETE } from "@/app/api/account/route";
 import { AccountDeletionError, deleteAccount, type AccountDeletionDeps } from "@/lib/account-deletion";
 
-const account = { id: "user", email: "Doc@Example.invalid", subscription: { stripeSubId: "sub_1" }, certificates: [{ fileUrl: "https://store.private.blob.vercel-storage.com/certificates/user/a.pdf" }, { fileUrl: null }] };
+const account = { id: "user", email: "Doc@Example.invalid", subscription: { stripeSubId: "sub_1" }, accounts: [{ refresh_token: "apple-refresh" }], certificates: [{ fileUrl: "https://store.private.blob.vercel-storage.com/certificates/user/a.pdf" }, { fileUrl: null }] };
 const order: string[] = [];
 const deps = (): AccountDeletionDeps => ({
   cancelSubscription: vi.fn(async () => { order.push("stripe"); }),
   deleteStoredDocuments: vi.fn(async () => { order.push("blobs"); return 1; }),
   sendConfirmation: vi.fn(async () => { order.push("email"); }),
+  revokeAppleAccess: vi.fn(async () => { order.push("apple"); return 1; }),
 });
 beforeEach(() => {
   vi.clearAllMocks(); order.length = 0;
@@ -35,7 +36,8 @@ test("route: deletion requires the literal confirmation", async () => {
 });
 test("billing stops first, documents go second, rows last, confirmation after", async () => {
   const d = deps(); await deleteAccount("user", d);
-  expect(order).toEqual(["stripe", "blobs", "rows", "email"]);
+  expect(order).toEqual(["stripe", "blobs", "apple", "rows", "email"]);
+  expect(d.revokeAppleAccess).toHaveBeenCalledWith(["apple-refresh"]);
   expect(d.deleteStoredDocuments).toHaveBeenCalledWith("user", [account.certificates[0].fileUrl]);
   expect(prismaMock.verificationToken.deleteMany).toHaveBeenCalledWith({ where: { identifier: { in: ["mobile-session:user", "Doc@Example.invalid"] } } });
   expect(prismaMock.mobileEmailCode.deleteMany).toHaveBeenCalledWith({ where: { email: "doc@example.invalid" } });
@@ -55,6 +57,10 @@ test("free accounts skip Stripe; a failed confirmation email does not undo the d
   const d = deps(); d.sendConfirmation = vi.fn(async () => { throw new Error("resend down"); });
   await expect(deleteAccount("user", d)).resolves.toEqual({ documentsRemoved: 1 });
   expect(d.cancelSubscription).not.toHaveBeenCalled(); expect(prismaMock.user.delete).toHaveBeenCalledOnce();
+});
+test("a failed Apple revocation never blocks the deletion", async () => {
+  const d = deps(); d.revokeAppleAccess = vi.fn(async () => { throw new Error("apple down"); });
+  await expect(deleteAccount("user", d)).resolves.toEqual({ documentsRemoved: 1 }); expect(prismaMock.user.delete).toHaveBeenCalledOnce();
 });
 test("unknown account is a 404", async () => {
   prismaMock.user.findUnique.mockResolvedValue(null);

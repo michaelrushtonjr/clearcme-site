@@ -2,6 +2,7 @@ import { del, list } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
+import { revokeAppleRefreshToken } from "@/lib/apple-tokens";
 
 export class AccountDeletionError extends Error {
   constructor(message: string, public status: number) { super(message); }
@@ -11,6 +12,8 @@ export interface AccountDeletionDeps {
   cancelSubscription(stripeSubId: string): Promise<void>;
   deleteStoredDocuments(userId: string, knownUrls: string[]): Promise<number>;
   sendConfirmation(email: string): Promise<void>;
+  /** Best-effort Sign in with Apple revocation; resolves to how many tokens Apple confirmed. */
+  revokeAppleAccess(refreshTokens: string[]): Promise<number>;
 }
 
 /** Cancels immediately. An already-canceled or vanished subscription counts as success. */
@@ -53,10 +56,16 @@ async function sendDeletionEmail(email: string) {
   });
 }
 
+async function revokeAppleTokens(refreshTokens: string[]) {
+  const results = await Promise.all(refreshTokens.map((token) => revokeAppleRefreshToken(token)));
+  return results.filter(Boolean).length;
+}
+
 const defaultDeps: AccountDeletionDeps = {
   cancelSubscription: cancelStripeSubscription,
   deleteStoredDocuments: deleteUserBlobs,
   sendConfirmation: sendDeletionEmail,
+  revokeAppleAccess: revokeAppleTokens,
 };
 
 /**
@@ -74,6 +83,7 @@ export async function deleteAccount(userId: string, deps: AccountDeletionDeps = 
       email: true,
       subscription: { select: { stripeSubId: true } },
       certificates: { select: { fileUrl: true } },
+      accounts: { where: { provider: "apple", refresh_token: { not: null } }, select: { refresh_token: true } },
     },
   });
   if (!user) throw new AccountDeletionError("Account not found.", 404);
@@ -94,6 +104,13 @@ export async function deleteAccount(userId: string, deps: AccountDeletionDeps = 
   } catch {
     console.error("[account] Stored-document removal failed; account rows kept for retry", { userId });
     throw new AccountDeletionError("We couldn't remove your stored documents, so your account was not deleted. Try again in a minute, or email hello@clearcme.ai.", 503);
+  }
+
+  // The tokens disappear with the rows, so revoke while we still hold them.
+  const appleTokens = user.accounts.flatMap((account) => (account.refresh_token ? [account.refresh_token] : []));
+  if (appleTokens.length) {
+    try { await deps.revokeAppleAccess(appleTokens); }
+    catch { console.error("[account] Apple token revocation failed; deletion continues", { userId }); }
   }
 
   await prisma.$transaction(async (tx) => {
