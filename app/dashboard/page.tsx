@@ -344,7 +344,7 @@ export default async function DashboardPage() {
               </Link>
             </p>
           )}
-          {unavailableCompliance.map(({ license, view }) => <div key={license.id}><p style={{ padding: 18 }}>{view.evaluation.reasons.join(" ")}</p><FederalTrainingStatus requirement={federalTraining} /></div>)}
+          {unavailableCompliance.map(({ license, view }) => <div key={license.id}><p className="ledger-note">{view.evaluation.reasons.join(" ")}</p><FederalTrainingStatus requirement={federalTraining} /></div>)}
           {validCompliance.map((d) => {
             const renews = d.license.renewalDate
               ? formatDateUTC(d.license.renewalDate, { month: "short", day: "numeric", year: "numeric" })
@@ -360,7 +360,7 @@ export default async function DashboardPage() {
                 </div>
 
                 <FederalTrainingStatus requirement={federalTraining} />
-                {d.uncertainHours > 0 && <p style={{ padding: "8px 18px" }}>{d.uncertainHours.toFixed(1)} hours pending eligibility review</p>}
+                {d.uncertainHours > 0 && <p className="ledger-note">{d.uncertainHours.toFixed(1)} hours pending eligibility review</p>}
                 {/* General hours row */}
                 {d.rule.totalHours > 0 && (
                   <Link href="/dashboard/compliance" className="req-row" style={{ textDecoration: "none" }}>
