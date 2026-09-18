@@ -15,7 +15,8 @@
     "secrets": "node scripts/check-secrets.mjs",
     "db:local": "node scripts/local-prisma.js",
     "db:baseline-local": "node scripts/baseline-local-history.js",
-    "test:migrations": "node scripts/test-migrations.js"
+    "test:migrations": "node scripts/test-migrations.js",
+    "seo:report": "node scripts/seo-report.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -26,6 +27,7 @@
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "@types/pg": "^8.20.0",
+    "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.3.3",
     "clsx": "^2.1.1",
     "google-auth-library": "^11.0.2",

@@ -5,7 +5,7 @@ const prismaMock = vi.hoisted(() => {
     ["findUnique", "findFirst", "findMany", "create", "createMany", "update", "updateMany", "upsert", "delete", "deleteMany", "count"].map((key) => [key, vi.fn()])
   );
   const db = {
-    emailLog: model(), extractionReservation: model(), federalTrainingRecord: model(),
+    seoDailyMetric: model(), emailLog: model(), extractionReservation: model(), federalTrainingRecord: model(),
     user: model(), account: model(), session: model(), verificationToken: model(), mobileEmailCode: model(),
     physicianLicense: model(), certificate: model(), complianceRule: model(),
     mandatoryRequirement: model(), userRequirementCompletion: model(),

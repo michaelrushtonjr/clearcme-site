@@ -58,10 +58,14 @@ test("two license snapshots show the same federal row but count its eight-hour g
   expect(snapshot?.licenses.map((license) => license.mandatoryTopics.find((topic) => topic.topic === "MATE_ACT")?.status)).toEqual(["NOT_MET", "NOT_MET"]);
   expect(db.federalTrainingRecord.findUnique).toHaveBeenCalledTimes(1);
 });
-test("profile and public page render identical approved deadline wording", async () => {
+test("profile retains approved copy and public guide preserves the first qualifying deadline", async () => {
   const profile = renderToStaticMarkup(await ProfilePage());
   const publicPage = renderToStaticMarkup(MateActPage());
-  expect(profile).toContain(MATE_ACT_TEXT); expect(publicPage).toContain(MATE_ACT_TEXT);
+  expect(profile).toContain(MATE_ACT_TEXT);
+  expect(publicPage).toContain("first applicable DEA registration or renewal on or after June 27, 2023");
+  expect(publicPage).toContain("one-time");
+  expect(publicPage).toContain("https://www.deadiversion.usdoj.gov/faq/MATE_Act_faq.html");
+  expect(publicPage).not.toContain("within five years of June 27, 2023");
   expect(profile).not.toContain("before your next DEA renewal"); expect(publicPage).not.toContain("Required at your NEXT");
 });
 test("mobile DEA scan reserves and meters the same clean extraction quota", async () => {

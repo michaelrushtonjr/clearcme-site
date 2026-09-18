@@ -2,10 +2,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { COURSE_CATALOG, slugToKey, type Course } from "@/lib/courses";
 import { PublicShell } from "@/components/PublicSiteShell";
-import { auth } from "@/auth";
+import { Breadcrumbs } from "@/components/seo/Editorial";
+import { relatedStatesForTopic } from "@/lib/state-guides";
+import { pageMetadata } from "@/lib/seo";
+
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return Object.keys(COURSE_CATALOG).map((key) => ({
+  return Object.keys(COURSE_CATALOG).filter((key) => COURSE_CATALOG[key].courses.length > 0).map((key) => ({
     topic: key.toLowerCase().replace(/_/g, "-"),
   }));
 }
@@ -18,11 +22,8 @@ export async function generateMetadata({
   const { topic } = await params;
   const key = slugToKey(topic);
   const catalog = COURSE_CATALOG[key];
-  if (!catalog) return { title: "Course Not Found — ClearCME" };
-  return {
-    title: `${catalog.topicLabel} CME Courses — ClearCME`,
-    description: `Find accredited CME courses for ${catalog.topicLabel}. Requirement: ${catalog.requirement}.`,
-  };
+  if (!catalog?.courses.length) return { title: "Course Not Found — ClearCME", robots: { index: false } };
+  return pageMetadata(`${catalog.topicLabel} CME Courses — ClearCME`, `Explore ${catalog.topicLabel} CME courses, compare provider information and review related state requirements before enrolling.`, `/courses/${topic}`);
 }
 
 function buildEnrollUrl(course: Course, topicKey: string): string {
@@ -44,15 +45,15 @@ function hasExactActivityUrl(course: Course): boolean {
 
 function courseSummary(course: Course): string {
   const firstSentence = course.description.split(/(?<=[.!?])\s+/)[0]?.trim();
-  if (firstSentence && firstSentence.length <= 155) return firstSentence;
+  if (firstSentence && firstSentence.length <= 155 && !/satisf|fulfil|meets? |approved for|state.?mandat|compliant/i.test(firstSentence)) return firstSentence;
 
   if (course.name.toLowerCase().includes("buprenorphine")) {
     return "On-demand opioid CME focused on buprenorphine treatment and OUD care.";
   }
   if (course.name.toLowerCase().includes("opioid")) {
-    return "On-demand opioid CME matched to state opioid, pain, or DEA-related requirements.";
+    return "On-demand opioid CME. Verify the activity’s acceptance for your specific requirement.";
   }
-  return "Accredited CME activity matched to this compliance gap.";
+  return "Review the provider’s accreditation, topic content and current acceptance before enrolling.";
 }
 
 function shortCreditLabel(credits: string): string {
@@ -71,31 +72,29 @@ export default async function CourseDiscoveryPage({
   const { topic } = await params;
   const key = slugToKey(topic);
   const catalog = COURSE_CATALOG[key];
-  const session = await auth();
+  const relatedStates = relatedStatesForTopic(topic);
 
-  if (!catalog) notFound();
+  if (!catalog?.courses.length || topic !== key.toLowerCase().replace(/_/g, "-")) notFound();
 
   return (
-    <PublicShell ctaHref={session?.user ? "/dashboard" : "/login"} ctaLabel={session?.user ? "Dashboard →" : "Sign in →"}>
+    <PublicShell>
       <div className="mx-auto max-w-3xl space-y-8 px-6 py-12">
-        <Link href="/dashboard/compliance" className="public-quiet-link inline-flex items-center gap-1.5 text-sm">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to my compliance map
-        </Link>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "CME requirements", href: "/cme-requirements" }, { label: `${catalog.topicLabel} courses`, href: `/courses/${topic}` }]} />
 
         <header className="public-card p-6 sm:p-8">
-          <div className="public-kicker mb-5">Course match</div>
-          <h1 className="public-heading text-3xl sm:text-5xl">{catalog.topicLabel}</h1>
+          <div className="public-kicker mb-5">Course library</div>
+          <h1 className="public-heading text-3xl sm:text-5xl">{catalog.topicLabel} CME courses</h1>
           <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#ddd4bd] bg-[#ece4cf]/55 px-3 py-1.5">
             <svg className="h-4 w-4 text-[#3f5f33]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-medium text-[#3f4a40]">Requirement: {catalog.requirement}</span>
+            <span className="text-sm font-medium text-[#3f4a40]">Topic context: {catalog.requirement}</span>
           </div>
         </header>
 
+        <p className="text-sm leading-7 text-[#596650]">Use this library to discover activities. A topic match does not establish state approval. Confirm your board’s provider, content, credit category, completion window and reporting rules before enrolling.</p>
+        {relatedStates.length > 0 && <section className="public-card p-6"><h2 className="text-xl font-bold">States where this topic may be relevant</h2><p className="mt-2 text-sm leading-6">Read the guide for your license type and practice before choosing a course.</p><ul className="mt-4 flex flex-wrap gap-4">{relatedStates.map((state) => <li key={state.slug}><Link className="font-semibold underline underline-offset-4" href={`/cme-requirements/${state.slug}`}>{state.name} requirements →</Link></li>)}</ul></section>}
+        {key === "SUBSTANCE_USE" && <Link href="/mate-act" className="inline-block font-semibold underline">Understand the federal DEA MATE Act requirement →</Link>}
         <div className="space-y-4">
           {catalog.courses.map((course, idx) => {
             const enrollUrl = buildEnrollUrl(course, key);
@@ -157,9 +156,7 @@ export default async function CourseDiscoveryPage({
         </div>
 
         <p className="border-t border-[#ddd4bd] pt-6 text-xs leading-relaxed text-[#6b7568]">
-          ClearCME may receive a referral commission from paid courses. Free
-          courses are listed because they satisfy your requirement, not for
-          compensation.
+          ClearCME may receive a referral commission from paid courses. Course listings are for discovery. A state-specific acceptance claim requires a verified activity-to-requirement mapping; check with the provider and your board.
         </p>
       </div>
     </PublicShell>

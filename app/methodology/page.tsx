@@ -1,53 +1,19 @@
+import Link from "next/link";
+import { publishedStateGuides } from "@/lib/state-guides";
 import { PublicShell } from "@/components/PublicSiteShell";
 
 export const metadata = {
   title: "Verification Methodology — ClearCME",
+  alternates: { canonical: "https://clearcme.ai/methodology" },
   description:
     "How ClearCME verifies state CME requirements against primary sources.",
 };
 
-const verificationTable = [
-  {
-    state: "Nevada",
-    code: "NV",
-    lastVerified: "July 2026",
-    confidence: "Verified",
-    source: "https://medboard.nv.gov/",
-    sourceLabel: "Nevada State Board of Medical Examiners",
-  },
-  {
-    state: "California",
-    code: "CA",
-    lastVerified: "July 2026",
-    confidence: "Verified",
-    source: "https://www.mbc.ca.gov/",
-    sourceLabel: "Medical Board of California",
-  },
-  {
-    state: "Texas",
-    code: "TX",
-    lastVerified: "July 2026",
-    confidence: "Verified",
-    source: "https://www.tmb.state.tx.us/",
-    sourceLabel: "Texas Medical Board",
-  },
-  {
-    state: "Florida",
-    code: "FL",
-    lastVerified: "May 2026",
-    confidence: "Verified",
-    source: "https://flboardofmedicine.gov/",
-    sourceLabel: "Florida Board of Medicine",
-  },
-  {
-    state: "New York",
-    code: "NY",
-    lastVerified: "May 2026",
-    confidence: "Verified",
-    source: "https://www.op.nysed.gov/professions-index/medicine",
-    sourceLabel: "New York State Office of the Professions",
-  },
-];
+const verificationTable = publishedStateGuides.map((guide) => ({
+  state: guide.name, code: guide.code, lastVerified: guide.verified,
+  confidence: "Published guide", source: `/cme-requirements/${guide.slug}`,
+  sourceLabel: "Guide and primary sources",
+}));
 
 const checkItems = [
   "Official state medical board websites",
@@ -78,6 +44,13 @@ export default function MethodologyPage() {
       </section>
 
       <section className="mx-auto max-w-3xl space-y-8 px-6 pb-16">
+        <div className="public-card p-6"><h2 className="text-xl font-bold mb-3">Published guides and product coverage</h2><p className="leading-7">Read the <Link className="underline" href="/cme-requirements">state guides</Link> for page-specific verification dates and sources. Physician author: <Link className="underline" href="/about/michael-rushton">Michael Rushton, DO</Link>. Source verification does not mean every exception or transition is personalized by the product; each guide states its relevant calculation limits.</p><p className="mt-4 leading-7">When a significant requirement changes, update the source record, assess the compliance calculation, refresh affected pages and course links, and record the change. Unverified course-to-state mappings must not be presented as accepted.</p></div>
+        <div className="public-card p-6">
+          <h2 className="mb-3 text-xl font-bold">Physician editorial responsibility</h2>
+          <p className="text-sm leading-relaxed">The requirement guides name <Link href="/about/michael-rushton" className="underline">Michael Rushton, DO</Link>, ClearCME’s physician founder and author. Each published guide carries its own source-verification date and change notes. Publication dates describe the guide; they do not imply that every rule has been implemented in the tracker. We identify material calculation limits beside the guide’s product link. Informational tracking does not replace official board reporting.</p>
+          <p className="mt-3 text-sm"><Link href="/cme-requirements" className="underline">Browse the published state guides →</Link></p>
+        </div>
+
         <div className="public-card p-6">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-[#1e2920]">
             Primary sources only
@@ -166,7 +139,7 @@ export default function MethodologyPage() {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-bold text-[#1e2920]">Verification status — sample states</h2>
+          <h2 className="mb-4 text-xl font-bold text-[#1e2920]">Published guide verification</h2>
           <div className="overflow-x-auto rounded-[22px] border border-[#ddd4bd] bg-[#fffdf6]/70">
             <table className="w-full text-sm">
               <thead>
@@ -193,7 +166,7 @@ export default function MethodologyPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-[#6b7568]">Full verification status for all 51 jurisdictions is available inside the app.</p>
+          <p className="mt-2 text-xs text-[#6b7568]">These dates apply to the published editorial guides. Their source lists and product limitations are available at each link.</p>
         </div>
       </section>
     </PublicShell>

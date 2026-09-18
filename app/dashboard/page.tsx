@@ -1,3 +1,4 @@
+import { SeoActivation } from "@/components/seo/AcquisitionAnalytics";
 import FederalTrainingStatus from "@/components/FederalTrainingStatus";
 import { getFederalTraining } from "@/lib/federal-training";
 import { isStateRequirement } from "@/lib/mate-act";
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
     }),
     prisma.user.findUnique({
       where: { id: userId },
-      select: { specialty: true, practiceArea: true },
+      select: { specialty: true, practiceArea: true, seoLandingPath: true, seoActivatedAt: true },
     }),
   ]);
 
@@ -261,6 +262,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <SeoActivation activated={!!userProfile?.seoLandingPath && !userProfile.seoActivatedAt && licenses.length > 0 && certificates.some((certificate) => certificate.extractionStatus === "COMPLETED" || (certificate.extractionStatus === "MANUAL" && certificate.manuallyVerified))} />
       {/* Header row: hero stat + deadline pills / actions */}
       <div className="dash-head">
         <div>

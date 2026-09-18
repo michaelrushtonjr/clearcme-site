@@ -35,7 +35,7 @@ for (const [name, page] of [["dashboard", Dashboard], ["compliance", Compliance]
       const html = renderToStaticMarkup(await page());
       expect(html).toContain(psychiatrist ? "Action needed" : name === "dashboard" ? "Audit-ready" : "On track");
       if (!psychiatrist && name === "compliance") expect(html).toContain("psychiatry-only requirement; not your specialty");
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: "user" }, select: { specialty: true, practiceArea: true } });
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: "user" }, select: expect.objectContaining({ specialty: true, practiceArea: true }) });
     });
   }
 }

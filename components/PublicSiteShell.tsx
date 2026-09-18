@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandLockup } from "@/components/BrandLockup";
 
 const defaultLinks = [
+  { href: "/cme-requirements", label: "State requirements" },
   { href: "/pricing", label: "Pricing" },
   { href: "/mate-act", label: "DEA MATE Act" },
   { href: "/methodology", label: "Methodology" },
@@ -50,6 +51,9 @@ export function PublicFooter() {
       <div className="public-wrap public-footer-row">
         <BrandLockup href="/" size="sm" className="public-brand public-footer-brand" />
         <div className="public-footer-links">
+          <Link href="/cme-requirements">State requirements</Link>
+          <Link href="/physician-cme-tracker">CME tracker</Link>
+          <Link href="/about/michael-rushton">Michael Rushton, DO</Link>
           <Link href="/pricing">Pricing</Link>
           <Link href="/mate-act">DEA MATE Act</Link>
           <Link href="/methodology">Methodology</Link>

@@ -1,5 +1,6 @@
 import { providerEmailVerified } from "@/lib/mobile-identity";
 import NextAuth from "next-auth";
+import { recordSeoRegistration } from "@/lib/seo-events";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
@@ -99,6 +100,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Branded check-your-email page instead of Auth.js's unstyled default
     // at /api/auth/verify-request.
     verifyRequest: "/login/check-email",
+  },
+  events: {
+    async createUser({ user }) {
+      if (user.id) await recordSeoRegistration(user.id);
+    },
   },
   callbacks: {
     signIn({ account, profile }) {

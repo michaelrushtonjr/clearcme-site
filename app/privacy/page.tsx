@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="public-heading mb-2 text-4xl">Privacy Policy</h1>
-        <p className="mb-10 text-sm text-[#6b7568]">Last updated: May 2026</p>
+        <p className="mb-10 text-sm text-[#6b7568]">Last updated: September 18, 2026</p>
 
         <div className="max-w-none space-y-8 text-[#3f4a40]">
 
@@ -65,6 +65,12 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">7. Your Rights</h2>
             <p>You can delete your account yourself at any time in Settings → Delete account, on the web or in the iPhone app; deletion removes your licenses, certificates, uploaded documents, and compliance history immediately. You may also request access to, correction of, export of, or deletion of your personal data at any time by contacting us at <a href="mailto:hello@clearcme.ai" className="text-[#3f5f33] hover:underline">hello@clearcme.ai</a>. Account deletion will remove associated active account data within 30 days, except where limited backup retention, fraud prevention, tax, accounting, security, or legal obligations require temporary retention.</p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">Website measurement</h2>
+            <p>We use Vercel Web Analytics for visits to public pages. Our integration excludes private application pages, URL query strings and fragments. A first-party cookie, clearcme_acquisition, remembers the first eligible public landing page and a broad traffic source (search, referral, campaign or direct/unknown) for up to 30 days. It contains no name, email address or search query.</p>
+            <p className="mt-3">If you create an account during that window, we save that page and source with your account and count the registration. We count activation once when the account has an active license and a processed or verified manual CME record. Daily page/source totals also count sign-up and course-link clicks; these aggregate totals do not contain account identifiers or certificate details. Our website measurement respects the browser’s Do Not Track setting. You can remove the attribution cookie in your browser settings.</p>
           </section>
 
           <section>

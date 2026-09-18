@@ -1,189 +1,29 @@
-"use client";
-
-import { useState } from "react";
-import MateActNotice from "@/components/MateActNotice";
-import { mateActDeadline } from "@/lib/mate-act";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
-import { getFreeMateCourses } from "@/lib/mate-free-courses";
+import { Breadcrumbs, Byline, Faqs, JsonLd, RecordCta } from "@/components/seo/Editorial";
+import { articleSchema } from "@/lib/seo";
 
-function SelfCheckTool() {
-  const [registeredAt, setRegisteredAt] = useState("");
-  const [firstRenewal, setFirstRenewal] = useState("");
-  const result = mateActDeadline({ registeredAt, firstRenewalOnOrAfterCutoff: firstRenewal });
-  return <div className="public-card p-6 space-y-5">
-    <h3 className="font-bold">Registration history</h3>
-    <label className="block">First DEA registration date<input className="product-input" type="date" value={registeredAt} onChange={(e) => setRegisteredAt(e.target.value)} /></label>
-    <label className="block">First DEA renewal on or after June 27, 2023, if known<input className="product-input" type="date" value={firstRenewal} onChange={(e) => setFirstRenewal(e.target.value)} /></label>
-    <p>{result.status === "KNOWN" ? "Qualifying event recorded. Review the requirement above and your training evidence." : "Needs your answer — check your DEA registration history."}</p>
-  </div>;
-}
-
+const source = "https://www.deadiversion.usdoj.gov/faq/MATE_Act_faq.html";
+const faqs = [
+  { question: "Is the DEA MATE Act eight hours every renewal?", answer: "No. It is a one-time training/qualification attestation at your first applicable DEA registration or renewal on or after June 27, 2023. It is not a new eight-hour obligation at each later renewal." },
+  { question: "Can previous training count?", answer: "Yes, qualifying past training can count. DEA says it does not have to be newly completed after the law’s enactment. Check the eligible training organization, required subject matter and your supporting records." },
+  { question: "Must I take one eight-hour course?", answer: "No. DEA permits the eight hours to be accumulated across qualifying training. Keep each certificate and enough detail to establish the combined hours and content." },
+  { question: "Who can qualify without buying another course?", answer: "DEA identifies qualifying addiction board certifications and recent graduates with qualifying education, in addition to the training pathway. Check the exact certification, graduation timing and curriculum against the DEA FAQ before relying on a deemed-complete pathway." },
+  { question: "Does the requirement apply if I only prescribe Schedule III–V drugs?", answer: "DEA’s requirement applies to covered practitioners registering to dispense controlled substances in Schedules II–V; it is not limited to Schedule II prescribing. Practitioners who are solely veterinarians are excluded." },
+  { question: "Does MATE training replace my state’s opioid CME?", answer: "No automatic substitution applies. A course may serve both purposes only when it independently satisfies the state’s content, approval, timing and category requirements. Read your state guide and verify the specific activity." },
+  { question: "Does ClearCME make the DEA attestation for me?", answer: "No. ClearCME lets you keep your federal training record alongside your state CME records. You make the official attestation in the DEA registration process and remain responsible for its accuracy." },
+];
 export default function MateActPage() {
-  const freeMate = getFreeMateCourses();
-  return (
-    <PublicShell links={[{ href: "/pricing", label: "Pricing" }, { href: "/methodology", label: "Methodology" }]}>
-      {/* Hero */}
-      <section className="public-hero mx-auto max-w-3xl">
-        <div className="public-kicker mb-6 text-[#b85631]">Federal training record</div>
-        <h1 className="public-heading mb-5 text-4xl sm:text-6xl">
-          Are you DEA-registered?<br />
-          <span className="public-pop-accent">You may owe the DEA an 8-hour training.</span>
-        </h1>
-        <div className="public-subhead mx-auto max-w-2xl"><MateActNotice /></div>
-      </section>
-
-      {/* Who it applies to + What it covers */}
-      <section className="max-w-4xl mx-auto px-6 pb-12">
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="public-card public-card-soft p-6">
-            <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
-              Who it applies to
-            </h2>
-            <p className="text-sm text-[#3f4a40] leading-relaxed mb-3">
-              Use your federal record to document training or a qualifying basis described above.
-            </p>
-            <ul className="space-y-1.5 text-sm text-[#3f4a40]">
-              {["Physicians (MD, DO)", "Physician Assistants (PA)", "Nurse Practitioners (NP)", "Dentists"].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="public-card public-card-soft p-6">
-            <h2 className="font-bold text-[#1e2920] mb-3 flex items-center gap-2">
-              What the 8 hours must cover
-            </h2>
-            <ul className="space-y-1.5 text-sm text-[#3f4a40]">
-              {[
-                "FDA-approved medications for SUD treatment",
-                "Clinical management of opioid use disorder",
-                "Overdose prevention",
-                "Treating patients with opioid or substance use disorders",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#3f5f33] rounded-full flex-shrink-0 mt-1.5" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Self-check tool */}
-      <section className="max-w-2xl mx-auto px-6 py-14">
-        <SelfCheckTool />
-      </section>
-
-      {/* Courses that satisfy it — free first */}
-      <section className="public-section-band py-14">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-[#1e2920] mb-2 text-center">Courses that satisfy it</h2>
-          <p className="text-sm text-[#3f4a40] mb-8 text-center max-w-xl mx-auto leading-relaxed">
-            These 8 hours are widely sold near renewal deadlines. They do not have to be.
-            Accredited providers offer training that covers the full requirement at no cost.
-          </p>
-
-          {freeMate.full.length > 0 && (
-            <>
-              <h3 className="text-sm font-bold text-[#3f5f33] uppercase tracking-wide mb-3">
-                Free — covers all 8 hours
-              </h3>
-              <div className="flex flex-col gap-4 mb-8">
-                {freeMate.full.map((course) => (
-                  <div key={`${course.name}|${course.url}`} className="public-card p-5">
-                    <p className="font-bold text-[#1e2920] mb-1">{course.name}</p>
-                    <p className="text-xs text-[#6b7568] mb-2">{course.provider}</p>
-                    <p className="text-sm text-[#3f4a40] mb-3 leading-relaxed">{course.description}</p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">
-                        Free
-                      </span>
-                      <span className="text-xs bg-[#dde8cf] text-[#3f5f33] font-medium px-2.5 py-1 rounded-full">
-                        {course.credits}
-                      </span>
-                    </div>
-                    <a
-                      href={course.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3f5f33] text-white text-sm font-semibold rounded-xl hover:bg-[#2a4123] transition-colors"
-                    >
-                      View course →
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {freeMate.partial.length > 0 && (
-            <p className="text-sm text-[#3f4a40] mb-8 text-center">
-              {freeMate.partial.length} more free {freeMate.partial.length === 1 ? "course" : "courses"} count toward
-              the 8 hours —{" "}
-              <Link href="/courses/opioid-prescribing" className="text-[#3f5f33] font-semibold hover:underline">
-                see the full list
-              </Link>
-              .
-            </p>
-          )}
-
-          <h3 className="text-sm font-bold text-[#3f4a40] uppercase tracking-wide mb-3">Paid alternative</h3>
-          <div className="public-card p-6 flex flex-col sm:flex-row gap-5 items-start">
-            <div className="w-12 h-12 rounded-xl bg-[#3f5f33] flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-[#1e2920] text-lg mb-1">Hippo Education: OUD Decoded</p>
-              <p className="text-sm text-[#3f4a40] mb-3 leading-relaxed">
-                12.25 AMA PRA Category 1 Credits™ — satisfies the DEA MATE Act 8-hour requirement and goes
-                well beyond it, covering opioid use disorder diagnosis, treatment, and clinical management.
-                A paid option, included here because the depth is genuinely greater than the free courses above.
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">Satisfies MATE Act</span>
-                <span className="text-xs bg-[#dde8cf] text-[#3f5f33] font-medium px-2.5 py-1 rounded-full">12.25 AMA PRA Cat 1</span>
-                <span className="text-xs bg-slate-100 text-[#3f4a40] font-medium px-2.5 py-1 rounded-full">On-demand</span>
-              </div>
-              <a
-                href="https://home.hippoed.com/oud-decoded"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#3f5f33] text-[#3f5f33] text-sm font-semibold rounded-xl hover:bg-[#dde8cf] transition-colors"
-              >
-                View OUD Decoded →
-              </a>
-            </div>
-          </div>
-          <p className="text-xs text-[#6b7568] mt-3 text-center">
-            ClearCME does not receive compensation from Hippo Education. This is an independent recommendation.
-          </p>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-2xl font-bold text-[#1e2920] mb-3">
-          Track your DEA MATE Act status in ClearCME
-        </h2>
-        <p className="text-[#6b7568] mb-8">
-          ClearCME tracks your DEA MATE Act compliance alongside all your state CME requirements.
-          Free. No credit card required.
-        </p>
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-[#3f5f33] text-white font-semibold rounded-xl hover:bg-[#2a4123] transition-colors text-base shadow-sm"
-        >
-          Sign in free →
-        </Link>
-      </section>
-
-    </PublicShell>
-  );
+  return <PublicShell><article className="mx-auto max-w-3xl space-y-10 px-6 py-12">
+    <JsonLd data={articleSchema("DEA MATE Act: the 8-hour training requirement", "/mate-act", "2026-09-18", "2026-04-13")} />
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "DEA MATE Act", href: "/mate-act" }]} />
+    <header><div className="public-kicker mb-5">Federal training · one-time requirement</div><h1 className="public-heading text-4xl sm:text-6xl">DEA MATE Act: the 8-hour training requirement</h1><p className="public-subhead mt-6">How physicians and other covered DEA registrants can satisfy the training requirement, document an eligible pathway and make the required attestation.</p><Byline verified="2026-09-18" modified="2026-09-18" published="2026-04-13" /></header>
+    <section className="public-card p-7"><h2 className="public-heading text-3xl mb-4">Start with your first applicable DEA registration</h2><p className="leading-7">The requirement applies at the first DEA registration or renewal on or after June 27, 2023. Covered practitioners must attest to a qualifying training or education pathway. It is one-time, and practitioners who are solely veterinarians are excluded.</p><p className="mt-4 leading-7">Your current DEA expiration date may not identify that first event. Review your registration history and retain evidence of the pathway you used.</p><a className="mt-4 inline-block text-sm underline" href={source}>Source: DEA MATE Act questions and answers ↗</a></section>
+    <section><h2 className="public-heading mb-5 text-3xl">Three ways physicians may meet the requirement</h2><ol className="list-decimal space-y-5 pl-5 leading-7"><li><strong>Qualifying training.</strong> Complete at least eight hours of eligible training on treating and managing patients with opioid or other substance use disorders through a recognized organization. DEA permits a single course or accumulated qualifying sessions.</li><li><strong>Qualifying addiction certification.</strong> DEA identifies specified addiction medicine or addiction psychiatry certifications, including its listed ABMS, ABAM and AOA pathways. Match your actual credential to the DEA language.</li><li><strong>Qualifying recent education.</strong> DEA describes a pathway for recent graduates of accredited U.S. professional schools who completed the required curriculum. Confirm the applicable five-year graduation window and curriculum documentation using the current DEA instructions.</li></ol><p className="mt-5 text-sm leading-6">The detailed pathways differ for physicians and other practitioners. <a className="underline" href={source}>Read the DEA’s complete eligibility criteria</a> before attesting.</p></section>
+    <section><h2 className="public-heading text-3xl mb-5">How to satisfy and document it</h2><ol className="list-decimal space-y-3 pl-5 leading-7"><li>Check whether prior qualifying training or a deemed-complete pathway already applies.</li><li>If training remains, verify the provider, subject matter and hours before enrolling.</li><li>Save completion certificates or education/certification evidence with your federal training record.</li><li>Complete the official attestation during the DEA registration process. Recording it in ClearCME is a separate organizational step.</li></ol><div className="mt-6 flex flex-wrap gap-4"><Link href="/courses/substance-use" className="public-btn-secondary">Explore MATE/SUD courses →</Link><Link href="/courses/opioid-prescribing" className="public-btn-secondary">Opioid prescribing courses →</Link></div><p className="mt-4 text-sm leading-6 text-[#596650]">Prices and activity approvals can change. Confirm the current provider page; a related course topic alone is not proof of MATE eligibility.</p></section>
+    <section><h2 className="public-heading mb-4 text-3xl">State requirements still apply</h2><p className="leading-7">One activity can be relevant to several requirements, but state topic clocks and provider approvals remain separate. Review <Link className="underline" href="/cme-requirements/texas">Texas</Link>, <Link className="underline" href="/cme-requirements/florida">Florida</Link>, <Link className="underline" href="/cme-requirements/new-york">New York</Link>, <Link className="underline" href="/cme-requirements/california">California</Link> or <Link className="underline" href="/cme-requirements/nevada">Nevada</Link>, or <Link className="underline" href="/cme-requirements">browse the state hub</Link>.</p></section>
+    <Faqs items={faqs} />
+    <RecordCta note="Keep your training certificates and qualifying-pathway record together with your state CME records. Check your first applicable DEA registration date and complete the official attestation with DEA." />
+    <section><h2 className="public-heading mb-4 text-3xl">Primary source and verification</h2><a className="font-semibold underline" href={source}>DEA Diversion Control Division · MATE Act Q&amp;A ↗</a><blockquote className="my-4 border-l-2 border-[#bfd1ad] pl-4">“It should be noted that this is a one-time attestation”</blockquote><p className="text-sm leading-6">September 18, 2026: checked the first applicable registration deadline, one-time nature, eligible pathways and aggregated-training guidance against DEA’s current FAQ. The verification date is a content check, not a new regulatory effective date.</p></section>
+  </article></PublicShell>;
 }

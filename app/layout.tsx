@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { consoleFontVars } from "@/lib/fonts";
 import "./globals.css";
+import { AcquisitionAnalytics } from "@/components/seo/AcquisitionAnalytics";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://clearcme.ai"),
+  verification: { google: "xt-kOPzCSaJMTaOfKn0XPYv0p0G14MK-ZFUeOFpCJjk" },
   title: "ClearCME — Your CME Compliance, Handled",
   description: "Map state CME requirements, track hours of CME, and see exactly what is missing before renewal. Built by a physician for MD and DO licenses.",
-  alternates: {
-    canonical: "/",
-  },
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -45,7 +45,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={consoleFontVars}>{children}</body>
+      <body className={consoleFontVars}>{children}<AcquisitionAnalytics /></body>
     </html>
   );
 }

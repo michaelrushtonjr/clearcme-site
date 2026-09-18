@@ -72,6 +72,11 @@ model User {
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
 
+  // Public landing attribution only; never search queries or clinical details.
+  seoLandingPath String?
+  seoChannel     String?
+  seoActivatedAt DateTime?
+
   // Physician profile
   licenseType   LicenseType?
   specialty     String?
@@ -536,4 +541,18 @@ enum FederalTrainingBasis {
   BOARD_CERT_ADDICTION
   GRADUATED_AFTER_2023
   OTHER
+}
+
+// Aggregate acquisition metrics. No visitor identifier, email or certificate data.
+model SeoDailyMetric {
+  id       String   @id @default(cuid())
+  day      DateTime @db.Date
+  event    String
+  landing  String
+  cluster  String
+  channel  String
+  count    Int      @default(0)
+
+  @@unique([day, event, landing, channel])
+  @@index([day, cluster])
 }

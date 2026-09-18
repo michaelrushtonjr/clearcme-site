@@ -1,0 +1,899 @@
+[
+  {
+    "slug": "california",
+    "code": "CA",
+    "name": "California",
+    "status": "published",
+    "title": "California CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "California physician CME requirements: MD/DO hours, renewal cycles, mandatory topics, exceptions and board sources. Verified guidance with practical FAQs.",
+    "summary": "Both MDs and DOs generally need 50 hours every two years. Different boards set the accepted categories, topic requirements and renewal details. Start with the degree on your California license.",
+    "verified": "2026-09-18",
+    "modified": "2026-09-18",
+    "boards": [
+      {
+        "label": "MD · Medical Board of California",
+        "hours": "50 hours",
+        "cycle": "Two-year renewal cycle; use your actual license expiration. The MD renewal month follows issuance, not your birthday.",
+        "credit": "AMA PRA Category 1 or another board-accepted pathway."
+      },
+      {
+        "label": "DO · Osteopathic Medical Board of California",
+        "hours": "50 hours, including 20 AOA Category 1-A or 1-B",
+        "cycle": "Two-year license renewal period. Issue-month and legacy birth-month schedules differ; use the board record.",
+        "credit": "Remaining 30 hours may be AOA or AMA accredited. An AMA certificate does not automatically meet the AOA floor."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Pain management and end-of-life care · MD and DO",
+        "detail": "One-time 12-hour requirement, due within four years of initial licensure or by the second renewal, whichever comes first. Pathology and radiology specialists are exempt. The alternative opioid-treatment pathway is 12 hours, including eight in buprenorphine or similar treatment; check the alternative pathway’s first-renewal deadline.",
+        "sources": [
+          "mbc",
+          "ombc",
+          "pain",
+          "alternative"
+        ],
+        "course": "end-of-life-care"
+      },
+      {
+        "title": "Schedule II drugs and opioid addiction risk · DO",
+        "detail": "At least one of the 50 hours must address addiction to Schedule II drugs or opioids, every renewal. Keep this recurring requirement separate from your one-time pain-management training.",
+        "sources": [
+          "ombc"
+        ],
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Geriatric medicine and dementia · conditional MD requirement",
+        "detail": "General internists and family physicians whose patient population is more than 25% age 65 or older must devote at least 20% of mandatory CME to geriatric medicine, care of older patients or dementia care.",
+        "sources": [
+          "mbc"
+        ],
+        "course": "alzheimers-dementia"
+      },
+      {
+        "title": "Implicit bias and cultural competency · course-content standards",
+        "detail": "California requires specified content in qualifying CME. This is not a separate universal extra-hour quota. Check the provider’s California-compliance statement and applicable exceptions.",
+        "sources": [
+          "content",
+          "ombc"
+        ],
+        "course": "implicit-bias"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Exceptions and first renewals",
+        "paragraphs": [
+          "Initial license periods, residency or fellowship participation, and specialty-board examination pathways can affect the ordinary requirement. Confirm the board’s current instructions for your circumstances rather than assuming every new license has a full two-year first period.",
+          "OMBC permits training-related waivers with documentation from the residency or fellowship program; inactive status and discretionary waivers have separate rules. Ask the relevant board before relying on an exemption."
+        ],
+        "sources": [
+          "mbc",
+          "ombc"
+        ]
+      },
+      {
+        "title": "Carryover and documentation",
+        "paragraphs": [
+          "Plan around the CME period immediately preceding your expiration. Do not move excess hours into another California renewal period as though they were new training. Preserve lifetime-topic completion evidence separately.",
+          "Keep course title, dates, hours, sponsor, accreditor and completion documentation for at least four years. Both boards can audit. OMBC asks for accepted documentation formats and submission through the instructions provided with an audit."
+        ],
+        "sources": [
+          "mbc",
+          "ombc"
+        ]
+      },
+      {
+        "title": "What’s tricky about California",
+        "paragraphs": [
+          "The same 50-hour headline hides different category rules. A DO with 50 AMA hours can still miss the 20-hour AOA Category 1-A/1-B minimum. A course’s topic and its accreditation category are separate checks.",
+          "Use the actual board expiration date. MD issue-month renewal and DO legacy schedules make a birthday-based assumption unreliable. One-time training evidence also needs to outlive the current renewal cycle."
+        ],
+        "sources": [
+          "mbc",
+          "ombc",
+          "expiration"
+        ]
+      },
+      {
+        "title": "Change history",
+        "paragraphs": [
+          "September 18, 2026: checked the board guidance against the previously verified July state draft and current production rules. Preserved the 50-hour MD/DO distinction and removed claims that ClearCME automatically resolves every category floor or exemption. The geriatrics/dementia wording is an earlier change, not a newly created 2026 hour requirement."
+        ],
+        "sources": [
+          "mbc",
+          "ombc"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do California MDs and DOs need the same number of hours?",
+        "answer": "Generally, both need 50 hours per two-year renewal. DOs also need at least 20 AOA Category 1-A/1-B hours and a recurring Schedule II/opioid hour. The degree-specific rules matter as much as the total."
+      },
+      {
+        "question": "Does my California license renew in my birth month?",
+        "answer": "Check your board record. California MD renewal is tied to issuance. California DOs can have issue-month or legacy birth-month schedules; the recorded expiration is the reliable starting point."
+      },
+      {
+        "question": "Can my existing pain-management course count?",
+        "answer": "Possibly. Confirm the course’s content, accepted accreditation, completion date and whether it met the 12-hour requirement or approved alternative. Keep the certificate even after the current CME cycle ends."
+      },
+      {
+        "question": "Do I owe separate implicit-bias hours in California?",
+        "answer": "California’s implicit-bias provision is a course-content standard, not a separate universal hour quota. A generic implicit-bias course alone does not establish that all of your CME meets California standards."
+      },
+      {
+        "question": "Can I carry extra hours into my next renewal?",
+        "answer": "Plan to complete the applicable hours within the board’s current renewal period. Do not treat last cycle’s excess hours as new hours for the next cycle."
+      },
+      {
+        "question": "Does uploading to ClearCME report my hours to the California board?",
+        "answer": "No. ClearCME helps organize records. You remain responsible for board renewal attestations and for providing documentation if selected for audit."
+      }
+    ],
+    "sources": [
+      {
+        "id": "mbc",
+        "label": "Medical Board of California · CME, exemptions and records",
+        "url": "https://www.mbc.ca.gov/Licensing/Physicians-and-Surgeons/Renew/Current-Status/Continuing-Medical-Education.aspx",
+        "quote": "a minimum of 50 hours of approved Continuing Medical Education (CME) hours during each biennial renewal cycle"
+      },
+      {
+        "id": "ombc",
+        "label": "Osteopathic Medical Board · CME guidance effective October 2025",
+        "url": "https://www.ombc.ca.gov/licensees/cme.pdf"
+      },
+      {
+        "id": "pain",
+        "label": "Business and Professions Code §2190.5 · pain management",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=2190.5."
+      },
+      {
+        "id": "alternative",
+        "label": "Business and Professions Code §2190.6 · alternative opioid pathway",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=2190.6."
+      },
+      {
+        "id": "content",
+        "label": "Business and Professions Code §2190.1 · course content",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=2190.1."
+      },
+      {
+        "id": "expiration",
+        "label": "Business and Professions Code §2423 · MD expiration",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=2423."
+      }
+    ],
+    "related": [
+      "nevada",
+      "texas"
+    ],
+    "productNote": "Keep California certificates and completion history together. Review the AOA category floor, one-time course alternatives, exemptions and your board’s expiration date separately; ClearCME does not certify those determinations."
+  },
+  {
+    "slug": "texas",
+    "code": "TX",
+    "name": "Texas",
+    "status": "published",
+    "title": "Texas CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Texas physician CME requirements: MD/DO hours, renewal cycles, mandatory topics, exceptions and board sources. Verified guidance with practical FAQs.",
+    "summary": "Texas uses one physician rulebook for MDs and DOs: 48 hours per registration period, at least 24 formal hours, and mandatory topics that run on different schedules. Official CE reporting now runs through CE Broker.",
+    "verified": "2026-09-18",
+    "modified": "2026-09-18",
+    "boards": [
+      {
+        "label": "MD and DO · Texas Medical Board",
+        "hours": "48 hours, at least 24 formal",
+        "cycle": "24-month registration period, rather than the calendar year. Check the expiration on your registration.",
+        "credit": "Accepted formal pathways include AMA PRA Category 1, AAFP, AOA Category 1-A and TMA-approved activities."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Medical ethics and professional responsibility",
+        "detail": "At least two formal hours each renewal period. The activity must have the appropriate ethics or professional-responsibility approval.",
+        "sources": [
+          "tmb"
+        ],
+        "course": "ethics"
+      },
+      {
+        "title": "Pain management and opioid prescribing",
+        "detail": "Direct-patient-care physicians need two formal hours within one year of initial licensure, again as part of the second renewal, and then two hours every eight years. Check your initial licensure history before treating this as an eight-year-only requirement.",
+        "sources": [
+          "tmb",
+          "opioid"
+        ],
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Human trafficking prevention",
+        "detail": "Direct-patient-care physicians need at least one hour in the first renewal period and every third renewal thereafter. Use an HHSC-approved course. An ethics designation alone is not HHSC approval.",
+        "sources": [
+          "tmb",
+          "trafficking"
+        ],
+        "course": "human-trafficking"
+      },
+      {
+        "title": "Life of the Mother Act · SB 31",
+        "detail": "One hour, once, before initial licensure or the first renewal after January 1, 2026 for the applicable specialties. TMB includes obstetric specialties, emergency medicine and family medicine. Only its free MyTMB course satisfies this specific requirement.",
+        "sources": [
+          "tmb",
+          "sb31"
+        ]
+      },
+      {
+        "title": "Forensic evidence collection · check the current rollout notice",
+        "detail": "HB 47 establishes two hours for covered physicians treating patients in emergency settings. Although the statute refers to renewals on or after September 1, 2026, TMB’s current notice says implementation begins with licenses expiring February 28, 2027 because approved coursework is not yet available. Read the live notice and approved-course list before enrolling.",
+        "sources": [
+          "tmb",
+          "hb47"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "title": "Exceptions and specialty requirements",
+        "paragraphs": [
+          "TMB describes an exemption for newly licensed physicians at first registration; that does not erase separately timed requirements such as initial opioid training. Retired/voluntary-charity status, residency and board-approved hardship exemptions have their own conditions.",
+          "EMS medical directors and pain-management-clinic personnel can have additional requirements. The board’s specialty sections and current hours chart should be checked when either role applies."
+        ],
+        "sources": [
+          "tmb"
+        ]
+      },
+      {
+        "title": "Carryover and documentation",
+        "paragraphs": [
+          "Texas permits up to 48 excess hours to carry forward, subject to the board’s two-year limit and category rules. Medical ethics/professional-responsibility and pain-management/opioid hours may not be carried forward.",
+          "Complete official reporting and provide certificates through CE Broker before renewal. Keep the certificate, accreditation/category, topic designation and date for every course, including evidence supporting any carryover. ClearCME storage does not submit official CE Broker reports."
+        ],
+        "sources": [
+          "tmb",
+          "tracking"
+        ]
+      },
+      {
+        "title": "What’s tricky about Texas",
+        "paragraphs": [
+          "A single renewal date does not mean a single topic clock. Ethics is recurring each cycle; human trafficking follows a three-renewal cadence; opioid training starts early and later follows an eight-year cadence. SB 31 is a separate one-time course.",
+          "The MyTMB SB 31 course is not AMA Category 1. TMB allows it toward its ethics requirement; the course completion is recorded in MyTMB. If using it for ethics hours, follow TMB’s CE Broker reporting instructions."
+        ],
+        "sources": [
+          "tmb"
+        ]
+      },
+      {
+        "title": "What changed in 2026",
+        "paragraphs": [
+          "Mandatory CE tracking through CE Broker began September 1, 2026. A free basic account is available; a paid subscription is not required for official reporting.",
+          "SB 31’s first-renewal-after-January-1 deadline applies to the specified specialties. HB 47’s statutory start and the later board rollout notice are both relevant; the current TMB notice controls the operational instructions shown here. Nutrition/metabolic-health training is a separate forthcoming implementation: confirm the final TMB rule before choosing a course or assuming an hour count."
+        ],
+        "sources": [
+          "tmb",
+          "tracking",
+          "sb31"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do I need CE Broker to renew my Texas physician license?",
+        "answer": "TMB requires official CE tracking through CE Broker beginning September 1, 2026. Report your courses and resolve discrepancies there before renewal. ClearCME does not replace this official reporting step."
+      },
+      {
+        "question": "Is CE Broker free for Texas physicians?",
+        "answer": "The basic account supports required reporting without a paid subscription. Paid upgrades are optional. Use the account link on TMB’s official tracking page."
+      },
+      {
+        "question": "How often is opioid CME required?",
+        "answer": "For direct patient care, two hours are due within one year of initial licensure and again as part of the second renewal. After the initial requirements, the cadence is two hours every eight years."
+      },
+      {
+        "question": "Can my existing CME hours count or carry forward?",
+        "answer": "Check dates, accepted category and the applicable registration period. Texas permits limited carryover of up to 48 excess hours, but excludes ethics/professional-responsibility and pain/opioid hours from carryover."
+      },
+      {
+        "question": "Which human-trafficking course satisfies Texas?",
+        "answer": "Choose a course on the current HHSC-approved list. Our topic library can help with discovery, but the provider’s approved status must match the Texas requirement."
+      },
+      {
+        "question": "Can one course satisfy more than one Texas requirement?",
+        "answer": "Sometimes. TMB permits appropriately designated opioid or human-trafficking training to count toward ethics. Verify every relevant designation; do not multiply the course’s earned hours in your overall total."
+      },
+      {
+        "question": "Can I take any pregnancy-emergency course for SB 31?",
+        "answer": "No. Only the TMB course through MyTMB satisfies this specific requirement. An outside course may count as ordinary CME without meeting SB 31."
+      }
+    ],
+    "sources": [
+      {
+        "id": "tmb",
+        "label": "Texas Medical Board · physician CME and current implementation notices",
+        "url": "https://www.tmb.texas.gov/apply-renew/physician/continuing-education-requirements-for-physicians",
+        "quote": "Mandatory CE Tracking for ALL TMB licensees begins September 1, 2026."
+      },
+      {
+        "id": "tracking",
+        "label": "Texas Medical Board · continuing education tracking",
+        "url": "https://www.tmb.texas.gov/resources/for-applicants-and-licensees/continuing-education-tracking"
+      },
+      {
+        "id": "opioid",
+        "label": "Texas Occupations Code §156.055",
+        "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.156.htm#156.055"
+      },
+      {
+        "id": "trafficking",
+        "label": "Texas Occupations Code §156.060",
+        "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.156.htm#156.060"
+      },
+      {
+        "id": "sb31",
+        "label": "Texas SB 31 · enrolled legislation",
+        "url": "https://capitol.texas.gov/tlodocs/89R/billtext/html/SB00031F.htm"
+      },
+      {
+        "id": "hb47",
+        "label": "Texas HB 47 · enrolled legislation",
+        "url": "https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00047F.htm"
+      }
+    ],
+    "related": [
+      "california",
+      "florida",
+      "nevada"
+    ],
+    "productNote": "Organize certificates and track your recorded Texas requirements. Confirm initial-licensure timing, specialty applicability, carryover and official CE Broker reporting with TMB. ClearCME does not submit your renewal or guarantee course acceptance."
+  },
+  {
+    "slug": "florida",
+    "code": "FL",
+    "name": "Florida",
+    "status": "published",
+    "title": "Florida CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Florida physician CME requirements: MD/DO hours, renewal cycles, mandatory topics, exceptions and board sources. Verified guidance with practical FAQs.",
+    "summary": "Florida generally requires 40 hours per two-year cycle. MDs and DOs answer to different boards, with different renewal dates, category rules and medical-error course requirements.",
+    "verified": "2026-09-18",
+    "modified": "2026-09-18",
+    "boards": [
+      {
+        "label": "MD · Board of Medicine",
+        "hours": "40 hours",
+        "cycle": "Two years; January 31 in your assigned odd- or even-year group.",
+        "credit": "General AMA Category I hours and the board’s specifically permitted alternatives."
+      },
+      {
+        "label": "DO · Board of Osteopathic Medicine",
+        "hours": "40 hours, including at least 20 AOA Category 1-A",
+        "cycle": "Two years; March 31 in even-numbered years.",
+        "credit": "Check AOA designation and the osteopathic board’s mandatory-topic approvals."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Prevention of medical errors · both degrees",
+        "detail": "Two hours every renewal. The MD and DO boards specify different high-risk/misdiagnosed-condition content. Confirm approval for your board, not just a “Florida medical errors” title.",
+        "sources": [
+          "md",
+          "do",
+          "mdrule",
+          "dorule"
+        ],
+        "course": "patient-safety"
+      },
+      {
+        "title": "Florida laws, rules and ethics · DO",
+        "detail": "One hour each biennium. This DO-specific requirement is separate from the medical-error course.",
+        "sources": [
+          "do",
+          "dorule"
+        ],
+        "course": "ethics"
+      },
+      {
+        "title": "Controlled-substance prescribing · covered DEA registrants",
+        "detail": "Two hours each renewal for physicians within the statutory prescribing scope. Use a qualifying board-approved course. Effective July 1, 2026, the required content includes treating pain in patients with sickle cell disease.",
+        "sources": [
+          "prescribing",
+          "md",
+          "do"
+        ],
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Domestic violence",
+        "detail": "Two hours every third biennium (six years). Track the cycle in which you last fulfilled it.",
+        "sources": [
+          "md",
+          "do"
+        ],
+        "course": "domestic-violence"
+      },
+      {
+        "title": "HIV/AIDS",
+        "detail": "One hour by the first biennial renewal. The MD course must include Florida HIV/AIDS law and meet the rule’s Category I requirements; a generic national course is not enough.",
+        "sources": [
+          "mdrule",
+          "dorule"
+        ]
+      },
+      {
+        "title": "Human trafficking",
+        "detail": "One hour, one-time, under section 456.0341. Keep the original completion record. The statute also contains an awareness-sign obligation, which is separate from taking CME.",
+        "sources": [
+          "trafficking"
+        ],
+        "course": "human-trafficking"
+      }
+    ],
+    "sections": [
+      {
+        "title": "First renewal and exemptions",
+        "paragraphs": [
+          "Florida’s first-renewal rules differ from an ordinary 40-hour renewal. The MD board lists HIV/AIDS, medical errors and controlled-substance training for covered DEA registrants. Review the DO board’s first-renewal rules independently rather than applying the MD exemption to a DO license.",
+          "Military service and other narrowly defined circumstances can qualify for board-approved exemptions. Approval of an exemption from general hours does not necessarily waive mandatory topics."
+        ],
+        "sources": [
+          "md",
+          "do",
+          "mdrule",
+          "dorule"
+        ]
+      },
+      {
+        "title": "Carryover and documentation",
+        "paragraphs": [
+          "Excess CME does not carry forward into the next Florida biennium. Match each course to the correct cycle and retain the full certificate, not only a total-hour tally.",
+          "Use the official CE reporting system and check what is recorded before renewal. Keep certificates, approved-provider details and documentation supporting exemptions or prior one-time training; provide records when requested by the board."
+        ],
+        "sources": [
+          "md",
+          "do"
+        ]
+      },
+      {
+        "title": "What’s tricky about Florida",
+        "paragraphs": [
+          "Forty hours can still leave a DO short of the AOA Category 1-A floor. Likewise, a course approved for the MD medical-error requirement may omit the conditions required by the DO board.",
+          "The one-time HIV/AIDS and trafficking records, six-year domestic-violence clock and recurring prescribing course should be checked independently. Federal MATE Act training does not automatically replace any Florida-specific requirement."
+        ],
+        "sources": [
+          "md",
+          "do",
+          "mdrule",
+          "dorule"
+        ]
+      },
+      {
+        "title": "What changed in 2026",
+        "paragraphs": [
+          "The controlled-substance course content changed effective July 1, 2026 to include pain treatment for patients with sickle cell disease. Check that the activity satisfies the current statute and board approval, even if an older certificate has the same course title.",
+          "September 18, 2026: refreshed the previously verified state draft against current board renewal guidance and the production rule notes; preserved the separate MD and DO rules."
+        ],
+        "sources": [
+          "prescribing",
+          "md",
+          "do"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do Florida MDs and DOs both need 40 hours?",
+        "answer": "Generally yes, per two-year cycle, subject to first-renewal and other exceptions. DOs also need at least 20 AOA Category 1-A hours and one hour of Florida laws/rules and ethics."
+      },
+      {
+        "question": "Can I use an MD medical-errors course for a DO renewal?",
+        "answer": "Do not assume so. The boards require different content. Verify that the activity is approved for the Florida osteopathic requirement."
+      },
+      {
+        "question": "Is HIV/AIDS training required every renewal?",
+        "answer": "The one-hour requirement is tied to the first biennial renewal. Keep proof of that completion; do not confuse it with the recurring medical-error and prescribing courses."
+      },
+      {
+        "question": "Can I carry Florida CME into the next cycle?",
+        "answer": "No. Complete the applicable hours in the current biennium; excess hours do not move into the next cycle."
+      },
+      {
+        "question": "Does MATE Act training satisfy Florida controlled-substance CME?",
+        "answer": "Not automatically. The Florida course has its own content and approved-provider requirements, including the 2026 sickle-cell-pain update. Verify any proposed dual use against both sets of rules."
+      },
+      {
+        "question": "Does ClearCME report to CE Broker or renew my license?",
+        "answer": "No. Organizing your certificates in ClearCME is separate from official reporting and renewal. Review the board’s CE record and finish the required reporting before submitting renewal."
+      }
+    ],
+    "sources": [
+      {
+        "id": "md",
+        "label": "Florida Board of Medicine · MD renewal and CME",
+        "url": "https://flboardofmedicine.gov/medical-doctor-renewal/",
+        "quote": "CME hours do not carry over across biennial licensure cycles."
+      },
+      {
+        "id": "do",
+        "label": "Florida Board of Osteopathic Medicine · DO renewal",
+        "url": "https://floridasosteopathicmedicine.gov/osteopathic-physician-renewal/"
+      },
+      {
+        "id": "mdrule",
+        "label": "Florida Administrative Code 64B8-13.005 · MD topics and HIV/AIDS",
+        "url": "https://www.flrules.org/gateway/ruleNo.asp?id=64B8-13.005"
+      },
+      {
+        "id": "dorule",
+        "label": "Florida Administrative Code 64B15-13.001 · DO CME",
+        "url": "https://www.flrules.org/gateway/ruleNo.asp?id=64B15-13.001"
+      },
+      {
+        "id": "prescribing",
+        "label": "Florida Statutes §456.0301 · controlled-substance course content",
+        "url": "https://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0400-0499/0456/Sections/0456.0301.html"
+      },
+      {
+        "id": "trafficking",
+        "label": "Florida Statutes §456.0341 · human trafficking",
+        "url": "https://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0400-0499/0456/Sections/0456.0341.html"
+      }
+    ],
+    "related": [
+      "texas",
+      "new-york"
+    ],
+    "productNote": "Keep certificates and prior mandatory-topic completions in one place. Check first-renewal exceptions, the DO category floor and board-specific course approvals manually. Official CE reporting remains a separate step."
+  },
+  {
+    "slug": "new-york",
+    "code": "NY",
+    "name": "New York",
+    "status": "published",
+    "title": "New York CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "New York physician CME requirements: MD/DO hours, renewal cycles, mandatory topics, exceptions and board sources. Verified guidance with practical FAQs.",
+    "summary": "New York has no general physician CME-hour minimum, but it does require specific training. MDs and DOs share the same physician requirements, with separate clocks for registration, infection control and prescriber education.",
+    "verified": "2026-09-18",
+    "modified": "2026-09-18",
+    "boards": [
+      {
+        "label": "MD and DO · New York physician license",
+        "hours": "No general CME-hour minimum",
+        "cycle": "Physician registration renews every two years. Training deadlines are separate.",
+        "credit": "Required courses must meet the relevant NYSED or NYSDOH approval and content rules."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Child-abuse identification and reporting",
+        "detail": "Two hours of approved training are required for initial licensure unless an accepted education pathway or exemption applies. Previous completion does not remove the updated-curriculum requirement due November 17, 2026.",
+        "sources": [
+          "child"
+        ],
+        "course": "child-abuse"
+      },
+      {
+        "title": "Infection control and barrier precautions",
+        "detail": "Complete approved training at initial licensure and every four years, unless a formal exemption applies. NYSDOH oversees the physician training pathway.",
+        "sources": [
+          "infection"
+        ]
+      },
+      {
+        "title": "Pain management, palliative care and addiction",
+        "detail": "Three hours every three years for the prescribers covered by Public Health Law 3309-a, including DEA-registered practitioners and covered residents prescribing under an institutional DEA registration. Complete the required NYSDOH attestation as well as the course.",
+        "sources": [
+          "prescriber"
+        ],
+        "course": "opioid-prescribing"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Exceptions and exemptions",
+        "paragraphs": [
+          "NYSED describes education-based and practice-based exceptions to child-abuse coursework. Infection-control exemptions require the appropriate determination; they should not be inferred merely from a low-risk practice setting.",
+          "NYSDOH has an exemption process for the prescriber requirement. Follow the agency’s documentation and approval process before treating a training obligation as waived."
+        ],
+        "sources": [
+          "child",
+          "infection",
+          "prescriber"
+        ]
+      },
+      {
+        "title": "Carryover and documentation",
+        "paragraphs": [
+          "There is no general hour bank to carry into a later New York registration cycle. Recurring training must meet its own interval; keep the completion date for each topic.",
+          "Keep authorized course certificates and documentation of any accepted exemption. NYSED specifies submission of child-abuse completion or exemption documentation. Preserve the NYSDOH prescriber attestation confirmation separately from the course certificate.",
+          "NYSDOH’s prescriber attestation instructions require keeping training records for six years from submission of the attestation, available for audit or inspection."
+        ],
+        "sources": [
+          "child",
+          "infection",
+          "prescriber",
+          "attestation"
+        ]
+      },
+      {
+        "title": "What’s tricky about New York",
+        "paragraphs": [
+          "“No general CME requirement” does not mean no training. A two-year registration, four-year infection-control interval and three-year prescriber interval will not always align.",
+          "The child-abuse requirement is normally one-time, but curriculum updates can require action by physicians who already completed it. Check the version and date of your course, not just whether you have a certificate."
+        ],
+        "sources": [
+          "child",
+          "infection",
+          "prescriber"
+        ]
+      },
+      {
+        "title": "What changed in 2026",
+        "paragraphs": [
+          "November 17, 2026 is the deadline for the updated child-abuse curriculum covering identification of abuse or maltreatment of children with intellectual or developmental disabilities.",
+          "For approved training completed between November 1, 2022 and August 31, 2025, NYSED describes a 15-minute addendum available through most approved providers. Updated full courses began September 1, 2025. This follows a separate earlier curriculum-update deadline of April 1, 2025."
+        ],
+        "sources": [
+          "child"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Does New York require 50 hours of CME for physicians?",
+        "answer": "No general physician CME-hour minimum applies. Specific mandated training still applies, and specialty certification, hospital privileges or other licenses may have separate requirements."
+      },
+      {
+        "question": "Are the MD and DO requirements different?",
+        "answer": "New York licenses both under the physician profession. The mandated training described here applies to both degrees, subject to the relevant practice and exemption rules."
+      },
+      {
+        "question": "Do I need to repeat child-abuse training in 2026?",
+        "answer": "You must meet the updated curriculum by November 17, 2026 even if you previously trained. If your approved course was completed from November 1, 2022 through August 31, 2025, check the approved-provider addendum pathway."
+      },
+      {
+        "question": "How often is infection-control training due?",
+        "answer": "Generally every four years after the initial training, unless an approved exemption applies. It is a separate clock from your two-year registration."
+      },
+      {
+        "question": "Does my DEA MATE Act course cover New York prescriber education?",
+        "answer": "Only if the activity independently meets New York’s required content and timing. The federal MATE Act is one-time; New York prescriber education recurs every three years and has its own attestation."
+      },
+      {
+        "question": "What proof should I keep?",
+        "answer": "Keep each certificate, the completed curriculum/version, completion date, approval information and any official attestation or exemption confirmation. ClearCME records do not replace NYSED or NYSDOH submissions."
+      }
+    ],
+    "sources": [
+      {
+        "id": "child",
+        "label": "NYSED · physician child-abuse training and November 2026 update",
+        "url": "https://www.op.nysed.gov/professions/physicians/mandated-training-related-child-abuse",
+        "quote": "complete the updated training curriculum by November 17, 2026"
+      },
+      {
+        "id": "infection",
+        "label": "NYSED · mandated infection-control training",
+        "url": "https://www.op.nysed.gov/about/training-continuing-education/mandated-training-related-infection-control"
+      },
+      {
+        "id": "prescriber",
+        "label": "NYSDOH · mandatory prescriber education and attestation",
+        "url": "https://www.health.ny.gov/professionals/narcotic/mandatory_prescriber_education/"
+      },
+      {
+        "id": "registration",
+        "label": "NYSED · physician registration renewal",
+        "url": "https://www.op.nysed.gov/registration-renewal"
+      },
+      {
+        "id": "attestation",
+        "label": "NYSDOH · prescriber attestation and record retention",
+        "url": "https://apps.health.ny.gov/pub/ctrldocs/alrtview/postings/Notification_22290.pdf"
+      }
+    ],
+    "related": [
+      "florida",
+      "texas"
+    ],
+    "productNote": "Organize the certificates behind New York’s separate training deadlines. Check the 2026 child-abuse curriculum update and complete required agency attestations yourself; ClearCME does not verify a course’s NYSED/NYSDOH approval or submit those attestations."
+  },
+  {
+    "slug": "nevada",
+    "code": "NV",
+    "name": "Nevada",
+    "status": "published",
+    "title": "Nevada CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Nevada physician CME requirements: MD/DO hours, renewal cycles, mandatory topics, exceptions and board sources. Verified guidance with practical FAQs.",
+    "summary": "Nevada MD and DO requirements differ substantially. MDs have a biennial specialty-hour requirement and first-cycle phase-down. DOs have a transition: the December 2026 renewal still uses 35 hours from the preceding year.",
+    "verified": "2026-09-18",
+    "modified": "2026-09-18",
+    "boards": [
+      {
+        "label": "MD · State Board of Medical Examiners",
+        "hours": "40 Category 1 hours, including 20 in specialty/scope",
+        "cycle": "Biennial renewal on June 30 of odd-numbered years. Newly licensed MDs may qualify for the phase-down below.",
+        "credit": "AMA PRA Category 1 or board-approved CME; topic and specialty requirements still apply."
+      },
+      {
+        "label": "DO · State Board of Osteopathic Medicine",
+        "hours": "2026: 35 hours / preceding year. After 2026: 40 hours / preceding biennium.",
+        "cycle": "December 31 in even-numbered years. The transition changes the CME lookback, not just the total.",
+        "credit": "2026: at least 10 Category 1A hours; later renewals: at least 20. The Nevada rule recognizes AOA- or ACCME-accredited sponsors for this category."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Ethics, pain management or addiction care",
+        "detail": "MDs: two hours each biennium, with permitted SBIRT substitution; suicide-prevention hours do not substitute for this block. DOs: the statute includes ethics, pain management, addiction care or SBIRT as a two-hour biennial block.",
+        "sources": [
+          "mdchart",
+          "mdlaw",
+          "dolaw"
+        ],
+        "course": "ethics"
+      },
+      {
+        "title": "Suicide prevention",
+        "detail": "Two hours within two years of initial licensure and every four years thereafter. This applies to physicians generally, not only psychiatrists.",
+        "sources": [
+          "mdchart",
+          "dolaw",
+          "transition"
+        ],
+        "course": "suicide-prevention"
+      },
+      {
+        "title": "SBIRT",
+        "detail": "Two hours once, within two years of initial licensure, for screening, brief intervention and referral to treatment. Keep the one-time completion record.",
+        "sources": [
+          "mdchart",
+          "dolaw"
+        ],
+        "course": "substance-use"
+      },
+      {
+        "title": "Controlled substances and opioids",
+        "detail": "MDs registered to dispense controlled substances in Nevada: two hours each cycle. DOs: two hours from the preceding year for the 2026 renewal, then four hours per biennium for renewals after December 31, 2026.",
+        "sources": [
+          "mdchart",
+          "transition"
+        ],
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "HIV stigma and bias · hospital emergency or primary care",
+        "detail": "Two hours within two years after beginning to provide or supervise the specified emergency services or primary care. Scope, rather than a universal requirement, determines applicability.",
+        "sources": [
+          "mdchart",
+          "mdlaw",
+          "dolaw"
+        ]
+      },
+      {
+        "title": "Cultural competency and DEI · psychiatry",
+        "detail": "Two hours biennially for psychiatrists. Do not apply the psychiatry-only requirement to every Nevada physician.",
+        "sources": [
+          "mdchart",
+          "mdlaw",
+          "dolaw"
+        ],
+        "course": "implicit-bias"
+      }
+    ],
+    "sections": [
+      {
+        "title": "MD first-cycle phase-down · July 2025–June 2027",
+        "paragraphs": [
+          "Licensed before July 1, 2025 or during July–December 2025: 40 total hours, including 20 specialty/scope hours. Licensed January–June 2026: 30 total and 15 specialty/scope hours. Licensed July–December 2026: 20 total and 10 specialty/scope hours. Licensed January–June 2027: 10 total and five specialty/scope hours.",
+          "The two-hour ethics/pain/addiction block is not reduced. NAC 630.157 supplies the total-hour phase-down; the board’s current chart supplies the corresponding specialty/scope numbers. This MD phase-down does not establish a DO proration rule."
+        ],
+        "sources": [
+          "mdchart",
+          "mdrule"
+        ]
+      },
+      {
+        "title": "Exceptions, carryover and documentation",
+        "paragraphs": [
+          "NAC 630.153 provides an MD exemption for a completed residency/fellowship year during the preceding biennium. Inactive-license rules differ from active practice. Confirm the exact pathway and any still-applicable obligations with your board.",
+          "Use CME from the applicable lookback rather than assuming unused hours carry forward. Keep certificates, accepted category, specialty/scope content, topic allocation and lifetime-topic records. MDs attest at renewal and can be audited; the DO transition rule requires satisfactory completion evidence."
+        ],
+        "sources": [
+          "mdrule",
+          "mdchart",
+          "transition"
+        ]
+      },
+      {
+        "title": "What’s tricky about Nevada",
+        "paragraphs": [
+          "Do not apply a static “40 hours every two years” total to the December 31, 2026 DO renewal. It requires 35 hours over the preceding year, including 10 Category 1A and two controlled-substance/opioid/addiction hours. Later renewals use 40 hours over the preceding biennium, including 20 Category 1A and four prescribing/addiction hours.",
+          "MD first-cycle totals depend on the actual issuance block. Specialty/scope hours and topic-specific clocks add separate checks. These are not yet fully personalized by ClearCME’s production calculation; use this guide and your board record for those decisions."
+        ],
+        "sources": [
+          "transition",
+          "mdchart"
+        ]
+      },
+      {
+        "title": "What changed in 2026",
+        "paragraphs": [
+          "AB 56 moved DO renewal to a biennial schedule. The approved R092-25 regulation, filed July 1, 2026, expressly preserves the annual CME lookback for renewals through December 31, 2026 and changes later renewals.",
+          "The former MD bioterrorism/WMD statutory mandate was removed effective January 1, 2026. Older regulatory text and third-party summaries can still show it; the current statute and board chart should be read together."
+        ],
+        "sources": [
+          "transition",
+          "mdlaw",
+          "ab56",
+          "mdchart"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Is Nevada DO renewal in 2026 based on 35, 40 or 70 hours?",
+        "answer": "For renewal on or before December 31, 2026, the approved transition regulation requires at least 35 hours over the preceding year, including 10 Category 1A and two prescribing/addiction hours. Do not double the old annual total to 70."
+      },
+      {
+        "question": "When does the 40-hour DO biennium apply?",
+        "answer": "The approved regulation applies 40 hours over the preceding biennium to renewals after December 31, 2026, including 20 Category 1A and four controlled-substance/opioid/addiction hours. The next ordinary even-year renewal is December 2028."
+      },
+      {
+        "question": "I obtained my Nevada MD license in October 2026. What is my first-cycle total?",
+        "answer": "The board’s July 2025–June 2027 chart assigns the July–December 2026 issuance block 20 total hours, including 10 specialty/scope hours and the unreduced two-hour ethics/pain/addiction block. Check other applicable topics separately."
+      },
+      {
+        "question": "Is Nevada suicide-prevention CME only for psychiatrists?",
+        "answer": "No. The two-hour suicide-prevention requirement applies generally, first within two years of licensure and then every four years. Psychiatry-specific cultural-competency training is a different requirement."
+      },
+      {
+        "question": "Do I still need the four-hour bioterrorism/WMD course?",
+        "answer": "The former MD statutory mandate was removed. It is absent from the current board chart, although older regulatory language and summaries can still mention it. Use the current statute and board guidance."
+      },
+      {
+        "question": "Can ClearCME calculate my exact Nevada compliance status?",
+        "answer": "The production calculation does not yet fully handle MD issuance-block phase-down and specialty-hour floors or the DO 2026 transition. Use ClearCME to organize records, and confirm these requirements with the board rather than treating a dashboard total as an official determination."
+      }
+    ],
+    "sources": [
+      {
+        "id": "mdchart",
+        "label": "Nevada medical board · 2025–2027 CME chart",
+        "url": "https://medboard.nv.gov/uploadedFiles/mednvgov/content/Licensees/CME_Requirements_MDs_PAs_AAs.pdf"
+      },
+      {
+        "id": "mdrule",
+        "label": "NAC 630.153 and 630.157 · MD exemptions and phase-down",
+        "url": "https://www.leg.state.nv.us/NAC/NAC-630.html"
+      },
+      {
+        "id": "mdlaw",
+        "label": "NRS 630.253, 630.2535 and 630.267 · MD topics and renewal",
+        "url": "https://www.leg.state.nv.us/NRS/NRS-630.html"
+      },
+      {
+        "id": "dolaw",
+        "label": "NRS 633.471 · DO renewal and mandatory topics",
+        "url": "https://www.leg.state.nv.us/NRS/NRS-633.html"
+      },
+      {
+        "id": "transition",
+        "label": "Approved R092-25 · DO 2026/2027 transition, filed July 1, 2026",
+        "url": "https://www.leg.state.nv.us/Register/2025Register/R092-25AP.pdf",
+        "quote": "during the preceding year at least 35 hours"
+      },
+      {
+        "id": "ab56",
+        "label": "Nevada AB 56 · enrolled legislation",
+        "url": "https://www.leg.state.nv.us/Session/83rd2025/Bills/AB/AB56_EN.pdf"
+      }
+    ],
+    "related": [
+      "california",
+      "texas"
+    ],
+    "productNote": "Store Nevada certificates and completion history in one place. ClearCME does not yet fully calculate MD phase-down and specialty-hour floors or the DO 2026 transition. Confirm these with your board before attesting to compliance."
+  }
+]
