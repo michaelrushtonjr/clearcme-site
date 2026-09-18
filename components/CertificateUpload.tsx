@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useId, useCallback, useState } from "react";
 import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import Link from "next/link";
@@ -425,7 +425,8 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   );
 }
 
-function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+  const formId = useId();
   const ex = cert.extracted!;
   const [fields, setFields] = useState({
     title: ex.title ?? "",
@@ -507,8 +508,9 @@ function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; on
         ) : (
           <div className="space-y-3">
             <div>
-              <label className="product-label">Course Title</label>
+              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
               <input
+                id={`${formId}-title`}
                 type="text"
                 value={fields.title}
                 onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -517,8 +519,9 @@ function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; on
               />
             </div>
             <div>
-              <label className="product-label">Provider / Accreditor</label>
+              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
               <input
+                id={`${formId}-provider`}
                 type="text"
                 value={fields.provider}
                 onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -528,8 +531,9 @@ function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; on
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="product-label">Completion Date</label>
+                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
                 <input
+                  id={`${formId}-date`}
                   type="date"
                   value={fields.date}
                   onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -537,8 +541,9 @@ function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; on
                 />
               </div>
               <div>
-                <label className="product-label">Credit Hours</label>
+                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
                 <input
+                  id={`${formId}-hours`}
                   type="number"
                   min="0"
                   step="0.25"
@@ -574,7 +579,8 @@ function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; on
   );
 }
 
-function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+export function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+  const formId = useId();
   const [fields, setFields] = useState({
     title: "",
     provider: "",
@@ -642,8 +648,9 @@ function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCer
         ) : (
           <div className="space-y-3">
             <div>
-              <label className="product-label">Course Title</label>
+              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
               <input
+                id={`${formId}-title`}
                 type="text"
                 value={fields.title}
                 onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -652,8 +659,9 @@ function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCer
               />
             </div>
             <div>
-              <label className="product-label">Provider / Accreditor</label>
+              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
               <input
+                id={`${formId}-provider`}
                 type="text"
                 value={fields.provider}
                 onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -663,8 +671,9 @@ function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCer
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="product-label">Completion Date</label>
+                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
                 <input
+                  id={`${formId}-date`}
                   type="date"
                   value={fields.date}
                   onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -672,8 +681,9 @@ function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCer
                 />
               </div>
               <div>
-                <label className="product-label">Credit Hours</label>
+                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
                 <input
+                  id={`${formId}-hours`}
                   type="number"
                   min="0"
                   step="0.25"
@@ -711,7 +721,8 @@ function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCer
   );
 }
 
-function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
+  const formId = useId();
   const ex = cert.extracted!;
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -914,8 +925,9 @@ function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert
             </div>
 
             <div>
-              <label className="product-label">Course Title</label>
+              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
               <input
+                id={`${formId}-title`}
                 type="text"
                 value={fields.title}
                 onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -924,8 +936,9 @@ function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert
               />
             </div>
             <div>
-              <label className="product-label">Provider / Accreditor</label>
+              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
               <input
+                id={`${formId}-provider`}
                 type="text"
                 value={fields.provider}
                 onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -935,8 +948,9 @@ function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="product-label">Completion Date</label>
+                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
                 <input
+                  id={`${formId}-date`}
                   type="date"
                   value={fields.date}
                   onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -944,8 +958,9 @@ function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert
                 />
               </div>
               <div>
-                <label className="product-label">Credit Hours</label>
+                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
                 <input
+                  id={`${formId}-hours`}
                   type="number"
                   min="0"
                   step="0.25"
