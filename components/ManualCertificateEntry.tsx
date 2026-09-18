@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 
 const CREDIT_TYPE_OPTIONS: { value: string; label: string }[] = [
@@ -16,6 +16,7 @@ const CREDIT_TYPE_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export default function ManualCertificateEntry() {
+  const formId = useId();
   const [fields, setFields] = useState({
     title: "",
     provider: "",
@@ -101,8 +102,9 @@ export default function ManualCertificateEntry() {
   return (
     <div className="product-card p-6 space-y-4">
       <div>
-        <label className="product-label">Course Title</label>
+        <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
         <input
+          id={`${formId}-title`}
           type="text"
           value={fields.title}
           onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -111,8 +113,9 @@ export default function ManualCertificateEntry() {
         />
       </div>
       <div>
-        <label className="product-label">Provider / Accreditor</label>
+        <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
         <input
+          id={`${formId}-provider`}
           type="text"
           value={fields.provider}
           onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -122,8 +125,9 @@ export default function ManualCertificateEntry() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="product-label">Completion Date</label>
+          <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
           <input
+            id={`${formId}-date`}
             type="date"
             value={fields.date}
             onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -131,8 +135,9 @@ export default function ManualCertificateEntry() {
           />
         </div>
         <div>
-          <label className="product-label">Hours of CME</label>
+          <label htmlFor={`${formId}-hours`} className="product-label">Hours of CME</label>
           <input
+            id={`${formId}-hours`}
             type="number"
             min="0.25"
             max="100"
@@ -145,8 +150,9 @@ export default function ManualCertificateEntry() {
         </div>
       </div>
       <div>
-        <label className="product-label">Credit Type (optional)</label>
+        <label htmlFor={`${formId}-type`} className="product-label">Credit Type (optional)</label>
         <select
+          id={`${formId}-type`}
           value={fields.creditType}
           onChange={(e) => setFields((f) => ({ ...f, creditType: e.target.value }))}
           className="product-input"
