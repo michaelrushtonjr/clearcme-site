@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { uploadCertificate } from "@/lib/certificate-upload-client";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { formatDateUTC } from "@/lib/dates";
@@ -30,6 +30,12 @@ interface UploadedCert {
 }
 
 type UploadState = "idle" | "uploading" | "done" | "error";
+
+export function certificateRejectionMessage(errors: FileRejection["errors"]): string {
+  if (errors.some((error) => error.code === "file-too-large")) return "File too large. Choose a file under 10 MB.";
+  if (errors.some((error) => error.code === "file-invalid-type")) return "Unsupported file type. Choose a PDF, JPG, or PNG.";
+  return "This file couldn't be added. Choose another file and try again.";
+}
 
 const TOPIC_FORMAT: Record<string, string> = {
   OPIOID_PRESCRIBING: "Opioid Prescribing",
@@ -115,14 +121,17 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   }, [userId]);
 
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) return;
+    async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      if (acceptedFiles.length === 0 && fileRejections.length === 0) return;
 
       setUploadState("uploading");
       setProgress(0);
       setUploadedCerts([]);
 
-      const results: UploadedCert[] = [];
+      const results: UploadedCert[] = fileRejections.map(({ file, errors }) => ({
+        id: crypto.randomUUID(), fileName: file.name, extracted: null,
+        error: certificateRejectionMessage(errors),
+      }));
 
       for (let i = 0; i < acceptedFiles.length; i++) {
         const file = acceptedFiles[i];
@@ -253,7 +262,7 @@ export default function CertificateUpload({ userId }: { userId: string }) {
         <div className="space-y-4">
           {blockedCert && <UpgradeNotice feature="extraction" reason={blockedCert.upgradeReason} />}
 
-          {visibleCerts.length > 0 && (
+          {processedCerts.length > 0 && (
           <div className="product-callout-brand p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -336,6 +345,9 @@ export default function CertificateUpload({ userId }: { userId: string }) {
                     <p className="font-medium text-[var(--ink)] text-sm">{cert.fileName}</p>
                   </div>
                   <p className="text-sm text-[var(--status-miss)]">{cert.error}</p>
+                  <button onClick={reset} className="product-btn product-btn-secondary mt-3">
+                    Choose another file
+                  </button>
                 </div>
               ) : cert.needsReview && cert.extracted ? (
                 <NeedsReviewCard cert={cert} onReset={reset} />
