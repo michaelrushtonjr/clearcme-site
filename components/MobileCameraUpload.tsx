@@ -490,7 +490,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
       </button>
 
       <p className="text-[10px] text-[var(--ink-3)] text-center pt-1">
-        AI extracts credits automatically · ~10 seconds · Encrypted in transit
+        AI reads hours of CME · ~10 seconds · Encrypted in transit
       </p>
     </div>
   );
