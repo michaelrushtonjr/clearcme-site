@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+const evidenceRoot = process.env.WALKTHROUGH_EVIDENCE_DIR || 'codex-review/walkthrough-D';
 require('./helpers/local-env.cjs');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
-fs.mkdirSync('codex-review/walkthrough-D', {recursive:true});
-const log = fs.openSync('codex-review/walkthrough-D/server.log', 'a');
-require('node:fs').rmSync('codex-review/walkthrough-D/stop-server', {force:true});
+fs.mkdirSync(evidenceRoot, {recursive:true});
+const log = fs.openSync(`${evidenceRoot}/server.log`, 'a');
+require('node:fs').rmSync(`${evidenceRoot}/stop-server`, {force:true});
 const authSecret = require('node:crypto').randomBytes(32).toString('hex');
 const base = new URL(process.env.WALKTHROUGH_BASE_URL || 'http://localhost:3000');
 if (!['localhost','127.0.0.1'].includes(base.hostname)) throw new Error('Loopback only');

@@ -1,6 +1,6 @@
 import { test, type Page, type Route } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
-import { Evidence } from './helpers/evidence';
+import { Evidence, root } from './helpers/evidence';
 import { createFreshUser, signIn, localPrisma } from './helpers/fresh-account';
 const modes=['success','error','hang'] as const;
 const selected=process.env.WALKTHROUGH_SERVICES?.split(',');
@@ -21,7 +21,7 @@ test('external boundary matrix',async({page},info)=>{
  await page.request.post('/api/licenses',{data:{state:'NV',licenseType:'MD',renewalDate:'2027-06-30'}});
  await page.route('**/__walkthrough/billing-return',r=>r.fulfill({contentType:'text/html',body:'<h1>Run D mock billing destination</h1><p>No provider was contacted.</p>'}));
  for(const flow of (includes('stripe') ? ['checkout','portal'] : [])) for(const mode of modes) await e.attempt(`stripe-${flow}-${mode}`,async()=>{
-  writeFileSync('codex-review/walkthrough-D/mock-modes.json',JSON.stringify({stripe:mode}));
+  writeFileSync(`${root}/mock-modes.json`,JSON.stringify({stripe:mode}));
   await e.visit('/dashboard/settings',`stripe-${flow}-${mode}-before`);
   const response=page.waitForResponse(r=>r.url().endsWith(`/api/stripe/${flow}`),{timeout:45000});
   const button=page.getByRole('button',{name:flow==='checkout'?'Upgrade to Essential':'Manage',exact:true});
@@ -30,7 +30,7 @@ test('external boundary matrix',async({page},info)=>{
   const r=await response;e.log('external-matrix-response',{service:'stripe',flow,mode,status:r.status(),body:await r.text().catch(()=>'Response navigated to the mock destination')});
   await page.waitForTimeout(800);await e.capture(`stripe-${flow}-${mode}-result`);
  });
- writeFileSync('codex-review/walkthrough-D/mock-modes.json','{}');
+ writeFileSync(`${root}/mock-modes.json`,'{}');
  const cert=await fixture(page);
  // Extraction UI contract is isolated at its same-origin endpoint; metadata was
  // created via the real API, so the needs-review deep link has a real row.

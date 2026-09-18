@@ -3,11 +3,12 @@ import path from 'node:path';
 // Playwright resolves webServer.command and reporter paths against this config's
 // directory; the harness scripts and evidence live at the repo root.
 const repoRoot = path.resolve(__dirname, '../..');
+const evidenceRoot = path.resolve(repoRoot, process.env.WALKTHROUGH_EVIDENCE_DIR || 'codex-review/walkthrough-D');
 export default defineConfig({
   webServer:process.env.WALKTHROUGH_SERVER_EXTERNAL === '1' ? undefined : {command:'node tests/e2e/start-server.cjs', cwd:repoRoot, url:process.env.WALKTHROUGH_BASE_URL || 'http://localhost:3000', reuseExistingServer:false, timeout:120_000, stdout:'pipe', stderr:'pipe'},
   testDir:'.', testMatch:'*.spec.ts', workers:1, fullyParallel:false, timeout:900_000,
-  expect:{timeout:8000}, outputDir:'../../codex-review/walkthrough-D/playwright-results',
-  reporter:[['list'],['json',{outputFile:path.join(repoRoot,'codex-review/walkthrough-D/playwright-report.json')}]],
+  expect:{timeout:8000}, outputDir:path.join(evidenceRoot,'playwright-results'),
+  reporter:[['list'],['json',{outputFile:path.join(evidenceRoot,'playwright-report.json')}]],
   use:{...(process.env.PW_WS_ENDPOINT ? {connectOptions:{wsEndpoint:process.env.PW_WS_ENDPOINT}} : {}),baseURL:process.env.WALKTHROUGH_BASE_URL || 'http://localhost:3000', actionTimeout:8000, navigationTimeout:60000, serviceWorkers:'block'},
   projects:[
     {name:'desktop',use:{viewport:{width:1280,height:800}}},

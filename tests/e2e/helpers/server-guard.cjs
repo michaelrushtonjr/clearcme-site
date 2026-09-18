@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+const evidenceRoot = process.env.WALKTHROUGH_EVIDENCE_DIR || 'codex-review/walkthrough-D';
 // Test-process-only boundary. No application code imports this file.
 require('./local-env.cjs');
 const fs = require('node:fs');
@@ -8,15 +9,15 @@ const pg = require('pg');
 pg.Pool = class WalkthroughPool extends pg.Pool { constructor(options) { super({...options,max:1}); } };
 
 // Run-owned shutdown control when the sandbox cannot signal a detached child.
-setInterval(()=>{if(fs.existsSync('codex-review/walkthrough-D/stop-server')) process.exit(0);},500).unref();
+setInterval(()=>{if(fs.existsSync(`${evidenceRoot}/stop-server`)) process.exit(0);},500).unref();
 const http = require('node:http');
 const https = require('node:https');
 const { Writable, Readable } = require('node:stream');
 const { syncBuiltinESMExports } = require('node:module');
 const localHost = h => !h || ['localhost', '127.0.0.1', '::1', '[::1]'].includes(h);
-const log = data => fs.appendFileSync('codex-review/walkthrough-D/server-boundary.jsonl', JSON.stringify({time:new Date().toISOString(),...data})+'\n');
+const log = data => fs.appendFileSync(`${evidenceRoot}/server-boundary.jsonl`, JSON.stringify({time:new Date().toISOString(),...data})+'\n');
 function mode(service) {
-  try { return JSON.parse(fs.readFileSync('codex-review/walkthrough-D/mock-modes.json','utf8'))[service] || 'success'; }
+  try { return JSON.parse(fs.readFileSync(`${evidenceRoot}/mock-modes.json`,'utf8'))[service] || 'success'; }
   catch { return 'success'; }
 }
 function deny(host) { log({host,blocked:true}); throw new Error('RUN_D_BLOCKED_OUTBOUND: '+host); }
