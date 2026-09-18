@@ -22,3 +22,6 @@ npm-debug.log*
 .env.vercel
 .vscode/
 *.tsbuildinfo
+
+# Run D walkthrough evidence (kept in the project folder, not the repo)
+codex-review/walkthrough-D/
