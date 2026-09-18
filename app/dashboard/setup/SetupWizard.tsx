@@ -200,6 +200,13 @@ export default function SetupWizard({ userId }: { userId: string }) {
         if (isPrimaryRenewalChoice(saved.renewalChoice)) setRenewalChoice(saved.renewalChoice);
         if (saved.renewalChoice === "manual" && saved.renewalDate) setRenewalDate(saved.renewalDate);
         if (saved.displayName) setDisplayName(saved.displayName);
+        if (typeof saved.isMultiState === "boolean") setIsMultiState(saved.isMultiState);
+        if (Array.isArray(saved.additionalLicenses) && saved.additionalLicenses.every(
+          (lic: Partial<AdditionalLicense> | null) => lic &&
+            typeof lic.id === "string" && typeof lic.state === "string" &&
+            typeof lic.licenseType === "string" && typeof lic.renewalDate === "string" &&
+            typeof lic.unsureDate === "boolean"
+        )) setAdditionalLicenses(saved.additionalLicenses.slice(0, 4));
         // Step 5's questions come from the server post-submit — clamp to 4.
         if (typeof saved.step === "number") setStep(Math.min(Math.max(saved.step, 1), 4));
       }
@@ -223,12 +230,14 @@ export default function SetupWizard({ userId }: { userId: string }) {
           renewalDate,
           renewalChoice,
           displayName,
+          isMultiState,
+          additionalLicenses,
         })
       );
     } catch {
       // Storage full/blocked — persistence is best-effort.
     }
-  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName]);
+  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName, isMultiState, additionalLicenses]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
