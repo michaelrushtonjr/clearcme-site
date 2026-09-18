@@ -437,17 +437,18 @@ export default function SetupWizard({ userId }: { userId: string }) {
     setError("");
     try {
       if (Object.keys(conditionalAnswers).length > 0) {
-        await fetch("/api/conditional-requirements", {
+        const response = await fetch("/api/conditional-requirements", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers: conditionalAnswers }),
         });
+        if (!response.ok) throw new Error("Practice answers were not saved");
       }
-    } catch {
-      // Answers are a convenience, not a gate — fall through to the dashboard.
-    } finally {
       router.push("/dashboard?onboarded=1");
       router.refresh();
+    } catch {
+      setError("We couldn't save your answers. Please try again.");
+      setLoading(false);
     }
   }
 
@@ -1186,6 +1187,12 @@ export default function SetupWizard({ userId }: { userId: string }) {
               {error && (
                 <div className="mt-4 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">
                   {error}
+                  <button
+                    onClick={() => { router.push("/dashboard?onboarded=1"); router.refresh(); }}
+                    className="mt-3 block w-full rounded-lg border border-red-200 px-3 py-2 text-left underline"
+                  >
+                    Continue without saving these answers
+                  </button>
                 </div>
               )}
 
