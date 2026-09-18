@@ -15,7 +15,8 @@
     "secrets": "node scripts/check-secrets.mjs",
     "db:local": "node scripts/local-prisma.js",
     "db:baseline-local": "node scripts/baseline-local-history.js",
-    "test:migrations": "node scripts/test-migrations.js"
+    "test:migrations": "node scripts/test-migrations.js",
+    "e2e:walkthrough": "node tests/e2e/run-walkthrough.cjs"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -41,6 +42,7 @@
     "stripe": "^22.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

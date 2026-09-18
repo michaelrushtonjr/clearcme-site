@@ -943,6 +943,7 @@ function ToggleRow({
       <button
         type="button"
         role="switch"
+        aria-label={label}
         aria-checked={value}
         onClick={() => !disabled && onChange(!value)}
         disabled={disabled}

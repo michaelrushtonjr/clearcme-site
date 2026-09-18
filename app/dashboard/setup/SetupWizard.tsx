@@ -200,6 +200,13 @@ export default function SetupWizard({ userId }: { userId: string }) {
         if (isPrimaryRenewalChoice(saved.renewalChoice)) setRenewalChoice(saved.renewalChoice);
         if (saved.renewalChoice === "manual" && saved.renewalDate) setRenewalDate(saved.renewalDate);
         if (saved.displayName) setDisplayName(saved.displayName);
+        if (typeof saved.isMultiState === "boolean") setIsMultiState(saved.isMultiState);
+        if (Array.isArray(saved.additionalLicenses) && saved.additionalLicenses.every(
+          (lic: Partial<AdditionalLicense> | null) => lic &&
+            typeof lic.id === "string" && typeof lic.state === "string" &&
+            typeof lic.licenseType === "string" && typeof lic.renewalDate === "string" &&
+            typeof lic.unsureDate === "boolean"
+        )) setAdditionalLicenses(saved.additionalLicenses.slice(0, 4));
         // Step 5's questions come from the server post-submit — clamp to 4.
         if (typeof saved.step === "number") setStep(Math.min(Math.max(saved.step, 1), 4));
       }
@@ -223,12 +230,14 @@ export default function SetupWizard({ userId }: { userId: string }) {
           renewalDate,
           renewalChoice,
           displayName,
+          isMultiState,
+          additionalLicenses,
         })
       );
     } catch {
       // Storage full/blocked — persistence is best-effort.
     }
-  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName]);
+  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName, isMultiState, additionalLicenses]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
@@ -437,17 +446,18 @@ export default function SetupWizard({ userId }: { userId: string }) {
     setError("");
     try {
       if (Object.keys(conditionalAnswers).length > 0) {
-        await fetch("/api/conditional-requirements", {
+        const response = await fetch("/api/conditional-requirements", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers: conditionalAnswers }),
         });
+        if (!response.ok) throw new Error("Practice answers were not saved");
       }
-    } catch {
-      // Answers are a convenience, not a gate — fall through to the dashboard.
-    } finally {
       router.push("/dashboard?onboarded=1");
       router.refresh();
+    } catch {
+      setError("We couldn't save your answers. Please try again.");
+      setLoading(false);
     }
   }
 
@@ -1186,6 +1196,12 @@ export default function SetupWizard({ userId }: { userId: string }) {
               {error && (
                 <div className="mt-4 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">
                   {error}
+                  <button
+                    onClick={() => { router.push("/dashboard?onboarded=1"); router.refresh(); }}
+                    className="mt-3 block w-full rounded-lg border border-red-200 px-3 py-2 text-left underline"
+                  >
+                    Continue without saving these answers
+                  </button>
                 </div>
               )}
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { uploadCertificate } from "@/lib/certificate-upload-client";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { formatDateUTC } from "@/lib/dates";
@@ -17,7 +17,7 @@ interface ExtractedCredit {
   accreditation: string;
 }
 
-interface UploadedCert {
+export interface UploadedCert {
   id: string;
   fileName: string;
   extracted: ExtractedCredit | null;
@@ -30,6 +30,64 @@ interface UploadedCert {
 }
 
 type UploadState = "idle" | "uploading" | "done" | "error";
+
+export function certificateRejectionMessage(errors: FileRejection["errors"]): string {
+  if (errors.some((error) => error.code === "file-too-large")) return "File too large. Choose a file under 10 MB.";
+  if (errors.some((error) => error.code === "file-invalid-type")) return "Unsupported file type. Choose a PDF, JPG, or PNG.";
+  return "This file couldn't be added. Choose another file and try again.";
+}
+
+/** How a certificate uploaded in this session ended up once the user acted on it. */
+export interface UploadResolution {
+  id: string;
+  fileName: string;
+  outcome: "confirmed" | "pending";
+  hours: number;
+  topics: string[];
+}
+
+/**
+ * The session summary shown above the uploader. Only resolved certificates
+ * count: "confirmed" once the user saved it and the server marked it
+ * COMPLETED, "pending" when they moved on ("Upload another") while it still
+ * needed review. A certificate whose review form is still open counts as
+ * neither — nothing is claimed until it is confirmed and saved.
+ */
+export function summarizeUploadSession(resolutions: UploadResolution[]) {
+  const confirmed = resolutions.filter((r) => r.outcome === "confirmed");
+  const pending = resolutions.filter((r) => r.outcome === "pending");
+  return {
+    confirmedCount: confirmed.length,
+    pendingCount: pending.length,
+    hoursAdded: confirmed.reduce((sum, r) => sum + r.hours, 0),
+    topics: Array.from(new Set(confirmed.flatMap((r) => r.topics))),
+  };
+}
+
+/** Certificates the user left unresolved when moving on still need review. */
+export function deferUnresolved(
+  certs: UploadedCert[],
+  resolved: Record<string, UploadResolution>,
+): Record<string, UploadResolution> {
+  const next = { ...resolved };
+  for (const cert of certs) {
+    if (next[cert.id] || cert.error || cert.upgradeRequired) continue;
+    if (cert.needsReview || cert.extractionFailed) {
+      next[cert.id] = { id: cert.id, fileName: cert.fileName, outcome: "pending", hours: 0, topics: [] };
+    }
+  }
+  return next;
+}
+
+/** Reads a PATCH /api/certificates/:id response into a resolution, or null if still under review. */
+function resolutionFromSave(cert: UploadedCert, data: unknown, fallbackHours: number): UploadResolution | null {
+  const saved = (data as { certificate?: { extractionStatus?: string; creditHours?: number | null } } | null)?.certificate;
+  if (saved?.extractionStatus !== "COMPLETED") return null;
+  const hours = typeof saved.creditHours === "number" ? saved.creditHours : fallbackHours;
+  return { id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours, topics: cert.extracted?.topics ?? [] };
+}
+
+const STILL_NEEDS_REVIEW = "Saved, but this certificate still needs review — check the completion date and hours, then confirm again.";
 
 const TOPIC_FORMAT: Record<string, string> = {
   OPIOID_PRESCRIBING: "Opioid Prescribing",
@@ -58,6 +116,12 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   const [progress, setProgress] = useState(0);
   const [uploadedCerts, setUploadedCerts] = useState<UploadedCert[]>([]);
   const [currentFileName, setCurrentFileName] = useState("");
+  // Session ledger: what each uploaded certificate became once the user acted on it.
+  const [resolved, setResolved] = useState<Record<string, UploadResolution>>({});
+  const recordResolution = useCallback(
+    (resolution: UploadResolution) => setResolved((prev) => ({ ...prev, [resolution.id]: resolution })),
+    [],
+  );
 
   const uploadFile = useCallback(async (file: File): Promise<UploadedCert | null> => {
     const res = await uploadCertificate(file, userId);
@@ -115,14 +179,17 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   }, [userId]);
 
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) return;
+    async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      if (acceptedFiles.length === 0 && fileRejections.length === 0) return;
 
       setUploadState("uploading");
       setProgress(0);
       setUploadedCerts([]);
 
-      const results: UploadedCert[] = [];
+      const results: UploadedCert[] = fileRejections.map(({ file, errors }) => ({
+        id: crypto.randomUUID(), fileName: file.name, extracted: null,
+        error: certificateRejectionMessage(errors),
+      }));
 
       for (let i = 0; i < acceptedFiles.length; i++) {
         const file = acceptedFiles[i];
@@ -171,18 +238,12 @@ export default function CertificateUpload({ userId }: { userId: string }) {
 
   const visibleCerts = uploadedCerts.filter((cert) => !cert.upgradeRequired);
   const blockedCert = uploadedCerts.find((cert) => cert.upgradeRequired);
-  const processedCerts = visibleCerts.filter((cert) => !cert.error);
-  const extractedCerts = visibleCerts.filter((cert) => cert.extracted && !cert.error);
-  const failedCerts = visibleCerts.filter((cert) => cert.error || cert.extractionFailed);
-  const totalCreditsAdded = extractedCerts.reduce(
-    (sum, cert) => sum + (cert.extracted?.creditHours ?? 0),
-    0,
-  );
-  const detectedTopics = Array.from(
-    new Set(extractedCerts.flatMap((cert) => cert.extracted?.topics ?? [])),
-  );
+  const summary = summarizeUploadSession(Object.values(resolved));
+  const showSummary = summary.confirmedCount > 0 || summary.pendingCount > 0;
 
   const reset = () => {
+    // Moving on without confirming leaves those certificates pending review.
+    setResolved((prev) => deferUnresolved(uploadedCerts, prev));
     setUploadState("idle");
     setProgress(0);
     setUploadedCerts([]);
@@ -191,6 +252,59 @@ export default function CertificateUpload({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Session summary — only certificates the user has confirmed, or left pending */}
+      {showSummary && (
+        <div className="product-callout-brand p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="product-callout-eye">
+                {summary.confirmedCount > 0 ? "Compliance Updated" : "Pending Your Review"}
+              </p>
+              <h3 className="mt-1 font-display text-xl font-semibold text-[var(--ink)]">
+                {summary.confirmedCount > 0 ? "Your CME record was refreshed" : "Nothing added to your record yet"}
+              </h3>
+              <p className="mt-1 text-sm text-[var(--ink-2)]">
+                {summary.confirmedCount > 0 &&
+                  `${summary.hoursAdded.toFixed(1)} hour${summary.hoursAdded === 1 ? "" : "s"} added across ${summary.confirmedCount} certificate${summary.confirmedCount === 1 ? "" : "s"}.`}
+                {summary.confirmedCount > 0 && summary.pendingCount > 0 && " "}
+                {summary.pendingCount > 0 &&
+                  `${summary.pendingCount} certificate${summary.pendingCount === 1 ? " is" : "s are"} waiting for your review — nothing counts until you confirm it.`}
+              </p>
+            </div>
+
+            <Link
+              href={summary.pendingCount > 0 ? "/dashboard/certificates" : "/dashboard/compliance"}
+              className="product-btn product-btn-brand shrink-0 whitespace-nowrap"
+            >
+              {summary.pendingCount > 0 ? "Finish reviewing →" : "See updated gaps →"}
+            </Link>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-[var(--radius)] bg-white/80 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Confirmed</p>
+              <p className="mt-1 font-mono text-2xl font-semibold text-[var(--ink)]">{summary.confirmedCount}</p>
+            </div>
+            <div className="rounded-[var(--radius)] bg-white/80 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Hours added</p>
+              <p className="mt-1 font-mono text-2xl font-semibold text-[var(--primary)]">{summary.hoursAdded.toFixed(1)}</p>
+            </div>
+            <div className="rounded-[var(--radius)] bg-white/80 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Needs review</p>
+              <p className={`mt-1 font-mono text-2xl font-semibold ${summary.pendingCount > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-met)]"}`}>
+                {summary.pendingCount}
+              </p>
+            </div>
+          </div>
+
+          {summary.topics.length > 0 && (
+            <p className="mt-3 text-xs text-[var(--ink-3)]">
+              Mandatory-topic matches detected: {summary.topics.map(formatTopicLabel).join(", ")}. Confirm them on your compliance map.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Drop zone */}
       {uploadState !== "done" && (
         <div
@@ -253,56 +367,6 @@ export default function CertificateUpload({ userId }: { userId: string }) {
         <div className="space-y-4">
           {blockedCert && <UpgradeNotice feature="extraction" reason={blockedCert.upgradeReason} />}
 
-          {visibleCerts.length > 0 && (
-          <div className="product-callout-brand p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="product-callout-eye">
-                  Compliance Updated
-                </p>
-                <h3 className="mt-1 font-display text-xl font-semibold text-[var(--ink)]">
-                  Your CME record was refreshed after upload
-                </h3>
-                <p className="mt-1 text-sm text-[var(--ink-2)]">
-                  {extractedCerts.length > 0
-                    ? `${totalCreditsAdded.toFixed(1)} credit${totalCreditsAdded === 1 ? "" : "s"} added across ${extractedCerts.length} certificate${extractedCerts.length === 1 ? "" : "s"}.`
-                    : "No credits were added yet — review the certificate details below to finish saving them."}
-                </p>
-              </div>
-
-              <Link
-                href="/dashboard/compliance"
-                className="product-btn product-btn-brand"
-              >
-                See updated gaps →
-              </Link>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[var(--radius)] bg-white/80 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Processed</p>
-                <p className="mt-1 font-mono text-2xl font-semibold text-[var(--ink)]">{processedCerts.length}</p>
-              </div>
-              <div className="rounded-[var(--radius)] bg-white/80 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Credits added</p>
-                <p className="mt-1 font-mono text-2xl font-semibold text-[var(--primary)]">{totalCreditsAdded.toFixed(1)}</p>
-              </div>
-              <div className="rounded-[var(--radius)] bg-white/80 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-3)]">Needs review</p>
-                <p className={`mt-1 font-mono text-2xl font-semibold ${failedCerts.length > 0 ? "text-[var(--status-pending)]" : "text-[var(--status-met)]"}`}>
-                  {failedCerts.length}
-                </p>
-              </div>
-            </div>
-
-            {detectedTopics.length > 0 && (
-              <p className="mt-3 text-xs text-[var(--ink-3)]">
-                Mandatory-topic matches detected: {detectedTopics.map(formatTopicLabel).join(", ")}.
-              </p>
-            )}
-          </div>
-          )}
-
           {visibleCerts.length > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-semibold text-[var(--ink)]">
@@ -336,13 +400,16 @@ export default function CertificateUpload({ userId }: { userId: string }) {
                     <p className="font-medium text-[var(--ink)] text-sm">{cert.fileName}</p>
                   </div>
                   <p className="text-sm text-[var(--status-miss)]">{cert.error}</p>
+                  <button onClick={reset} className="product-btn product-btn-secondary mt-3">
+                    Choose another file
+                  </button>
                 </div>
               ) : cert.needsReview && cert.extracted ? (
-                <NeedsReviewCard cert={cert} onReset={reset} />
+                <NeedsReviewCard cert={cert} onReset={reset} onResolved={recordResolution} />
               ) : cert.extractionFailed ? (
-                <ExtractionFailedCard cert={cert} />
+                <ExtractionFailedCard cert={cert} onReset={reset} onResolved={recordResolution} />
               ) : cert.extracted ? (
-                <ExtractedCreditCard cert={cert} onReset={reset} />
+                <ExtractedCreditCard cert={cert} onReset={reset} onResolved={recordResolution} />
               ) : (
                 <div className="product-callout-warm p-5">
                   <p className="text-sm text-[var(--ink-2)]">
@@ -358,7 +425,7 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   );
 }
 
-function NeedsReviewCard({ cert, onReset }: { cert: UploadedCert; onReset: () => void }) {
+function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const ex = cert.extracted!;
   const [fields, setFields] = useState({
     title: ex.title ?? "",
@@ -389,7 +456,15 @@ function NeedsReviewCard({ cert, onReset }: { cert: UploadedCert; onReset: () =>
         const err = await res.json();
         setSaveError(err.error ?? "Save failed");
       } else {
-        setSaved(true);
+        // The server keeps NEEDS_REVIEW when the fields don't validate — only
+        // a COMPLETED response counts as confirmed.
+        const resolution = resolutionFromSave(cert, await res.json().catch(() => null), parseFloat(fields.creditHours) || 0);
+        if (resolution) {
+          setSaved(true);
+          onResolved(resolution);
+        } else {
+          setSaveError(STILL_NEEDS_REVIEW);
+        }
       }
     } catch {
       setSaveError("Network error — please try again");
@@ -418,6 +493,16 @@ function NeedsReviewCard({ cert, onReset }: { cert: UploadedCert; onReset: () =>
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             Confirmed and saved.
+          </div>
+        ) : null}
+        {saved ? (
+          <div className="flex gap-2">
+            <button onClick={onReset} className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm">
+              Upload another
+            </button>
+            <Link href="/dashboard/compliance" className="product-btn product-btn-brand flex-1 min-h-0 py-2 text-sm">
+              View my compliance →
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
@@ -489,7 +574,7 @@ function NeedsReviewCard({ cert, onReset }: { cert: UploadedCert; onReset: () =>
   );
 }
 
-function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
+function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const [fields, setFields] = useState({
     title: "",
     provider: "",
@@ -518,7 +603,13 @@ function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
         const err = await res.json();
         setSaveError(err.error ?? "Save failed");
       } else {
-        setSaved(true);
+        const resolution = resolutionFromSave(cert, await res.json().catch(() => null), parseFloat(fields.creditHours) || 0);
+        if (resolution) {
+          setSaved(true);
+          onResolved(resolution);
+        } else {
+          setSaveError(STILL_NEEDS_REVIEW);
+        }
       }
     } catch {
       setSaveError("Network error — please try again");
@@ -598,13 +689,21 @@ function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
               <p className="text-xs text-[var(--status-miss)]">{saveError}</p>
             )}
 
-            <button
-              onClick={handleSave}
-              disabled={saving || (!fields.title && !fields.provider && !fields.date && !fields.creditHours)}
-              className="product-btn product-btn-primary w-full py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? "Saving…" : "Save Details"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onReset}
+                className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm"
+              >
+                Upload another
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || (!fields.title && !fields.provider && !fields.date && !fields.creditHours)}
+                className="product-btn product-btn-primary flex-1 min-h-0 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? "Saving…" : "Save Details"}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -612,7 +711,7 @@ function ExtractionFailedCard({ cert }: { cert: UploadedCert }) {
   );
 }
 
-function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: () => void }) {
+function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const ex = cert.extracted!;
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -672,8 +771,14 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
         const err = await res.json();
         setSaveError(err.error ?? "Save failed");
       } else {
-        setShowAdvanced(false);
-        setConfirmed(true);
+        const resolution = resolutionFromSave(cert, await res.json().catch(() => null), parseFloat(fields.creditHours) || 0);
+        if (resolution) {
+          setShowAdvanced(false);
+          setConfirmed(true);
+          onResolved(resolution);
+        } else {
+          setSaveError(STILL_NEEDS_REVIEW);
+        }
       }
     } catch {
       setSaveError("Network error — please try again");
@@ -770,7 +875,10 @@ function ExtractedCreditCard({ cert, onReset }: { cert: UploadedCert; onReset: (
                 {/* Layer 1 action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <button
-                    onClick={() => setConfirmed(true)}
+                    onClick={() => {
+                      setConfirmed(true);
+                      onResolved({ id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours: ex.creditHours, topics: ex.topics });
+                    }}
                     className="product-btn product-btn-brand flex-1"
                   >
                     Looks good
