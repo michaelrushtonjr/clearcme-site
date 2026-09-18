@@ -74,12 +74,12 @@ export default function ConsoleShell({
           {demoMode && <span className="demo-pill">Demo data</span>}
           <div ref={menuRef} style={{ position: "relative" }}>
             <button
-              className="avatar"
+              className="flex items-center justify-center max-sm:h-10 max-sm:w-10 max-sm:-m-[5px]"
               aria-label="Account menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
             >
-              {initials(user)}
+              <span className="avatar" aria-hidden="true">{initials(user)}</span>
             </button>
             {menuOpen && (
               <div

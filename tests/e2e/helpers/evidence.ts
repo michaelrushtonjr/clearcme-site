@@ -1,6 +1,6 @@
 import { appendFileSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
-export const root = 'codex-review/walkthrough-D';
+export const root = process.env.WALKTHROUGH_EVIDENCE_DIR || 'codex-review/walkthrough-D';
 export class Evidence {
   private seq: number;
   private failures: string[] = [];

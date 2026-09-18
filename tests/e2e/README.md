@@ -34,6 +34,21 @@ Set `WALKTHROUGH_BASE_URL`, `NEXTAUTH_URL`, and `AUTH_URL` to the same loopback
 origin when changing ports. External-server mode requires the same server
 preload and mock credentials as `start-server.cjs`; never point it at production.
 
+## Run E follow-ups
+
+Set `WALKTHROUGH_EVIDENCE_DIR=codex-review/walkthrough-E` to direct screenshots,
+DOM snapshots, Playwright results/reports, server logs, boundary modes and the
+`stop-server` marker to Run E. The default remains `codex-review/walkthrough-D`.
+
+```sh
+WALKTHROUGH_EVIDENCE_DIR=codex-review/walkthrough-E npm run e2e:walkthrough -- 'followups-e-.*\.spec\.ts' --project=desktop --project=phone
+```
+
+The follow-up specs default to assertions for the fixed behavior.
+`WALKTHROUGH_BEFORE=1` is only for capturing the original behavior **before**
+applying the corresponding fix. Run E mocks providers and extraction at the
+same boundaries as Run D; conditional questions are presentation fixtures.
+
 ## Coverage and evidence
 
 Run the smoke first. For a guided run, select these files in order:

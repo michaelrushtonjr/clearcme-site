@@ -32,11 +32,8 @@ test('conditional step refresh and failed save UI contract',async({page},info)=>
  await expect(page.getByText('Run D fictional practice question?')).toBeVisible();
  await page.getByRole('button',{name:'Yes',exact:true}).click();await e.capture('conditional-step5-answered');
  await page.reload();await e.capture('conditional-step5-refresh');
- // Restore through the genuine wizard submission; the question response stays mocked.
- if(await page.getByRole('button',{name:'No',exact:true}).isVisible())await page.getByRole('button',{name:'No',exact:true}).click();
- await page.getByRole('button',{name:'See my compliance map →'}).click();
  await expect(page.getByText('Run D fictional practice question?')).toBeVisible();
- await page.getByRole('button',{name:'Yes',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Yes',exact:true})).toHaveAttribute('aria-pressed','true');
  const save=page.waitForResponse(r=>r.url().endsWith('/api/conditional-requirements')&&r.request().method()==='POST');
  await page.getByRole('button',{name:'See my compliance map →'}).click();expect((await save).status()).toBe(503);
  await expect(page.getByText("We couldn't save your answers. Please try again.",{exact:false})).toBeVisible();

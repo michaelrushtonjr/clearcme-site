@@ -1,0 +1,43 @@
+import { test, expect } from '@playwright/test';
+import { Evidence } from './helpers/evidence';
+import { createFreshUser, signIn, localPrisma } from './helpers/fresh-account';
+const before = process.env.WALKTHROUGH_BEFORE === '1';
+const phase = before ? 'before' : 'after';
+test('E3 manual future entry explains review and counts only after correction', async ({ page }, info) => {
+  const e = new Evidence(page, info.project.name); await e.protect();
+  await createFreshUser(); await signIn(page);
+  expect((await page.request.post('/api/licenses', { data: { state: 'NV', licenseType: 'MD', renewalDate: '2027-06-30' } })).ok()).toBeTruthy();
+  await e.visit('/dashboard', `E3-${phase}-gap-empty`);
+  await expect(page.locator(".hero-stat .num")).toHaveText("40.0");
+  await e.visit('/dashboard/certificates/new', `E3-${phase}-manual-form`);
+  await page.getByLabel('Course Title', { exact: true }).fill('Run E fictional manual activity');
+  await page.getByLabel('Provider / Accreditor').fill('Fictional Run E Provider');
+  await page.getByLabel('Completion Date').fill('2099-01-01');
+  await page.getByLabel('Hours of CME', { exact: true }).fill('2');
+  await page.getByLabel('Credit Type (optional)').selectOption('AMA_PRA_1');
+  const response = page.waitForResponse(r => r.url().endsWith('/api/certificates') && r.request().method() === 'POST');
+  await page.getByRole('button', { name: 'Save Hours', exact: true }).click();
+  const res = await response; expect(res.status()).toBe(201);
+  const { certificate } = await res.json(); expect(certificate.extractionStatus).toBe('NEEDS_REVIEW');
+  e.log('manual-review-response', { status: res.status(), extractionStatus: certificate.extractionStatus });
+  if (!before) await expect(page.getByRole('status')).toContainText("Saved for review");
+  await e.capture(`E3-${phase}-future-saved`);
+  await e.visit('/dashboard', `E3-${phase}-gap-pending`);
+  await expect(page.locator(".hero-stat .num")).toHaveText("40.0");
+  await e.visit(`/dashboard/certificates#cert-${certificate.id}`, `E3-${phase}-review-row`);
+  const row = page.locator(`#cert-${certificate.id}`);
+  if (!before) {
+    await expect(row).toContainText("doesn't count yet");
+    await expect(row).not.toContainText("couldn't be read");
+  }
+  await row.locator('input[type=date]').fill('2026-09-01');
+  const saved = page.waitForResponse(r => r.url().endsWith(`/api/certificates/${certificate.id}`) && r.request().method() === 'PATCH');
+  await row.getByRole('button', { name: 'Save details', exact: true }).click();
+  expect((await saved).status()).toBe(200);
+  await expect(row).toContainText('Saved — review your compliance map');
+  await e.capture(`E3-${phase}-corrected`);
+  await e.visit('/dashboard', `E3-${phase}-gap-counted`);
+  await expect(page.locator(".hero-stat .num")).toHaveText("38.0");
+  expect((await (await localPrisma()).certificate.findUnique({ where: { id: certificate.id } }))?.extractionStatus).toBe('COMPLETED');
+  await (await localPrisma()).$disconnect();
+});
