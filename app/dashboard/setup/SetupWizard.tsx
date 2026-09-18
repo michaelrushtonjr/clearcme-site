@@ -118,6 +118,21 @@ interface AdditionalLicense {
   unsureDate: boolean;
 }
 
+/**
+ * How the primary renewal date was chosen on step 3.
+ *   null        → prefilled with the smart estimate, user hasn't chosen yet
+ *   "confirmed" → user tapped Confirm on the suggested date (field locked)
+ *   "estimate"  → user ticked "I'm not sure" (field locked, estimate used)
+ *   "manual"    → user tapped Edit or typed a date (field unlocked)
+ * Confirm and "I'm not sure" are mutually exclusive — they used to share
+ * one boolean, which made Confirm tick the "I'm not sure" box.
+ */
+const PRIMARY_RENEWAL_CHOICES = ["confirmed", "estimate", "manual"] as const;
+type PrimaryRenewalChoice = (typeof PRIMARY_RENEWAL_CHOICES)[number] | null;
+function isPrimaryRenewalChoice(value: unknown): value is NonNullable<PrimaryRenewalChoice> {
+  return typeof value === "string" && (PRIMARY_RENEWAL_CHOICES as readonly string[]).includes(value);
+}
+
 /** A conditional requirement the answer to one question would resolve. */
 interface ConditionalMatch {
   requirementId: string;
@@ -152,9 +167,11 @@ export default function SetupWizard({ userId }: { userId: string }) {
   const [specialty, setSpecialty] = useState("");
   const [practiceArea, setPracticeArea] = useState("");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
+  // renewalDate only holds a user-typed value (renewalChoice === "manual").
+  // In every other mode the field shows the live smart estimate — see
+  // effectiveRenewalDate below — so nothing needs syncing in an effect.
   const [renewalDate, setRenewalDate] = useState("");
-  const [unsureDate, setUnsureDate] = useState(false);
-  const [isEditingSuggestedRenewal, setIsEditingSuggestedRenewal] = useState(false);
+  const [renewalChoice, setRenewalChoice] = useState<PrimaryRenewalChoice>(null);
 
   // Step 4: multi-state
   const [isMultiState, setIsMultiState] = useState<boolean | null>(null);
@@ -178,8 +195,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
         if (saved.specialty) setSpecialty(saved.specialty);
         if (saved.practiceArea) setPracticeArea(saved.practiceArea);
         if (saved.birthMonth != null) setBirthMonth(saved.birthMonth);
-        if (saved.renewalDate) setRenewalDate(saved.renewalDate);
-        if (saved.unsureDate) setUnsureDate(saved.unsureDate);
+        // Sessions parked before renewalChoice existed simply land in the
+        // "nothing chosen yet" state, same as a fresh visit.
+        if (isPrimaryRenewalChoice(saved.renewalChoice)) setRenewalChoice(saved.renewalChoice);
+        if (saved.renewalChoice === "manual" && saved.renewalDate) setRenewalDate(saved.renewalDate);
         if (saved.displayName) setDisplayName(saved.displayName);
         // Step 5's questions come from the server post-submit — clamp to 4.
         if (typeof saved.step === "number") setStep(Math.min(Math.max(saved.step, 1), 4));
@@ -202,18 +221,17 @@ export default function SetupWizard({ userId }: { userId: string }) {
           practiceArea,
           birthMonth,
           renewalDate,
-          unsureDate,
+          renewalChoice,
           displayName,
         })
       );
     } catch {
       // Storage full/blocked — persistence is best-effort.
     }
-  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, unsureDate, displayName]);
+  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
-  const canSubmitStep3 = !!renewalDate;
 
   const selectedStateName = US_STATES.find((s) => s.code === state)?.name ?? state;
   const primaryRenewalRule =
@@ -228,8 +246,17 @@ export default function SetupWizard({ userId }: { userId: string }) {
       : { date: null as string | null, note: undefined as string | undefined };
   const canUsePrimarySmartEstimate = !!primarySuggestedRenewal.date;
   const isPrimaryVariableRenewal = primaryRenewalRule?.renewalType === "variable";
-  const shouldLockPrimaryRenewalInput =
-    !isPrimaryVariableRenewal && canUsePrimarySmartEstimate && unsureDate && !isEditingSuggestedRenewal;
+  const canPrefillPrimaryRenewal = canUsePrimarySmartEstimate && !isPrimaryVariableRenewal;
+  const isPrimaryRenewalUsingSuggestion =
+    renewalChoice === "confirmed" || renewalChoice === "estimate";
+  const shouldLockPrimaryRenewalInput = canPrefillPrimaryRenewal && isPrimaryRenewalUsingSuggestion;
+  // What the field shows and what gets submitted. A manual entry wins;
+  // otherwise the smart estimate, kept live so a birth-month change updates it.
+  const effectiveRenewalDate =
+    renewalChoice !== "manual" && canPrefillPrimaryRenewal && primarySuggestedRenewal.date
+      ? primarySuggestedRenewal.date
+      : renewalDate;
+  const canSubmitStep3 = !!effectiveRenewalDate;
 
   function getSmartRenewalSuggestion(selectedState: string, selectedLicenseType: string) {
     if (!selectedState || !selectedLicenseType) {
@@ -258,37 +285,21 @@ export default function SetupWizard({ userId }: { userId: string }) {
     return getSmartRenewalSuggestion(selectedState, selectedLicenseType).date ?? currentRenewalDate;
   }
 
-  function applyPrimarySuggestedRenewal() {
-    if (!primarySuggestedRenewal.date) return;
-    setRenewalDate(primarySuggestedRenewal.date);
-    setUnsureDate(true);
-    setIsEditingSuggestedRenewal(false);
+  function applyPrimarySuggestedRenewal(choice: "confirmed" | "estimate") {
+    if (!canPrefillPrimaryRenewal) return;
+    setRenewalChoice(choice);
   }
 
-  useEffect(() => {
+  function editPrimaryRenewal() {
+    // Keep whatever is in the field as a starting point; just unlock it.
+    setRenewalDate(effectiveRenewalDate);
+    setRenewalChoice("manual");
+  }
+
+  function resetPrimaryRenewal() {
     setRenewalDate("");
-    setUnsureDate(false);
-    setIsEditingSuggestedRenewal(false);
-  }, [state, licenseType]);
-
-  useEffect(() => {
-    if (!state || !licenseType || isPrimaryVariableRenewal) return;
-    if (!primarySuggestedRenewal.date) return;
-
-    if ((!renewalDate && !isEditingSuggestedRenewal) || unsureDate) {
-      setRenewalDate(primarySuggestedRenewal.date);
-      setUnsureDate(true);
-      setIsEditingSuggestedRenewal(false);
-    }
-  }, [
-    state,
-    licenseType,
-    isPrimaryVariableRenewal,
-    primarySuggestedRenewal.date,
-    renewalDate,
-    unsureDate,
-    isEditingSuggestedRenewal,
-  ]);
+    setRenewalChoice(null);
+  }
 
   function addAdditionalLicense() {
     if (additionalLicenses.length >= 4) return; // max 5 total (1 primary + 4 additional)
@@ -315,7 +326,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
   }
 
   async function handleSubmit() {
-    const finalRenewalDate = getFinalRenewalDate(state, licenseType, renewalDate, unsureDate);
+    const finalRenewalDate = effectiveRenewalDate;
     setLoading(true);
     setError("");
     setLicenseLimitHit(null);
@@ -476,7 +487,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
               </p>
               <select
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(e) => {
+                  setState(e.target.value);
+                  resetPrimaryRenewal();
+                }}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
               >
                 <option value="" disabled>
@@ -544,7 +558,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => setLicenseType(type)}
+                      onClick={() => {
+                        setLicenseType(type);
+                        resetPrimaryRenewal();
+                      }}
                       className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors ${
                         licenseType === type
                           ? "bg-[var(--primary)] border-[var(--primary)] text-white"
@@ -666,9 +683,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
                   <div className="mt-3 flex gap-2">
                     <button
                       type="button"
-                      onClick={applyPrimarySuggestedRenewal}
+                      onClick={() => applyPrimarySuggestedRenewal("confirmed")}
+                      aria-pressed={renewalChoice === "confirmed"}
                       className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
-                        unsureDate && !isEditingSuggestedRenewal
+                        renewalChoice === "confirmed"
                           ? "bg-[var(--primary)] border-[var(--primary)] text-white"
                           : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                       }`}
@@ -677,13 +695,11 @@ export default function SetupWizard({ userId }: { userId: string }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setUnsureDate(false);
-                        setIsEditingSuggestedRenewal(true);
-                      }}
+                      onClick={editPrimaryRenewal}
+                      aria-pressed={renewalChoice === "manual"}
                       className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
-                        !unsureDate || isEditingSuggestedRenewal
-                          ? "bg-white border-slate-300 text-slate-900"
+                        renewalChoice === "manual"
+                          ? "bg-white border-[var(--primary-3)] text-slate-900"
                           : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
                       }`}
                     >
@@ -699,11 +715,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
                 </label>
                 <input
                   type="date"
-                  value={renewalDate}
+                  value={effectiveRenewalDate}
                   onChange={(e) => {
                     setRenewalDate(e.target.value);
-                    setUnsureDate(false);
-                    setIsEditingSuggestedRenewal(true);
+                    setRenewalChoice("manual");
                   }}
                   disabled={shouldLockPrimaryRenewalInput}
                   className={`w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
@@ -730,31 +745,32 @@ export default function SetupWizard({ userId }: { userId: string }) {
               <button
                 type="button"
                 onClick={() => {
-                  if (unsureDate) {
-                    setUnsureDate(false);
-                    setIsEditingSuggestedRenewal(true);
+                  if (renewalChoice === "estimate") {
+                    // Untick: unlock the field, keep the estimate as a starting value.
+                    editPrimaryRenewal();
                     return;
                   }
 
-                  applyPrimarySuggestedRenewal();
+                  applyPrimarySuggestedRenewal("estimate");
                 }}
-                disabled={!canUsePrimarySmartEstimate}
+                disabled={!canPrefillPrimaryRenewal}
+                aria-pressed={renewalChoice === "estimate"}
                 className={`flex items-center gap-2 text-sm px-4 py-3 rounded-xl border w-full transition-colors ${
-                  !canUsePrimarySmartEstimate
+                  !canPrefillPrimaryRenewal
                     ? "border-slate-200 text-slate-300 cursor-not-allowed"
-                    : unsureDate && !isEditingSuggestedRenewal
+                    : renewalChoice === "estimate"
                     ? "border-[var(--primary-3)] bg-[rgba(63,95,51,0.10)] text-[var(--primary-2)] font-medium"
                     : "border-slate-200 text-slate-500 hover:border-slate-300"
                 }`}
               >
                 <span
                   className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                    unsureDate && !isEditingSuggestedRenewal
+                    renewalChoice === "estimate"
                       ? "bg-[var(--primary)] border-[var(--primary)]"
                       : "border-slate-300"
                   }`}
                 >
-                  {unsureDate && !isEditingSuggestedRenewal && (
+                  {renewalChoice === "estimate" && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -775,9 +791,14 @@ export default function SetupWizard({ userId }: { userId: string }) {
                 </p>
               )}
 
-              {unsureDate && !isEditingSuggestedRenewal && canUsePrimarySmartEstimate && (
+              {renewalChoice === "estimate" && canPrefillPrimaryRenewal && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
                   We&apos;ll use this smart estimate as your renewal date. You can update it anytime.
+                </p>
+              )}
+              {renewalChoice === "confirmed" && canPrefillPrimaryRenewal && (
+                <p className="text-xs text-slate-400 mt-2 px-1">
+                  Locked to your confirmed date. Tap Edit to change it.
                 </p>
               )}
 
