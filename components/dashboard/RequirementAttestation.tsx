@@ -195,7 +195,7 @@ export default function RequirementAttestation({
           type="button"
           onClick={() => submit("complete")}
           disabled={saving}
-          className="flex-1 rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-2)] disabled:opacity-60"
+          className="max-sm:min-h-10 max-sm:min-w-10 flex-1 rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-2)] disabled:opacity-60"
         >
           {saving ? "Saving…" : "I've done this"}
         </button>
@@ -203,7 +203,7 @@ export default function RequirementAttestation({
           type="button"
           onClick={() => submit("not_completed")}
           disabled={saving}
-          className="flex-1 rounded-lg border border-[var(--status-miss)] bg-[var(--status-miss-bg)] px-3 py-2 text-xs font-semibold text-[var(--status-miss)] hover:bg-white disabled:opacity-60"
+          className="max-sm:min-h-10 max-sm:min-w-10 flex-1 rounded-lg border border-[var(--status-miss)] bg-[var(--status-miss-bg)] px-3 py-2 text-xs font-semibold text-[var(--status-miss)] hover:bg-white disabled:opacity-60"
         >
           Still need it
         </button>
