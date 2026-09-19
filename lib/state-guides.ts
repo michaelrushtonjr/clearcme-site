@@ -3,11 +3,17 @@ import type { StateCode } from "@/lib/state-requirements";
 
 export type GuideSource = { id: string; label: string; url: string; quote?: string };
 export type GuideSection = { title: string; paragraphs: string[]; sources: string[] };
+export type PhysicianDegree = "MD" | "DO";
+export type GuideTopic = {
+  title: string;
+  requirements: Partial<Record<PhysicianDegree, { detail: string; sources: string[] }>>;
+  course?: string;
+};
 export type StateGuide = {
   slug: string; code: StateCode; name: string; status: "published" | "draft";
   title: string; description: string; summary: string; verified: string; modified: string;
   boards: { label: string; hours: string; cycle: string; credit: string }[];
-  topics: { title: string; detail: string; sources: string[]; course?: string }[];
+  topics: GuideTopic[];
   sections: GuideSection[]; faqs: { question: string; answer: string }[];
   sources: GuideSource[]; related: string[]; productNote: string;
 };

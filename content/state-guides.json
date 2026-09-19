@@ -25,47 +25,76 @@
     ],
     "topics": [
       {
-        "title": "Pain management and end-of-life care · MD and DO",
-        "detail": "One-time 12-hour requirement, due within four years of initial licensure or by the second renewal, whichever comes first. Pathology and radiology specialists are exempt. The alternative opioid-treatment pathway is 12 hours, including eight in buprenorphine or similar treatment; check the alternative pathway’s first-renewal deadline.",
-        "sources": [
-          "mbc",
-          "ombc",
-          "pain",
-          "alternative"
-        ],
-        "course": "end-of-life-care"
+        "title": "Pain management and end-of-life care",
+        "course": "end-of-life-care",
+        "requirements": {
+          "MD": {
+            "detail": "One-time 12-hour requirement, due within four years of initial licensure or by the second renewal, whichever comes first. Pathology and radiology specialists are exempt. The alternative opioid-treatment pathway is 12 hours, including eight in buprenorphine or similar treatment; check the alternative pathway’s first-renewal deadline.",
+            "sources": [
+              "mbc",
+              "pain",
+              "alternative"
+            ]
+          },
+          "DO": {
+            "detail": "One-time 12-hour requirement, due within four years of initial licensure or by the second renewal, whichever comes first. Pathology and radiology specialists are exempt. The alternative opioid-treatment pathway is 12 hours, including eight in buprenorphine or similar treatment; check the alternative pathway’s first-renewal deadline.",
+            "sources": [
+              "ombc",
+              "pain",
+              "alternative"
+            ]
+          }
+        }
       },
       {
-        "title": "Schedule II drugs and opioid addiction risk · DO",
-        "detail": "At least one of the 50 hours must address addiction to Schedule II drugs or opioids, every renewal. Keep this recurring requirement separate from your one-time pain-management training.",
-        "sources": [
-          "ombc"
-        ],
-        "course": "opioid-prescribing"
+        "title": "Schedule II drugs and opioid addiction risk",
+        "course": "opioid-prescribing",
+        "requirements": {
+          "DO": {
+            "detail": "At least one of the 50 hours must address addiction to Schedule II drugs or opioids at every renewal. This recurring requirement is separate from the one-time pain-management course.",
+            "sources": [
+              "ombc"
+            ]
+          }
+        }
       },
       {
-        "title": "Geriatric medicine and dementia · conditional MD requirement",
-        "detail": "General internists and family physicians whose patient population is more than 25% age 65 or older must devote at least 20% of mandatory CME to geriatric medicine, care of older patients or dementia care.",
-        "sources": [
-          "mbc"
-        ],
-        "course": "alzheimers-dementia"
+        "title": "Geriatric medicine and dementia",
+        "course": "alzheimers-dementia",
+        "requirements": {
+          "MD": {
+            "detail": "General internists and family physicians whose patient population is more than 25% age 65 or older must devote at least 20% of mandatory CME to geriatric medicine, care of older patients or dementia care.",
+            "sources": [
+              "mbc"
+            ]
+          }
+        }
       },
       {
-        "title": "Implicit bias and cultural competency · course-content standards",
-        "detail": "California requires specified content in qualifying CME. This is not a separate universal extra-hour quota. Check the provider’s California-compliance statement and applicable exceptions.",
-        "sources": [
-          "content",
-          "ombc"
-        ],
-        "course": "implicit-bias"
+        "title": "Implicit bias and cultural competency",
+        "course": "implicit-bias",
+        "requirements": {
+          "MD": {
+            "detail": "California requires specified content in qualifying CME. This is not a separate universal extra-hour quota. Check the provider’s California-compliance statement and applicable exceptions.",
+            "sources": [
+              "content"
+            ]
+          },
+          "DO": {
+            "detail": "California requires specified content in qualifying CME. This is not a separate universal extra-hour quota. Check the provider’s California-compliance statement and applicable exceptions.",
+            "sources": [
+              "content",
+              "ombc"
+            ]
+          }
+        }
       }
     ],
     "sections": [
       {
         "title": "Exceptions and first renewals",
         "paragraphs": [
-          "Initial license periods, residency or fellowship participation, and specialty-board examination pathways can affect the ordinary requirement. Confirm the board’s current instructions for your circumstances rather than assuming every new license has a full two-year first period.",
+          "Your initial license period, residency or fellowship participation, or specialty-board examination history may affect the usual requirement. Your board’s instructions explain which rules apply to your first renewal.",
           "OMBC permits training-related waivers with documentation from the residency or fellowship program; inactive status and discretionary waivers have separate rules. Ask the relevant board before relying on an exemption."
         ],
         "sources": [
@@ -76,7 +105,7 @@
       {
         "title": "Carryover and documentation",
         "paragraphs": [
-          "Plan around the CME period immediately preceding your expiration. Do not move excess hours into another California renewal period as though they were new training. Preserve lifetime-topic completion evidence separately.",
+          "Complete CME within the period immediately preceding your license expiration. Excess hours from an earlier period do not become new training in the next period. Keep proof of one-time requirements available for future renewals.",
           "Keep course title, dates, hours, sponsor, accreditor and completion documentation for at least four years. Both boards can audit. OMBC asks for accepted documentation formats and submission through the instructions provided with an audit."
         ],
         "sources": [
@@ -99,7 +128,7 @@
       {
         "title": "Change history",
         "paragraphs": [
-          "September 18, 2026: checked the board guidance against the previously verified July state draft and current production rules. Preserved the 50-hour MD/DO distinction and removed claims that ClearCME automatically resolves every category floor or exemption. The geriatrics/dementia wording is an earlier change, not a newly created 2026 hour requirement."
+          "Reviewed September 18, 2026. Both boards continue to require 50 hours for a standard two-year renewal, with different category and topic requirements for MDs and DOs. The geriatrics and dementia provision predates 2026."
         ],
         "sources": [
           "mbc",
@@ -126,7 +155,7 @@
       },
       {
         "question": "Can I carry extra hours into my next renewal?",
-        "answer": "Plan to complete the applicable hours within the board’s current renewal period. Do not treat last cycle’s excess hours as new hours for the next cycle."
+        "answer": "Complete the applicable hours within the board’s current renewal period. Excess hours from the previous cycle do not count as newly completed training."
       },
       {
         "question": "Does uploading to ClearCME report my hours to the California board?",
@@ -193,45 +222,99 @@
     "topics": [
       {
         "title": "Medical ethics and professional responsibility",
-        "detail": "At least two formal hours each renewal period. The activity must have the appropriate ethics or professional-responsibility approval.",
-        "sources": [
-          "tmb"
-        ],
-        "course": "ethics"
+        "course": "ethics",
+        "requirements": {
+          "MD": {
+            "detail": "At least two formal hours each renewal period. The activity must have the appropriate ethics or professional-responsibility approval.",
+            "sources": [
+              "tmb"
+            ]
+          },
+          "DO": {
+            "detail": "At least two formal hours each renewal period. The activity must have the appropriate ethics or professional-responsibility approval.",
+            "sources": [
+              "tmb"
+            ]
+          }
+        }
       },
       {
         "title": "Pain management and opioid prescribing",
-        "detail": "Direct-patient-care physicians need two formal hours within one year of initial licensure, again as part of the second renewal, and then two hours every eight years. Check your initial licensure history before treating this as an eight-year-only requirement.",
-        "sources": [
-          "tmb",
-          "opioid"
-        ],
-        "course": "opioid-prescribing"
+        "course": "opioid-prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "Physicians who provide direct patient care need two formal hours within one year of initial licensure, again as part of the second renewal, and then every eight years.",
+            "sources": [
+              "tmb",
+              "opioid"
+            ]
+          },
+          "DO": {
+            "detail": "Physicians who provide direct patient care need two formal hours within one year of initial licensure, again as part of the second renewal, and then every eight years.",
+            "sources": [
+              "tmb",
+              "opioid"
+            ]
+          }
+        }
       },
       {
         "title": "Human trafficking prevention",
-        "detail": "Direct-patient-care physicians need at least one hour in the first renewal period and every third renewal thereafter. Use an HHSC-approved course. An ethics designation alone is not HHSC approval.",
-        "sources": [
-          "tmb",
-          "trafficking"
-        ],
-        "course": "human-trafficking"
+        "course": "human-trafficking",
+        "requirements": {
+          "MD": {
+            "detail": "Direct-patient-care physicians need at least one hour in the first renewal period and every third renewal thereafter. Use an HHSC-approved course. An ethics designation alone is not HHSC approval.",
+            "sources": [
+              "tmb",
+              "trafficking"
+            ]
+          },
+          "DO": {
+            "detail": "Direct-patient-care physicians need at least one hour in the first renewal period and every third renewal thereafter. Use an HHSC-approved course. An ethics designation alone is not HHSC approval.",
+            "sources": [
+              "tmb",
+              "trafficking"
+            ]
+          }
+        }
       },
       {
         "title": "Life of the Mother Act · SB 31",
-        "detail": "One hour, once, before initial licensure or the first renewal after January 1, 2026 for the applicable specialties. TMB includes obstetric specialties, emergency medicine and family medicine. Only its free MyTMB course satisfies this specific requirement.",
-        "sources": [
-          "tmb",
-          "sb31"
-        ]
+        "requirements": {
+          "MD": {
+            "detail": "One hour, once, before initial licensure or the first renewal after January 1, 2026 for the applicable specialties. TMB includes obstetric specialties, emergency medicine and family medicine. Only its free MyTMB course satisfies this specific requirement.",
+            "sources": [
+              "tmb",
+              "sb31"
+            ]
+          },
+          "DO": {
+            "detail": "One hour, once, before initial licensure or the first renewal after January 1, 2026 for the applicable specialties. TMB includes obstetric specialties, emergency medicine and family medicine. Only its free MyTMB course satisfies this specific requirement.",
+            "sources": [
+              "tmb",
+              "sb31"
+            ]
+          }
+        }
       },
       {
-        "title": "Forensic evidence collection · check the current rollout notice",
-        "detail": "HB 47 establishes two hours for covered physicians treating patients in emergency settings. Although the statute refers to renewals on or after September 1, 2026, TMB’s current notice says implementation begins with licenses expiring February 28, 2027 because approved coursework is not yet available. Read the live notice and approved-course list before enrolling.",
-        "sources": [
-          "tmb",
-          "hb47"
-        ]
+        "title": "Forensic evidence collection · 2027 rollout",
+        "requirements": {
+          "MD": {
+            "detail": "HB 47 establishes two hours for covered physicians treating patients in emergency settings. Although the statute refers to renewals on or after September 1, 2026, TMB’s current notice says implementation begins with licenses expiring February 28, 2027 because approved coursework is not yet available. Read the live notice and approved-course list before enrolling.",
+            "sources": [
+              "tmb",
+              "hb47"
+            ]
+          },
+          "DO": {
+            "detail": "HB 47 establishes two hours for covered physicians treating patients in emergency settings. Although the statute refers to renewals on or after September 1, 2026, TMB’s current notice says implementation begins with licenses expiring February 28, 2027 because approved coursework is not yet available. Read the live notice and approved-course list before enrolling.",
+            "sources": [
+              "tmb",
+              "hb47"
+            ]
+          }
+        }
       }
     ],
     "sections": [
@@ -239,7 +322,7 @@
         "title": "Exceptions and specialty requirements",
         "paragraphs": [
           "TMB describes an exemption for newly licensed physicians at first registration; that does not erase separately timed requirements such as initial opioid training. Retired/voluntary-charity status, residency and board-approved hardship exemptions have their own conditions.",
-          "EMS medical directors and pain-management-clinic personnel can have additional requirements. The board’s specialty sections and current hours chart should be checked when either role applies."
+          "EMS medical directors and pain-management-clinic personnel can have additional requirements. If either role applies to you, review the board’s specialty guidance and current hours chart."
         ],
         "sources": [
           "tmb"
@@ -298,11 +381,11 @@
       },
       {
         "question": "Which human-trafficking course satisfies Texas?",
-        "answer": "Choose a course on the current HHSC-approved list. Our topic library can help with discovery, but the provider’s approved status must match the Texas requirement."
+        "answer": "Choose a course on the current HHSC-approved list. The topic library can help you find options. Confirm that your chosen course appears on the HHSC-approved list."
       },
       {
         "question": "Can one course satisfy more than one Texas requirement?",
-        "answer": "Sometimes. TMB permits appropriately designated opioid or human-trafficking training to count toward ethics. Verify every relevant designation; do not multiply the course’s earned hours in your overall total."
+        "answer": "Sometimes. TMB permits appropriately designated opioid or human-trafficking training to count toward ethics. Check each required designation, and count the course’s earned hours only once toward your overall total."
       },
       {
         "question": "Can I take any pregnancy-emergency course for SB 31?",
@@ -375,66 +458,117 @@
     ],
     "topics": [
       {
-        "title": "Prevention of medical errors · both degrees",
-        "detail": "Two hours every renewal. The MD and DO boards specify different high-risk/misdiagnosed-condition content. Confirm approval for your board, not just a “Florida medical errors” title.",
-        "sources": [
-          "md",
-          "do",
-          "mdrule",
-          "dorule"
-        ],
-        "course": "patient-safety"
+        "title": "Prevention of medical errors",
+        "course": "patient-safety",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours every renewal in a course that meets the Board of Medicine’s content requirements, including its specified high-risk and commonly misdiagnosed conditions.",
+            "sources": [
+              "md",
+              "mdrule"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours every renewal in a course that meets the Board of Osteopathic Medicine’s content requirements. The required conditions differ from those specified for MDs.",
+            "sources": [
+              "do",
+              "dorule"
+            ]
+          }
+        }
       },
       {
-        "title": "Florida laws, rules and ethics · DO",
-        "detail": "One hour each biennium. This DO-specific requirement is separate from the medical-error course.",
-        "sources": [
-          "do",
-          "dorule"
-        ],
-        "course": "ethics"
+        "title": "Florida laws, rules and ethics",
+        "course": "ethics",
+        "requirements": {
+          "DO": {
+            "detail": "One hour each biennium, in addition to the medical-error course.",
+            "sources": [
+              "do",
+              "dorule"
+            ]
+          }
+        }
       },
       {
         "title": "Controlled-substance prescribing · covered DEA registrants",
-        "detail": "Two hours each renewal for physicians within the statutory prescribing scope. Use a qualifying board-approved course. Effective July 1, 2026, the required content includes treating pain in patients with sickle cell disease.",
-        "sources": [
-          "prescribing",
-          "md",
-          "do"
-        ],
-        "course": "opioid-prescribing"
+        "course": "opioid-prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours each renewal for physicians within the statutory prescribing scope. Use a qualifying board-approved course. Effective July 1, 2026, the required content includes treating pain in patients with sickle cell disease.",
+            "sources": [
+              "prescribing",
+              "md"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours each renewal for physicians within the statutory prescribing scope. Use a qualifying board-approved course. Effective July 1, 2026, the required content includes treating pain in patients with sickle cell disease.",
+            "sources": [
+              "prescribing",
+              "do"
+            ]
+          }
+        }
       },
       {
         "title": "Domestic violence",
-        "detail": "Two hours every third biennium (six years). Track the cycle in which you last fulfilled it.",
-        "sources": [
-          "md",
-          "do"
-        ],
-        "course": "domestic-violence"
+        "course": "domestic-violence",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours every third biennium (six years). Track the cycle in which you last fulfilled it.",
+            "sources": [
+              "md"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours every third biennium (six years). Track the cycle in which you last fulfilled it.",
+            "sources": [
+              "do"
+            ]
+          }
+        }
       },
       {
         "title": "HIV/AIDS",
-        "detail": "One hour by the first biennial renewal. The MD course must include Florida HIV/AIDS law and meet the rule’s Category I requirements; a generic national course is not enough.",
-        "sources": [
-          "mdrule",
-          "dorule"
-        ]
+        "requirements": {
+          "MD": {
+            "detail": "One hour by the first biennial renewal. The course must include Florida HIV/AIDS law and meet the rule’s Category I requirements.",
+            "sources": [
+              "mdrule"
+            ]
+          },
+          "DO": {
+            "detail": "One hour by the first biennial renewal, meeting the osteopathic board’s HIV/AIDS course requirements.",
+            "sources": [
+              "dorule"
+            ]
+          }
+        }
       },
       {
         "title": "Human trafficking",
-        "detail": "One hour, one-time, under section 456.0341. Keep the original completion record. The statute also contains an awareness-sign obligation, which is separate from taking CME.",
-        "sources": [
-          "trafficking"
-        ],
-        "course": "human-trafficking"
+        "course": "human-trafficking",
+        "requirements": {
+          "MD": {
+            "detail": "One hour, one-time, under section 456.0341. Keep the original completion record. The statute also contains an awareness-sign obligation, which is separate from taking CME.",
+            "sources": [
+              "trafficking"
+            ]
+          },
+          "DO": {
+            "detail": "One hour, one-time, under section 456.0341. Keep the original completion record. The statute also contains an awareness-sign obligation, which is separate from taking CME.",
+            "sources": [
+              "trafficking"
+            ]
+          }
+        }
       }
     ],
     "sections": [
       {
         "title": "First renewal and exemptions",
         "paragraphs": [
-          "Florida’s first-renewal rules differ from an ordinary 40-hour renewal. The MD board lists HIV/AIDS, medical errors and controlled-substance training for covered DEA registrants. Review the DO board’s first-renewal rules independently rather than applying the MD exemption to a DO license.",
+          "Florida’s first-renewal rules differ from an ordinary 40-hour renewal. The MD board lists HIV/AIDS, medical errors and controlled-substance training for covered DEA registrants. For a DO license, use the osteopathic board’s separate first-renewal rules.",
           "Military service and other narrowly defined circumstances can qualify for board-approved exemptions. Approval of an exemption from general hours does not necessarily waive mandatory topics."
         ],
         "sources": [
@@ -472,7 +606,7 @@
         "title": "What changed in 2026",
         "paragraphs": [
           "The controlled-substance course content changed effective July 1, 2026 to include pain treatment for patients with sickle cell disease. Check that the activity satisfies the current statute and board approval, even if an older certificate has the same course title.",
-          "September 18, 2026: refreshed the previously verified state draft against current board renewal guidance and the production rule notes; preserved the separate MD and DO rules."
+          "Reviewed September 18, 2026 against the current medical and osteopathic board renewal guidance."
         ],
         "sources": [
           "prescribing",
@@ -488,11 +622,11 @@
       },
       {
         "question": "Can I use an MD medical-errors course for a DO renewal?",
-        "answer": "Do not assume so. The boards require different content. Verify that the activity is approved for the Florida osteopathic requirement."
+        "answer": "Only if it also meets the osteopathic board’s requirements. The boards specify different content, so check the activity’s approval for your DO license."
       },
       {
         "question": "Is HIV/AIDS training required every renewal?",
-        "answer": "The one-hour requirement is tied to the first biennial renewal. Keep proof of that completion; do not confuse it with the recurring medical-error and prescribing courses."
+        "answer": "The one-hour requirement is tied to the first biennial renewal. Keep proof of that completion for future renewals. Medical-error and prescribing courses have separate recurring requirements."
       },
       {
         "question": "Can I carry Florida CME into the next cycle?",
@@ -567,33 +701,63 @@
     "topics": [
       {
         "title": "Child-abuse identification and reporting",
-        "detail": "Two hours of approved training are required for initial licensure unless an accepted education pathway or exemption applies. Previous completion does not remove the updated-curriculum requirement due November 17, 2026.",
-        "sources": [
-          "child"
-        ],
-        "course": "child-abuse"
+        "course": "child-abuse",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours of approved training are required for initial licensure unless an accepted education pathway or exemption applies. Previous completion does not remove the updated-curriculum requirement due November 17, 2026.",
+            "sources": [
+              "child"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours of approved training are required for initial licensure unless an accepted education pathway or exemption applies. Previous completion does not remove the updated-curriculum requirement due November 17, 2026.",
+            "sources": [
+              "child"
+            ]
+          }
+        }
       },
       {
         "title": "Infection control and barrier precautions",
-        "detail": "Complete approved training at initial licensure and every four years, unless a formal exemption applies. NYSDOH oversees the physician training pathway.",
-        "sources": [
-          "infection"
-        ]
+        "requirements": {
+          "MD": {
+            "detail": "Complete approved training at initial licensure and every four years, unless a formal exemption applies. NYSDOH oversees the physician training pathway.",
+            "sources": [
+              "infection"
+            ]
+          },
+          "DO": {
+            "detail": "Complete approved training at initial licensure and every four years, unless a formal exemption applies. NYSDOH oversees the physician training pathway.",
+            "sources": [
+              "infection"
+            ]
+          }
+        }
       },
       {
         "title": "Pain management, palliative care and addiction",
-        "detail": "Three hours every three years for the prescribers covered by Public Health Law 3309-a, including DEA-registered practitioners and covered residents prescribing under an institutional DEA registration. Complete the required NYSDOH attestation as well as the course.",
-        "sources": [
-          "prescriber"
-        ],
-        "course": "opioid-prescribing"
+        "course": "opioid-prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "Three hours every three years for the prescribers covered by Public Health Law 3309-a, including DEA-registered practitioners and covered residents prescribing under an institutional DEA registration. Complete the required NYSDOH attestation as well as the course.",
+            "sources": [
+              "prescriber"
+            ]
+          },
+          "DO": {
+            "detail": "Three hours every three years for the prescribers covered by Public Health Law 3309-a, including DEA-registered practitioners and covered residents prescribing under an institutional DEA registration. Complete the required NYSDOH attestation as well as the course.",
+            "sources": [
+              "prescriber"
+            ]
+          }
+        }
       }
     ],
     "sections": [
       {
         "title": "Exceptions and exemptions",
         "paragraphs": [
-          "NYSED describes education-based and practice-based exceptions to child-abuse coursework. Infection-control exemptions require the appropriate determination; they should not be inferred merely from a low-risk practice setting.",
+          "NYSED describes education-based and practice-based exceptions to child-abuse coursework. A low-risk practice setting alone does not establish an infection-control exemption; the appropriate agency determination is required.",
           "NYSDOH has an exemption process for the prescriber requirement. Follow the agency’s documentation and approval process before treating a training obligation as waived."
         ],
         "sources": [
@@ -726,60 +890,115 @@
     "topics": [
       {
         "title": "Ethics, pain management or addiction care",
-        "detail": "MDs: two hours each biennium, with permitted SBIRT substitution; suicide-prevention hours do not substitute for this block. DOs: the statute includes ethics, pain management, addiction care or SBIRT as a two-hour biennial block.",
-        "sources": [
-          "mdchart",
-          "mdlaw",
-          "dolaw"
-        ],
-        "course": "ethics"
+        "course": "ethics",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours every two years in ethics, pain management or addiction care. Qualifying SBIRT training may count toward this requirement; suicide-prevention training does not.",
+            "sources": [
+              "mdchart",
+              "mdlaw"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours every two years in ethics, pain management, addiction care or SBIRT. Suicide-prevention training does not count toward the ethics requirement.",
+            "sources": [
+              "dolaw"
+            ]
+          }
+        }
       },
       {
         "title": "Suicide prevention",
-        "detail": "Two hours within two years of initial licensure and every four years thereafter. This applies to physicians generally, not only psychiatrists.",
-        "sources": [
-          "mdchart",
-          "dolaw",
-          "transition"
-        ],
-        "course": "suicide-prevention"
+        "course": "suicide-prevention",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours within two years of initial licensure and every four years thereafter. This requirement applies across medical specialties.",
+            "sources": [
+              "mdchart",
+              "mdlaw"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours within two years of initial licensure and every four years thereafter. This requirement applies across osteopathic medical specialties.",
+            "sources": [
+              "dolaw",
+              "transition"
+            ]
+          }
+        }
       },
       {
         "title": "SBIRT",
-        "detail": "Two hours once, within two years of initial licensure, for screening, brief intervention and referral to treatment. Keep the one-time completion record.",
-        "sources": [
-          "mdchart",
-          "dolaw"
-        ],
-        "course": "substance-use"
+        "course": "substance-use",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours once, within two years of initial licensure, for screening, brief intervention and referral to treatment. Keep the one-time completion record.",
+            "sources": [
+              "mdchart"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours once, within two years of initial licensure, for screening, brief intervention and referral to treatment. Keep the one-time completion record.",
+            "sources": [
+              "dolaw"
+            ]
+          }
+        }
       },
       {
         "title": "Controlled substances and opioids",
-        "detail": "MDs registered to dispense controlled substances in Nevada: two hours each cycle. DOs: two hours from the preceding year for the 2026 renewal, then four hours per biennium for renewals after December 31, 2026.",
-        "sources": [
-          "mdchart",
-          "transition"
-        ],
-        "course": "opioid-prescribing"
+        "course": "opioid-prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours every two years for physicians registered to dispense controlled substances in Nevada. Eligible topics include controlled-substance misuse and abuse, opioid prescribing or addiction.",
+            "sources": [
+              "mdchart"
+            ]
+          },
+          "DO": {
+            "detail": "For renewal through December 31, 2026: two hours from the preceding year. For later renewals: four hours from the preceding two years. Eligible topics include controlled-substance misuse and abuse, opioid prescribing or addiction.",
+            "sources": [
+              "transition"
+            ]
+          }
+        }
       },
       {
-        "title": "HIV stigma and bias · hospital emergency or primary care",
-        "detail": "Two hours within two years after beginning to provide or supervise the specified emergency services or primary care. Scope, rather than a universal requirement, determines applicability.",
-        "sources": [
-          "mdchart",
-          "mdlaw",
-          "dolaw"
-        ]
+        "title": "HIV stigma and bias",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours within two years after beginning to provide or supervise hospital emergency services or primary care. This requirement applies to physicians in those practice settings.",
+            "sources": [
+              "mdchart",
+              "mdlaw"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours within two years after beginning to provide or supervise hospital emergency services or primary care. This requirement applies to osteopathic physicians in those practice settings.",
+            "sources": [
+              "dolaw"
+            ]
+          }
+        }
       },
       {
-        "title": "Cultural competency and DEI · psychiatry",
-        "detail": "Two hours biennially for psychiatrists. Do not apply the psychiatry-only requirement to every Nevada physician.",
-        "sources": [
-          "mdchart",
-          "mdlaw",
-          "dolaw"
-        ],
-        "course": "implicit-bias"
+        "title": "Cultural competency and DEI",
+        "course": "implicit-bias",
+        "requirements": {
+          "MD": {
+            "detail": "Psychiatrists need two hours every two years in cultural competency and diversity, equity and inclusion. This requirement is specific to psychiatry.",
+            "sources": [
+              "mdchart",
+              "mdlaw"
+            ]
+          },
+          "DO": {
+            "detail": "Osteopathic physicians practicing psychiatry need two hours every two years in cultural competency and diversity, equity and inclusion. This requirement is specific to psychiatry.",
+            "sources": [
+              "dolaw"
+            ]
+          }
+        }
       }
     ],
     "sections": [
@@ -809,8 +1028,8 @@
       {
         "title": "What’s tricky about Nevada",
         "paragraphs": [
-          "Do not apply a static “40 hours every two years” total to the December 31, 2026 DO renewal. It requires 35 hours over the preceding year, including 10 Category 1A and two controlled-substance/opioid/addiction hours. Later renewals use 40 hours over the preceding biennium, including 20 Category 1A and four prescribing/addiction hours.",
-          "MD first-cycle totals depend on the actual issuance block. Specialty/scope hours and topic-specific clocks add separate checks. These are not yet fully personalized by ClearCME’s production calculation; use this guide and your board record for those decisions."
+          "The December 31, 2026 DO renewal requires 35 hours over the preceding year, including 10 Category 1A and two controlled-substance/opioid/addiction hours. Later renewals use 40 hours over the preceding biennium, including 20 Category 1A and four prescribing/addiction hours.",
+          "MD first-cycle totals depend on the actual issuance block. Specialty/scope hours and topic-specific clocks add separate checks. ClearCME does not yet calculate all of these adjustments. Confirm your required total and specialty hours with the board before renewal."
         ],
         "sources": [
           "transition",
@@ -834,7 +1053,7 @@
     "faqs": [
       {
         "question": "Is Nevada DO renewal in 2026 based on 35, 40 or 70 hours?",
-        "answer": "For renewal on or before December 31, 2026, the approved transition regulation requires at least 35 hours over the preceding year, including 10 Category 1A and two prescribing/addiction hours. Do not double the old annual total to 70."
+        "answer": "For renewal on or before December 31, 2026, the approved transition regulation requires at least 35 hours over the preceding year, including 10 Category 1A and two prescribing/addiction hours. The requirement for that renewal is 35 hours, not 70."
       },
       {
         "question": "When does the 40-hour DO biennium apply?",
@@ -854,7 +1073,7 @@
       },
       {
         "question": "Can ClearCME calculate my exact Nevada compliance status?",
-        "answer": "The production calculation does not yet fully handle MD issuance-block phase-down and specialty-hour floors or the DO 2026 transition. Use ClearCME to organize records, and confirm these requirements with the board rather than treating a dashboard total as an official determination."
+        "answer": "ClearCME can organize your certificates and completion history, but it does not yet fully account for reduced first-cycle MD totals, specialty-hour minimums or the DO 2026 transition. Confirm your requirements with the board before relying on a dashboard total."
       }
     ],
     "sources": [
@@ -894,6 +1113,6 @@
       "california",
       "texas"
     ],
-    "productNote": "Store Nevada certificates and completion history in one place. ClearCME does not yet fully calculate MD phase-down and specialty-hour floors or the DO 2026 transition. Confirm these with your board before attesting to compliance."
+    "productNote": "Store Nevada certificates and completion history in one place. ClearCME does not yet fully account for reduced first-cycle MD totals, specialty-hour minimums or the DO 2026 transition. Confirm these with your board before attesting to compliance."
   }
 ]

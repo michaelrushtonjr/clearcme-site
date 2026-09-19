@@ -32,7 +32,8 @@ describe("public acquisition boundaries", () => {
     for (const guide of publishedStateGuides) {
       expect(guide.faqs.length).toBeGreaterThanOrEqual(5);
       expect(guide.faqs.length).toBeLessThanOrEqual(8);
-      for (const item of [...guide.topics, ...guide.sections]) for (const id of item.sources) expect(guide.sources.some((source) => source.id === id)).toBe(true);
+      const sourcedItems = [...guide.sections, ...guide.topics.flatMap((topic) => Object.values(topic.requirements))];
+      for (const item of sourcedItems) for (const id of item.sources) expect(guide.sources.some((source) => source.id === id)).toBe(true);
       for (const topic of guide.topics) if (topic.course) expect(urls).toContain(`https://clearcme.ai/courses/${topic.course}`);
     }
     for (const [key, catalog] of Object.entries(COURSE_CATALOG)) if (catalog.courses.length) expect(urls).toContain(`https://clearcme.ai/courses/${keyToSlug(key)}`);

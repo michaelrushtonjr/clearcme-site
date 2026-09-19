@@ -156,7 +156,7 @@ export default async function CourseDiscoveryPage({
         </div>
 
         <p className="border-t border-[#ddd4bd] pt-6 text-xs leading-relaxed text-[#6b7568]">
-          ClearCME may receive a referral commission from paid courses. Course listings are for discovery. A state-specific acceptance claim requires a verified activity-to-requirement mapping; check with the provider and your board.
+          ClearCME may receive a referral commission from paid courses. Use the library to find courses, then confirm with the provider and your board that your chosen activity meets your specific requirement.
         </p>
       </div>
     </PublicShell>
