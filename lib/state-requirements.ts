@@ -367,6 +367,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
       topic("LGBTQ cultural competency", "2 hrs per cycle"),
       topic("Pharmacology", "1 course per cycle"),
       topic("Public health priority topics", "5 hrs per cycle"),
+      topic("HIV/AIDS", "3 credits per cycle", "D.C. Code §3-1205.10(b)(4)(A) — CE for the practice of medicine \"shall include 3 credits of instruction\" on HIV and AIDS (D.C. Law 19-156); may be waivable by Mayor's rule for licensees with no clinical patient contact in the prior cycle"),
       mateTopic(),
     ],
   },
