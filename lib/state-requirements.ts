@@ -411,7 +411,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   HI: {
     totalHours: 40,
-    totalHoursLabel: "40 hours Category 1 or 1A (20 if this is your first renewal; 40 for everyone beginning with the 2028 renewal) — the Board's enforced standard per its 2026 renewal/audit notices and HRS §453-6, which recognizes only Category 1/1A CME; the unamended codified rule (HAR §16-85-33) still recites 100 hours with a Category 2 pathway",
+    totalHoursLabel: "40 hours Category 1 or 1A (20 if this is your first renewal; 40 for everyone beginning with the 2026 renewal) — the Board's enforced standard per its MD renewal/audit notices and HRS §453-6, which recognizes only Category 1/1A CME; the unamended codified rule (HAR §16-85-33) still recites 100 hours with a Category 2 pathway",
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [mateTopic()],
@@ -899,6 +899,13 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
       topic("Human trafficking", "1 hr one-time", "s.456.0341 applies to ch. 459 licensees; awareness-sign requirement since Jan. 2025"),
       mateTopic(),
     ],
+  },
+  HI: {
+    totalHours: 40,
+    totalHoursLabel: "40 hours Category 1 or 1A (20 if this is your first renewal; 40 for everyone beginning with the 2028 renewal) — the Board's enforced standard per its DO renewal/audit notices and HRS §453-6, which recognizes only Category 1/1A CME; the unamended codified rule (HAR §16-85-33) still recites 100 hours with a Category 2 pathway",
+    cycleYears: 2,
+    cycleLabel: "2-year renewal cycle",
+    mandatoryTopics: [mateTopic()],
   },
   ME: {
     totalHours: 100,
