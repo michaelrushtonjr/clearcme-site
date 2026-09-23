@@ -251,7 +251,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
       <div className="space-y-4">
         <div className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--bg-2)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={previewSrc} alt="Certificate preview" className="w-full max-h-72 object-contain" />
+          <img src={previewSrc} alt="Certificate preview" className="ph-no-capture w-full max-h-72 object-contain" />
           <div className="absolute top-3 right-3">
             <button
               onClick={discardCapture}

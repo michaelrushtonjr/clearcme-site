@@ -1,6 +1,7 @@
 import { providerEmailVerified } from "@/lib/mobile-identity";
 import NextAuth from "next-auth";
 import { recordSeoRegistration } from "@/lib/seo-events";
+import { trackSignup } from "@/lib/analytics";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
@@ -104,6 +105,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     async createUser({ user }) {
       if (user.id) await recordSeoRegistration(user.id);
+    },
+    signIn({ user, account, isNewUser }) {
+      if (!isNewUser || !user.id) return;
+      const provider = account?.provider ?? "unknown";
+      trackSignup({ id: user.id, email: user.email, name: user.name }, provider === "resend" ? "email" : provider, "web");
     },
   },
   callbacks: {

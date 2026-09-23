@@ -18,6 +18,7 @@ import { MAX_MULTIPART_BYTES } from "@/lib/upload-limits";
 import { readClientCertificate } from "@/lib/certificate-upload-blob";
 import { CertificateFileError } from "@/lib/certificate-storage";
 import type { CreditType } from "@prisma/client";
+import { trackEvent } from "@/lib/analytics";
 
 // Extend Vercel function timeout for AI processing
 export const maxDuration = 60;
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
     if (reservation instanceof Response) {
       await prisma.certificate.delete({ where: { id: certificate.id } });
       createdCertificateId = null;
+      trackEvent(userId, "certificate_upload_failed", { reason: "plan_limit" });
       return reservation;
     }
     reservationId = reservation.id;
@@ -195,6 +197,7 @@ export async function POST(req: NextRequest) {
       });
       await finishExtractionAttempt(userId, reservationId, clean);
       reservationId = null;
+      trackEvent(userId, "certificate_added", { method: "upload", result: clean ? "extracted" : "needs_review" });
       return NextResponse.json({ certificate: updated, ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
     } else {
       // Full extraction failed — store certificate but mark for manual review.
@@ -209,6 +212,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      trackEvent(userId, "certificate_added", { method: "upload", result: "extraction_failed" });
       return NextResponse.json(
         {
           certificate: updated,
@@ -219,12 +223,16 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
-    if (error instanceof CertificateFileError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof CertificateFileError) {
+      trackEvent(userId, "certificate_upload_failed", { reason: "file_rejected", status: error.status });
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     if (!createdCertificateId && (error as { code?: string }).code === "P2002") {
       const duplicate = uploadHash ? await prisma.certificate.findFirst({ where: { userId, fileHash: uploadHash }, select: { id: true } }) : null;
       if (duplicate) return NextResponse.json({ error: "This exact file is already on file.", code: "duplicate_file", certificateId: duplicate.id }, { status: 409 });
     }
     console.error("Certificate upload error:", error);
+    trackEvent(userId, "certificate_upload_failed", { reason: "server_error" });
     // Best effort: if the record was already created, park it in FAILED so it
     // surfaces the manual-entry recovery path instead of "Processing" forever.
     if (createdCertificateId) {
@@ -383,6 +391,7 @@ async function createManualCertificate(req: NextRequest, userId: string) {
     });
   });
 
+  trackEvent(userId, "certificate_added", { method: "manual", result: certificate.extractionStatus === "COMPLETED" ? "saved" : "needs_review" });
   return NextResponse.json({ certificate }, { status: 201 });
 }
 

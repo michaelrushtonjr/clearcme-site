@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import ConsoleShell from "@/components/console/ConsoleShell";
+import { AnalyticsIdentify } from "@/components/analytics/AnalyticsIdentify";
 
 export const metadata = {
   title: "Dashboard — ClearCME",
@@ -17,5 +18,10 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <ConsoleShell user={session.user}>{children}</ConsoleShell>;
+  return (
+    <>
+      <AnalyticsIdentify userId={session.user.id} email={session.user.email} name={session.user.name} />
+      <ConsoleShell user={session.user}>{children}</ConsoleShell>
+    </>
+  );
 }

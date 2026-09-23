@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="public-heading mb-2 text-4xl">Privacy Policy</h1>
-        <p className="mb-10 text-sm text-[#6b7568]">Last updated: September 18, 2026</p>
+        <p className="mb-10 text-sm text-[#6b7568]">Last updated: September 23, 2026</p>
 
         <div className="max-w-none space-y-8 text-[#3f4a40]">
 
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
               <li><strong>License information</strong> — state(s) of licensure, license type (MD/DO), and renewal dates you enter</li>
               <li><strong>CME certificates</strong> — files you upload and the extracted data (course title, provider, credit hours, date)</li>
               <li><strong>Billing information</strong> — subscription status and payment identifiers handled through our payment processor; we do not store full card numbers</li>
-              <li><strong>Usage data</strong> — standard web analytics (page views, feature usage) to improve the product</li>
+              <li><strong>Usage data</strong> — web and product analytics (page views, feature usage and session recordings, described under Website and product measurement below) to improve the product</li>
             </ul>
           </section>
 
@@ -68,9 +68,10 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">Website measurement</h2>
+            <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">Website and product measurement</h2>
             <p>We use Vercel Web Analytics for visits to public pages. Our integration excludes private application pages, URL query strings and fragments. A first-party cookie, clearcme_acquisition, remembers the first eligible public landing page and a broad traffic source (search, referral, campaign or direct/unknown) for up to 30 days. It contains no name, email address or search query.</p>
             <p className="mt-3">If you create an account during that window, we save that page and source with your account and count the registration. We count activation once when the account has an active license and a processed or verified manual CME record. Daily page/source totals also count sign-up and course-link clicks; these aggregate totals do not contain account identifiers or certificate details. Our website measurement respects the browser’s Do Not Track setting. You can remove the attribution cookie in your browser settings.</p>
+            <p className="mt-3">We also use PostHog, a product analytics service, to see how ClearCME is used and where people get stuck. For signed-in accounts, PostHog receives your account ID, name and email address; the pages you view and the buttons you click; account events such as signing up, saving a license and adding a CME record; and session recordings that replay how each page looked as you used it. Recordings never include what you type into form fields, and license, DEA and NPI numbers are masked in your browser before anything is sent. PostHog does not receive the certificate files you upload. PostHog also measures anonymous visits to our public pages. When your browser&rsquo;s Do Not Track setting is on, PostHog does not record your page views, clicks or sessions.</p>
           </section>
 
           <section>

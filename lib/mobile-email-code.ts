@@ -2,6 +2,7 @@ import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { MobileAuthError } from "@/lib/mobile-identity";
 import { isEmailConfigured, renderSignInCodeEmail, sendEmail } from "@/lib/email";
+import { trackSignup } from "@/lib/analytics";
 
 const CODE_TTL_MS = 10 * 60_000;
 const RESEND_GAP_MS = 30_000;
@@ -62,6 +63,7 @@ export async function verifyEmailSignIn(email: string, code: string, now = new D
   if (review?.email === email) return verifyReviewAccount(review, code, now);
   if (!/^\d{6}$/.test(code)) throw new MobileAuthError("That code isn't right. Check the email and try again.", 401);
 
+  let created = false;
   return prisma.$transaction(async (tx) => {
     const row = await tx.mobileEmailCode.findUnique({ where: { email } });
     if (!row || row.expires <= now || row.attempts >= MAX_ATTEMPTS) throw new MobileAuthError("That code has expired. Request a new one.", 401);
@@ -74,11 +76,12 @@ export async function verifyEmailSignIn(email: string, code: string, now = new D
     const spent = await tx.mobileEmailCode.updateMany({ where: { email, codeHash: row.codeHash, expires: { gt: now } }, data: { expires: now, attempts: MAX_ATTEMPTS } });
     if (spent.count !== 1) throw new MobileAuthError("That code has expired. Request a new one.", 401);
     const existing = await tx.user.findUnique({ where: { email } });
-    return existing
-      ? tx.user.update({ where: { id: existing.id }, data: { lastLoginAt: now, emailVerified: existing.emailVerified ?? now } })
-      : tx.user.create({ data: { email, emailVerified: now, lastLoginAt: now } });
+    if (existing) return tx.user.update({ where: { id: existing.id }, data: { lastLoginAt: now, emailVerified: existing.emailVerified ?? now } });
+    created = true;
+    return tx.user.create({ data: { email, emailVerified: now, lastLoginAt: now } });
   }).then((user) => {
     if (!user) throw new MobileAuthError("That code isn't right. Check the email and try again.", 401);
+    if (created) trackSignup(user, "email", "ios_app");
     return user;
   });
 }

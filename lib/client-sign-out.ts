@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import posthog from "posthog-js";
 
 /**
  * Setup-wizard progress is parked in sessionStorage under a per-user key
@@ -27,6 +28,11 @@ export function signOutAndClear(options?: { callbackUrl?: string }) {
     }
   } catch {
     // Storage unavailable — nothing parked, nothing to clear.
+  }
+  try {
+    if (posthog.__loaded) posthog.reset();
+  } catch {
+    // Analytics unavailable — nothing to reset.
   }
   return signOut(options);
 }

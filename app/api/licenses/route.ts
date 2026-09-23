@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 
 export async function GET(req: NextRequest) {
   const mobileUserId = await getMobileUserId(req);
@@ -124,6 +125,7 @@ export async function POST(req: NextRequest) {
 
   return saved;
   });
+  trackEvent(userId, "license_saved", { state, license_type: licenseType, is_new: !existingLicense });
   return NextResponse.json(license, { status: 201 });
 }
 
