@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useId, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CertificateTopicConfirmation from "@/components/CertificateTopicConfirmation";
 import DeleteCertButton from "@/components/DeleteCertButton";
 import VerifiedProviderBadge from "@/components/VerifiedProviderBadge";
 import { formatDateUTC } from "@/lib/dates";
+import { manualCertificateReviewMessage } from "@/lib/manual-certificate-review";
 
 interface Cert {
   id: string;
@@ -86,7 +87,8 @@ function toDateInputValue(date: Date | string | null): string {
   return d.toISOString().slice(0, 10);
 }
 
-function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void }) {
+export function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void }) {
+  const formId = useId();
   const [fields, setFields] = useState({
     title: cert.title ?? "",
     provider: cert.provider ?? "",
@@ -129,8 +131,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
   return (
     <div className="mt-3 space-y-3 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-2)] p-4">
       <div>
-        <label className="product-label">Course Title</label>
+        <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
         <input
+          id={`${formId}-title`}
           type="text"
           value={fields.title}
           onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -139,8 +142,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
         />
       </div>
       <div>
-        <label className="product-label">Provider / Accreditor</label>
+        <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
         <input
+          id={`${formId}-provider`}
           type="text"
           value={fields.provider}
           onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -150,8 +154,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="product-label">Completion Date</label>
+          <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
           <input
+            id={`${formId}-date`}
             type="date"
             value={fields.date}
             onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -159,8 +164,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
           />
         </div>
         <div>
-          <label className="product-label">Hours of CME</label>
+          <label htmlFor={`${formId}-hours`} className="product-label">Hours of CME</label>
           <input
+            id={`${formId}-hours`}
             type="number"
             min="0.25"
             max="100"
@@ -176,8 +182,9 @@ function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void })
         <p className="text-xs text-[var(--ink-2)]">Activity maximum: {cert.activityMaxHours} hours. Enter the hours you personally earned.</p>
       )}
       <div>
-        <label className="product-label">Credit Type</label>
+        <label htmlFor={`${formId}-type`} className="product-label">Credit Type</label>
         <select
+          id={`${formId}-type`}
           value={fields.creditType}
           onChange={(e) => setFields((f) => ({ ...f, creditType: e.target.value }))}
           className="product-input"
@@ -339,6 +346,7 @@ function CertificateRow({
 
   const certificateTitle = cert.title ?? cert.courseName ?? cert.fileName ?? "Untitled certificate";
   const providerName = cert.provider ?? cert.providerName ?? "Unknown provider";
+  const isManualEntry = cert.fileName === "Manual entry";
   const needsAttention = cert.extractionStatus === "FAILED" || cert.extractionStatus === "NEEDS_REVIEW";
 
   return (
@@ -382,10 +390,12 @@ function CertificateRow({
       {needsAttention && !justSaved && (
         <div className="mt-2">
           <p className="text-xs text-[var(--ink-2)]">
-            {cert.extractionStatus === "FAILED"
+            {isManualEntry && cert.extractionStatus === "NEEDS_REVIEW"
+              ? manualCertificateReviewMessage(cert.activityDate)
+              : cert.extractionStatus === "FAILED"
               ? "We couldn't read this certificate automatically — enter the details manually and the hours still count."
               : "Some fields couldn't be read with confidence. Review and confirm the details so the hours count."}
-            {cert.extractionError && (
+            {!isManualEntry && cert.extractionError && (
               <span className="text-[var(--ink-3)]"> ({cert.extractionError})</span>
             )}
           </p>

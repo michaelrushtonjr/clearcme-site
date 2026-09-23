@@ -2,28 +2,15 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getProviders, signIn } from "next-auth/react";
 import { signOutAndClear } from "@/lib/client-sign-out";
 import { BrandLockup } from "@/components/BrandLockup";
 import { BrandPanel } from "@/components/login/BrandPanel";
-
-// Email magic link is only available when RESEND_API_KEY is configured.
-// On production without the key, we show Google-only sign-in.
-const EMAIL_ENABLED = !!process.env.NEXT_PUBLIC_EMAIL_SIGNIN_ENABLED;
-const APPLE_ENABLED = !!process.env.NEXT_PUBLIC_APPLE_SIGNIN_ENABLED;
+import { authErrorMessage } from "@/lib/auth-error-message";
+import { loginCallbackUrl } from "@/lib/login-callback";
 
 // Demo mode (Phase 4): read-only sample persona at /demo, no sign-up.
 const DEMO_ENTRY_ENABLED = true;
-
-// Human-readable copy for NextAuth's ?error= codes. Anything unlisted gets
-// the generic message rather than leaking a raw error code.
-const AUTH_ERROR_COPY: Record<string, string> = {
-  OAuthAccountNotLinked:
-    "That sign-in belongs to a different ClearCME account than the one this browser is signed in to.",
-  AccessDenied: "Sign-in was cancelled or not permitted.",
-  Verification: "That sign-in link has expired or was already used. Request a new one below.",
-  Configuration: "Sign-in is misconfigured on our end. Please try again shortly.",
-};
 
 function AuthErrorNotice({ error }: { error: string }) {
   // The login page has no SessionProvider, so ask next-auth's session
@@ -38,8 +25,7 @@ function AuthErrorNotice({ error }: { error: string }) {
   }, []);
 
   const isNotLinked = error === "OAuthAccountNotLinked";
-  const message =
-    AUTH_ERROR_COPY[error] ?? "Something went wrong signing you in. Please try again.";
+  const message = authErrorMessage(error);
 
   return (
     <div className="error-note" role="alert">
@@ -63,6 +49,18 @@ function AuthErrorNotice({ error }: { error: string }) {
 function LoginPageInner() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const callbackUrl = loginCallbackUrl(searchParams.get("callbackUrl"));
+  const [providers, setProviders] = useState<Awaited<ReturnType<typeof getProviders>>>(null);
+  const [providersLoaded, setProvidersLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    getProviders().then((configured) => {
+      if (active) setProviders(configured);
+    }).catch(() => {}).finally(() => {
+      if (active) setProvidersLoaded(true);
+    });
+    return () => { active = false; };
+  }, []);
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,7 +68,7 @@ function LoginPageInner() {
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await signIn("resend", { email, callbackUrl: "/dashboard" });
+    await signIn("resend", { email, callbackUrl });
     setEmailSent(true);
     setLoading(false);
   };
@@ -113,8 +111,8 @@ function LoginPageInner() {
                 </div>
               ) : (
                 <>
-                  {APPLE_ENABLED && (
-                    <button className="btn btn-apple" onClick={() => signIn("apple", { callbackUrl: "/dashboard" })}>
+                  {providers?.apple && (
+                    <button className="btn btn-apple" onClick={() => signIn("apple", { callbackUrl })}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                       </svg>
@@ -122,7 +120,7 @@ function LoginPageInner() {
                     </button>
                   )}
 
-                  <button className="btn btn-google" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
+                  {providers?.google && <button className="btn btn-google" onClick={() => signIn("google", { callbackUrl })}>
                     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="#4285F4"
@@ -142,9 +140,13 @@ function LoginPageInner() {
                       />
                     </svg>
                     Continue with Google
-                  </button>
+                  </button>}
 
-                  {EMAIL_ENABLED && (
+                  {!providersLoaded && <p className="form-helper" role="status">Loading sign-in options…</p>}
+                  {providersLoaded && !providers && <p className="error-note" role="alert">Sign-in options couldn&apos;t load. Please reload this page.</p>}
+                  {providers && !providers.resend && <p className="form-helper">Email sign-in isn&apos;t available right now — use Google or Apple.</p>}
+
+                  {providers?.resend && (
                     <>
                       <div className="or-row mono-label">or</div>
 

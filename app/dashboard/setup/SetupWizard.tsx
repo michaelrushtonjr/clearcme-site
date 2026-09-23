@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { wizardStorageKey } from "@/lib/client-sign-out";
@@ -152,6 +152,28 @@ interface ConditionalQuestion {
   requirements: ConditionalMatch[];
 }
 
+/** Keep only current server question keys with supported draft answer values. */
+export function restoreConditionalAnswers(questions: { key: string }[], draft: unknown): Record<string, "yes" | "no"> {
+  if (!draft || typeof draft !== "object" || Array.isArray(draft)) return {};
+  const answers = draft as Record<string, unknown>;
+  return Object.fromEntries(questions.flatMap(({ key }) =>
+    Object.hasOwn(answers, key) && (answers[key] === "yes" || answers[key] === "no")
+      ? [[key, answers[key] as "yes" | "no"]] : []
+  ));
+}
+
+async function loadConditionalQuestions(): Promise<ConditionalQuestion[] | null> {
+  try {
+    const res = await fetch("/api/conditional-requirements");
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data.questions) ? (data.questions as ConditionalQuestion[]) : null;
+  } catch {
+    // The caller decides whether to continue or preserve a parked answer draft.
+    return null;
+  }
+}
+
 export default function SetupWizard({ userId }: { userId: string }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -160,6 +182,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
   const [licenseLimitHit, setLicenseLimitHit] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [restored, setRestored] = useState(false);
+  const [licensesSubmitted, setLicensesSubmitted] = useState(false);
+  const [restoringQuestions, setRestoringQuestions] = useState(false);
+  const submittedRef = useRef(false);
+  const finishedRef = useRef(false);
 
   // Primary license state
   const [state, setState] = useState("");
@@ -185,7 +211,14 @@ export default function SetupWizard({ userId }: { userId: string }) {
   // Keyed per user so another account signing in on the same tab never
   // resumes this one's wizard; lib/client-sign-out.ts clears it on sign-out.
   const WIZARD_KEY = wizardStorageKey(userId);
+  const completeSetup = useCallback(() => {
+    finishedRef.current = true;
+    try { sessionStorage.removeItem(WIZARD_KEY); } catch {}
+    router.push("/dashboard?onboarded=1");
+    router.refresh();
+  }, [WIZARD_KEY, router]);
   useEffect(() => {
+    let active = true;
     try {
       const raw = sessionStorage.getItem(WIZARD_KEY);
       if (raw) {
@@ -200,21 +233,53 @@ export default function SetupWizard({ userId }: { userId: string }) {
         if (isPrimaryRenewalChoice(saved.renewalChoice)) setRenewalChoice(saved.renewalChoice);
         if (saved.renewalChoice === "manual" && saved.renewalDate) setRenewalDate(saved.renewalDate);
         if (saved.displayName) setDisplayName(saved.displayName);
-        // Step 5's questions come from the server post-submit — clamp to 4.
-        if (typeof saved.step === "number") setStep(Math.min(Math.max(saved.step, 1), 4));
+        if (typeof saved.isMultiState === "boolean") setIsMultiState(saved.isMultiState);
+        if (Array.isArray(saved.additionalLicenses) && saved.additionalLicenses.every(
+          (lic: Partial<AdditionalLicense> | null) => lic &&
+            typeof lic.id === "string" && typeof lic.state === "string" &&
+            typeof lic.licenseType === "string" && typeof lic.renewalDate === "string" &&
+            typeof lic.unsureDate === "boolean"
+        )) setAdditionalLicenses(saved.additionalLicenses.slice(0, 4));
+        if (saved.licensesSubmitted === true) {
+          submittedRef.current = true;
+          setLicensesSubmitted(true);
+          setStep(5);
+          setRestoringQuestions(true);
+          void loadConditionalQuestions().then((questions) => {
+            if (!active) return;
+            if (questions === null) {
+              // Keep persistence paused so a failed GET cannot erase the draft.
+              setError("We couldn't load your practice questions. Reload to try again.");
+              return;
+            }
+            if (questions.length > 0) {
+              setConditionalQuestions(questions);
+              setConditionalAnswers(restoreConditionalAnswers(questions, saved.conditionalAnswers));
+            } else {
+              completeSetup();
+            }
+            setRestoringQuestions(false);
+          });
+        } else if (typeof saved.step === "number") {
+          // Older/unsubmitted drafts still restore only the license questions.
+          setStep(Math.min(Math.max(saved.step, 1), 4));
+        }
       }
     } catch {
       // Corrupt or unavailable storage — start fresh.
     }
     setRestored(true);
-  }, [WIZARD_KEY]);
+    return () => { active = false; };
+  }, [WIZARD_KEY, completeSetup]);
   useEffect(() => {
-    if (!restored) return;
+    if (!restored || restoringQuestions || finishedRef.current) return;
     try {
       sessionStorage.setItem(
         WIZARD_KEY,
         JSON.stringify({
-          step: Math.min(step, 4),
+          step: licensesSubmitted ? 5 : Math.min(step, 4),
+          licensesSubmitted,
+          conditionalAnswers,
           state,
           licenseType,
           specialty,
@@ -223,12 +288,14 @@ export default function SetupWizard({ userId }: { userId: string }) {
           renewalDate,
           renewalChoice,
           displayName,
+          isMultiState,
+          additionalLicenses,
         })
       );
     } catch {
       // Storage full/blocked — persistence is best-effort.
     }
-  }, [WIZARD_KEY, restored, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName]);
+  }, [WIZARD_KEY, restored, restoringQuestions, licensesSubmitted, conditionalAnswers, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName, isMultiState, additionalLicenses]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
@@ -326,6 +393,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
   }
 
   async function handleSubmit() {
+    if (submittedRef.current || loading) return;
     const finalRenewalDate = effectiveRenewalDate;
     setLoading(true);
     setError("");
@@ -361,10 +429,6 @@ export default function SetupWizard({ userId }: { userId: string }) {
           body: JSON.stringify({ name: displayName.trim() }),
         }).catch(() => {});
       }
-      try {
-        sessionStorage.removeItem(WIZARD_KEY);
-      } catch {}
-
       // POST additional licenses in sequence
       for (const lic of additionalLicenses) {
         if (!lic.state || !lic.licenseType) continue;
@@ -400,11 +464,25 @@ export default function SetupWizard({ userId }: { userId: string }) {
         }
       }
 
+      // Submission is complete. Persist the explicit marker before fetching
+      // questions so a refresh during that request cannot expose step 4 again.
+      submittedRef.current = true;
+      try {
+        const draft = JSON.parse(sessionStorage.getItem(WIZARD_KEY) || "{}");
+        sessionStorage.setItem(WIZARD_KEY, JSON.stringify({ ...draft, step: 5, licensesSubmitted: true, conditionalAnswers }));
+      } catch {
+        // Storage full/blocked — same best-effort persistence as other steps.
+      }
+      setLicensesSubmitted(true);
+      setStep(5);
+
       // Some mandatory topics only bind physicians who meet a practice
       // condition (a DEA registration, a >25% elderly panel). Ask now, while
       // the user is already in setup, rather than leaving those rows sitting
       // unresolved on the Compliance Map.
-      const questions = await loadConditionalQuestions();
+      // Initial submission keeps its existing fail-open behavior; the map
+      // asks these questions too. Restoring parked answers is stricter above.
+      const questions = (await loadConditionalQuestions()) ?? [];
       if (questions.length > 0) {
         setConditionalQuestions(questions);
         setStep(5);
@@ -412,23 +490,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
         return;
       }
 
-      router.push("/dashboard?onboarded=1");
-      router.refresh();
+      completeSetup();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
-    }
-  }
-
-  async function loadConditionalQuestions(): Promise<ConditionalQuestion[]> {
-    try {
-      const res = await fetch("/api/conditional-requirements");
-      if (!res.ok) return [];
-      const data = await res.json();
-      return Array.isArray(data.questions) ? (data.questions as ConditionalQuestion[]) : [];
-    } catch {
-      // Never block setup on this — the Compliance Map asks the same questions.
-      return [];
     }
   }
 
@@ -437,21 +502,34 @@ export default function SetupWizard({ userId }: { userId: string }) {
     setError("");
     try {
       if (Object.keys(conditionalAnswers).length > 0) {
-        await fetch("/api/conditional-requirements", {
+        const response = await fetch("/api/conditional-requirements", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers: conditionalAnswers }),
         });
+        if (!response.ok) throw new Error("Practice answers were not saved");
       }
+      completeSetup();
     } catch {
-      // Answers are a convenience, not a gate — fall through to the dashboard.
-    } finally {
-      router.push("/dashboard?onboarded=1");
-      router.refresh();
+      setError("We couldn't save your answers. Please try again.");
+      setLoading(false);
     }
   }
 
   const totalSteps = conditionalQuestions.length > 0 ? 5 : 4;
+
+  // Submitted licenses stay locked in this wizard; subsequent license edits
+  // use the existing Licenses page. Never flash an earlier submit step.
+  if (!restored || restoringQuestions || (licensesSubmitted && conditionalQuestions.length === 0)) {
+    return (
+      <div className="py-12 text-center text-sm text-[var(--ink-2)]">
+        {error ? <>
+          <p role="alert">{error}</p>
+          <button onClick={() => window.location.reload()} className="product-btn product-btn-secondary mt-4">Reload questions</button>
+        </> : <p role="status">Loading your setup…</p>}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
@@ -1123,6 +1201,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
                           <button
                             key={value}
                             type="button"
+                            aria-pressed={answer === value}
                             onClick={() =>
                               setConditionalAnswers((prev) => ({ ...prev, [q.key]: value }))
                             }
@@ -1137,6 +1216,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
                         ))}
                         <button
                           type="button"
+                          aria-pressed={answer === undefined}
                           onClick={() =>
                             setConditionalAnswers((prev) => {
                               const next = { ...prev };
@@ -1186,6 +1266,12 @@ export default function SetupWizard({ userId }: { userId: string }) {
               {error && (
                 <div className="mt-4 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">
                   {error}
+                  <button
+                    onClick={completeSetup}
+                    className="mt-3 block w-full rounded-lg border border-red-200 px-3 py-2 text-left underline"
+                  >
+                    Continue without saving these answers
+                  </button>
                 </div>
               )}
 

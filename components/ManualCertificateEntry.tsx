@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
+import { manualCertificateReviewMessage } from "@/lib/manual-certificate-review";
 
 const CREDIT_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: "AMA_PRA_1", label: "AMA PRA Category 1" },
@@ -16,6 +17,7 @@ const CREDIT_TYPE_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export default function ManualCertificateEntry() {
+  const formId = useId();
   const [fields, setFields] = useState({
     title: "",
     provider: "",
@@ -24,7 +26,7 @@ export default function ManualCertificateEntry() {
     creditType: "",
   });
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState<{ id: string; extractionStatus: string; activityDate?: string | null } | null>(null);
   const [saveError, setSaveError] = useState("");
   const [duplicateWarning, setDuplicateWarning] = useState("");
 
@@ -58,7 +60,8 @@ export default function ManualCertificateEntry() {
           setSaveError(err.error ?? "Save failed");
         }
       } else {
-        setSaved(true);
+        const data = await res.json();
+        setSaved(data.certificate);
       }
     } catch {
       setSaveError("Network error — please try again");
@@ -68,30 +71,31 @@ export default function ManualCertificateEntry() {
 
   const reset = () => {
     setFields({ title: "", provider: "", date: "", creditHours: "", creditType: "" });
-    setSaved(false);
+    setSaved(null);
     setSaveError("");
     setDuplicateWarning("");
   };
 
   if (saved) {
+    const needsReview = saved.extractionStatus === "NEEDS_REVIEW";
     return (
       <div className="product-card p-6 space-y-4">
-        <div className="flex items-center gap-2 text-[var(--status-met)] text-sm font-medium">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <div role="status" className={`flex items-center gap-2 text-sm font-medium ${needsReview ? "text-[var(--status-pending)]" : "text-[var(--status-met)]"}`}>
+          {!needsReview && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
               clipRule="evenodd"
             />
-          </svg>
-          Saved — review your certificate details and compliance map for counted hours.
+          </svg>}
+          {needsReview ? manualCertificateReviewMessage(saved.activityDate) : "Saved — review your certificate details and compliance map for counted hours."}
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button onClick={reset} className="product-btn product-btn-secondary flex-1">
             Add another
           </button>
-          <Link href="/dashboard/compliance" className="product-btn product-btn-brand flex-1">
-            View My Compliance →
+          <Link href={needsReview ? `/dashboard/certificates#cert-${saved.id}` : "/dashboard/compliance"} className="product-btn product-btn-brand flex-1">
+            {needsReview ? "Review details →" : "View My Compliance →"}
           </Link>
         </div>
       </div>
@@ -101,8 +105,9 @@ export default function ManualCertificateEntry() {
   return (
     <div className="product-card p-6 space-y-4">
       <div>
-        <label className="product-label">Course Title</label>
+        <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
         <input
+          id={`${formId}-title`}
           type="text"
           value={fields.title}
           onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
@@ -111,8 +116,9 @@ export default function ManualCertificateEntry() {
         />
       </div>
       <div>
-        <label className="product-label">Provider / Accreditor</label>
+        <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
         <input
+          id={`${formId}-provider`}
           type="text"
           value={fields.provider}
           onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
@@ -122,8 +128,9 @@ export default function ManualCertificateEntry() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="product-label">Completion Date</label>
+          <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
           <input
+            id={`${formId}-date`}
             type="date"
             value={fields.date}
             onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
@@ -131,8 +138,9 @@ export default function ManualCertificateEntry() {
           />
         </div>
         <div>
-          <label className="product-label">Hours of CME</label>
+          <label htmlFor={`${formId}-hours`} className="product-label">Hours of CME</label>
           <input
+            id={`${formId}-hours`}
             type="number"
             min="0.25"
             max="100"
@@ -145,8 +153,9 @@ export default function ManualCertificateEntry() {
         </div>
       </div>
       <div>
-        <label className="product-label">Credit Type (optional)</label>
+        <label htmlFor={`${formId}-type`} className="product-label">Credit Type (optional)</label>
         <select
+          id={`${formId}-type`}
           value={fields.creditType}
           onChange={(e) => setFields((f) => ({ ...f, creditType: e.target.value }))}
           className="product-input"
