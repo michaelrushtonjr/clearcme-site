@@ -321,6 +321,17 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         deaMateCompliant: true,
         stateAcceptance: "All states accepting AMA PRA Category 1",
         verified: "2026-04-21 (homepage + accreditation details reconfirmed live)",
+        requirementTags: [
+          {
+            id: "MA:PATIENT_SAFETY",
+            mappingVerified: {
+              date: "2026-09-27",
+              by: "coo",
+              evidence:
+                "https://pain-management-cme.nejm.org/pain-opioid-cme-disclosures/ states verbatim: \"This activity meets the criteria of the Massachusetts Board of Registration in Medicine for risk management study.\" MA's Risk management topic (10 hrs per cycle) maps to PATIENT_SAFETY via scripts/rule-source.js specialTopic(). Scout gap-prospect 2026-09-26; COO read the disclosures page 2026-09-27.",
+            },
+          },
+        ],
       },
       {
         name: "Safe and Effective Pain Care: Opioid Prescribing Curriculum (Parts 1–4 + reinforcement modules)",
