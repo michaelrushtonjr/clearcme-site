@@ -476,8 +476,8 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       { ...topic("KASPER / pain management / addiction", "4.5 hrs every 3 years", "If authorized to prescribe or dispense controlled substances"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
       { ...topic("Addiction medicine", "12 hrs every 3 years", "If DEA-licensed to prescribe buprenorphine"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
-      { ...topic("Domestic violence", "3 hrs one-time", "Due within 3 years of initial licensure, not recurring (KRS 194A.540(11)); applies to primary-care physicians and psychiatrists"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
-      { ...topic("Pediatric abusive head trauma", "1 hr within 5 years", "Applies to EM, FM, pediatrics, radiology, urgent care"), cadence: "EVERY_N_YEARS", intervalYears: 5 },
+      { ...topic("Domestic violence", "3 hrs one-time", "Due within 3 years of initial licensure, not recurring (KRS 194A.540(11)); applies to primary-care physicians and psychiatrists"), cadence: "ONE_TIME" },
+      { ...topic("Pediatric abusive head trauma", "1 hr one-time, within 5 years of initial licensure", "Applies to EM, FM, pediatrics, radiology, urgent care"), cadence: "ONE_TIME" },
       { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
