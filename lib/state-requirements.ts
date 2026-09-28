@@ -568,7 +568,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   MS: {
     totalHours: 40,
-    totalHoursLabel: "40 hours",
+    totalHoursLabel: "40 hours (physicians receiving their initial license — or first specialty-board certification — after the cycle's July 1 start are exempt for that cycle; CME resumes in full the next 2-year cycle, 30 Miss. Admin. Code Pt. 2610, Ch. 2, R. 2.3)",
     cycleYears: 2,
     cycleLabel: "Annual renewal, 2-year CME reporting window",
     mandatoryTopics: [
