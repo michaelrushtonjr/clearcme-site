@@ -200,7 +200,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   }),
   CA: variableRenewal("Last day of the month your license was issued, every 2 years (B&P 2423; not birth-month since 2018)"),
   CO: fixedRenewal("April 30 of odd-numbered years", 4, 30, "odd"),
-  CT: variableRenewal("Annual registration date varies by physician; CME uses a 24-month lookback"),
+  CT: birthBasedRenewal("During the month of your birth, annually (Conn. Gen. Stat. §19a-88(b))"),
   DC: birthBasedRenewal("Last day of your birth month, every 2 years"),
   DE: fixedRenewal("March 31 of odd-numbered years", 3, 31, "odd"),
   FL: variableRenewal("January 31 of your assigned odd- or even-year biennium"),
