@@ -40,7 +40,11 @@ The wrapper appends `ClearCMEApp/<version>` to the web view's user agent. `app/l
 
 ## Account deletion
 
-`DELETE /api/account` with `{ "confirm": "DELETE" }` (Settings → Delete account, reachable in the app) cancels any Stripe subscription first, removes the user's private blobs (`certificates/<userId>/`, `audit-exports/<userId>/`), then deletes the user row, which cascades to everything else. Each step is safe to repeat; if billing or storage fails, nothing after it runs. The Stripe webhook acknowledges events for users that no longer exist.
+`DELETE /api/account` accepts either a NextAuth web session or a mobile bearer JWT verified by `getMobileUserId`. The user ID comes from that authentication, never from the request body. With `{ "confirm": "DELETE" }`, it cancels any Stripe subscription first, removes the user's private blobs (`certificates/<userId>/`, `audit-exports/<userId>/`), then deletes the user row, which cascades to everything else. Each step is safe to repeat; if billing or storage fails, nothing after it runs. The Stripe webhook acknowledges events for users that no longer exist.
+
+On the web, use Settings → Delete account. In the native iPhone app, use Profile → Delete Account and confirm the destructive alert. The app sends the request through `apiFetch`, which attaches the stored bearer token. It clears `auth_token` and `user_data` from SecureStore and returns to sign-in only after an OK response containing `{ "deleted": true }`. Failed or unconfirmed requests keep those local values and show an error; duplicate deletion requests are blocked while one is in progress. If local cleanup fails after confirmed server deletion, Finish Sign Out retries cleanup without sending another deletion request.
+
+Release the server change before distributing the native build. Validate cancel, success, server failure, and local-cleanup retry on an iPhone or simulator before submission.
 
 ## Push alerts
 

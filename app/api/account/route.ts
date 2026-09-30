@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getMobileUserId } from "@/lib/mobile-auth";
 import { AccountDeletionError, deleteAccount } from "@/lib/account-deletion";
 
 const PRIVATE_HEADERS = { "Cache-Control": "no-store" };
@@ -7,15 +8,17 @@ const PRIVATE_HEADERS = { "Cache-Control": "no-store" };
 // DELETE /api/account — permanent, self-serve account deletion (also the
 // in-app deletion path App Store guideline 5.1.1(v) requires).
 // Body: { "confirm": "DELETE" }
-export async function DELETE(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: PRIVATE_HEADERS });
+export async function DELETE(req: NextRequest) {
+  const mobileUserId = await getMobileUserId(req);
+  const session = mobileUserId ? null : await auth();
+  const userId = mobileUserId ?? session?.user?.id;
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: PRIVATE_HEADERS });
 
   const body = (await req.json().catch(() => ({}))) as { confirm?: unknown };
-  if (body.confirm !== "DELETE") return NextResponse.json({ error: "Type DELETE to confirm." }, { status: 400, headers: PRIVATE_HEADERS });
+  if (body?.confirm !== "DELETE") return NextResponse.json({ error: "Type DELETE to confirm." }, { status: 400, headers: PRIVATE_HEADERS });
 
   try {
-    await deleteAccount(session.user.id);
+    await deleteAccount(userId);
     return NextResponse.json({ deleted: true }, { headers: PRIVATE_HEADERS });
   } catch (error) {
     if (error instanceof AccountDeletionError) return NextResponse.json({ error: error.message }, { status: error.status, headers: PRIVATE_HEADERS });

@@ -1,5 +1,6 @@
 import { prismaMock } from "../../../helpers/prisma-mock";
 import { beforeEach, expect, test, vi } from "vitest";
+import { NextRequest } from "next/server";
 const authMock = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock("@/auth", () => authMock);
 vi.mock("@vercel/blob", () => ({ del: vi.fn(), list: vi.fn() }));
@@ -23,7 +24,7 @@ beforeEach(() => {
   prismaMock.user.delete.mockImplementation(async () => { order.push("rows"); return account; });
   prismaMock.verificationToken.deleteMany.mockResolvedValue({ count: 0 }); prismaMock.mobileEmailCode.deleteMany.mockResolvedValue({ count: 0 });
 });
-const request = (body?: unknown) => new Request("http://localhost/api/account", { method: "DELETE", body: body === undefined ? undefined : JSON.stringify(body) });
+const request = (body?: unknown) => new NextRequest("http://localhost/api/account", { method: "DELETE", body: body === undefined ? undefined : JSON.stringify(body) });
 
 test("route: signed-out request is rejected before anything is read", async () => {
   authMock.auth.mockResolvedValue(null);
