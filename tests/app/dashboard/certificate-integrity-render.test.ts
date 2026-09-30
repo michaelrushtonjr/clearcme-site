@@ -38,6 +38,10 @@ test("dashboard surfaces retained extraction whose original failed storage", asy
   expect(html).toContain("Original not saved — re-attach");
   expect(html).toContain("/dashboard/certificates");
 });
-test("pending Anthropic privacy copy does not render before Michael approval", () => {
-  expect(renderToStaticMarkup(createElement(Privacy))).not.toContain("Anthropic");
+test("privacy page renders the Anthropic disclosure and per-certificate deletion instructions", () => {
+  const html = renderToStaticMarkup(createElement(Privacy));
+  expect(html).toContain("we may send it to Anthropic, a third-party AI provider");
+  expect(html).toContain("Do not upload documents containing patient information.");
+  expect(html).toContain("To delete an uploaded certificate and its stored original, open Certificates in your dashboard and select Delete for that certificate.");
+  expect(html).toContain("Last updated: September 29, 2026");
 });
