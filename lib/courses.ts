@@ -1905,6 +1905,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  ORGAN_DONATION: {
+    topicLabel: "Organ & Tissue Donation",
+    requirement: "Varies by state — e.g. PA 2 hrs one-time organ and tissue donation education, effective May 1, 2026 (Act 90; 49 Pa. Code §16.19(c)(1) MD / §25.271 DO)",
+    courses: [
+      {
+        name: "Supporting Organ and Tissue Donation in Clinical Settings: The Pennsylvania Requirement",
+        provider: "NetCE",
+        providerUrl: "https://www.netce.com",
+        credits: "2.0 hours AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "$15",
+        isFree: false,
+        isHippo: false,
+        description: "Enduring material (NetCE course #98410) built specifically for Pennsylvania's Act 90 organ- and tissue-donation education requirement — the page states it fulfills the requirement for 2 hours of education on organ and tissue donation for nurses and physicians in Pennsylvania. Release 5/1/2026; expiration 4/30/2029. First entry in the catalog's organ/tissue donation bucket.",
+        url: "https://www.netce.com/course/overview/supporting-organ-and-tissue-donation-in-clinical-settings-the-pennsylvania-requirement/98410/3460",
+        accreditation: "ACCME (NetCE)",
+        deaMateCompliant: false,
+        stateAcceptance: "PA Act 90 organ/tissue donation education; all states accepting AMA PRA Category 1 for general credit",
+        verified: "2026-10-02 (Michael's one-click browser read, monthly Cowork sweep: exact title, 'NetCE designates this enduring material for a maximum of 2 AMA PRA Category 1 Credit(s)™' verbatim, $15, release 05/01/2026 / expiration 04/30/2029, PA Act 90 fulfillment statement; netce.com 403s every agent route — COO fetch attempt same day confirmed the bot-wall; ships on Michael's read per decisions.md 2026-09-21 NetCE/edhub precedent. ADD ruled decisions.md 2026-09-18; price $15 per Michael 2026-08-04; Scout proposed 2026-08-01 gap-prospect)",
+      }
+    ],
+  },
   GENERAL_CATEGORY_1: {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
