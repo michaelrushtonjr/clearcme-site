@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
 
-const faqs: { q: string; a: string; mocCta?: boolean }[] = [
+const faqs: { q: string; a: string; mocCta?: boolean; defaultOpen?: boolean }[] = [
   {
     q: "Is ClearCME data accurate?",
+    defaultOpen: true,
     a: "We verify all state requirements against primary board sources. Every entry shows a 'last verified' date. Our QA process cross-references official state medical board websites, administrative codes, and regulations — not third-party aggregators.",
   },
   {
@@ -32,10 +33,12 @@ const faqs: { q: string; a: string; mocCta?: boolean }[] = [
   },
   {
     q: "Is my data secure?",
+    defaultOpen: true,
     a: "Yes. ClearCME is Secure & Private (Non-PHI). CME certificates are professional credentials, not patient medical records. Please do not upload patient identifiers or clinical records. Your data is encrypted in transit and at rest.",
   },
   {
     q: "What if I subscribe and it is not right for me?",
+    defaultOpen: true,
     a: "Email hello@clearcme.ai within 30 days of purchase and we'll refund you in full - no questions, no email chase.",
   },
   {
@@ -57,7 +60,19 @@ function Check() {
 }
 
 export default function PricingPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaqs, setOpenFaqs] = useState<Set<number>>(
+    () => new Set(faqs.flatMap((faq, index) => (faq.defaultOpen ? [index] : []))),
+  );
+  const toggleFaq = (index: number) =>
+    setOpenFaqs((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   const [checkoutTier, setCheckoutTier] = useState<"ESSENTIAL" | "PRO" | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -276,11 +291,11 @@ export default function PricingPage() {
             >
               <button
                 className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[#ece4cf]/60 transition-colors"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                onClick={() => toggleFaq(i)}
               >
                 <span className="font-semibold text-[#1e2920] text-sm pr-4">{faq.q}</span>
                 <svg
-                  className={`w-4 h-4 text-[#6b7568] flex-shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 text-[#6b7568] flex-shrink-0 transition-transform ${openFaqs.has(i) ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -289,7 +304,7 @@ export default function PricingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              {openFaq === i && (
+              {openFaqs.has(i) && (
                 <div className="px-5 pb-4 text-sm text-[#3f4a40] leading-relaxed border-t border-[#ece3ca] pt-3">
                   {faq.a}
                   {faq.mocCta && (
