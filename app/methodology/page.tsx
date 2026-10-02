@@ -167,6 +167,11 @@ export default function MethodologyPage() {
             </table>
           </div>
           <p className="mt-2 text-xs text-[#6b7568]">These dates apply to the published editorial guides. Their source lists and product limitations are available at each link.</p>
+          <div className="mt-6 text-center">
+            <Link href="/cme-requirements" className="public-btn-primary">
+              Check your state&apos;s requirements &rarr;
+            </Link>
+          </div>
         </div>
       </section>
     </PublicShell>
