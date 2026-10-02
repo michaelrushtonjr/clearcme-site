@@ -1895,6 +1895,28 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
       }
     ],
   },
+  INFECTION_CONTROL: {
+    topicLabel: "Infection Control / Prevention",
+    requirement: "Varies by state — note: New York's infection-control mandate accepts only NYSED/DOH-approved provider coursework; courses here count as general Category 1 unless state approval is stated on the page",
+    courses: [
+      {
+        name: "Nursing Home Infection Preventionist Training Course (WB4973)",
+        provider: "CDC / CDC TRAIN",
+        providerUrl: "https://www.cdc.gov",
+        credits: "19.0 hours AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Free 24-module CDC training plan covering infection prevention and control program structure, transmission pathways, surveillance and outbreak management, hand hygiene, and antibiotic stewardship. Framed around nursing-home infection-preventionist programs but the page explicitly lists physicians among target learners. CE window through 9/15/2027. Free CDC TRAIN account required to enroll and claim credit. First entry in the catalog's infection-control bucket. Not stated as NYSED/DOH-approved — do not count toward New York's infection-control mandate.",
+        url: "https://www.train.org/cdctrain/training_plan/8941",
+        accreditation: "CDC is jointly accredited by ACCME / ACPE / ANCC",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1 (not NYSED-approved for NY infection control)",
+        verified: "2026-10-02 (Michael's signed-in browser read, monthly Cowork sweep: live, free, 19.0 AMA PRA Category 1, expires 2027-09-15 — corroborates Scout's 2026-04-29/05-04 CDC TRAIN record with identical figures; train.org renders a JS loading shell to every agent route — COO fetch attempt same day confirmed; CDC is an established catalog provider with prior accreditation-PDF evidence; Scout recovery recommendation 2026-09-26)",
+      }
+    ],
+  },
   GENERAL_CATEGORY_1: {
     topicLabel: "General Category 1 CME",
     requirement: "General AMA PRA Category 1 hours for states without a mandatory topic restriction",
