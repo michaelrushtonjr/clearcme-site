@@ -1187,22 +1187,6 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "Prevention of Medical Errors 2024-2026 (National)",
-        provider: "The Doctors Company (medical liability insurer)",
-        providerUrl: "https://thedoctors.cloud-cme.com",
-        credits: "2.0 hours AMA PRA Category 1 / ANCC Nursing Contact Hours (2.0 hr)",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description: "Enduring online CME. Target audience explicitly includes Emergency Medicine, Family Medicine, Internal Medicine, Cardiology, Surgery, Pediatrics, OB/GYN, and many more specialties. Covers common performance and diagnostic errors, root cause analysis, culture of safety, and patient communication strategies. Score 80%+ on post-test to earn credit. Active July 1, 2024 – September 30, 2026. The Doctors Company is ACCME-accredited. Available to any physician regardless of insurer. No account required beyond registration on the CME portal.",
-        url: "https://thedoctors.cloud-cme.com/course/courseoverview?P=0&EID=3749",
-        accreditation: "ACCME (The Doctors Company) + ANCC (nursing)",
-        deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1; specifically covers Florida patient safety requirements",
-        verified: "2026-07-10",
-      },
-      {
         name: "2026 Prevention of Medical Errors: To Err is Human",
         provider: "AdventHealth Orlando CME",
         providerUrl: "https://adventhealth.cloud-cme.com",
