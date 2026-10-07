@@ -1393,7 +1393,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "ENDURING: Domestic Violence Prevention (2026)",
+        name: "ENDURING: Domestic Violence Prevention (2025-26)",
         provider: "Memorial Healthcare System CME (South Florida)",
         providerUrl: "https://mhs.cloud-cme.com",
         credits: "2.0 hours AMA PRA Category 1",
@@ -1401,12 +1401,12 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "Enduring material. Post-test required (70% passing score, up to 5 attempts). Topics: DV statistics, risk groups, incidence/prevalence, screening/assessment techniques, community resources. Active 2026 edition confirmed live. Faculty: Randy Katz, DO.",
+        description: "Enduring material. Post-test required (70% passing score, up to 5 attempts). Topics: DV statistics, risk groups, incidence/prevalence, screening/assessment techniques, community resources. Active 2025-26 edition confirmed live. Faculty: Randy Katz, DO.",
         url: "https://mhs.cloud-cme.com/default.aspx?P=0&EID=22591",
         accreditation: "ACCME (Memorial Healthcare System)",
         deaMateCompliant: false,
         stateAcceptance: "Florida — directly satisfies FL Board of Medicine mandatory 2-credit DV requirement (every third biennium). Accepted by all states accepting AMA PRA Category 1.",
-        verified: "2026-04-16",
+        verified: "2026-10-07 (COO read of the live activity page: title rolled to '(2025-26)', 2 AMA PRA Category 1 Credits / FL Board of Medicine DV statement and 70%-in-5-attempts post-test unchanged, no closed/expired language; Scout flagged the title drift same day — link-check DEAD-CONTENT was a content-match false positive, course alive)",
       },
       {
         name: "Family Violence Update",
