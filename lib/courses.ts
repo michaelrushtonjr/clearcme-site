@@ -645,6 +645,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
+        name: "Professional Boundaries Educational Series",
+        provider: "Federation of State Medical Boards (FSMB)",
+        providerUrl: "https://www.fsmb.org",
+        credits: "0.5 hour AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Enduring video series on professional boundaries from the Federation of State Medical Boards — the body whose member boards adjudicate boundary violations. Activity page states \"There is no fee for this activity.\" Release date 04/11/2025; credit expires 04/11/2027. Useful toward recurring ethics/professionalism hours and as grounding for state boundary-training expectations.",
+        url: "https://www.pathlms.com/fsmb/courses/104058",
+        accreditation: "ACCME (FSMB — \"The Federation of State Medical Boards is accredited by the Accreditation Council for Continuing Medical Education (ACCME) to provide continuing medical education for physicians.\")",
+        deaMateCompliant: false,
+        stateAcceptance: "All states accepting AMA PRA Category 1",
+        verified: "2026-10-08 (COO read of the live activity page: ACCME accreditation statement naming FSMB + \"designates this enduring material for a maximum of .50 AMA PRA Category 1 Credit™\" verbatim, no fee, release 04/11/2025 / expiration 04/11/2027; Scout gap-analysis candidate since 2026-07-20, reconfirmed live 2026-10-08; vouched per decisions.md 2026-09-18 rule A)",
+      },
+      {
         name: "ACP Ethics Manual, 7th Edition (CME Quiz Module)",
         provider: "American College of Physicians (ACP)",
         providerUrl: "https://www.acponline.org",
