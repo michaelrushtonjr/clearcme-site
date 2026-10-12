@@ -330,7 +330,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle; initial licenses issued on or after Jan. 1, 2025 run 26 months (B&P 2097.5)",
     mandatoryTopics: [
       topic("Pain management and end-of-life care", "12 hrs one-time", "Due by second renewal / within 4 years; pathology and radiology exempt"),
-      topic("Geriatric medicine", "10 hrs per cycle", "If general internist or family physician with >25% elderly patients"),
+      topic("Geriatric medicine, dementia, and care of older patients", "20% of total mandatory CME per cycle (currently 10 hrs of 50)", "If general internist or family physician with >25% patients aged 65 or older (B&P §2190.3)"),
       mateTopic(),
     ],
   },
