@@ -840,7 +840,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       { ...topic("Risk assessment and responsible prescribing / controlled substances", "3 hrs per 2-year cycle", "Recurring biennial renewal prerequisite — required during each reporting period for any licensee who prescribed, administered, or dispensed a controlled substance under a WV license in that period (waived if none; 11 CSR 6 § 11-6-3.2 — WVBOM: 'not a one-time only requirement'); new licensees also complete the Board-approved course within 1 year of initial licensure (§ 11-6-3.1)"), cadence: "EVERY_RENEWAL" },
-      { ...topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"), cadence: "CONDITIONAL" },
+      { ...topic("Nutrition education", "At least 2 hrs per cycle", "2 of the required 50 hours in the subject matter of Nutrition (HB 4951 effective June 12, 2026; Board of Medicine emergency rule 11 CSR 6 §11-6-4.1.1.b, effective Aug. 11, 2026 — same 2-hr floor applies under the board-certification and ACGME-training compliance options)"), cadence: "EVERY_RENEWAL" },
       { ...mateTopic(), cadence: "ONE_TIME" },
     ],
   },
@@ -1038,7 +1038,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "2-year renewal cycle; DO renewal due on or before July 1",
     mandatoryTopics: [
       topic("Drug diversion / best-practice prescribing", "3 hrs per 2-year cycle", "Each licensing period if prescribing, administering, or dispensing controlled substances in West Virginia (waivable if you did none in the reporting period); counts within the 32 total hours; must be WV Board of Osteopathic Medicine-approved; new licensees complete it within 1 year of initial licensure"),
-      topic("Nutrition education", "Required as part of CME", "HB 4951 effective June 12, 2026; board implementation/hour details pending"),
+      topic("Nutrition education", "At least 2 hrs per cycle", "2 of the required 32 hours in the subject matter of Nutrition (HB 4951 effective June 12, 2026; Board of Osteopathic Medicine emergency rule 24 CSR 1 §24-1-15.2.8, filed Aug. 2026)"),
       mateTopic(),
     ],
   },
