@@ -885,6 +885,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     mandatoryTopics: [
       topic("Schedule II drugs / opioid addiction-risk course", "At least 1 hr per cycle"),
       topic("Pain management and end-of-life care", "12 hrs one-time", "Due by second renewal / within 4 years; pathology and radiology exempt"),
+      topic("Geriatric medicine, dementia, and care of older patients", "At least 10 hrs per cycle", "If general internist or family osteopathic physician with >25% patients aged 65 or older (16 CCR §1635(e)(3), effective Oct. 1, 2025; B&P §2190.3)"),
       mateTopic(),
     ],
   },
