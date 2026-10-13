@@ -1158,9 +1158,12 @@ export const STATE_REQUIREMENTS: Record<
       DO: buildRequirement(
         stateCode,
         "DO",
-        doOverrides[stateCode] ?? (["CT", "MA", "KY"].includes(stateCode) ? {
+        doOverrides[stateCode] ?? (["MA", "KY"].includes(stateCode) ? {
           ...mdRequirements[stateCode],
           // The transcribed cadence metadata is authorized for MD only.
+          // CT removed from this list: DOs are deemed licensed as physicians
+          // under ch. 370 (Conn. Gen. Stat. §20-9(e)), so §20-10b's six-year
+          // topic cadence applies to DOs verbatim — the MD record is correct.
           mandatoryTopics: mdRequirements[stateCode].mandatoryTopics.map((entry) => {
             const topic = { ...entry };
             delete topic.cadence;
