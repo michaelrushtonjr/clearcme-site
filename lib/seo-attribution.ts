@@ -5,7 +5,7 @@ export type SeoCluster = "state_requirements" | "course_topics" | "mate_act" | "
 export type Acquisition = { landing: string; cluster: SeoCluster; channel: "organic_search" | "referral" | "campaign" | "direct_or_unknown"; at: number };
 const states = new Set(["california", "texas", "florida", "new-york", "nevada"]);
 const guides = new Set(["multi-state-cme-requirements", "how-to-track-cme-credits", "cme-audit-checklist", "cme-requirements-vs-license-renewal", "free-cme-for-mandatory-requirements"]);
-const topics = new Set(["substance-use", "opioid-prescribing", "ethics", "implicit-bias", "patient-safety", "suicide-prevention", "domestic-violence", "human-trafficking", "end-of-life-care", "alzheimers-dementia", "child-abuse", "nutrition", "general-category-1"]);
+const topics = new Set(["substance-use", "opioid-prescribing", "ethics", "implicit-bias", "patient-safety", "suicide-prevention", "domestic-violence", "human-trafficking", "end-of-life-care", "alzheimers-dementia", "child-abuse", "nutrition", "general-category-1", "organ-donation", "infection-control"]);
 export function seoCluster(path: string): SeoCluster | null {
   if (path === "/cme-requirements" || states.has(path.replace(/^\/cme-requirements\//, "")) && path.startsWith("/cme-requirements/")) return "state_requirements";
   if (path.startsWith("/courses/") && topics.has(path.slice(9))) return "course_topics";
