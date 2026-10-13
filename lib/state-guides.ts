@@ -11,7 +11,7 @@ export type GuideTopic = {
 };
 export type StateGuide = {
   slug: string; code: StateCode; name: string; status: "published" | "draft";
-  title: string; description: string; summary: string; verified: string; modified: string;
+  title: string; description: string; summary: string; verified: string; modified: string; published: string;
   boards: { label: string; hours: string; cycle: string; credit: string }[];
   topics: GuideTopic[];
   sections: GuideSection[]; faqs: { question: string; answer: string }[];

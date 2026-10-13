@@ -199,7 +199,8 @@
       "nevada",
       "texas"
     ],
-    "productNote": "Keep California certificates and completion history together. Review the AOA category floor, one-time course alternatives, exemptions and your board’s expiration date separately; ClearCME does not certify those determinations."
+    "productNote": "Keep California certificates and completion history together. Review the AOA category floor, one-time course alternatives, exemptions and your board’s expiration date separately; ClearCME does not certify those determinations.",
+    "published": "2026-09-18"
   },
   {
     "slug": "texas",
@@ -430,7 +431,8 @@
       "florida",
       "nevada"
     ],
-    "productNote": "Organize certificates and track your recorded Texas requirements. Confirm initial-licensure timing, specialty applicability, carryover and official CE Broker reporting with TMB. ClearCME does not submit your renewal or guarantee course acceptance."
+    "productNote": "Organize certificates and track your recorded Texas requirements. Confirm initial-licensure timing, specialty applicability, carryover and official CE Broker reporting with TMB. ClearCME does not submit your renewal or guarantee course acceptance.",
+    "published": "2026-09-18"
   },
   {
     "slug": "florida",
@@ -678,7 +680,8 @@
       "texas",
       "new-york"
     ],
-    "productNote": "Keep certificates and prior mandatory-topic completions in one place. Check first-renewal exceptions, the DO category floor and board-specific course approvals manually. Official CE reporting remains a separate step."
+    "productNote": "Keep certificates and prior mandatory-topic completions in one place. Check first-renewal exceptions, the DO category floor and board-specific course approvals manually. Official CE reporting remains a separate step.",
+    "published": "2026-09-18"
   },
   {
     "slug": "new-york",
@@ -861,7 +864,8 @@
       "florida",
       "texas"
     ],
-    "productNote": "Organize the certificates behind New York’s separate training deadlines. Check the 2026 child-abuse curriculum update and complete required agency attestations yourself; ClearCME does not verify a course’s NYSED/NYSDOH approval or submit those attestations."
+    "productNote": "Organize the certificates behind New York’s separate training deadlines. Check the 2026 child-abuse curriculum update and complete required agency attestations yourself; ClearCME does not verify a course’s NYSED/NYSDOH approval or submit those attestations.",
+    "published": "2026-09-18"
   },
   {
     "slug": "nevada",
@@ -1113,6 +1117,1362 @@
       "california",
       "texas"
     ],
-    "productNote": "Store Nevada certificates and completion history in one place. ClearCME does not yet fully account for reduced first-cycle MD totals, specialty-hour minimums or the DO 2026 transition. Confirm these with your board before attesting to compliance."
+    "productNote": "Store Nevada certificates and completion history in one place. ClearCME does not yet fully account for reduced first-cycle MD totals, specialty-hour minimums or the DO 2026 transition. Confirm these with your board before attesting to compliance.",
+    "published": "2026-09-18"
+  },
+  {
+    "slug": "pennsylvania",
+    "code": "PA",
+    "name": "Pennsylvania",
+    "status": "published",
+    "title": "Pennsylvania CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Pennsylvania physician CME: 100 hours, distinct MD/DO categories and deadlines, mandatory topics, 2026 organ-donation training and board sources.",
+    "summary": "Pennsylvania MDs and DOs generally need 100 hours every two years, but their category minimums and renewal dates differ. Organ-donation education now has a separate one-time deadline, while child-abuse reporting and prescriber training remain renewal checks.",
+    "verified": "2026-10-13",
+    "modified": "2026-10-13",
+    "published": "2026-10-13",
+    "boards": [
+      {
+        "label": "MD · State Board of Medicine",
+        "hours": "100 hours, including 20 AMA PRA Category 1",
+        "cycle": "January 1 of an odd-numbered year through December 31 of the following even-numbered year. The current regular renewal deadline is December 31, 2026.",
+        "credit": "The remaining hours may be AMA Category 1 or Category 2. Office management and practice-building courses do not qualify."
+      },
+      {
+        "label": "DO · State Board of Osteopathic Medicine",
+        "hours": "100 hours, including 20 AOA Category 1-A",
+        "cycle": "November 1 of an even-numbered year through October 31 of the next even-numbered year. The current regular renewal deadline is October 31, 2026.",
+        "credit": "The remaining hours may use accepted AOA or AMA Category 1 or Category 2 activities. AMA Category 1 alone does not establish the AOA 1-A minimum."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Patient safety and risk management",
+        "requirements": {
+          "MD": {
+            "detail": "12 hours per biennial period, within the 100-hour total. Category 1 or 2 activities may qualify. Keep the required child-abuse and opioid hours separate from this 12-hour topic total.",
+            "sources": [
+              "md",
+              "do",
+              "md-guidance",
+              "do-guidance"
+            ]
+          },
+          "DO": {
+            "detail": "12 hours per biennial period, within the 100-hour total. Category 1 or 2 activities may qualify. Keep the required child-abuse and opioid hours separate from this 12-hour topic total.",
+            "sources": [
+              "md",
+              "do",
+              "md-guidance",
+              "do-guidance"
+            ]
+          }
+        },
+        "course": "patient-safety"
+      },
+      {
+        "title": "Child-abuse recognition and reporting",
+        "requirements": {
+          "MD": {
+            "detail": "Three hours of approved training for initial licensure, then two hours for each biennial renewal, unless the Board grants a specific child-abuse-training exemption. A general CME exemption alone does not remove this obligation. The approved course provider must report completion electronically to the licensing system.",
+            "sources": [
+              "md-child",
+              "do-child"
+            ]
+          },
+          "DO": {
+            "detail": "Three hours of approved training for initial licensure, then two hours for each biennial renewal, unless the Board grants a specific child-abuse-training exemption. A general CME exemption alone does not remove this obligation. The approved course provider must report completion electronically to the licensing system.",
+            "sources": [
+              "md-child",
+              "do-child"
+            ]
+          }
+        },
+        "course": "child-abuse"
+      },
+      {
+        "title": "Pain management, addiction and opioid prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours per renewal for prescribers and dispensers. The exemption requires both exemption from DEA registration and no use of another person’s or entity’s DEA registration to prescribe. These hours count within the total, but not toward the 12-hour risk-management requirement.",
+            "sources": [
+              "abcmap",
+              "md",
+              "do",
+              "md-guidance",
+              "do-guidance"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours per renewal for prescribers and dispensers. The exemption requires both exemption from DEA registration and no use of another person’s or entity’s DEA registration to prescribe. These hours count within the total, but not toward the 12-hour risk-management requirement.",
+            "sources": [
+              "abcmap",
+              "md",
+              "do",
+              "md-guidance",
+              "do-guidance"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Initial opioid education",
+        "requirements": {
+          "MD": {
+            "detail": "An initial prescriber applicant has a separate four-hour education requirement: two hours in pain management or addiction identification and two in opioid prescribing or dispensing practices. Document qualifying education within one year of initial licensure; prior qualifying professional education may satisfy it.",
+            "sources": [
+              "abcmap",
+              "initial-md",
+              "initial-do"
+            ]
+          },
+          "DO": {
+            "detail": "An initial prescriber applicant has a separate four-hour education requirement: two hours in pain management or addiction identification and two in opioid prescribing or dispensing practices. Document qualifying education within one year of initial licensure; prior qualifying professional education may satisfy it.",
+            "sources": [
+              "abcmap",
+              "initial-md",
+              "initial-do"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Organ and tissue donation",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours once, under the rules effective May 1, 2026. For a license issued before that date, the rule allows five years from licensure renewal; for a license issued on or after that date, five years from initial licensure; for a license reactivated on or after that date, five years from reactivation. Use the Board’s required curriculum. The hours count toward the general CME total.",
+            "sources": [
+              "md",
+              "do"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours once, under the rules effective May 1, 2026. For a license issued before that date, the rule allows five years from licensure renewal; for a license issued on or after that date, five years from initial licensure; for a license reactivated on or after that date, five years from reactivation. Use the Board’s required curriculum. The hours count toward the general CME total.",
+            "sources": [
+              "md",
+              "do"
+            ]
+          }
+        }
+      }
+    ],
+    "sections": [
+      {
+        "title": "Plan around your board’s calendar",
+        "paragraphs": [
+          "A Pennsylvania DO renewal arrives two months before the MD renewal. If you hold licenses from both boards, keep separate completion windows and category totals even when an activity is acceptable to both.",
+          "For an MD, verify the certificate’s AMA PRA Category 1 designation. For a DO, verify AOA Category 1-A for the 20-hour minimum. A course topic that fits your practice is not enough to establish its category."
+        ],
+        "sources": [
+          "md",
+          "do",
+          "md-guidance",
+          "do-guidance",
+          "renewal"
+        ]
+      },
+      {
+        "title": "First renewal, exemptions and separate training",
+        "paragraphs": [
+          "A first-renewal exemption may apply to general CME. Ask your licensing board to confirm the exempt period for your license issue date before relying on it; specific training obligations require separate review.",
+          "Training-license, inactive-status and hardship provisions have their own conditions. A general CME exemption does not automatically remove child-abuse education or applicable prescriber obligations. Start a waiver request with your board before renewal."
+        ],
+        "sources": [
+          "md",
+          "do",
+          "md-guidance",
+          "do-guidance"
+        ]
+      },
+      {
+        "title": "Records, reporting and carryover",
+        "paragraphs": [
+          "Keep CME documentation for at least two years after renewal. Retain certificates and a dated activity log identifying the provider, topic, category and hours; the boards may request evidence in an audit.",
+          "For child-abuse training, confirm that your provider has reported completion before submitting renewal. Saving a certificate in a personal tracker does not perform that reporting.",
+          "Plan to earn your hours within the applicable biennium. Confirm any proposed use of earlier or surplus hours with your board before relying on them for a later renewal."
+        ],
+        "sources": [
+          "md",
+          "do",
+          "md-guidance",
+          "do-guidance"
+        ]
+      },
+      {
+        "title": "What changed in 2026",
+        "paragraphs": [
+          "The two-hour organ-and-tissue-donation requirement took effect May 1, 2026. Its deadline depends on whether your license predates that date, was issued afterward or was reactivated afterward. It is not another two-hour requirement at every renewal.",
+          "This guide was reviewed October 13, 2026 against the current regulations and board materials. The separate MD and DO category minimums, renewal dates and topic requirements remain central to planning."
+        ],
+        "sources": [
+          "md",
+          "do"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "How many hours of CME do Pennsylvania physicians need?",
+        "answer": "MDs and DOs generally need 100 hours every two years. MDs need at least 20 AMA PRA Category 1 hours; DOs need at least 20 AOA Category 1-A hours."
+      },
+      {
+        "question": "Do Pennsylvania MDs and DOs renew on the same date?",
+        "answer": "No. Regular MD renewal is December 31 of even-numbered years. Regular DO renewal is October 31 of even-numbered years."
+      },
+      {
+        "question": "Can child-abuse and opioid training count toward risk management?",
+        "answer": "The Board guidance excludes the required child-abuse and opioid hours from the 12-hour patient-safety/risk-management requirement. They may still count toward the general total."
+      },
+      {
+        "question": "Is organ-donation training required at every renewal?",
+        "answer": "No. It is a two-hour, one-time requirement. The May 1, 2026 rules use different five-year deadline triggers for existing, newly issued and reactivated licenses."
+      },
+      {
+        "question": "Does my CME tracker report child-abuse completion to Pennsylvania?",
+        "answer": "The approved training provider must report completion electronically. A saved certificate or tracker entry does not replace the provider’s report."
+      },
+      {
+        "question": "Does a first-renewal exemption remove every training requirement?",
+        "answer": "No. General CME exemptions and specific training obligations are separate. Confirm your initial-period treatment with your board, including child-abuse education and any applicable prescriber training."
+      },
+      {
+        "question": "How long should I keep Pennsylvania CME records?",
+        "answer": "Both boards require documentation for at least two years after renewal. Keep evidence of the category, content, date and hours, including proof of one-time training."
+      }
+    ],
+    "sources": [
+      {
+        "id": "md",
+        "label": "49 Pa. Code § 16.19 — MD CME",
+        "url": "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/049/chapter16/s16.19.html",
+        "quote": "At least 20 credit hours shall be completed in AMA PRA Category 1 approved activities."
+      },
+      {
+        "id": "do",
+        "label": "49 Pa. Code § 25.271 — DO renewal and CME",
+        "url": "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/049/chapter25/s25.271.html"
+      },
+      {
+        "id": "md-guidance",
+        "label": "Medical Board — unrestricted MD CME guidance",
+        "url": "https://www.pa.gov/content/dam/copapwp-pagov/en/dos/department-and-offices/bpoa/medicine/continuing-ed/MedM%20-%20CME%20MD%20Unrestricted%20License.pdf"
+      },
+      {
+        "id": "do-guidance",
+        "label": "Osteopathic Board — CME guidance",
+        "url": "https://www.pa.gov/content/dam/copapwp-pagov/en/dos/department-and-offices/bpoa/osteopathic-medicine/updated-organ%20tissuecme%20ost%20physician.pdf"
+      },
+      {
+        "id": "renewal",
+        "label": "Medical Board — renewal information",
+        "url": "https://www.pa.gov/agencies/dos/department-and-offices/bpoa/boards-commissions/medicine/renewal-information"
+      },
+      {
+        "id": "initial-md",
+        "label": "Medical Board — initial opioid education notice",
+        "url": "https://www.pa.gov/content/dam/copapwp-pagov/en/dos/department-and-offices/bpoa/medicine/MedSN%20-%20Notice%20Regarding%20Opioid%20Education.pdf"
+      },
+      {
+        "id": "initial-do",
+        "label": "Pennsylvania — osteopathic medicine licensure guide",
+        "url": "https://www.pa.gov/agencies/dos/resources/professional-licensing-resources/licensure-processing-guides-and-timelines/osteopathic-medicine-guide"
+      },
+      {
+        "id": "child-abuse",
+        "label": "Pennsylvania — Act 31 training and approved providers",
+        "url": "https://www.pa.gov/agencies/dos/resources/professional-licensing-resources/act-31"
+      },
+      {
+        "id": "md-child",
+        "label": "49 Pa. Code § 16.108 — MD child-abuse training",
+        "url": "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/049/chapter16/s16.108.html"
+      },
+      {
+        "id": "do-child",
+        "label": "49 Pa. Code § 25.417 — DO child-abuse training",
+        "url": "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/049/chapter25/s25.417.html"
+      },
+      {
+        "id": "abcmap",
+        "label": "ABC-MAP Act § 9.1 — initial and renewal opioid education",
+        "url": "https://www.palegis.us/statutes/unconsolidated/law-information/view-statute?txtType=HTM&SessYr=2014&ActNum=0191.&SessInd=0"
+      }
+    ],
+    "related": [
+      "new-jersey",
+      "new-york",
+      "ohio"
+    ],
+    "productNote": "ClearCME helps organize certificates and renewal records. Confirm your MD or DO category minimum, initial-period exemption and organ-donation deadline with the Board. ClearCME does not submit official child-abuse course reports."
+  },
+  {
+    "slug": "illinois",
+    "code": "IL",
+    "name": "Illinois",
+    "status": "published",
+    "title": "Illinois CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Illinois MD and DO CME requirements: 150 hours over three years, 60 formal hours, mandatory training, six-year topic clocks and controlled-substance renewal.",
+    "summary": "Illinois uses a three-year physician renewal cycle with 150 hours of CME. Several smaller training requirements run on different clocks: some recur every renewal, some every six years, and opioid education follows your controlled-substance registration.",
+    "verified": "2026-10-13",
+    "modified": "2026-10-13",
+    "published": "2026-10-13",
+    "boards": [
+      {
+        "label": "MD and DO · Illinois Department of Financial and Professional Regulation",
+        "hours": "150 hours, including at least 60 formal hours",
+        "cycle": "The regular physician renewal date is July 31 every three years; the next regular renewal is July 31, 2029. IDFPR extended completion of the 2026 renewal process through August 31, 2026. The variance did not otherwise change CME requirements or the ordinary renewal cycle.",
+        "credit": "At least 60 hours in qualifying formal programs; up to 90 hours may come from qualifying informal CME. Document the program’s accreditation or qualifying sponsor. The CME pre-renewal period is the 36 months preceding July 31 in the renewal year."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Sexual-harassment prevention",
+        "requirements": {
+          "MD": {
+            "detail": "One hour each renewal cycle, including the first renewal. This separate requirement still applies when you are exempt from the general CME total.",
+            "sources": [
+              "sexual-statute",
+              "general-rules",
+              "mandates"
+            ]
+          },
+          "DO": {
+            "detail": "One hour each renewal cycle, including the first renewal. This separate requirement still applies when you are exempt from the general CME total.",
+            "sources": [
+              "sexual-statute",
+              "general-rules",
+              "mandates"
+            ]
+          }
+        },
+        "course": "ethics"
+      },
+      {
+        "title": "Implicit bias in health care",
+        "requirements": {
+          "MD": {
+            "detail": "One hour per renewal, beginning with the first renewal for which continuing education is required. From July 1, 2026, physicians who report providing maternal health care must include the specified maternal-health risk content in this hour.",
+            "sources": [
+              "implicit-statute",
+              "general-rules",
+              "mandates"
+            ]
+          },
+          "DO": {
+            "detail": "One hour per renewal, beginning with the first renewal for which continuing education is required. From July 1, 2026, physicians who report providing maternal health care must include the specified maternal-health risk content in this hour.",
+            "sources": [
+              "implicit-statute",
+              "general-rules",
+              "mandates"
+            ]
+          }
+        },
+        "course": "implicit-bias"
+      },
+      {
+        "title": "Safe opioid prescribing",
+        "requirements": {
+          "MD": {
+            "detail": "One hour during each controlled-substance registration pre-renewal period. It applies to registered prescribers even if they do not prescribe opioids and at the first controlled-substance renewal. Qualifying training may count toward physician CME.",
+            "sources": [
+              "opioid",
+              "opioid-faq"
+            ]
+          },
+          "DO": {
+            "detail": "One hour during each controlled-substance registration pre-renewal period. It applies to registered prescribers even if they do not prescribe opioids and at the first controlled-substance renewal. Qualifying training may count toward physician CME.",
+            "sources": [
+              "opioid",
+              "opioid-faq"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Alzheimer’s disease and other dementias",
+        "requirements": {
+          "MD": {
+            "detail": "One hour if you provide health care services to, and have direct patient interactions with, adults age 26 or older; repeat the course at least every six years. Newly licensed physicians should confirm first-renewal applicability with IDFPR before relying on a general CME exemption.",
+            "sources": [
+              "general-rules",
+              "dementia-statute",
+              "topic-intervals",
+              "mandates"
+            ]
+          },
+          "DO": {
+            "detail": "One hour if you provide health care services to, and have direct patient interactions with, adults age 26 or older; repeat the course at least every six years. Newly licensed physicians should confirm first-renewal applicability with IDFPR before relying on a general CME exemption.",
+            "sources": [
+              "general-rules",
+              "dementia-statute",
+              "topic-intervals",
+              "mandates"
+            ]
+          }
+        },
+        "course": "alzheimers-dementia"
+      },
+      {
+        "title": "Cultural competency",
+        "requirements": {
+          "MD": {
+            "detail": "One hour before the first renewal requiring continuing education on or after January 1, 2025, then at least once every six years. Keep its completion date separate from the recurring implicit-bias hour.",
+            "sources": [
+              "general-rules",
+              "cultural-statute",
+              "topic-intervals"
+            ]
+          },
+          "DO": {
+            "detail": "One hour before the first renewal requiring continuing education on or after January 1, 2025, then at least once every six years. Keep its completion date separate from the recurring implicit-bias hour.",
+            "sources": [
+              "general-rules",
+              "cultural-statute",
+              "topic-intervals"
+            ]
+          }
+        },
+        "course": "implicit-bias"
+      },
+      {
+        "title": "Child-abuse mandated-reporter training",
+        "requirements": {
+          "MD": {
+            "detail": "Mandated reporters must complete initial training, including implicit bias, within three months of first serving in that role unless another applicable professional law sets the timeframe. Medical personnel who work with children repeat training at least every six years and attest to understanding reporting duties at renewal. Those who do not work with children may attest at renewal instead of repeating the training.",
+            "sources": [
+              "child-statute"
+            ]
+          },
+          "DO": {
+            "detail": "Mandated reporters must complete initial training, including implicit bias, within three months of first serving in that role unless another applicable professional law sets the timeframe. Medical personnel who work with children repeat training at least every six years and attest to understanding reporting duties at renewal. Those who do not work with children may attest at renewal instead of repeating the training.",
+            "sources": [
+              "child-statute"
+            ]
+          }
+        },
+        "course": "child-abuse"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Formal and informal hours serve different parts of the total",
+        "paragraphs": [
+          "The 60-hour formal minimum sits inside the 150-hour requirement. Qualifying formal education includes approved AMA, AOA and other programs recognized in the Illinois rule. Informal study can contribute to the remaining hours when it meets the rule’s definition.",
+          "Keep a dated record of informal activities that describes the learning, its relationship to professional practice and the time claimed. A general reading list without dates or hours is difficult to support at audit."
+        ],
+        "sources": [
+          "rule"
+        ]
+      },
+      {
+        "title": "First renewal and separate registrations",
+        "paragraphs": [
+          "The general 150-hour requirement does not apply to the first physician renewal after original licensure. That exemption does not erase the separate sexual-harassment training obligation or the controlled-substance registration’s opioid education requirement.",
+          "Your physician license and controlled-substance registration are separate renewal obligations. Check both records before assuming that a course’s six-year interval or a physician exemption covers prescribing authorization."
+        ],
+        "sources": [
+          "rule",
+          "mandates",
+          "opioid-faq"
+        ]
+      },
+      {
+        "title": "Carryover, records and hardship",
+        "paragraphs": [
+          "The same hours cannot be used for more than one Illinois renewal period. Build each 36-month record from activities earned in that period.",
+          "Retain formal certificates and your informal activity log so that you can support the renewal attestation if IDFPR requests evidence. Keep one-time or six-year training documentation available for the later renewal where it matters.",
+          "The rule provides a hardship process. Submit a supported request before the license expires; a request alone is not approval."
+        ],
+        "sources": [
+          "rule"
+        ]
+      },
+      {
+        "title": "Recent changes and the next cycle",
+        "paragraphs": [
+          "IDFPR extended completion of the 2026 physician renewal process through August 31, 2026. This one-cycle extension did not change the ordinary July 31 triennial schedule or other CME requirements.",
+          "Cultural-competency training applies to the first renewal requiring continuing education on or after January 1, 2025, then at least once every six years. Maternal-health content became part of the implicit-bias hour on July 1, 2026 for physicians who report providing maternal health care.",
+          "This guide was reviewed October 13, 2026. Opioid education remains due at each controlled-substance registration renewal; the six-year interval applies to other named topics."
+        ],
+        "sources": [
+          "variance-2026",
+          "renewal",
+          "general-rules",
+          "implicit-statute",
+          "topic-intervals",
+          "opioid"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "How many CME hours do Illinois MDs and DOs need?",
+        "answer": "Both generally need 150 hours during the three-year pre-renewal period, including at least 60 formal hours. Up to 90 may be qualifying informal CME."
+      },
+      {
+        "question": "When is Illinois physician renewal?",
+        "answer": "The regular physician renewal date is July 31 every three years; the next regular renewal is July 31, 2029. IDFPR extended completion of the 2026 renewal process through August 31, 2026. The variance did not otherwise change CME requirements or the ordinary renewal cycle."
+      },
+      {
+        "question": "Is the first Illinois renewal exempt from all training?",
+        "answer": "No. The general CME exemption does not remove sexual-harassment prevention or applicable opioid education for controlled-substance registration."
+      },
+      {
+        "question": "Is Illinois opioid training every six years?",
+        "answer": "No. The one-hour safe-opioid-prescribing requirement is due during each controlled-substance registration pre-renewal period."
+      },
+      {
+        "question": "Who needs dementia education?",
+        "answer": "One hour if you provide health care services to, and have direct patient interactions with, adults age 26 or older; repeat the course at least every six years. Newly licensed physicians should confirm first-renewal applicability with IDFPR before relying on a general CME exemption."
+      },
+      {
+        "question": "Does maternal-health training add another hour?",
+        "answer": "For affected physicians, maternal-health content must be included in the existing one-hour implicit-bias course from July 1, 2026. It does not add a separate hour."
+      },
+      {
+        "question": "Can I reuse surplus CME at the next renewal?",
+        "answer": "The Illinois rule does not allow the same hours to be used in more than one renewal period."
+      }
+    ],
+    "sources": [
+      {
+        "id": "rule",
+        "label": "68 Ill. Adm. Code § 1285.110 — physician CME",
+        "url": "https://www.ilga.gov/ftp/JCAR/AdminCode/068/068012850A01100R.html",
+        "quote": "In order to renew a license, a licensee shall be required to complete 150 hours of CME per prerenewal period."
+      },
+      {
+        "id": "mandates",
+        "label": "IDFPR — continuing education requirements",
+        "url": "https://idfpr.illinois.gov/dpr/continuing-education.html"
+      },
+      {
+        "id": "opioid",
+        "label": "720 ILCS 570/315.5 — safe opioid prescribing",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=072005700K315.5",
+        "quote": "every prescriber who is licensed to prescribe controlled substances shall, during the pre-renewal period, complete one hour of continuing education"
+      },
+      {
+        "id": "opioid-faq",
+        "label": "IDFPR — safe opioid prescribing FAQ",
+        "url": "https://idfpr.illinois.gov/content/dam/soi/en/web/idfpr/faq/dpr/safe-opioid-rx-ce-faq.pdf"
+      },
+      {
+        "id": "renewal",
+        "label": "68 Ill. Adm. Code § 1285.120 — physician renewal",
+        "url": "https://www.ilga.gov/ftp/JCAR/AdminCode/068/068012850A01200R.html"
+      },
+      {
+        "id": "variance-2026",
+        "label": "IDFPR — signed 2026 physician renewal extension",
+        "url": "https://idfpr.illinois.gov/content/dam/soi/en/web/idfpr/forms/dpr/2026-07-21-physician-renewal-extension-variance.pdf"
+      },
+      {
+        "id": "general-rules",
+        "label": "68 Ill. Adm. Code Part 1130 — mandatory training",
+        "url": "https://www.ilga.gov/agencies/JCAR/EntirePart?titlepart=06801130"
+      },
+      {
+        "id": "sexual-statute",
+        "label": "20 ILCS 2105/2105-15.5 — sexual-harassment training",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=002021050K2105-15.5"
+      },
+      {
+        "id": "implicit-statute",
+        "label": "20 ILCS 2105/2105-15.7 — implicit bias and maternal health",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=002021050K2105-15.7"
+      },
+      {
+        "id": "dementia-statute",
+        "label": "20 ILCS 2105/2105-365 — dementia training",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=002021050K2105-365"
+      },
+      {
+        "id": "cultural-statute",
+        "label": "20 ILCS 2105/2105-370 — cultural competency",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=002021050K2105-370"
+      },
+      {
+        "id": "topic-intervals",
+        "label": "20 ILCS 2105/2105-375 — training intervals",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=002021050K2105-375"
+      },
+      {
+        "id": "child-statute",
+        "label": "325 ILCS 5/4(j)–(k) — mandated-reporter training",
+        "url": "https://www.ilga.gov/Legislation/ILCS/FullText?DocName=032500050K4"
+      }
+    ],
+    "related": [
+      "ohio",
+      "pennsylvania",
+      "massachusetts"
+    ],
+    "productNote": "Use ClearCME to keep certificates and renewal records together. Verify the 60-hour formal minimum, first-renewal exceptions and separate six-year or controlled-substance training clocks against IDFPR’s requirements."
+  },
+  {
+    "slug": "ohio",
+    "code": "OH",
+    "name": "Ohio",
+    "status": "published",
+    "title": "Ohio CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Ohio physician CME requirements: 50 hours every two years, approved Category 1 pathways, duty-to-report training and the pain-clinic rule for MDs and DOs.",
+    "summary": "Ohio MDs and DOs generally need 50 hours every two years, including a Board-approved hour on the duty to report misconduct. Physicians who own or provide care in a covered pain-management clinic have an additional topic requirement within that total.",
+    "verified": "2026-10-13",
+    "modified": "2026-10-13",
+    "published": "2026-10-13",
+    "boards": [
+      {
+        "label": "MD and DO · State Medical Board of Ohio",
+        "hours": "50 hours per two-year registration period",
+        "cycle": "Biennial renewal. Use the expiration on your Ohio license record to set the end of your reporting window.",
+        "credit": "Use the approved pathways in OAC 4731-10-02, including qualifying AMA or AOA Category 1 CME. The rule also addresses approved training and limited volunteer-service credit; ordinary Category 2 study is not the standard renewal pathway."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Duty to report misconduct",
+        "requirements": {
+          "MD": {
+            "detail": "At least one hour of Board-approved training every renewal period. It counts toward the 50-hour total. Confirm that the specific activity is approved for Ohio’s duty-to-report requirement.",
+            "sources": [
+              "cme"
+            ]
+          },
+          "DO": {
+            "detail": "At least one hour of Board-approved training every renewal period. It counts toward the 50-hour total. Confirm that the specific activity is approved for Ohio’s duty-to-report requirement.",
+            "sources": [
+              "cme"
+            ]
+          }
+        },
+        "course": "ethics"
+      },
+      {
+        "title": "Pain medicine for covered pain-management clinics",
+        "requirements": {
+          "MD": {
+            "detail": "Physician owners and physicians providing care at clinics covered by OAC 4731-29-01 need at least 20 hours of Category 1 CME in pain medicine every two years. The education must include one or more courses addressing addiction potential. Qualifying hours count toward the renewal total.",
+            "sources": [
+              "clinic"
+            ]
+          },
+          "DO": {
+            "detail": "Physician owners and physicians providing care at clinics covered by OAC 4731-29-01 need at least 20 hours of Category 1 CME in pain medicine every two years. The education must include one or more courses addressing addiction potential. Qualifying hours count toward the renewal total.",
+            "sources": [
+              "clinic"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Count approved hours within your own renewal window",
+        "paragraphs": [
+          "Ohio’s rule identifies the education pathways that count toward renewal. Check the accreditation on each certificate before adding it to your total. A course may be clinically valuable without qualifying for Ohio renewal.",
+          "The duty-to-report hour is part of the 50 hours. A generic ethics course does not automatically satisfy the Board-approved duty-to-report requirement."
+        ],
+        "sources": [
+          "cme",
+          "statute"
+        ]
+      },
+      {
+        "title": "The pain-clinic rule depends on your practice setting",
+        "paragraphs": [
+          "The 20-hour pain-medicine requirement applies to physician owners and physicians providing care at a pain-management clinic covered by the Ohio rule. It is not a universal 20-hour requirement for every physician who writes an opioid prescription.",
+          "The rule includes a definition of a covered clinic and exclusions for certain facilities. Confirm whether your practice falls within that definition, then retain documentation showing pain-medicine content and the required addiction component."
+        ],
+        "sources": [
+          "clinic"
+        ]
+      },
+      {
+        "title": "First renewal, inactive practice and hardship",
+        "paragraphs": [
+          "For a first or shortened registration period, confirm the hours assigned to your license directly with the Board before relying on a reduced total. Use the physician rules and your license record when planning that first renewal.",
+          "Retirement or practice outside Ohio does not itself remove the CME obligation when you continue to renew the license. A CME waiver is a separate Board decision.",
+          "A CME waiver for qualifying illness, accident or absence must be requested at least 60 days before the end of the registration period. Under the waiver rule, submit the renewal application only after the Board grants that waiver."
+        ],
+        "sources": [
+          "cme",
+          "waiver"
+        ]
+      },
+      {
+        "title": "Records and use across renewal periods",
+        "paragraphs": [
+          "Keep certificates, activity dates, categories and a record of your Board-approved duty-to-report training. Ohio law provides for random CME audits. Physicians subject to the pain-clinic rule should also preserve evidence of the qualifying content.",
+          "Hours used to make up a deficiency from a previous registration period cannot also count toward the current period. Ask the Board before banking surplus hours for a later cycle; do not assume that an old certificate belongs in the current 50-hour total."
+        ],
+        "sources": [
+          "cme",
+          "statute",
+          "clinic"
+        ]
+      },
+      {
+        "title": "Current rules and recent changes",
+        "paragraphs": [
+          "The current physician CME rule requires 50 hours and the recurring duty-to-report hour. The pain-management-clinic rule reviewed for this guide has an effective date of January 31, 2026.",
+          "This guide was reviewed October 13, 2026. Federal DEA training remains a separate obligation tied to DEA registration, even when a qualifying course is also eligible for Ohio CME."
+        ],
+        "sources": [
+          "cme",
+          "clinic"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do Ohio MDs and DOs have the same general CME total?",
+        "answer": "Yes. Both use the 50-hour requirement for each two-year registration period under the physician CME rule."
+      },
+      {
+        "question": "Does every Ohio physician need duty-to-report education?",
+        "answer": "The CME rule requires at least one hour of Board-approved duty-to-report education every renewal period. It is included in the general total."
+      },
+      {
+        "question": "Does an ordinary ethics course meet the duty-to-report requirement?",
+        "answer": "Only if the specific activity is Board approved for that requirement. Check the approval before enrolling."
+      },
+      {
+        "question": "Who needs the 20-hour pain-medicine requirement?",
+        "answer": "It applies to physician owners and physicians providing care at a pain-management clinic covered by OAC 4731-29-01. Review the rule’s facility definition and exclusions."
+      },
+      {
+        "question": "Are the pain-clinic hours added on top of 50?",
+        "answer": "No. Qualifying pain-medicine hours count toward the renewal total, provided the category and content requirements are met."
+      },
+      {
+        "question": "Am I exempt if I practice only outside Ohio?",
+        "answer": "Practicing elsewhere does not itself exempt a physician who renews an Ohio license. Retirement alone is also not an automatic CME exemption."
+      },
+      {
+        "question": "Can deficiency hours count for two periods?",
+        "answer": "No. Hours used to cure a prior-period CME deficiency cannot also be counted in the current period."
+      }
+    ],
+    "sources": [
+      {
+        "id": "cme",
+        "label": "OAC 4731-10-02 — CME for renewal",
+        "url": "https://codes.ohio.gov/ohio-administrative-code/rule-4731-10-02",
+        "quote": "During a registration period, a licensee shall be required to complete fifty hours of CME."
+      },
+      {
+        "id": "statute",
+        "label": "ORC 4731.282 — CME and audit authority",
+        "url": "https://codes.ohio.gov/ohio-revised-code/section-4731.282"
+      },
+      {
+        "id": "clinic",
+        "label": "OAC 4731-29-01 — pain-management clinics",
+        "url": "https://codes.ohio.gov/ohio-administrative-code/rule-4731-29-01"
+      },
+      {
+        "id": "waiver",
+        "label": "OAC 4731-10-03 — CME waivers",
+        "url": "https://codes.ohio.gov/ohio-administrative-code/rule-4731-10-03"
+      }
+    ],
+    "related": [
+      "pennsylvania",
+      "illinois",
+      "new-jersey"
+    ],
+    "productNote": "ClearCME helps organize your CME evidence. Confirm Board approval for duty-to-report training, any first-period adjustment and whether your practice is covered by the pain-clinic rule. A tracker does not grant a Board waiver."
+  },
+  {
+    "slug": "new-jersey",
+    "code": "NJ",
+    "name": "New Jersey",
+    "status": "published",
+    "title": "New Jersey CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "New Jersey physician CME: 100 hours, 40 Category I, 2027 renewal training, cultural competency, carryover and MD/DO board sources.",
+    "summary": "New Jersey MDs and DOs generally need 100 hours every two years, including at least 40 Category I hours. The cycle beginning July 1, 2025 includes sexual-misconduct prevention and, for physicians providing perinatal care, bias training.",
+    "verified": "2026-10-13",
+    "modified": "2026-10-13",
+    "published": "2026-10-13",
+    "boards": [
+      {
+        "label": "MD and DO · State Board of Medical Examiners",
+        "hours": "100 hours, including at least 40 Category I",
+        "cycle": "Biennial renewal. New training requirements apply to the cycle beginning July 1, 2025 and the applicable 2027 physician renewal.",
+        "credit": "Category I and Category II activities recognized by the AMA, AOA, ACCME or another organization accepted by the Board. Up to 60 hours may be Category II."
+      }
+    ],
+    "topics": [
+      {
+        "title": "End-of-life care",
+        "requirements": {
+          "MD": {
+            "detail": "Two Category I hours each biennial cycle, within the 40-hour Category I minimum.",
+            "sources": [
+              "rules",
+              "end-of-life",
+              "sexual"
+            ]
+          },
+          "DO": {
+            "detail": "Two Category I hours each biennial cycle, within the 40-hour Category I minimum.",
+            "sources": [
+              "rules",
+              "end-of-life",
+              "sexual"
+            ]
+          }
+        },
+        "course": "end-of-life-care"
+      },
+      {
+        "title": "Prescription opioids",
+        "requirements": {
+          "MD": {
+            "detail": "One Category I hour each biennial cycle on responsible prescribing, alternatives, and the risks and signs of opioid abuse, addiction and diversion. The physician CME rule does not limit this requirement to DEA registrants.",
+            "sources": [
+              "rules",
+              "sexual"
+            ]
+          },
+          "DO": {
+            "detail": "One Category I hour each biennial cycle on responsible prescribing, alternatives, and the risks and signs of opioid abuse, addiction and diversion. The physician CME rule does not limit this requirement to DEA registrants.",
+            "sources": [
+              "rules",
+              "sexual"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Sexual-misconduct prevention",
+        "requirements": {
+          "MD": {
+            "detail": "Two Category I hours each biennial cycle beginning July 1, 2025. The activity must cover all seven Board-required content areas, including sensitive-examination consent, power dynamics, reporting and human trafficking. A generic ethics or workplace sexual-harassment course may not cover the required curriculum.",
+            "sources": [
+              "rules",
+              "ce",
+              "sexual"
+            ]
+          },
+          "DO": {
+            "detail": "Two Category I hours each biennial cycle beginning July 1, 2025. The activity must cover all seven Board-required content areas, including sensitive-examination consent, power dynamics, reporting and human trafficking. A generic ethics or workplace sexual-harassment course may not cover the required curriculum.",
+            "sources": [
+              "rules",
+              "ce",
+              "sexual"
+            ]
+          }
+        },
+        "course": "ethics"
+      },
+      {
+        "title": "Bias in perinatal care",
+        "requirements": {
+          "MD": {
+            "detail": "One Category I hour each biennial cycle beginning July 1, 2025 if you provide perinatal treatment or care. The rule covers care during pregnancy, labor, delivery, postpartum and neonatal periods. The course must address the Board’s required curriculum on implicit and explicit bias in perinatal care.",
+            "sources": [
+              "rules",
+              "perinatal"
+            ]
+          },
+          "DO": {
+            "detail": "One Category I hour each biennial cycle beginning July 1, 2025 if you provide perinatal treatment or care. The rule covers care during pregnancy, labor, delivery, postpartum and neonatal periods. The course must address the Board’s required curriculum on implicit and explicit bias in perinatal care.",
+            "sources": [
+              "rules",
+              "perinatal"
+            ]
+          }
+        },
+        "course": "implicit-bias"
+      },
+      {
+        "title": "Cultural competency",
+        "requirements": {
+          "MD": {
+            "detail": "Six hours once if you have not satisfied the Board’s cultural-competency requirement through qualifying medical-school instruction or Board-accepted equivalent education. CME must meet the Board’s accreditation rules and cover all six required topics. For physicians licensed before March 24, 2005 who still need this training, the hours are additional to the ordinary 100; later licensees may include qualifying hours in the general total.",
+            "sources": [
+              "culture",
+              "culture-statute"
+            ]
+          },
+          "DO": {
+            "detail": "Six hours once if you have not satisfied the Board’s cultural-competency requirement through qualifying medical-school instruction or Board-accepted equivalent education. CME must meet the Board’s accreditation rules and cover all six required topics. For physicians licensed before March 24, 2005 who still need this training, the hours are additional to the ordinary 100; later licensees may include qualifying hours in the general total.",
+            "sources": [
+              "culture",
+              "culture-statute"
+            ]
+          }
+        },
+        "course": "implicit-bias"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Build the 2025–2027 cycle around the required topics",
+        "paragraphs": [
+          "The end-of-life, opioid, sexual-misconduct and applicable perinatal-care hours are designated Category I requirements. Keep their certificates within your Category I record and confirm the specific curriculum.",
+          "Sexual-misconduct prevention is distinct from workplace sexual-harassment training. New Jersey lists seven required content areas; a familiar course title does not establish that all seven are covered."
+        ],
+        "sources": [
+          "rules",
+          "ce",
+          "sexual",
+          "perinatal"
+        ]
+      },
+      {
+        "title": "Cultural competency and the first complete cycle",
+        "paragraphs": [
+          "Cultural competency is a one-time requirement, not six more hours at every renewal. Physicians licensed on or after June 30, 2007 generally must satisfy it by the end of the next complete renewal cycle after licensure.",
+          "Training outside New Jersey medical schools is not automatically assumed to meet the six-topic curriculum. Keep course outlines with your certificate and obtain the Board’s determination when relying on equivalent professional-school or graduate medical education.",
+          "For CME, confirm the provider uses a qualifying designation (AMA Category 1, AOA Category 1-A, 1-B or 2-A, or AAFP Prescribed) and an approved sponsor, with all six required curriculum areas."
+        ],
+        "sources": [
+          "culture",
+          "culture-statute"
+        ]
+      },
+      {
+        "title": "First renewal and license status",
+        "paragraphs": [
+          "Applicants for an initial license who completed accredited graduate medical education within the 12 months before licensure are exempt from CME for their initial biennial period. They must complete a Board-presented or Board-approved orientation within 24 months after licensure. Confirm your eligibility before relying on this exemption.",
+          "Before your first renewal or a change in license status, check the Board’s instructions for your specific license. Confirm the CME obligation directly with the Board before relying on reduced-fee, inactive or retired status."
+        ],
+        "sources": [
+          "faq",
+          "rules"
+        ]
+      },
+      {
+        "title": "Carryover and audit records",
+        "paragraphs": [
+          "A physician who earns more than 100 hours in a biennium may carry forward no more than 25 excess hours to the immediately following biennium. Keep the original completion dates and a record of which hours were applied to each period.",
+          "Retain CME documentation for six years after completion. For cultural competency, keep curriculum evidence as well as attendance certificates. Request any hardship relief through the Board before relying on it at renewal."
+        ],
+        "sources": [
+          "rules",
+          "culture",
+          "faq"
+        ]
+      },
+      {
+        "title": "Recent changes",
+        "paragraphs": [
+          "The rules beginning with the July 1, 2025 biennium add two Category I hours of sexual-misconduct prevention and one Category I hour of perinatal-bias education for affected physicians. The Board’s current CME notice identifies the applicable 2027 renewal as the deadline for sexual-misconduct training.",
+          "This guide was reviewed October 13, 2026. The source list includes the Board’s current regulations gateway and the official 2025 adoption notices."
+        ],
+        "sources": [
+          "ce",
+          "sexual",
+          "perinatal"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "How many CME hours do New Jersey MDs and DOs need?",
+        "answer": "Both generally need 100 hours every two years, including at least 40 Category I hours. The remaining hours may be qualifying Category I or II activities."
+      },
+      {
+        "question": "What is new for the 2027 renewal?",
+        "answer": "The cycle beginning July 1, 2025 includes two Category I hours of sexual-misconduct prevention and one Category I hour of perinatal-bias training for physicians providing perinatal care."
+      },
+      {
+        "question": "Is cultural competency required every two years?",
+        "answer": "No. It is a six-hour, one-time requirement with prior-education and waiver provisions. The Board’s curriculum and completion deadline still matter."
+      },
+      {
+        "question": "Do cultural-competency hours always count within the 100?",
+        "answer": "Not always. For physicians licensed before March 24, 2005 who did not receive qualifying cultural-competency instruction in medical school, the required training is additional to the ordinary 100-hour total, subject to the Board’s equivalent-education waiver. Later licensees may include qualifying hours. Previously satisfied training does not need to be repeated."
+      },
+      {
+        "question": "Can I carry excess hours into my next renewal?",
+        "answer": "Up to 25 excess hours may be carried into the immediately following biennium. Keep a clear record of how the hours are allocated."
+      },
+      {
+        "question": "Does not prescribing opioids remove the opioid hour?",
+        "answer": "The general physician CME rule includes one Category I opioid-education hour without a DEA-registration exemption. Federal MATE training is a separate requirement."
+      },
+      {
+        "question": "How long should I keep CME evidence?",
+        "answer": "Keep documentation for six years after completion. For topic-specific requirements, retain evidence of the required content as well as the hour count."
+      }
+    ],
+    "sources": [
+      {
+        "id": "rules",
+        "label": "BME — regulations gateway, N.J.A.C. 13:35-6.15 and 6.25",
+        "url": "https://www.njconsumeraffairs.gov/bme/Pages/regulations.aspx"
+      },
+      {
+        "id": "faq",
+        "label": "BME — physician licensing and CME FAQ",
+        "url": "https://www.njconsumeraffairs.gov/bme/Pages/FAQ.aspx"
+      },
+      {
+        "id": "ce",
+        "label": "BME — continuing medical education notice",
+        "url": "https://www.njconsumeraffairs.gov/bme/Pages/continuingeducation.aspx"
+      },
+      {
+        "id": "culture",
+        "label": "BME — cultural-competency curriculum and FAQ",
+        "url": "https://www.njconsumeraffairs.gov/bme/Pages/Cultural-Competency.aspx",
+        "quote": "Licensees must complete at least 6 hours of training in cultural competency"
+      },
+      {
+        "id": "end-of-life",
+        "label": "BME — end-of-life-care CME",
+        "url": "https://www.njconsumeraffairs.gov/bme/Pages/End-of-Life-Care.aspx"
+      },
+      {
+        "id": "sexual",
+        "label": "New Jersey Register — May 5, 2025 adoption, 57 N.J.R. 924(a)",
+        "url": "https://www.njconsumeraffairs.gov/Adoptions/bmeado_05052025.pdf"
+      },
+      {
+        "id": "perinatal",
+        "label": "New Jersey Register — May 5, 2025 adoption, 57 N.J.R. 927(a)",
+        "url": "https://www.njconsumeraffairs.gov/Adoptions/bmeado2_05052025.pdf"
+      },
+      {
+        "id": "culture-statute",
+        "label": "New Jersey Legislature — P.L. 2005, c.53, cultural-competency education",
+        "url": "https://pub.njleg.gov/bills/2004/PL05/53_.PDF"
+      }
+    ],
+    "related": [
+      "pennsylvania",
+      "new-york",
+      "massachusetts"
+    ],
+    "productNote": "Keep your certificates together in ClearCME, then verify New Jersey’s Category I minimum, curriculum requirements, cultural-competency history and carryover allocation. ClearCME does not decide Board waivers or replace the renewal attestation."
+  },
+  {
+    "slug": "massachusetts",
+    "code": "MA",
+    "name": "Massachusetts",
+    "status": "published",
+    "title": "Massachusetts CME Requirements for Physicians (MD & DO) | ClearCME",
+    "description": "Massachusetts MD and DO CME: 50 hours under the current pilot, 10 risk-management hours, birthday renewal, one-time training and Board sources.",
+    "summary": "Massachusetts currently uses a 50-hour CME pilot for the two-year physician renewal period. Ten hours must address risk management. Some training repeats each cycle, while implicit bias, end-of-life care and several other requirements are completed once.",
+    "verified": "2026-10-13",
+    "modified": "2026-10-13",
+    "published": "2026-10-13",
+    "boards": [
+      {
+        "label": "MD and DO · Board of Registration in Medicine",
+        "hours": "50 hours under the current CME pilot, including 10 in risk management",
+        "cycle": "Biennial renewal on your birthday. Confirm the first renewal deadline in your Board license record, especially when initial registration is close to your birthday.",
+        "credit": "Category 1 or Category 2 under the pilot, without a fixed general Category 1 minimum. The 10 risk-management hours may also be Category 1 or 2. Most of the cycle’s hours must relate to your primary area of practice."
+      }
+    ],
+    "topics": [
+      {
+        "title": "Risk management",
+        "requirements": {
+          "MD": {
+            "detail": "10 hours each biennial renewal, within the 50-hour total. Category 1 or 2 activities may qualify under the pilot.",
+            "sources": [
+              "pilot",
+              "policy",
+              "table"
+            ]
+          },
+          "DO": {
+            "detail": "10 hours each biennial renewal, within the 50-hour total. Category 1 or 2 activities may qualify under the pilot.",
+            "sources": [
+              "pilot",
+              "policy",
+              "table"
+            ]
+          }
+        },
+        "course": "patient-safety"
+      },
+      {
+        "title": "Board regulations review",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours each renewal for studying the Board’s regulations, 243 CMR 1.00–3.00. These hours may count toward risk management.",
+            "sources": [
+              "pilot",
+              "policy",
+              "table",
+              "guidelines"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours each renewal for studying the Board’s regulations, 243 CMR 1.00–3.00. These hours may count toward risk management.",
+            "sources": [
+              "pilot",
+              "policy",
+              "table",
+              "guidelines"
+            ]
+          }
+        }
+      },
+      {
+        "title": "Opioid education and pain management",
+        "requirements": {
+          "MD": {
+            "detail": "Three hours each renewal if you prescribe controlled substances. Keep the Massachusetts requirement separate from the federal DEA training obligation.",
+            "sources": [
+              "policy",
+              "table",
+              "regulation"
+            ]
+          },
+          "DO": {
+            "detail": "Three hours each renewal if you prescribe controlled substances. Keep the Massachusetts requirement separate from the federal DEA training obligation.",
+            "sources": [
+              "policy",
+              "table",
+              "regulation"
+            ]
+          }
+        },
+        "course": "opioid-prescribing"
+      },
+      {
+        "title": "Implicit bias in health care",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours once, if not previously completed. Required for applications received on or after June 1, 2022; qualifying hours apply toward risk management.",
+            "sources": [
+              "table",
+              "policy"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours once, if not previously completed. Required for applications received on or after June 1, 2022; qualifying hours apply toward risk management.",
+            "sources": [
+              "table",
+              "policy"
+            ]
+          }
+        },
+        "course": "implicit-bias"
+      },
+      {
+        "title": "End-of-life care",
+        "requirements": {
+          "MD": {
+            "detail": "Two hours once, if not previously completed. Preserve the completion record so that you can document the requirement at later renewals.",
+            "sources": [
+              "table",
+              "regulation"
+            ]
+          },
+          "DO": {
+            "detail": "Two hours once, if not previously completed. Preserve the completion record so that you can document the requirement at later renewals.",
+            "sources": [
+              "table",
+              "regulation"
+            ]
+          }
+        },
+        "course": "end-of-life-care"
+      },
+      {
+        "title": "Child abuse and domestic or sexual violence",
+        "requirements": {
+          "MD": {
+            "detail": "Complete the required child-abuse recognition/reporting training and domestic/sexual-violence training once. Only a Massachusetts Department of Public Health-approved course fulfills the domestic/sexual-violence requirement. These are separate educational obligations; the Board’s table does not assign a universal hour total to them.",
+            "sources": [
+              "table",
+              "regulation",
+              "guidelines"
+            ]
+          },
+          "DO": {
+            "detail": "Complete the required child-abuse recognition/reporting training and domestic/sexual-violence training once. Only a Massachusetts Department of Public Health-approved course fulfills the domestic/sexual-violence requirement. These are separate educational obligations; the Board’s table does not assign a universal hour total to them.",
+            "sources": [
+              "table",
+              "regulation",
+              "guidelines"
+            ]
+          }
+        },
+        "course": "domestic-violence"
+      },
+      {
+        "title": "Alzheimer’s disease and related dementias",
+        "requirements": {
+          "MD": {
+            "detail": "One hour once for renewal if you serve adult populations and have not already completed it.",
+            "sources": [
+              "table",
+              "birthday"
+            ]
+          },
+          "DO": {
+            "detail": "One hour once for renewal if you serve adult populations and have not already completed it.",
+            "sources": [
+              "table",
+              "birthday"
+            ]
+          }
+        },
+        "course": "alzheimers-dementia"
+      },
+      {
+        "title": "Electronic health records proficiency",
+        "requirements": {
+          "MD": {
+            "detail": "Demonstrate EHR proficiency once. One route is three hours of Category 1 EHR education covering Meaningful Use core and menu objectives and clinical quality measures. The regulation also recognizes other proficiency pathways, specified exemptions and time-limited waivers. Applicable exemptions must be claimed each licensing cycle.",
+            "sources": [
+              "table",
+              "regulation"
+            ]
+          },
+          "DO": {
+            "detail": "Demonstrate EHR proficiency once. One route is three hours of Category 1 EHR education covering Meaningful Use core and menu objectives and clinical quality measures. The regulation also recognizes other proficiency pathways, specified exemptions and time-limited waivers. Applicable exemptions must be claimed each licensing cycle.",
+            "sources": [
+              "table",
+              "regulation"
+            ]
+          }
+        }
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why the current total is 50 hours",
+        "paragraphs": [
+          "Policy 17-05 sets the operative pilot requirement at 50 hours until the Board incorporates the policy into a new regulation. The Board’s current pilot page and requirements table continue to use that total.",
+          "The codified general renewal rule still contains older 100-hour language. Read it together with the current pilot policy rather than using that older number alone to plan an ordinary full-license renewal."
+        ],
+        "sources": [
+          "policy",
+          "pilot",
+          "table",
+          "regulation"
+        ]
+      },
+      {
+        "title": "First renewal and other license types",
+        "paragraphs": [
+          "For a first renewal period of one year or less, the regulation waives the basic CME total. For a period longer than one year but shorter than two, it requires half of the basic biennial requirement. Confirm how the current pilot and separate training requirements apply to your dates.",
+          "Full active, limited, temporary and inactive licenses do not share every requirement. Use the Board’s license-specific table, especially when changing status or returning to practice. The initial-licensure training checklist is also separate from an ordinary renewal total."
+        ],
+        "sources": [
+          "regulation",
+          "table"
+        ]
+      },
+      {
+        "title": "Keep recurring and one-time training separate",
+        "paragraphs": [
+          "Track the recurring risk-management, regulations-review and applicable opioid hours for each cycle. Keep permanent copies of one-time training evidence so you can demonstrate prior completion.",
+          "A topic can contribute to a broader total when the Board permits it: for example, qualifying implicit-bias education applies toward risk management. Count the underlying hours once in the 50-hour total even if they support more than one requirement."
+        ],
+        "sources": [
+          "policy",
+          "table"
+        ]
+      },
+      {
+        "title": "Records, carryover and hardship",
+        "paragraphs": [
+          "Keep a log identifying the activity, completion date and hours. The Board requires retaining CME records for at least one full renewal cycle after the cycle in which you earned the hours.",
+          "Plan your ordinary hours within the renewal window. Confirm proposed carryover with the Board rather than assuming excess hours automatically transfer. Hours assigned to remedy a deficiency apply to the deficient period.",
+          "The regulation provides a waiver process for circumstances such as prolonged illness or inaccessible CME. Submit a CME waiver request at least 30 days before renewal. A waiver requires a Board determination; an application or tracker entry is not approval."
+        ],
+        "sources": [
+          "pilot",
+          "regulation"
+        ]
+      },
+      {
+        "title": "Recent policy history",
+        "paragraphs": [
+          "The operative CME pilot was last amended April 11, 2024. The two-hour implicit-bias requirement applies to applications received on or after June 1, 2022. The current framework combines the 50-hour pilot with the existing specialized training requirements.",
+          "This guide was reviewed October 13, 2026 against the Board’s policy, CME table, regulations and the birthday-renewal statute."
+        ],
+        "sources": [
+          "policy",
+          "table",
+          "birthday"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Does Massachusetts require 50 or 100 hours of CME?",
+        "answer": "The current Board pilot requires 50 hours for the ordinary biennial full-license renewal. The codified regulation retains older 100-hour language, so read it with Policy 17-05."
+      },
+      {
+        "question": "Is there a minimum number of Category 1 hours?",
+        "answer": "The current pilot allows the general 50 hours and the 10 risk-management hours to be Category 1 or 2 without a fixed split. Specific training pathways may impose their own category conditions."
+      },
+      {
+        "question": "When do Massachusetts physicians renew?",
+        "answer": "Physicians generally renew every two years on their birthday. Confirm your first renewal deadline in your Board license record."
+      },
+      {
+        "question": "Is implicit-bias training required every renewal?",
+        "answer": "No. The Board lists two hours once, if not previously completed, for applications received on or after June 1, 2022."
+      },
+      {
+        "question": "Who needs the three-hour opioid education requirement?",
+        "answer": "Physicians who prescribe controlled substances need three hours each renewal. The federal DEA MATE Act has a separate one-time framework."
+      },
+      {
+        "question": "Must I take a three-hour EHR course if I already demonstrated proficiency?",
+        "answer": "Not necessarily. The regulation provides several proficiency pathways, plus specified exemptions and time-limited waivers. A qualifying three-hour Category 1 course is one route. Applicable exemptions must be claimed each licensing cycle."
+      },
+      {
+        "question": "Can a short first renewal reduce the general total?",
+        "answer": "The regulation provides no basic CME total for a first period of one year or less and half the basic biennial requirement for a period longer than one year but shorter than two. Separate training conditions still need review."
+      }
+    ],
+    "sources": [
+      {
+        "id": "pilot",
+        "label": "BORIM — current CME pilot overview",
+        "url": "https://www.mass.gov/info-details/continuing-medical-education-pilot-program"
+      },
+      {
+        "id": "policy",
+        "label": "BORIM — Policy 17-05, amended April 11, 2024",
+        "url": "https://www.mass.gov/doc/policy-17-05-continuing-medical-education-cme-pilot-program-amended-april-11-2024/download",
+        "quote": "Each licensee shall obtain no fewer than 50 continuing medical education credits, which may be Category 1 or Category 2."
+      },
+      {
+        "id": "table",
+        "label": "BORIM — CME requirements by license type",
+        "url": "https://www.mass.gov/doc/borim-cme-requirements-pdf/download"
+      },
+      {
+        "id": "regulation",
+        "label": "243 CMR 2.00 — licensing and the practice of medicine",
+        "url": "https://www.mass.gov/doc/243-cmr-2-licensing-and-the-practice-of-medicine-0/download"
+      },
+      {
+        "id": "birthday",
+        "label": "Massachusetts General Laws, Chapter 112 § 2",
+        "url": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXVI/Chapter112/Section2"
+      },
+      {
+        "id": "guidelines",
+        "label": "BORIM — CME and educational training guidelines, amended April 11, 2024",
+        "url": "https://www.mass.gov/doc/final-amended-guidelines-for-fulfilling-the-cme-and-educational-trainings-requirements-adopted-july-19-2018-amended-april-11-2024/download"
+      }
+    ],
+    "related": [
+      "new-york",
+      "new-jersey",
+      "pennsylvania"
+    ],
+    "productNote": "ClearCME helps organize certificates, renewal dates and prior training records. Confirm the current pilot, shortened first period, one-time training history and any EHR alternative or waiver with the Board; these require individual review."
   }
 ]

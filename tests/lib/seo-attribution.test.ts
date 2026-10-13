@@ -9,7 +9,7 @@ const sample = { landing: "/cme-requirements/nevada", cluster: "state_requiremen
 const cookie = (value: unknown) => encodeURIComponent(JSON.stringify(value));
 describe("public acquisition boundaries", () => {
   it("allows only actual published routes, never identifiers or URL parameters", () => {
-    for (const path of ["/dashboard", "/api/auth/callback/google", "/login?token=secret", "/courses/private", "/cme-requirements/ohio", "/mate-act?email=person@example.com", "/courses/ethics#secret", "/cme-requirements/california/extra"]) expect(seoCluster(path)).toBeNull();
+    for (const path of ["/dashboard", "/api/auth/callback/google", "/login?token=secret", "/courses/private", "/cme-requirements/alaska", "/mate-act?email=person@example.com", "/courses/ethics#secret", "/cme-requirements/california/extra"]) expect(seoCluster(path)).toBeNull();
     for (const guide of publishedStateGuides) expect(seoCluster(`/cme-requirements/${guide.slug}`)).toBe("state_requirements");
     for (const guide of nationalGuides) expect(seoCluster(`/guides/${guide.slug}`)).toBe("national_guides");
     for (const [key, catalog] of Object.entries(COURSE_CATALOG)) if (catalog.courses.length) expect(seoCluster(`/courses/${keyToSlug(key)}`)).toBe("course_topics");
@@ -25,10 +25,13 @@ describe("public acquisition boundaries", () => {
     expect(acquisitionChannel("https://www.google.com.evil.example/", "https://clearcme.ai", false)).toBe("referral");
     expect(acquisitionChannel("https://google.com/", "https://clearcme.ai", true)).toBe("campaign");
   });
-  it("includes only five published states and every nonempty course topic in sitemap", () => {
+  it("includes exactly the two approved state batches and every nonempty course topic in sitemap", () => {
     const urls = sitemap().map(({ url }) => url);
     expect(new Set(urls).size).toBe(urls.length);
-    expect(urls.filter((url) => url.includes("/cme-requirements/"))).toHaveLength(5);
+    expect(urls.filter((url) => url.includes("/cme-requirements/")).sort()).toEqual([
+      "california", "texas", "florida", "new-york", "nevada",
+      "pennsylvania", "illinois", "ohio", "new-jersey", "massachusetts",
+    ].map((slug) => `https://clearcme.ai/cme-requirements/${slug}`).sort());
     for (const guide of publishedStateGuides) {
       expect(guide.faqs.length).toBeGreaterThanOrEqual(5);
       expect(guide.faqs.length).toBeLessThanOrEqual(8);
