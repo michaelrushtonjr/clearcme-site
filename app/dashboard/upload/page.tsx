@@ -25,8 +25,8 @@ const PIPELINE_STEPS = [
   },
   {
     n: "03",
-    t: "You confirm the match",
-    s: "Only then does it count toward a requirement",
+    t: "You review the result",
+    s: "Check the extracted details and correct anything missing",
   },
 ];
 
@@ -115,7 +115,7 @@ export default async function UploadPage() {
               ))}
             </div>
             <div className="card-foot" style={{ margin: "6px -18px -18px", borderRadius: "0 0 10px 10px" }}>
-              Nothing counts toward a requirement until you confirm the match.
+              Complete extractions are saved automatically. Entries marked for review stay pending until you correct and save them.
             </div>
           </section>
         </div>

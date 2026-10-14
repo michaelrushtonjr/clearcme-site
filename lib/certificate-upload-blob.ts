@@ -15,7 +15,15 @@ export async function readClientCertificate(body: Record<string, unknown>, userI
   if (url.protocol !== "https:" || !/^[a-z0-9-]+\.private\.blob\.vercel-storage\.com$/.test(url.hostname) || url.port || url.username || url.password || url.search || url.hash || !validIncomingPath(url.pathname.slice(1), userId)) throw new CertificateFileError("Invalid blob ownership", 403);
   // Read by pathname from OUR configured private store, never fetch a supplied host.
   const result = await get(url.pathname.slice(1), { access: "private", useCache: false });
-  if (!result || result.statusCode !== 200 || result.blob.url !== url.href) throw new CertificateFileError("Uploaded file not found", 404);
+  if (!result || result.statusCode !== 200) throw new CertificateFileError("Uploaded file not found", 404);
+  // The SDK builds its URL from the token's store ID, preserving host casing.
+  // Compare canonical URLs: hosts are case-insensitive, object paths are not.
+  let storedUrl: URL | undefined;
+  try { storedUrl = new URL(result.blob.url); } catch { /* Reject malformed storage metadata below. */ }
+  if (storedUrl?.href !== url.href) {
+    await result.stream.cancel();
+    throw new CertificateFileError("Uploaded file not found", 404);
+  }
   if (!CERTIFICATE_CONTENT_TYPES.includes(result.blob.contentType) || result.blob.size > MAX_CERTIFICATE_BYTES) {
     await result.stream.cancel();
     throw new CertificateFileError("Invalid file type or file exceeds 10 MB", 400);

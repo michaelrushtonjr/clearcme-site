@@ -8,6 +8,7 @@ import { z } from "zod";
 import type { SpecialTopic } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { trackEvent } from "@/lib/analytics";
 
 async function userFor(req: NextRequest) {
   const mobileUserId = await getMobileUserId(req);
@@ -49,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       await deleteCertificateOriginalAndRow(id, userId, true);
       return NextResponse.json({ success: true, merged: true });
     }
-    const updated = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       await lockCertificateUser(tx, userId);
       const existing = await tx.certificate.findUnique({ where: { id } });
       if (!existing || existing.userId !== userId) throw new CertificateFileError("Not found", 404);
@@ -72,7 +73,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const duplicate = fingerprint !== existing.activityFingerprint ? await findActivityDuplicate(tx, userId, fingerprint, id, fields) : null;
       const possibleDuplicateOfId = body.duplicateResolution === "keep_both" ? null : duplicate?.id ?? existing.possibleDuplicateOfId;
       const fieldEdit = [body.title, body.provider, body.activityDate, body.creditHours, body.hoursEarned, body.creditType].some((v) => v !== undefined);
-      return tx.certificate.update({ where: { id }, data: {
+      // Topic confirmation alone must never certify an incomplete extraction.
+      const extractionStatus = !fields.valid ? "NEEDS_REVIEW" : fieldEdit ? "COMPLETED" : existing.extractionStatus;
+      const certificate = await tx.certificate.update({ where: { id }, data: {
         specialTopics: confirmedTopics, suggestedSpecialTopics: suggestions,
         ...((body.title !== undefined || body.topics !== undefined) && { extractedSpecialTopics: [] }),
         ...(split && { topicHourAllocations: split }), ...(body.topics !== undefined && { topics }),
@@ -80,11 +83,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(body.creditType && { creditType: body.creditType }),
         activityFingerprint: fingerprint, possibleDuplicateOfId,
         manuallyVerified: true,
-        // Topic confirmation alone must never certify an incomplete extraction.
-        extractionStatus: !fields.valid ? "NEEDS_REVIEW" : fieldEdit ? "COMPLETED" : existing.extractionStatus,
+        extractionStatus,
         extractedAt: new Date(),
       } });
+      return {
+        certificate,
+        // Evaluate under the user lock, so retries/concurrent clicks emit once.
+        reviewCompleted: extractionStatus === "COMPLETED" && (!existing.manuallyVerified || existing.extractionStatus !== "COMPLETED"),
+        previousStatus: existing.extractionStatus,
+      };
     });
-    return NextResponse.json({ certificate: updated });
+    if (result.reviewCompleted) trackEvent(userId, "certificate_reviewed", { result: "confirmed", previous_status: result.previousStatus });
+    return NextResponse.json({ certificate: result.certificate });
   } catch (error) { return failure(error); }
 }

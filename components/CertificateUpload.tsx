@@ -797,6 +797,30 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
     setSaving(false);
   };
 
+  const handleConfirm = async () => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const res = await fetch(`/api/certificates/${cert.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) setSaveError(data?.error ?? "Save failed");
+      else {
+        const resolution = resolutionFromSave(cert, data, ex.creditHours);
+        if (resolution) {
+          setConfirmed(true);
+          onResolved(resolution);
+        } else setSaveError(STILL_NEEDS_REVIEW);
+      }
+    } catch {
+      setSaveError("Network error — please try again");
+    }
+    setSaving(false);
+  };
+
   return (
     <div className="product-card overflow-hidden">
       {/* Hero header */}
@@ -886,21 +910,22 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
                 {/* Layer 1 action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <button
-                    onClick={() => {
-                      setConfirmed(true);
-                      onResolved({ id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours: ex.creditHours, topics: ex.topics });
-                    }}
+                    onClick={handleConfirm}
+                    disabled={saving}
                     className="product-btn product-btn-brand flex-1"
                   >
-                    Looks good
+                    {saving ? "Saving…" : "Looks good"}
                   </button>
                   <button
                     onClick={() => setShowAdvanced(true)}
+                    disabled={saving}
                     className="product-btn product-btn-secondary flex-1"
                   >
                     Fix something
                   </button>
                 </div>
+
+                {saveError && <p role="alert" className="text-sm text-red-600">{saveError}</p>}
 
                 {/* Trust note */}
                 <p className="text-xs text-[var(--ink-3)] text-center">
