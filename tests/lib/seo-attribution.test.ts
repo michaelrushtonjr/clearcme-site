@@ -15,6 +15,9 @@ describe("public acquisition boundaries", () => {
     for (const [key, catalog] of Object.entries(COURSE_CATALOG)) if (catalog.courses.length) expect(seoCluster(`/courses/${keyToSlug(key)}`)).toBe("course_topics");
   });
   it("rejects malformed, expired, future, private and mismatched attribution", () => {
+    const nevada = { ...sample, landing: "/nevada-ethics-cme", cluster: "course_topics", channel: "campaign" };
+    expect(parseAcquisition(cookie(nevada), now)).toEqual(nevada);
+    expect(parseAcquisition(cookie({ ...nevada, landing: "/nevada-ethics-cme?email=private" }), now)).toBeNull();
     expect(parseAcquisition(cookie(sample), now)).toEqual(sample);
     for (const value of [null, {}, { ...sample, landing: "/dashboard" }, { ...sample, cluster: "product_category" }, { ...sample, channel: "email@example.com" }, { ...sample, at: now + 1 }, { ...sample, at: now - ACQUISITION_TTL * 1000 - 1 }]) expect(parseAcquisition(cookie(value), now)).toBeNull();
     expect(parseAcquisition("%malformed", now)).toBeNull();
