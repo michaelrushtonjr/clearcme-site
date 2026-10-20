@@ -489,6 +489,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("Louisiana laws and rules", "Required before first renewal", "New licensee requirement (LAC 46:XLV.449); still required at the first renewal even though new licensees are exempt from the 20 annual CME hours"),
       topic("CDS prescribing", "3 hrs one-time", "If authorized prescriber renewing for the first time; board-approved/electronically reported course required; exception if no CDS prescribed/administered/dispensed"),
+      { ...topic("Sickle cell disease treatment (emergency medicine)", "1 hr initial, then 1-hr refresher at least every 3 years", "If practicing emergency medicine; board-approved course (La. R.S. 37:1270(A)(8)(b), added by Act 744 of 2024)"), cadence: "EVERY_N_YEARS", intervalYears: 3 },
       mateTopic(),
     ],
   },
