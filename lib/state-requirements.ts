@@ -1159,12 +1159,16 @@ export const STATE_REQUIREMENTS: Record<
       DO: buildRequirement(
         stateCode,
         "DO",
-        doOverrides[stateCode] ?? (["MA", "KY"].includes(stateCode) ? {
+        doOverrides[stateCode] ?? (["KY"].includes(stateCode) ? {
           ...mdRequirements[stateCode],
           // The transcribed cadence metadata is authorized for MD only.
           // CT removed from this list: DOs are deemed licensed as physicians
           // under ch. 370 (Conn. Gen. Stat. §20-9(e)), so §20-10b's six-year
           // topic cadence applies to DOs verbatim — the MD record is correct.
+          // MA removed: M.G.L. c. 112 §10 applies the chapter's medicine
+          // provisions (incl. CME under §2 / 243 CMR 2.06) to osteopathy;
+          // §11's only carve-out is scope-of-practice for a 1909 registration
+          // class — the MD record's topic cadences apply to DOs verbatim.
           mandatoryTopics: mdRequirements[stateCode].mandatoryTopics.map((entry) => {
             const topic = { ...entry };
             delete topic.cadence;
