@@ -207,7 +207,7 @@ const mdRenewalRules: Record<StateCode, RenewalRuleConfig> = {
   GA: birthBasedRenewal("Last day of your birth month, every 2 years"),
   HI: fixedRenewal("January 31 of even-numbered years", 1, 31, "even"),
   IA: birthBasedRenewal("During your birth month, every 2 years"),
-  ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles in effect since April 1, 2026; existing licensees phase in by birth year)", {
+  ID: birthBasedRenewal("On or before your birthdate, every 2 years (birthdate-keyed cycles in effect since April 1, 2026; existing licensees transition in cohorts set by birth-year parity and whether the birthdate falls before or on/after June 30 — Idaho Board of Medicine transition notice)", {
     usesExactBirthday: true,
   }),
   IL: variableRenewal("July 31, statewide triennial cycle (2026, 2029, and every 3 years after)"),
