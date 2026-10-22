@@ -2214,7 +2214,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         name: "ScientiaCME — Free Specialty CME Platform (Platform Note)",
         provider: "ScientiaCME (accredited by ACCME)",
         providerUrl: "https://www.scientiacme.org",
-        credits: "0.75–1.25 hours per course; 11 active courses as of May 2026 (~11 hours total available) AMA PRA Category 1 / ACPE (pharmacy CE) / ABIM MOC Points",
+        credits: "0.75–1.25 hours per course; 15 active courses as of October 2026 (~14.75 hours total available) AMA PRA Category 1 / ACPE (pharmacy CE) / ABIM MOC Points",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
@@ -2224,7 +2224,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         accreditation: "ACCME (ScientiaCME)",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-05-01 (pancreatic cancer course confirmed free; 10 individual courses cataloged)",
+        verified: "2026-10-22 (COO live listing read: 15 active courses, 0.75–1.25 hr each, page header \"Free Online Continuing Medical Education\"; 10 individual courses cataloged)",
       },
       {
         name: "More Than Movement: Addressing the Neuropsychiatric Burden of Parkinson’s Disease",
