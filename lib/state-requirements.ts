@@ -814,7 +814,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
   },
   WA: {
     totalHours: 200,
-    totalHoursLabel: "200 hours (Category I allowed for all hours; Category II-V limits apply)",
+    totalHoursLabel: "200 hours (Category I allowed for all hours; Category II-V limits apply) — or satisfy instead via ABMS board certification in the 4 years preceding renewal, ABMS maintenance of certification at renewal, or a current AMA Physician's Recognition Award in at least 2 of the 4 preceding years (WAC 246-919-430); state-mandated topics (suicide prevention, health equity, opioid prescribing) are required regardless of pathway",
     cycleYears: 4,
     cycleLabel: "4-year CME reporting cycle; license renews every 2 years on your birthday",
     mandatoryTopics: [
@@ -1023,7 +1023,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
   },
   WA: {
     totalHours: 150,
-    totalHoursLabel: "150 hours (at least 60 Category 1A per WA DOH; WAC 246-853-070 uses broader Category 1 wording)",
+    totalHoursLabel: "150 hours (at least 60 Category 1A per WA DOH; WAC 246-853-070 uses broader Category 1 wording) — or satisfy instead via ABOMS/ABMS certification or recertification within the last 6 years, ABOMS/ABMS maintenance of certification, a current AOA certificate of excellence in CME, or a current AMA Physician's Recognition Award (WAC 246-853-080); state-mandated topics (suicide prevention, health equity, opioid prescribing) are required regardless of pathway",
     cycleYears: 3,
     cycleLabel: "3-year CE reporting cycle; license renews every year on your birthday",
     mandatoryTopics: [
