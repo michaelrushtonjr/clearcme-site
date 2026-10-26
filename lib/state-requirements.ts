@@ -1159,23 +1159,17 @@ export const STATE_REQUIREMENTS: Record<
       DO: buildRequirement(
         stateCode,
         "DO",
-        doOverrides[stateCode] ?? (["KY"].includes(stateCode) ? {
-          ...mdRequirements[stateCode],
-          // The transcribed cadence metadata is authorized for MD only.
-          // CT removed from this list: DOs are deemed licensed as physicians
-          // under ch. 370 (Conn. Gen. Stat. §20-9(e)), so §20-10b's six-year
-          // topic cadence applies to DOs verbatim — the MD record is correct.
-          // MA removed: M.G.L. c. 112 §10 applies the chapter's medicine
-          // provisions (incl. CME under §2 / 243 CMR 2.06) to osteopathy;
-          // §11's only carve-out is scope-of-practice for a 1909 registration
-          // class — the MD record's topic cadences apply to DOs verbatim.
-          mandatoryTopics: mdRequirements[stateCode].mandatoryTopics.map((entry) => {
-            const topic = { ...entry };
-            delete topic.cadence;
-            delete topic.intervalYears;
-            return topic;
-          }),
-        } : mdRequirements[stateCode]),
+        // The cadence-stripping DO fallback is fully retired. Its members were
+        // CT (removed: Conn. Gen. Stat. §20-9(e) deems DOs licensed as
+        // physicians under ch. 370, so §20-10b's topic cadences apply
+        // verbatim), MA (removed: M.G.L. c. 112 §10 applies the chapter's
+        // medicine provisions, incl. CME under §2 / 243 CMR 2.06, to
+        // osteopathy), and KY (removed last: KRS 311.550 defines "physician"
+        // as a doctor of medicine or a doctor of osteopathy, and 201 KAR 9:310
+        // binds "each physician licensed to practice medicine or osteopathy"
+        // with identical requirements and no DO-specific cadence) — in all
+        // three, the MD record's topic cadences apply to DOs unmodified.
+        doOverrides[stateCode] ?? mdRequirements[stateCode],
       ),
     },
   ]),
