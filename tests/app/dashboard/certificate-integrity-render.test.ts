@@ -43,5 +43,7 @@ test("privacy page renders the Anthropic disclosure and per-certificate deletion
   expect(html).toContain("we may send it to Anthropic, a third-party AI provider");
   expect(html).toContain("Do not upload documents containing patient information.");
   expect(html).toContain("To delete an uploaded certificate and its stored original, open Certificates in your dashboard and select Delete for that certificate.");
-  expect(html).toContain("Last updated: September 29, 2026");
+  expect(html).toContain("Last updated: October 28, 2026");
+  expect(html).toContain("Optional Google Ads measurement");
+  expect(html).toContain("Click identifiers are pseudonymous advertising data");
 });

@@ -218,6 +218,16 @@ async function main() {
     assert.equal((await db.query(`SELECT "evidenceCertificateId" FROM "FederalTrainingRecord" WHERE "userId"='two'`)).rows[0].evidenceCertificateId, null);
     console.log('PASS: one federal record per physician, explicit legacy attestation/evidence preserved, registration-only records excluded, state facts/legacy fields unchanged, evidence deletion retains attestation');
 
+    await db.exec(sql('20261028090000_google_ads_registration'));
+    await db.exec(`INSERT INTO "User" (id,"updatedAt") VALUES ('ads-registration',now());
+      INSERT INTO "GoogleAdsRegistration" (id,"userId","consentId","customerId","actionId","clickCiphertext","registeredAt","availableAt","expiresAt")
+      VALUES ('random-event','ads-registration','random-consent','1234567890','987654321','encrypted-fixture',now(),now(),now()+interval '30 days');`);
+    await assert.rejects(db.exec(`INSERT INTO "GoogleAdsRegistration" (id,"userId","consentId","customerId","actionId","clickCiphertext","registeredAt","availableAt","expiresAt") VALUES ('duplicate','ads-registration','random-consent','1234567890','987654321','encrypted-fixture',now(),now(),now())`), /unique constraint/);
+    await db.exec('ROLLBACK');
+    await db.exec(`DELETE FROM "User" WHERE id='ads-registration'`);
+    assert.equal((await db.query('SELECT count(*)::int AS count FROM "GoogleAdsRegistration"')).rows[0].count, 0);
+    console.log('PASS: Ads outbox migration enforces one registration per account and cascades account deletion');
+
   } finally { await db.close(); }
 }
 

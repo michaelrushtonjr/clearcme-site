@@ -110,8 +110,31 @@ model User {
   requirementCompletions UserRequirementCompletion[]
   extractionReservations ExtractionReservation[]
   federalTrainingRecord FederalTrainingRecord?
+  googleAdsRegistration GoogleAdsRegistration?
 
   @@index([email])
+}
+
+// Private delivery outbox; never export userId/consentId or the ciphertext.
+// Random id is Google's transactionId. Click data is erased on delivery/expiry.
+model GoogleAdsRegistration {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentId       String
+  customerId      String
+  actionId        String
+  clickCiphertext String
+  registeredAt    DateTime
+  availableAt     DateTime
+  expiresAt       DateTime
+  attempts        Int       @default(0)
+  requestId       String?
+  lockedUntil     DateTime?
+  deliveredAt     DateTime?
+
+  @@index([availableAt, deliveredAt])
+  @@index([consentId])
 }
 
 enum LicenseType {
