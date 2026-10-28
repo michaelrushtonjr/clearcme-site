@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { consoleFontVars } from "@/lib/fonts";
 import "./globals.css";
 import { AcquisitionAnalytics } from "@/components/seo/AcquisitionAnalytics";
+import { AdMeasurementChoice } from "@/components/analytics/AdMeasurementChoice";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clearcme.ai"),
@@ -45,7 +46,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={consoleFontVars}>{children}<AcquisitionAnalytics /></body>
+      <body className={consoleFontVars}>{children}<AcquisitionAnalytics /><AdMeasurementChoice /></body>
     </html>
   );
 }

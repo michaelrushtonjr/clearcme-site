@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <PublicShell>
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="public-heading mb-2 text-4xl">Privacy Policy</h1>
-        <p className="mb-10 text-sm text-[#6b7568]">Last updated: September 29, 2026</p>
+        <p className="mb-10 text-sm text-[#6b7568]">Last updated: October 28, 2026</p>
 
         <div className="max-w-none space-y-8 text-[#3f4a40]">
 
@@ -70,6 +70,12 @@ export default function PrivacyPage() {
             <p>We use Vercel Web Analytics for visits to public pages. Our integration excludes private application pages, URL query strings and fragments. A first-party cookie, clearcme_acquisition, remembers the first eligible public landing page and a broad traffic source (search, referral, campaign or direct/unknown) for up to 30 days. It contains no name, email address or search query.</p>
             <p className="mt-3">If you create an account during that window, we save that page and source with your account and count the registration. We count activation once when the account has an active license and a processed or verified manual CME record. Daily page/source totals also count sign-up and course-link clicks; these aggregate totals do not contain account identifiers or certificate details. Our website measurement respects the browser’s Do Not Track setting. You can remove the attribution cookie in your browser settings.</p>
             <p className="mt-3">We also use PostHog, a product analytics service, to see how ClearCME is used and where people get stuck. For signed-in accounts, PostHog receives your account ID, name and email address; the pages you view and the buttons you click; account events such as signing up, saving a license and adding a CME record; and session recordings that replay how each page looked as you used it. Recordings never include what you type into form fields, and license, DEA and NPI numbers are masked in your browser before anything is sent. PostHog does not receive the certificate files you upload. PostHog also measures anonymous visits to our public pages. When your browser&rsquo;s Do Not Track setting is on, PostHog does not record your page views, clicks or sessions.</p>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-xl font-semibold text-[#1e2920]">Optional Google Ads measurement</h2>
+            <p>When this feature is enabled, you can allow or decline ad measurement using Ad measurement settings on public pages. With your permission, an encrypted first-party cookie, clearcme_ads_measurement, stores your choice and a Google ad-click identifier for up to 30 days. If you complete a new account registration in the same browser during that window, our server sends Google the click identifier, registration time, a random event identifier and consent settings. Click identifiers are pseudonymous advertising data; this feature is not anonymous. The upload excludes your name, email address, account identifier, IP address, page URL, medical-license information and CME records. It does not enable personalized advertising.</p>
+            <p className="mt-3">Do Not Track, Global Privacy Control and the ClearCME iPhone app disable this feature. You can withdraw permission in Ad measurement settings; this cancels pending events. Events already being submitted may complete, and withdrawal does not retract data already submitted to Google. Queued click data is encrypted, erased after successful processing and otherwise expires within 30 days of your choice, with expired records removed by our scheduled cleanup. Deleting your account removes its local delivery record. See <a href="https://policies.google.com/privacy" className="underline">Google&rsquo;s Privacy Policy</a> for Google&rsquo;s handling of submitted data.</p>
           </section>
 
           <section>
