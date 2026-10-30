@@ -60,22 +60,6 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "POWER: Prevention of Opioid Misuse in Women through Education and Resource",
-        provider: "FreeCME (by Relias)",
-        providerUrl: "https://www.freecme.com",
-        credits: "6.0 hours AMA PRA Category 1",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description: "Relias/FreeCME platform. Search \"POWER\" on freecme.com. 6-hour series focused on opioid misuse prevention in women. Requires free account.",
-        url: "https://www.freecme.com/",
-        accreditation: "ACCME",
-        deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1",
-        verified: "2026-04-16",
-      },
-      {
         name: "Addiction Treatment and Care CME for Family Physicians",
         provider: "American Academy of Family Physicians (AAFP)",
         providerUrl: "https://www.aafp.org",
@@ -2331,7 +2315,7 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "FreeCME.com is a Relias-operated platform aggregating free pharma-sponsored CME across multiple specialties. Free account required (fast registration). Course catalog rotates; current active courses (April 2026) span oncology (DLBCL, myelofibrosis, mHSPC, CLL, NMIBC), pulmonary (fibrosing ILD, CRSwNP), nephrology/cardiology (CKD-CVD link), HIV (PrEP, stigma reduction), and rare disease topics. Also hosts the 6hr POWER opioid series (already cataloged under DEA MATE Act). Courses vary in hours (0.25–1.0hr each). Accreditation type varies per course — check individual course listing for AMA PRA Cat 1 vs. other CE types. Useful for physicians needing to accumulate general Cat 1 hours on clinical disease topics without mandatory topic restrictions.",
+        description: "FreeCME.com is a Relias-operated platform aggregating free pharma-sponsored CME across multiple specialties. Free account required (fast registration). Course catalog rotates; current active courses (April 2026) span oncology (DLBCL, myelofibrosis, mHSPC, CLL, NMIBC), pulmonary (fibrosing ILD, CRSwNP), nephrology/cardiology (CKD-CVD link), HIV (PrEP, stigma reduction), and rare disease topics. Courses vary in hours (0.25–1.0hr each). Accreditation type varies per course — check individual course listing for AMA PRA Cat 1 vs. other CE types. Useful for physicians needing to accumulate general Cat 1 hours on clinical disease topics without mandatory topic restrictions.",
         url: "https://www.freecme.com/",
         accreditation: "ACCME (via individual course joint providers — each course lists its accreditation)",
         deaMateCompliant: false,
