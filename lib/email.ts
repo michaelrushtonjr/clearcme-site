@@ -4,8 +4,9 @@ import { formatDateUTC } from "@/lib/dates";
 /**
  * Email sending (Resend REST API — no SDK dependency) + branded templates.
  *
- * Voice: ClearCME in-product system voice — clean, informational, specific.
- * Reassurance-first; urgency escalates only when the deadline is real.
+ * Voice: conversational, helpful and specific about the next step.
+ * Explain incomplete records without turning internal status labels into prose.
+ * Reassure only when the records support it; urgency follows the real deadline.
  * Say "hours of CME", never "credits".
  */
 
@@ -70,8 +71,35 @@ export async function sendEmail({
 function federalStatusLine(license: LicenseSnapshot): string {
   const federal = license.mandatoryTopics.find((topic) => topic.scope === "FEDERAL");
   if (!federal) return "";
-  const status = federal.isMet ? "Met" : federal.isNotApplicable ? "Not applicable" : federal.isUnknown ? "Needs your answer" : "Action needed";
-  return `<p style="font-size:13px;">Federal training record (DEA MATE Act): <strong>${status}</strong>. Shared across all licenses. <a href="${siteUrl()}/dashboard/profile#federal-training">Review federal record</a></p>`;
+  const message = federal.isMet
+    ? "You've recorded that you've met the DEA MATE Act training requirement."
+    : federal.isNotApplicable
+      ? "You've indicated that the DEA MATE Act training requirement doesn't apply to you."
+      : federal.isUnknown
+        ? "Please confirm your DEA registration details and whether you've completed the MATE Act training requirement."
+        : "Your DEA MATE Act training requirement is still marked incomplete. If you've already met it, update your record.";
+  return `<p style="margin:16px 0 0;font-size:13px;color:${INK_SOFT};line-height:1.6;">${message} You only need to update this once for all your licenses. <a href="${siteUrl()}/dashboard/profile#federal-training" style="color:${BRAND_GREEN};">Review your DEA training details</a></p>`;
+}
+
+function incompleteStatusMessage(license: LicenseSnapshot): string {
+  if (license.overall === "NOT_COMPUTED") {
+    return "ClearCME doesn't yet calculate CME progress for this license. Review your state board's requirements to check what you need before renewal.";
+  }
+  const steps: string[] = [];
+  if (!license.renewalDate) steps.push("add your renewal date");
+  if (license.uncertainHours > 0) steps.push("review the certificates that still need confirmation");
+  if (license.mandatoryTopics.some((topic) => topic.scope !== "FEDERAL" && topic.isUnknown)) {
+    steps.push("confirm which required training you've already completed");
+  }
+  return "We need a little more information before we can confirm your CME progress." +
+    (steps.length ? ` Open your dashboard to ${steps.join(" and ")}.` : " Review the details below to see what's missing.");
+}
+
+function renewalTiming(days: number | null): string {
+  if (days === null) return "";
+  if (days < 0) return `${Math.abs(days)} day${days === -1 ? "" : "s"} past the recorded renewal date`;
+  if (days === 0) return "due today";
+  return `in ${days} day${days === 1 ? "" : "s"}`;
 }
 
 // ── Shared layout ─────────────────────────────────────────────────────────────
@@ -100,7 +128,7 @@ function layout({ body, unsubscribeUrl }: { body: string; unsubscribeUrl: string
         <tr>
           <td style="padding:20px 32px;border-top:1px solid #E5E3DC;">
             <p style="margin:0 0 6px;font-size:12px;color:${INK_SOFT};line-height:1.5;">
-              ClearCME tracks CME compliance from state medical board sources. Attestations and tracking guide your plan — keep original CME documentation for your board's retention period.
+              Your progress is based on state board requirements and the information you've saved in ClearCME. Keep your original CME certificates for as long as your board requires.
             </p>
             <p style="margin:0;font-size:12px;color:${INK_SOFT};">
               <a href="${base}/dashboard/settings" style="color:${BRAND_GREEN};">Manage email preferences</a>
@@ -135,7 +163,8 @@ function topicList(items: { label: string; detail?: string }[], color: string): 
 }
 
 function greeting(firstName: string): string {
-  return `<p style="margin:0 0 16px;font-size:15px;color:${INK};">Hello${firstName ? ` Dr. ${firstName}` : ""},</p>`;
+  const name = firstName.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]!));
+  return `<p style="margin:0 0 16px;font-size:15px;color:${INK};">Hi${name ? ` ${name}` : ""},</p>`;
 }
 
 // ── Renewal reminder ──────────────────────────────────────────────────────────
@@ -150,7 +179,7 @@ export function renderRenewalReminderEmail({
   unsubscribeUrl: string;
 }): { subject: string; html: string } {
   const base = siteUrl();
-  const days = license.daysUntilRenewal ?? 0;
+  const days = license.daysUntilRenewal;
   const renewalLabel = license.renewalDate ? formatDateUTC(license.renewalDate) : "your renewal date";
   const outstanding = license.outstandingMandatoryTopics;
   const gapHours = Math.max(
@@ -158,33 +187,35 @@ export function renderRenewalReminderEmail({
     outstanding.reduce((s, t) => s + t.gap, 0)
   );
 
-  const urgent = days <= 30;
-  const accent = urgent ? CRIMSON : days <= 60 ? AMBER : BRAND_GREEN;
+  const urgent = days !== null && days <= 30;
+  const accent = urgent ? CRIMSON : days !== null && days <= 60 ? AMBER : BRAND_GREEN;
+  const timing = renewalTiming(days);
+  const renewalSubject = `${license.state} ${license.licenseType} renewal${timing ? ` ${timing}` : ""}`;
 
-  const subject = license.overall === "UNKNOWN" ? `${license.state} ${license.licenseType} — Needs your answer` : license.overall === "NOT_COMPUTED" ? `${license.state} ${license.licenseType} — Review state requirements` : license.isCompliant
-    ? `${license.state} ${license.licenseType} renewal in ${days} days — you're on track`
-    : `${license.state} ${license.licenseType} renewal in ${days} days — ${gapHours.toFixed(0)} hours of CME remaining`;
+  const subject = license.overall === "UNKNOWN" ? `Check your ${license.state} ${license.licenseType} CME details` : license.overall === "NOT_COMPUTED" ? `Review your ${license.state} ${license.licenseType} CME requirements` : license.isCompliant
+    ? `${renewalSubject} — your CME is complete`
+    : `${renewalSubject} — review your remaining CME`;
 
   let statusBlock: string;
   if (license.overall === "UNKNOWN" || license.overall === "NOT_COMPUTED") {
-    statusBlock = `<p>${license.statusLabel}. Review your compliance map before relying on a compliance status.</p>`;
+    statusBlock = `<p style="margin:0 0 12px;font-size:15px;color:${INK};line-height:1.6;">${incompleteStatusMessage(license)}</p>`;
   } else if (license.isCompliant) {
     statusBlock = `
       <p style="margin:0 0 8px;font-size:15px;color:${INK};line-height:1.6;">
-        You're on track. Your <strong>${license.state} ${license.licenseType}</strong> license renews on <strong>${renewalLabel}</strong> (${days} days), and your CME requirements are complete.
+        Your saved records show that you've completed the CME requirements for your <strong>${license.state} ${license.licenseType}</strong> license. Your recorded renewal date is <strong>${renewalLabel}</strong>${timing ? ` (${timing})` : ""}.
       </p>
       <p style="margin:0;font-size:14px;color:${INK_SOFT};line-height:1.6;">
-        Your records and audit-ready summary are available anytime in your dashboard.
+        You can find your certificates and CME summary in your dashboard whenever you need them.
       </p>`;
   } else {
     statusBlock = `
       <p style="margin:0 0 12px;font-size:15px;color:${INK};line-height:1.6;">
-        Your <strong>${license.state} ${license.licenseType}</strong> license renews on <strong>${renewalLabel}</strong> — <span style="color:${accent};font-weight:700;">${days} days from now</span>.
+        Your recorded renewal date for <strong>${license.state} ${license.licenseType}</strong> is <strong>${renewalLabel}</strong>${timing ? ` (<span style="color:${accent};font-weight:700;">${timing}</span>)` : ""}. Here's what you still need to complete.
       </p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${BRAND_GREEN_TINT};border-radius:8px;">
         <tr><td style="padding:16px 20px;">
           <p style="margin:0;font-size:14px;color:${INK};line-height:1.7;">
-            Hours of CME this cycle: <strong>${license.hoursEarned.toFixed(1)} of ${license.totalHoursRequired.toFixed(0)}</strong><br/>
+            You've logged <strong>${license.hoursEarned.toFixed(1)} of ${license.totalHoursRequired.toFixed(0)} hours of CME</strong> this cycle.<br/>
             Still needed: <strong style="color:${accent};">${gapHours.toFixed(1)} hours</strong>
             ${license.paceHoursPerMonth ? `<br/>To finish by renewal: <strong>${license.paceHoursPerMonth} hours/month</strong>` : ""}
           </p>
@@ -192,7 +223,7 @@ export function renderRenewalReminderEmail({
       </table>
       ${
         outstanding.length > 0
-          ? `<p style="margin:16px 0 0;font-size:14px;color:${INK};font-weight:600;">Mandatory topics still open:</p>` +
+          ? `<p style="margin:16px 0 0;font-size:14px;color:${INK};font-weight:600;">Required topics to finish:</p>` +
             topicList(
               outstanding.map((t) => ({
                 label: t.label,
@@ -204,7 +235,7 @@ export function renderRenewalReminderEmail({
       }
       ${
         license.unansweredHistoryCount > 0
-          ? `<p style="margin:16px 0 0;font-size:13px;color:${INK_SOFT};line-height:1.6;">${license.unansweredHistoryCount} one-time or long-cycle requirement${license.unansweredHistoryCount === 1 ? "" : "s"} still need${license.unansweredHistoryCount === 1 ? "s" : ""} your confirmation — answering keeps this plan accurate.</p>`
+          ? `<p style="margin:16px 0 0;font-size:13px;color:${INK_SOFT};line-height:1.6;">Please confirm whether you've already completed ${license.unansweredHistoryCount} required training item${license.unansweredHistoryCount === 1 ? "" : "s"} in your dashboard.</p>`
           : ""
       }`;
   }
@@ -214,7 +245,7 @@ export function renderRenewalReminderEmail({
       ${greeting(firstName)}
       ${statusBlock}
       ${federalStatusLine(license)}
-      ${ctaButton(`${base}/dashboard/compliance`, license.isCompliant ? "View your compliance map" : "View your plan")}
+      ${ctaButton(`${base}/dashboard/compliance`, "Review your CME progress")}
     `,
     unsubscribeUrl,
   });
@@ -238,15 +269,13 @@ export function renderMonthlyDigestEmail({
     timeZone: "UTC",
   });
 
-  const subject = snapshot.allCompliant
-    ? `Your ${monthLabel} CME update — all requirements on track`
-    : `Your ${monthLabel} CME plan — ${snapshot.totalGapHours.toFixed(0)} hours of CME to schedule`;
+  const subject = `Your ${monthLabel} CME update`;
 
   const licenseBlocks = snapshot.licenses
     .map((license) => {
       const renewalLabel = license.renewalDate
         ? formatDateUTC(license.renewalDate)
-        : "no renewal date set";
+        : "";
       const outstanding = license.outstandingMandatoryTopics;
       const completed = license.completedMandatoryTopics;
       const gapHours = Math.max(
@@ -260,30 +289,30 @@ export function renderMonthlyDigestEmail({
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E5E3DC;border-radius:8px;margin:0 0 16px;">
         <tr><td style="padding:16px 20px;border-bottom:1px solid #E5E3DC;background-color:#FAFAF7;">
           <span style="font-size:15px;font-weight:700;color:${INK};">${license.state} — ${license.licenseType}</span>
-          <span style="font-size:13px;color:${INK_SOFT};"> · renews ${renewalLabel}${days !== null ? ` (${days} days)` : ""}</span>
+          <span style="font-size:13px;color:${INK_SOFT};"> · ${renewalLabel ? `Renewal: ${renewalLabel}${days !== null ? ` (${renewalTiming(days)})` : ""}` : "Add your renewal date"}</span>
         </td></tr>
         <tr><td style="padding:16px 20px;">
           ${
-            license.overall === "UNKNOWN" || license.overall === "NOT_COMPUTED" ? `<p>${license.statusLabel}. Review your compliance map.</p>` : license.isCompliant
-              ? `<p style="margin:0;font-size:14px;color:${BRAND_GREEN};font-weight:600;">All requirements complete. You're on track.</p>`
+            license.overall === "UNKNOWN" || license.overall === "NOT_COMPUTED" ? `<p style="margin:0;font-size:14px;color:${INK};line-height:1.6;">${incompleteStatusMessage(license)}</p>` : license.isCompliant
+              ? `<p style="margin:0;font-size:14px;color:${BRAND_GREEN};font-weight:600;">Your saved records show that your CME requirements are complete.</p>`
               : `
           <p style="margin:0 0 10px;font-size:14px;color:${INK};line-height:1.7;">
             ${
               license.paceHoursPerMonth
-                ? `Your goal this cycle: <strong>${license.paceHoursPerMonth} hours of CME per month</strong> finishes everything by renewal without a crunch.`
-                : `This license still has requirements open.`
+                ? `Aim for about <strong>${license.paceHoursPerMonth} hours of CME per month</strong> to work through your remaining hours before renewal.`
+                : `You still have CME requirements to complete for this license.`
             }<br/>
-            You currently have <strong>${license.hoursEarned.toFixed(1)} of ${license.totalHoursRequired.toFixed(0)} hours</strong> this cycle, with <strong style="color:${accent};">${gapHours.toFixed(1)} hours</strong> remaining.
+            You've logged <strong>${license.hoursEarned.toFixed(1)} of ${license.totalHoursRequired.toFixed(0)} hours of CME</strong> this cycle, with <strong style="color:${accent};">${gapHours.toFixed(1)} hours</strong> remaining.
           </p>
           ${
             completed.length > 0
-              ? `<p style="margin:12px 0 0;font-size:13px;color:${INK};font-weight:600;">Required CME completed:</p>` +
+              ? `<p style="margin:12px 0 0;font-size:13px;color:${INK};font-weight:600;">Required topics you've completed:</p>` +
                 topicList(completed.map((t) => ({ label: t.label })), BRAND_GREEN)
               : ""
           }
           ${
             outstanding.length > 0
-              ? `<p style="margin:12px 0 0;font-size:13px;color:${INK};font-weight:600;">Required CME to complete before renewal:</p>` +
+              ? `<p style="margin:12px 0 0;font-size:13px;color:${INK};font-weight:600;">Required topics to finish:</p>` +
                 topicList(
                   outstanding.map((t) => ({
                     label: t.label,
@@ -295,7 +324,7 @@ export function renderMonthlyDigestEmail({
           }
           ${
             license.unansweredHistoryCount > 0
-              ? `<p style="margin:12px 0 0;font-size:12px;color:${INK_SOFT};line-height:1.6;">${license.unansweredHistoryCount} requirement${license.unansweredHistoryCount === 1 ? "" : "s"} still need${license.unansweredHistoryCount === 1 ? "s" : ""} a quick yes/no about your history — confirm in your compliance map.</p>`
+              ? `<p style="margin:12px 0 0;font-size:12px;color:${INK_SOFT};line-height:1.6;">Please confirm whether you've already completed ${license.unansweredHistoryCount} required training item${license.unansweredHistoryCount === 1 ? "" : "s"} in your dashboard.</p>`
               : ""
           }`
           }
@@ -311,12 +340,12 @@ export function renderMonthlyDigestEmail({
       <p style="margin:0 0 20px;font-size:15px;color:${INK};line-height:1.6;">
         ${
           snapshot.allCompliant
-            ? `Your ${monthLabel} compliance check-in: every tracked license is on track. Nothing needs your attention this month.`
-            : `Your ${monthLabel} compliance check-in — here's where each license stands and the pace that gets you to renewal without a deadline crunch.`
+            ? `Here's your CME update for ${monthLabel}. Based on your saved records, you've completed the CME requirements for all the licenses you're tracking.`
+            : `Here's your CME update for ${monthLabel}. Below, you'll find your progress for each license and what to do next.`
         }
       </p>
       ${licenseBlocks}
-      ${ctaButton(`${base}/dashboard/compliance`, "Open your compliance map")}
+      ${ctaButton(`${base}/dashboard/compliance`, "Review your CME progress")}
     `,
     unsubscribeUrl,
   });

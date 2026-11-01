@@ -119,16 +119,16 @@ export default async function CourseDiscoveryPage({
                     {course.isFree ? (
                       <span className="inline-flex items-center rounded-full bg-[#dde8cf] px-3 py-1 text-sm font-bold text-[#3f5f33]">Free</span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-[#ece4cf] px-3 py-1 text-sm font-semibold text-[#3f4a40]">{course.price}</span>
+                      <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[#ece4cf] px-3 py-1 text-sm font-semibold text-[#3f4a40]">{course.price.length <= 28 ? course.price : "See pricing"}</span>
                     )}
                   </div>
                 </div>
 
                 <p className="mt-3 text-sm leading-relaxed text-[#3f4a40]">{courseSummary(course)}</p>
-                <dl className="mt-3 grid gap-1.5 text-xs text-[#6b7568] sm:grid-cols-3">
+                <dl className="mt-3 grid gap-3 text-xs leading-relaxed text-[#6b7568] sm:grid-cols-2">
                   <div><dt className="font-semibold text-[#3f4a40]">From</dt><dd>{course.provider}</dd></div>
-                  <div><dt className="font-semibold text-[#3f4a40]">Price</dt><dd>{course.price}</dd></div>
                   <div><dt className="font-semibold text-[#3f4a40]">Credit</dt><dd>{shortCreditLabel(course.credits)}</dd></div>
+                  <div className="sm:col-span-2"><dt className="font-semibold text-[#3f4a40]">Price</dt><dd>{course.price}</dd></div>
                 </dl>
 
                 <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

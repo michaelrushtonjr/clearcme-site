@@ -635,7 +635,6 @@ body {
   align-items: center;
   gap: 10px;
   color: var(--ink);
-  font-family: var(--display);
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.01em;
