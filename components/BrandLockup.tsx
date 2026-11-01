@@ -61,7 +61,7 @@ export function BrandLockup({
       </svg>
 
       {!glyphOnly && (
-        <span className={clsx("font-bold tracking-tight", dark ? "text-[#F6F5F0]" : "text-brand-navy", text)}>
+        <span className={clsx("font-bold tracking-tight", dark ? "text-[#F6F5F0]" : "text-brand-navy", text)} style={{ fontFamily: 'var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif' }}>
           Clear<span className={dark ? "text-[#9FBE93]" : "text-brand-teal"}>CME</span>
         </span>
       )}
