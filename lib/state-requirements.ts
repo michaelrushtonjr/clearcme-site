@@ -852,7 +852,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 3,
     cycleLabel: "3-year CME reporting lookback; license renewal is annual by June 30",
     mandatoryTopics: [
-      topic("Responsible controlled-substance prescribing / substance-abuse-disorder treatment", "1 hr every 2 years", "If registered with the Wyoming Board of Pharmacy to dispense a controlled substance in this state (W.S. 33-26-202(b)(xiv), eff. July 1, 2019; restated in Board of Medicine Rules ch. 3 § 7) — the trigger is the Wyoming state controlled-substance registration, not DEA registration"),
+      topic("Responsible controlled-substance prescribing / substance-abuse-disorder treatment", "1 hr every 2 years", "If registered with the Wyoming Board of Pharmacy to dispense a controlled substance in this state (W.S. 33-26-202(b)(xiv), eff. July 1, 2019) — the trigger is the Wyoming state controlled-substance registration, not DEA registration"),
       mateTopic(),
     ],
   },
