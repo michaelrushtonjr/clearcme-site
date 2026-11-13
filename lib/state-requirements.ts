@@ -698,8 +698,8 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "3-year CME reporting cycle; license reregistration itself is annual, in your month of initial licensure",
     mandatoryTopics: [
       topic("Opioid prescribing / pain management", "1 hr every year", "If DEA registration authorizes controlled dangerous substances"),
-      topic("Medical treatment laws (inpatient rights) presentation", "1 hr online, once every 2 calendar years", "If associated with an Oklahoma hospital, nursing, specialized, or long-term care facility — employed, agent, holding privileges, or treating patients there, incl. its ER; counts toward CME otherwise required, not in addition (63 O.S. §3162)"),
-      topic("Medical marijuana recommender education (OMMA registry)", "OMMA-approved initial course, then annual CME to stay registered (hours set by OMMA rule)", "If you recommend medical marijuana: beginning Jan. 1, 2026 you must be registered with the Oklahoma Medical Marijuana Authority — OMMA-approved education is required before you are listed on the registry and annually to remain on it (63 O.S. §427.10, SB 1066)"),
+      { ...topic("Medical treatment laws (inpatient rights) presentation", "1 hr online, once every 2 calendar years", "If associated with an Oklahoma hospital, nursing, specialized, or long-term care facility — employed, agent, holding privileges, or treating patients there, incl. its ER; counts toward CME otherwise required, not in addition (63 O.S. §3162)"), cadence: "CONDITIONAL", intervalYears: 2 },
+      { ...topic("Medical marijuana recommender education (OMMA registry)", "OMMA-approved initial course, then annual CME to stay registered (hours set by OMMA rule)", "If you recommend medical marijuana: beginning Jan. 1, 2026 you must be registered with the Oklahoma Medical Marijuana Authority — OMMA-approved education is required before you are listed on the registry and annually to remain on it (63 O.S. §427.10, SB 1066)"), cadence: "CONDITIONAL", intervalYears: 1 },
       mateTopic(),
     ],
   },
@@ -974,8 +974,8 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "Annual renewal cycle; renewal due on or before June 30, when the license expires (the CME reporting cycle separately runs July 1 through June 30)",
     mandatoryTopics: [
       topic("Proper prescribing", "1 hr every year", "Exempt if no Oklahoma Bureau of Narcotics and DEA authority to handle controlled dangerous substances; must be board-approved seminar"),
-      topic("Medical treatment laws (inpatient rights) presentation", "1 hr online, once every 2 calendar years", "If associated with an Oklahoma hospital, nursing, specialized, or long-term care facility — employed, agent, holding privileges, or treating patients there, incl. its ER; counts toward CME otherwise required, not in addition (63 O.S. §3162)"),
-      topic("Medical marijuana recommender education (OMMA registry)", "OMMA-approved initial course, then annual CME to stay registered (hours set by OMMA rule)", "If you recommend medical marijuana: beginning Jan. 1, 2026 you must be registered with the Oklahoma Medical Marijuana Authority — OMMA-approved education is required before you are listed on the registry and annually to remain on it (63 O.S. §427.10, SB 1066)"),
+      { ...topic("Medical treatment laws (inpatient rights) presentation", "1 hr online, once every 2 calendar years", "If associated with an Oklahoma hospital, nursing, specialized, or long-term care facility — employed, agent, holding privileges, or treating patients there, incl. its ER; counts toward CME otherwise required, not in addition (63 O.S. §3162)"), cadence: "CONDITIONAL", intervalYears: 2 },
+      { ...topic("Medical marijuana recommender education (OMMA registry)", "OMMA-approved initial course, then annual CME to stay registered (hours set by OMMA rule)", "If you recommend medical marijuana: beginning Jan. 1, 2026 you must be registered with the Oklahoma Medical Marijuana Authority — OMMA-approved education is required before you are listed on the registry and annually to remain on it (63 O.S. §427.10, SB 1066)"), cadence: "CONDITIONAL", intervalYears: 1 },
       mateTopic(),
     ],
   },
