@@ -39,7 +39,10 @@ async function main() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL environment variable is required');
   const target = databaseTarget(connectionString, args);
-  const { Client } = require('pg');
+  const { Client, types } = require('pg');
+  // Prisma stores DateTime as UTC in columns without a time zone. Read them as UTC,
+  // not in this machine's local time, so updatedAt and retiredAt are exported correctly.
+  types.setTypeParser(1114, (value) => new Date(`${value.replace(' ', 'T')}Z`));
   const client = new Client({ connectionString, statement_timeout: 30000, connectionTimeoutMillis: 15000 });
   await client.connect();
   try {
