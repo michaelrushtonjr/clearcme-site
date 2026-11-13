@@ -76,11 +76,11 @@ describe("a reviewed pairing continues a stored row under its new name", () => {
     expect(plan.creates).toEqual([]);
     expect(plan.retires).toEqual([]);
     const changed = Object.fromEntries(plan.updates.map((update: { requirementKey: string; changes: object }) => [update.requirementKey, Object.keys(update.changes).sort()]));
-    expect(changed["NV:DO:IMPLICIT_BIAS"]).toEqual(["description", "topic"]);
+    expect(changed["NV:DO:IMPLICIT_BIAS"]).toEqual(["description"]);
     expect(changed["NV:DO:OPIOID_PRESCRIBING"]).toEqual(["description"]);
-    expect(changed["NV:DO:SUBSTANCE_USE:sbirt-screening-brief-intervention-and-referral-to-treatment-approach-to-substance-use-disorder"]).toEqual(["description", "topic"]);
+    expect(changed["NV:DO:SUBSTANCE_USE:sbirt-screening-brief-intervention-and-referral-to-treatment-approach-to-substance-use-disorder"]).toEqual(["description"]);
     expect(changed["NV:DO:SUBSTANCE_USE:dea-mate-act-treating-managing-opioid-and-other-substance-use-disorders"]).toEqual(["description"]);
-    // Cadence, hours and the hand-written notes of every Nevada DO row are left as stored.
-    for (const fields of Object.values(changed) as string[][]) expect(fields.filter((field) => !["description", "topic"].includes(field))).toEqual([]);
+    // Category, cadence, hours and the hand-written notes of every Nevada DO row are left as stored.
+    for (const fields of Object.values(changed) as string[][]) expect(fields).toEqual(["description"]);
   });
 });

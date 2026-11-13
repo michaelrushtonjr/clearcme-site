@@ -50,7 +50,9 @@ function sourceRows(state, licenseType, topics, existingRows, questions, conflic
     // initial licensure"), so it is refused instead of preserved or written.
     if (labelRecurs(topic.hours) && isOneTimeKind(cadence, firstRenewalOnly)) found.push(`${state} ${licenseType}: ${topic.topic} — the label "${topic.hours}" says this rule recurs, but its ${explicit ? 'source' : 'stored'} cadence is ${cadence}. Set an explicit recurring cadence for it in lib/state-requirements.ts.`);
     return {
-      topic: mapped, hoursRequired: hours ?? (existing ? existing.hoursRequired : 0), description: topic.topic,
+      // A continued row keeps the category it was entered under: the category decides
+      // which certificates count, so changing it could undo answers already saved.
+      topic: matched[index].continuedKey ? existing.topic : mapped, hoursRequired: hours ?? (existing ? existing.hoursRequired : 0), description: topic.topic,
       firstRenewalOnly,
       cadence,
       intervalYears: explicit ? topic.intervalYears ?? null : existing ? existing.intervalYears : null,
