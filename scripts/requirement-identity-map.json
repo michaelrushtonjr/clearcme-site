@@ -1,0 +1,8 @@
+{
+  "NV:DO": {
+    "Opioid / controlled substance education": "NV:DO:OPIOID_PRESCRIBING",
+    "SBIRT": "NV:DO:SUBSTANCE_USE:sbirt-screening-brief-intervention-and-referral-to-treatment-approach-to-substance-use-disorder",
+    "HIV stigma / bias training": "NV:DO:IMPLICIT_BIAS",
+    "DEA MATE Act / SUD training": "NV:DO:SUBSTANCE_USE:dea-mate-act-treating-managing-opioid-and-other-substance-use-disorders"
+  }
+}

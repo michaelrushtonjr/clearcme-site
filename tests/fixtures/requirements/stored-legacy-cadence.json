@@ -564,5 +564,139 @@
       "notes": "8 hrs one-time — If DEA-registered",
       "retiredAt": null
     }
+  ],
+  "NV:DO": [
+    {
+      "requirementKey": "NV:DO:CULTURAL_COMPETENCY",
+      "topic": "CULTURAL_COMPETENCY",
+      "hoursRequired": 2,
+      "description": "Cultural competency and DEI training for psychiatrists",
+      "firstRenewalOnly": false,
+      "cadence": "CONDITIONAL",
+      "intervalYears": 2,
+      "lookbackYears": 2,
+      "attestationAllowed": true,
+      "notes": "Nevada DO specialty-specific requirement: applies to psychiatrists only; 2 hours biennially. Do not apply to non-psychiatry DOs.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:ETHICS",
+      "topic": "ETHICS",
+      "hoursRequired": 2,
+      "description": "Ethics, pain management, care of persons with addiction, or SBIRT",
+      "firstRenewalOnly": false,
+      "cadence": "EVERY_RENEWAL",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "Required in even-numbered renewal years only; distinct from the annual opioid/controlled-substance requirement.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:IMPLICIT_BIAS",
+      "topic": "IMPLICIT_BIAS",
+      "hoursRequired": 2,
+      "description": "HIV stigma, discrimination, and unrecognized bias training",
+      "firstRenewalOnly": true,
+      "cadence": "ONE_TIME",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "One-time requirement for DOs providing or supervising hospital emergency medical services or primary care services.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:OPIOID_PRESCRIBING",
+      "topic": "OPIOID_PRESCRIBING",
+      "hoursRequired": 2,
+      "description": "Misuse/abuse of controlled substances, prescribing of opioids, or addiction",
+      "firstRenewalOnly": false,
+      "cadence": "EVERY_RENEWAL",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "Required annually for all Nevada DOs; no DEA-registration gate.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:SUBSTANCE_USE:dea-mate-act-treating-managing-opioid-and-other-substance-use-disorders",
+      "topic": "SUBSTANCE_USE",
+      "hoursRequired": 8,
+      "description": "DEA MATE Act: treating/managing opioid and other substance use disorders",
+      "firstRenewalOnly": true,
+      "cadence": "ONE_TIME",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "One-time federal DEA MATE Act requirement for DEA-registered practitioners.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:SUBSTANCE_USE:sbirt-screening-brief-intervention-and-referral-to-treatment-approach-to-substance-use-disorder",
+      "topic": "SUBSTANCE_USE",
+      "hoursRequired": 2,
+      "description": "SBIRT (Screening, Brief Intervention, and Referral to Treatment) approach to substance use disorder",
+      "firstRenewalOnly": false,
+      "cadence": "INITIAL_LICENSE_ONLY",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "One-time requirement within 2 years of initial licensure. If taken in an even-year cycle, may also satisfy the even-year ethics/pain/addiction/SBIRT bucket.",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "NV:DO:SUICIDE_PREVENTION",
+      "topic": "SUICIDE_PREVENTION",
+      "hoursRequired": 2,
+      "description": "Evidence-based suicide prevention and awareness",
+      "firstRenewalOnly": false,
+      "cadence": "EVERY_N_YEARS",
+      "intervalYears": 4,
+      "lookbackYears": 4,
+      "attestationAllowed": true,
+      "notes": "Within 2 years of initial licensure and at least once every 4 years thereafter.",
+      "retiredAt": null
+    }
+  ],
+  "CA:MD": [
+    {
+      "requirementKey": "CA:MD:END_OF_LIFE_CARE",
+      "topic": "END_OF_LIFE_CARE",
+      "hoursRequired": 12,
+      "description": "Pain management and end-of-life care",
+      "firstRenewalOnly": true,
+      "cadence": "ONE_TIME",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "12 hrs one-time — Due by second renewal / within 4 years",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "CA:MD:OTHER_MANDATORY",
+      "topic": "OTHER_MANDATORY",
+      "hoursRequired": 10,
+      "description": "Geriatric medicine",
+      "firstRenewalOnly": false,
+      "cadence": "CONDITIONAL",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "10 hrs per cycle — If general internist or family physician with >25% elderly patients",
+      "retiredAt": null
+    },
+    {
+      "requirementKey": "CA:MD:SUBSTANCE_USE",
+      "topic": "SUBSTANCE_USE",
+      "hoursRequired": 8,
+      "description": "DEA MATE Act / SUD training",
+      "firstRenewalOnly": true,
+      "cadence": "ONE_TIME",
+      "intervalYears": null,
+      "lookbackYears": null,
+      "attestationAllowed": true,
+      "notes": "8 hrs one-time — If DEA-registered",
+      "retiredAt": null
+    }
   ]
 }

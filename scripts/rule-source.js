@@ -24,6 +24,16 @@ function parseHours(hours) {
   return match ? Number(match[1]) : 0;
 }
 
+// Hours a rule states for itself: a number given in the rules file, or a count
+// at the very start of its label ("2 hrs per cycle", "At least 1 hr, one-time").
+// Returns null when the rule states none. "Board course every 48 months" is not
+// 48 hours and "20% of total mandatory CME per cycle" is not 20.
+function statedHours(topic) {
+  if (typeof topic.hoursRequired === 'number' && Number.isFinite(topic.hoursRequired) && topic.hoursRequired >= 0) return topic.hoursRequired;
+  const match = String(topic.hours || '').match(/^(?:at least\s+)?(\d+(?:\.\d+)?)\s*(?:hrs?|hours?|credits?)\b/i);
+  return match ? Number(match[1]) : null;
+}
+
 function specialTopic(topic) {
   const text = `${topic.topic || ''} ${topic.note || ''}`.toLowerCase();
   if (/dea mate|mate training/.test(text)) return 'SUBSTANCE_USE';
@@ -43,4 +53,4 @@ function specialTopic(topic) {
 }
 
 
-module.exports = { loadStateRequirements, parseHours, specialTopic };
+module.exports = { loadStateRequirements, parseHours, statedHours, specialTopic };

@@ -1,45 +1,56 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
-const { loadStateRequirements, parseHours, specialTopic } = require('./rule-source');
+const { loadStateRequirements, statedHours, specialTopic } = require('./rule-source');
 const { planSync, withRequirementKeys } = require('./rule-sync-planner');
 const { databaseTarget, checksum, savePlan, requirePlan } = require('./reviewed-db-plan');
 const { labelRecurs, isOneTimeKind } = require('./label-cadence');
+// Reviewed pairings for stored rows that were entered by hand under another name
+// or category: { "NV:DO": { "<topic name in the rules file>": "<stored requirementKey>" } }.
+// The named topic continues that stored row, so its id and every completion
+// attached to it are kept instead of the row being retired and re-created.
+const IDENTITY_MAP = require('./requirement-identity-map.json');
 
 // A stored row is matched by exact description first. A renamed topic may then
 // inherit the stored row of its category only when that row is the only one
 // there, nothing else matched it, and the topic is the only one left unmatched.
 // A stored row is never lent to two topics, so a new rule cannot pick up a
 // sibling's cadence, attestation setting or notes.
-function matchExistingRows(topics, existingRows) {
+function matchExistingRows(topics, existingRows, continues = {}) {
   const mapped = topics.map(specialTopic);
-  const exact = topics.map((topic, index) => existingRows.find((row) => row.topic === mapped[index] && row.description === topic.topic));
+  const continued = topics.map((topic) => (continues[topic.topic] ? existingRows.find((row) => row.requirementKey === continues[topic.topic]) : undefined));
+  const reserved = new Set(continued.filter(Boolean));
+  const exact = topics.map((topic, index) => continued[index] ?? existingRows.find((row) => !reserved.has(row) && row.topic === mapped[index] && row.description === topic.topic));
   const claimed = new Set(exact.filter(Boolean));
   return topics.map((topic, index) => {
     if (exact[index]) return exact[index];
     const candidates = existingRows.filter((row) => row.topic === mapped[index]);
     const unmatched = topics.filter((other, otherIndex) => !exact[otherIndex] && mapped[otherIndex] === mapped[index]);
     return candidates.length === 1 && !claimed.has(candidates[0]) && unmatched.length === 1 ? candidates[0] : undefined;
-  });
+  }).map((row, index) => ({ row, continuedKey: continued[index]?.requirementKey }));
 }
 
 function sourceRows(state, licenseType, topics, existingRows, questions, conflicts) {
-  const matched = matchExistingRows(topics, existingRows);
+  const matched = matchExistingRows(topics, existingRows, IDENTITY_MAP[`${state}:${licenseType}`]);
   const found = [];
   const rows = topics.map((topic, index) => {
     const mapped = specialTopic(topic);
-    const existing = matched[index];
+    const existing = matched[index].row;
     const explicit = Boolean(topic.cadence) && (topic.cadence !== 'EVERY_N_YEARS' || topic.intervalYears > 0);
     if (!explicit) questions.push(`${state} ${licenseType}: ${topic.topic} — cadence/interval missing; proposed value requires Vera/Roz verification. Existing cadence fields are preserved; new rows use CONDITIONAL with UNVERIFIED-CADENCE.`);
     const cadence = explicit ? topic.cadence : existing ? existing.cadence : 'CONDITIONAL';
     const firstRenewalOnly = explicit ? ['ONE_TIME', 'FIRST_RENEWAL_ONLY', 'INITIAL_LICENSE_ONLY'].includes(cadence) : existing ? existing.firstRenewalOnly : false;
+    // Hours are written only when the rule states them. A label with no count
+    // keeps the stored hours; a new row with no count starts at 0.
+    const hours = statedHours(topic);
+    if (hours === null && !existing) questions.push(`${state} ${licenseType}: ${topic.topic} — the label "${topic.hours}" states no hour count; the new row starts at 0 hours. Give it hoursRequired in lib/state-requirements.ts if the rule has one.`);
     // The label is the rule's own statement of how often it applies. A one-time
     // cadence against a recurring label is the legacy text-inference fault (a
     // per-cycle rule tagged initial-only because its note said "Plus 3 hrs at
     // initial licensure"), so it is refused instead of preserved or written.
     if (labelRecurs(topic.hours) && isOneTimeKind(cadence, firstRenewalOnly)) found.push(`${state} ${licenseType}: ${topic.topic} — the label "${topic.hours}" says this rule recurs, but its ${explicit ? 'source' : 'stored'} cadence is ${cadence}. Set an explicit recurring cadence for it in lib/state-requirements.ts.`);
     return {
-      topic: mapped, hoursRequired: parseHours(topic.hours), description: topic.topic,
+      topic: mapped, hoursRequired: hours ?? (existing ? existing.hoursRequired : 0), description: topic.topic,
       firstRenewalOnly,
       cadence,
       intervalYears: explicit ? topic.intervalYears ?? null : existing ? existing.intervalYears : null,
@@ -50,7 +61,7 @@ function sourceRows(state, licenseType, topics, existingRows, questions, conflic
   });
   if (found.length && !conflicts) throw new Error(`Cadence conflict: ${found.join(' ')}`);
   if (found.length) conflicts.push(...found);
-  return withRequirementKeys(state, licenseType, rows, existingRows);
+  return withRequirementKeys(state, licenseType, rows, existingRows, matched.map((match) => match.continuedKey));
 }
 
 function appendQuestions(questions) {
@@ -97,7 +108,7 @@ async function main() {
   const questions = [];
   const args = process.argv.slice(2);
   const planPath = args.find((arg) => arg.startsWith('--plan='))?.slice('--plan='.length);
-  const sourceChecksum = checksum(['rule-source.js', 'rule-sync-planner.js', 'label-cadence.js', 'sync-rules-from-source.js', '../lib/state-requirements.ts'].map((file) => fs.readFileSync(path.join(__dirname, file), 'utf8')));
+  const sourceChecksum = checksum(['rule-source.js', 'rule-sync-planner.js', 'label-cadence.js', 'requirement-identity-map.json', 'sync-rules-from-source.js', '../lib/state-requirements.ts'].map((file) => fs.readFileSync(path.join(__dirname, file), 'utf8')));
   const target = process.env.DATABASE_URL ? databaseTarget(process.env.DATABASE_URL, args) : null;
   const identity = { kind: 'rule-sync', licenseType, sourceChecksum };
   if (dryRun) {
@@ -130,4 +141,4 @@ async function main() {
   } finally { appendQuestions(questions); await prisma.$disconnect(); }
 }
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = 1; });
-module.exports = { sourceRows, syncState };
+module.exports = { sourceRows, syncState, matchExistingRows };

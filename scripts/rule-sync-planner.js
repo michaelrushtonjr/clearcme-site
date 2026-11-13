@@ -3,15 +3,16 @@ const FIELDS = ['topic', 'hoursRequired', 'description', 'firstRenewalOnly', 'ca
 const CADENCE_FIELDS = new Set(['cadence', 'intervalYears', 'lookbackYears', 'firstRenewalOnly', 'attestationAllowed', 'notes']);
 const slug = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-function withRequirementKeys(state, licenseType, rows, existingRows = []) {
+function withRequirementKeys(state, licenseType, rows, existingRows = [], continuedKeys = []) {
   const counts = new Map();
   for (const row of rows) counts.set(row.topic, (counts.get(row.topic) || 0) + 1);
-  return rows.map((row) => {
+  return rows.map((row, index) => {
     const base = `${state}:${licenseType}:${row.topic}`;
     const matches = existingRows.filter((old) => old.topic === row.topic && old.description === row.description);
     if (matches.length > 1) throw new Error(`Ambiguous requirement identity: ${base} / ${row.description}`);
     // Retain an existing identity when a source adds/removes a sibling topic.
-    const requirementKey = matches[0]?.requirementKey || (counts.get(row.topic) > 1 ? `${base}:${slug(row.description)}` : base);
+    // A reviewed pairing (requirement-identity-map.json) keeps the stored identity outright.
+    const requirementKey = continuedKeys[index] || matches[0]?.requirementKey || (counts.get(row.topic) > 1 ? `${base}:${slug(row.description)}` : base);
     return { ...row, requirementKey, retiredAt: null };
   });
 }

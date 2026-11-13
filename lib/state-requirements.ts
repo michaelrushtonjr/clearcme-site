@@ -61,6 +61,8 @@ export interface MandatoryTopic {
   /** Populate only after the existing Vera/Roz fact-verification process. */
   cadence?: "EVERY_RENEWAL" | "ONE_TIME" | "FIRST_RENEWAL_ONLY" | "EVERY_N_YEARS" | "INITIAL_LICENSE_ONLY" | "CONDITIONAL";
   intervalYears?: number;
+  /** Hours as a number, for a label that does not open with a count ("Board course every 48 months"). */
+  hoursRequired?: number;
 }
 
 export interface StateRequirement {
