@@ -504,7 +504,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       { ...topic("Risk management", "10 hrs per cycle"), cadence: "EVERY_RENEWAL" },
       { ...topic("Board regulations review", "2 credits per cycle"), cadence: "EVERY_RENEWAL" },
-      { ...topic("Opioid education and pain management", "3 hrs per cycle", "If prescribing controlled substances"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Opioid education and pain management", "3 hrs per cycle", "If prescribing controlled substances"), cadence: "CONDITIONAL", intervalYears: 2 },
       { ...topic("Implicit bias in health care", "2 hrs one-time", "Required if not completed previously"), cadence: "ONE_TIME" },
       { ...topic("End-of-life care", "2 hrs one-time"), cadence: "ONE_TIME" },
       { ...topic("Child abuse recognition and reporting", "One-time training"), cadence: "ONE_TIME" },
