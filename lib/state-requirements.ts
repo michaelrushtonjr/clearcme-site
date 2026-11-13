@@ -603,7 +603,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Nutrition and metabolic health", "1 hr per renewal cycle", "In force since Jan. 23, 2026 (SB 2401, special session)"),
-      topic("Abortion instructional course", "Review within prior 2 years before performing an abortion", "Scope-triggered; effective Jan. 1, 2026; medical-emergency exception"),
+      { ...topic("Abortion instructional course", "Review within prior 2 years before performing an abortion", "Scope-triggered; effective Jan. 1, 2026; medical-emergency exception"), cadence: "CONDITIONAL", intervalYears: 2 },
       mateTopic(),
     ],
   },
