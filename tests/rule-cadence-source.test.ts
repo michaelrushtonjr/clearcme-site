@@ -46,8 +46,8 @@ describe("syncing the rules file over the rows the May 2026 text inference store
     ["TX:DO", "TX:DO:HUMAN_TRAFFICKING", "FIRST_RENEWAL_ONLY", "EVERY_N_YEARS"],
     ["OR:MD", "OR:MD:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "EVERY_N_YEARS"],
     ["OR:DO", "OR:DO:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "EVERY_N_YEARS"],
-    ["WV:MD", "WV:MD:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "EVERY_RENEWAL"],
-    ["WV:DO", "WV:DO:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "EVERY_RENEWAL"],
+    ["WV:MD", "WV:MD:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "CONDITIONAL"],
+    ["WV:DO", "WV:DO:OPIOID_PRESCRIBING", "INITIAL_LICENSE_ONLY", "CONDITIONAL"],
   ] as const)("%s: %s goes from %s to %s and loses its one-time flag", (key, requirementKey, from, to) => {
     expect(plannedChange(key, requirementKey)).toMatchObject({ cadence: { from, to }, firstRenewalOnly: { from: true, to: false } });
   });
@@ -56,6 +56,8 @@ describe("syncing the rules file over the rows the May 2026 text inference store
     expect(plannedChange("NY:MD", "NY:MD:INFECTION_CONTROL")).not.toHaveProperty("intervalYears"); // already stored as 4
     expect(plannedChange("OR:MD", "OR:MD:OPIOID_PRESCRIBING")).not.toHaveProperty("intervalYears"); // already stored as 2
     expect(plannedChange("TX:MD", "TX:MD:HUMAN_TRAFFICKING")).toMatchObject({ intervalYears: { from: null, to: 6 }, lookbackYears: { from: null, to: 6 } });
+    // Prescriber-only rule: Conditional, and a completion lasts one 2-year cycle.
+    expect(plannedChange("WV:DO", "WV:DO:OPIOID_PRESCRIBING")).toMatchObject({ intervalYears: { from: null, to: 2 }, lookbackYears: { from: null, to: 2 } });
   });
 
   test("rules whose label is one-time keep their stored one-time tag", () => {
