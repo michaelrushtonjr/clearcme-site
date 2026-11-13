@@ -1042,7 +1042,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; DO renewal due on or before July 1",
     mandatoryTopics: [
-      topic("Drug diversion / best-practice prescribing", "3 hrs per 2-year cycle", "Each licensing period if prescribing, administering, or dispensing controlled substances in West Virginia (waivable if you did none in the reporting period); counts within the 32 total hours; must be WV Board of Osteopathic Medicine-approved; new licensees complete it within 1 year of initial licensure"),
+      { ...topic("Drug diversion / best-practice prescribing", "3 hrs per 2-year cycle", "Each licensing period if prescribing, administering, or dispensing controlled substances in West Virginia (waivable if you did none in the reporting period); counts within the 32 total hours; must be WV Board of Osteopathic Medicine-approved; new licensees complete it within 1 year of initial licensure"), cadence: "EVERY_RENEWAL" },
       topic("Nutrition education", "At least 2 hrs per cycle", "2 of the required 32 hours in the subject matter of Nutrition (HB 4951 effective June 12, 2026; Board of Osteopathic Medicine emergency rule 24 CSR 1 §24-1-15.2.8, filed Aug. 2026)"),
       mateTopic(),
     ],
