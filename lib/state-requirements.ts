@@ -790,7 +790,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle; MD licenses expire January 31 of even-numbered years",
     mandatoryTopics: [
-      { ...topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"), cadence: "EVERY_RENEWAL" },
+      { ...topic("Controlled substance prescribing", "3.5 hrs every renewal", "If prescribing controlled substances"), cadence: "CONDITIONAL", intervalYears: 2 },
       { ...topic("SBIRT", "3.5 hrs one-time", "Beginning with the licensing period after Jan. 1, 2024; satisfies the controlled-substance CE requirement for that cycle"), cadence: "ONE_TIME" },
       { ...topic("Suicide prevention", "0.5 hr per renewal", "DOPL's renewal checklist requires completing at least ONE of its three named online trainings (Suicide Safety Planning with Patients, Talking to Patients About Suicide, or Counseling on Access to Lethal Means — \"0.5 credit\" each, CE-creditable); Utah Code §58-1-601 itself is worded permissively"), cadence: "EVERY_RENEWAL" },
       { ...mateTopic(), cadence: "ONE_TIME" },
