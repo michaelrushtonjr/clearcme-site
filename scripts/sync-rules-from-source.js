@@ -4,18 +4,43 @@ const path = require('path');
 const { loadStateRequirements, parseHours, specialTopic } = require('./rule-source');
 const { planSync, withRequirementKeys } = require('./rule-sync-planner');
 const { databaseTarget, checksum, savePlan, requirePlan } = require('./reviewed-db-plan');
+const { labelRecurs, isOneTimeKind } = require('./label-cadence');
 
-function sourceRows(state, licenseType, topics, existingRows, questions) {
-  const rows = topics.map((topic) => {
+// A stored row is matched by exact description first. A renamed topic may then
+// inherit the stored row of its category only when that row is the only one
+// there, nothing else matched it, and the topic is the only one left unmatched.
+// A stored row is never lent to two topics, so a new rule cannot pick up a
+// sibling's cadence, attestation setting or notes.
+function matchExistingRows(topics, existingRows) {
+  const mapped = topics.map(specialTopic);
+  const exact = topics.map((topic, index) => existingRows.find((row) => row.topic === mapped[index] && row.description === topic.topic));
+  const claimed = new Set(exact.filter(Boolean));
+  return topics.map((topic, index) => {
+    if (exact[index]) return exact[index];
+    const candidates = existingRows.filter((row) => row.topic === mapped[index]);
+    const unmatched = topics.filter((other, otherIndex) => !exact[otherIndex] && mapped[otherIndex] === mapped[index]);
+    return candidates.length === 1 && !claimed.has(candidates[0]) && unmatched.length === 1 ? candidates[0] : undefined;
+  });
+}
+
+function sourceRows(state, licenseType, topics, existingRows, questions, conflicts) {
+  const matched = matchExistingRows(topics, existingRows);
+  const found = [];
+  const rows = topics.map((topic, index) => {
     const mapped = specialTopic(topic);
-    const candidates = existingRows.filter((row) => row.topic === mapped);
-    const existing = candidates.find((row) => row.description === topic.topic) ?? (candidates.length === 1 ? candidates[0] : undefined);
+    const existing = matched[index];
     const explicit = Boolean(topic.cadence) && (topic.cadence !== 'EVERY_N_YEARS' || topic.intervalYears > 0);
     if (!explicit) questions.push(`${state} ${licenseType}: ${topic.topic} — cadence/interval missing; proposed value requires Vera/Roz verification. Existing cadence fields are preserved; new rows use CONDITIONAL with UNVERIFIED-CADENCE.`);
     const cadence = explicit ? topic.cadence : existing ? existing.cadence : 'CONDITIONAL';
+    const firstRenewalOnly = explicit ? ['ONE_TIME', 'FIRST_RENEWAL_ONLY', 'INITIAL_LICENSE_ONLY'].includes(cadence) : existing ? existing.firstRenewalOnly : false;
+    // The label is the rule's own statement of how often it applies. A one-time
+    // cadence against a recurring label is the legacy text-inference fault (a
+    // per-cycle rule tagged initial-only because its note said "Plus 3 hrs at
+    // initial licensure"), so it is refused instead of preserved or written.
+    if (labelRecurs(topic.hours) && isOneTimeKind(cadence, firstRenewalOnly)) found.push(`${state} ${licenseType}: ${topic.topic} — the label "${topic.hours}" says this rule recurs, but its ${explicit ? 'source' : 'stored'} cadence is ${cadence}. Set an explicit recurring cadence for it in lib/state-requirements.ts.`);
     return {
       topic: mapped, hoursRequired: parseHours(topic.hours), description: topic.topic,
-      firstRenewalOnly: explicit ? ['ONE_TIME', 'FIRST_RENEWAL_ONLY', 'INITIAL_LICENSE_ONLY'].includes(cadence) : existing ? existing.firstRenewalOnly : false,
+      firstRenewalOnly,
       cadence,
       intervalYears: explicit ? topic.intervalYears ?? null : existing ? existing.intervalYears : null,
       lookbackYears: !explicit && existing ? existing.lookbackYears : existing?.lookbackYears ?? topic.intervalYears ?? null,
@@ -23,6 +48,8 @@ function sourceRows(state, licenseType, topics, existingRows, questions) {
       notes: !explicit && existing ? existing.notes : `${explicit ? '' : 'UNVERIFIED-CADENCE: '}${[topic.hours, topic.note].filter(Boolean).join(' — ')}` || null,
     };
   });
+  if (found.length && !conflicts) throw new Error(`Cadence conflict: ${found.join(' ')}`);
+  if (found.length) conflicts.push(...found);
   return withRequirementKeys(state, licenseType, rows, existingRows);
 }
 
@@ -70,21 +97,23 @@ async function main() {
   const questions = [];
   const args = process.argv.slice(2);
   const planPath = args.find((arg) => arg.startsWith('--plan='))?.slice('--plan='.length);
-  const sourceChecksum = checksum(['rule-source.js', 'rule-sync-planner.js', 'sync-rules-from-source.js', '../lib/state-requirements.ts'].map((file) => fs.readFileSync(path.join(__dirname, file), 'utf8')));
+  const sourceChecksum = checksum(['rule-source.js', 'rule-sync-planner.js', 'label-cadence.js', 'sync-rules-from-source.js', '../lib/state-requirements.ts'].map((file) => fs.readFileSync(path.join(__dirname, file), 'utf8')));
   const target = process.env.DATABASE_URL ? databaseTarget(process.env.DATABASE_URL, args) : null;
   const identity = { kind: 'rule-sync', licenseType, sourceChecksum };
   if (dryRun) {
     const snapshotPath = process.argv.find((arg) => arg.startsWith('--existing='))?.slice('--existing='.length);
     if (!snapshotPath) throw new Error('--dry-run requires --existing=<JSON snapshot of ComplianceRule[] including mandatoryRequirements>; use [] only for an empty baseline. No database is contacted.');
     const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+    const conflicts = [];
     const results = Object.keys(requirements).sort().map((state) => {
       const requirement = requirements[state][licenseType];
       if (requirement.cycleYears === null) return { state, skipped: true, reason: 'Variable cycle cannot be represented safely' };
       const before = snapshot.find((rule) => rule.state === state && rule.licenseType === licenseType);
       const rows = before?.mandatoryRequirements ?? [];
       const rule = { state, licenseType, totalHours: requirement.totalHours ?? 0, renewalCycle: requirement.cycleYears * 12, notes: `${requirement.totalHoursLabel}; ${requirement.cycleLabel}` };
-      return { state, ruleDiff: Object.fromEntries(Object.entries(rule).filter(([key, value]) => before?.[key] !== value).map(([key, value]) => [key, { from: before?.[key] ?? null, to: value }])), ...planSync(sourceRows(state, licenseType, requirement.mandatoryTopics, rows, questions), rows) };
+      return { state, ruleDiff: Object.fromEntries(Object.entries(rule).filter(([key, value]) => before?.[key] !== value).map(([key, value]) => [key, { from: before?.[key] ?? null, to: value }])), ...planSync(sourceRows(state, licenseType, requirement.mandatoryTopics, rows, questions, conflicts), rows) };
     });
+    if (conflicts.length) throw new Error(`No plan written. ${conflicts.length} cadence conflict(s):\n- ${conflicts.join('\n- ')}`);
     const plan = { ...identity, dryRun: true, baseline: snapshotPath, states: results };
     savePlan(plan, planPath);
     appendQuestions(questions);
