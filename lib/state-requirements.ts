@@ -533,7 +533,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
       topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "Required each renewal; not generally prorated with first-renewal general hours"),
-      topic("Maine jurisprudence exam", "Every other renewal", "Non-CME renewal requirement; no CME credit awarded"),
+      { ...topic("Maine jurisprudence exam", "Every other renewal", "Non-CME renewal requirement; no CME credit awarded"), cadence: "EVERY_N_YEARS", intervalYears: 4 },
       mateTopic(),
     ],
   },
@@ -923,7 +923,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "If prescribing opioid medication (Maine Joint Rule Ch. 21 §5.3, Board of Osteopathic Licensure)"),
+      { ...topic("Controlled substance / opioid prescribing", "3 hrs per cycle", "If prescribing opioid medication (Maine Joint Rule Ch. 21 §5.3, Board of Osteopathic Licensure)"), cadence: "CONDITIONAL" },
       mateTopic(),
     ],
   },
