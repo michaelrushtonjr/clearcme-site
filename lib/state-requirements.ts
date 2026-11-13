@@ -522,7 +522,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("New Physician Orientation", "Required before first renewal", "Non-CME Maryland Board orientation requirement"),
       topic("Implicit bias + structural racism training", "One-time", "Required for the first renewal occurring on or after Apr. 1, 2026; licensees who already completed implicit-bias training for a prior renewal need only the structural-racism training"),
-      topic("Controlled dangerous substances CME", "2 hrs one-time", "If Maryland CDS registrant (since 2018)"),
+      { ...topic("Controlled dangerous substances CME", "2 hrs one-time", "If Maryland CDS registrant (since 2018)"), cadence: "CONDITIONAL" },
       mateTopic(),
     ],
   },
