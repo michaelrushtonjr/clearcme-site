@@ -707,7 +707,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year renewal cycle",
     mandatoryTopics: [
-      topic("Pain management", "1 hr every 2 years", "Also required at initial licensure"),
+      { ...topic("Pain management", "1 hr every 2 years", "Also required at initial licensure"), cadence: "EVERY_N_YEARS", intervalYears: 2 },
       topic("Cultural competency", "1 hr every year"),
       mateTopic(),
     ],
