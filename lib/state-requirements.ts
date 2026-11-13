@@ -719,7 +719,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleLabel: "2-year renewal cycle; first-time PA licensure is CME-exempt for the following biennial renewal period",
     mandatoryTopics: [
       topic("Patient safety / risk management", "12 hrs per cycle"),
-      topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
+      { ...topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"), cadence: "EVERY_RENEWAL" },
       topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA MD prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
       topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
       topic("Organ and tissue donation / recovery", "2 hrs one-time", "In effect since May 1, 2026; deadline depends on license date — licensed before May 1, 2026: within 5 years of licensure renewal; licensed on or after: within 5 years of initial licensure; reactivated on or after: within 5 years of reactivation (49 Pa. Code 16.19(c)(1))"),
@@ -983,7 +983,7 @@ const doOverrides: Partial<Record<StateCode, RequirementSeed>> = {
     cycleLabel: "2-year renewal cycle; first-time PA licensure is CME-exempt for the following biennial renewal period",
     mandatoryTopics: [
       topic("Patient safety / risk management", "12 hrs per cycle", "Category 1 or 2"),
-      topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"),
+      { ...topic("Child abuse recognition and reporting", "2 hrs per cycle", "Plus 3 hrs at initial licensure"), cadence: "EVERY_RENEWAL" },
       topic("Pain management / opioid prescribing", "2 hrs per cycle", "For PA DO prescribers/dispensers unless DEA-exempt and not prescribing under another DEA number"),
       topic("Initial opioid education", "4 hrs one-time", "Within 12 months after initial licensure/certification if authorized to prescribe or dispense"),
       topic("Organ and tissue donation / recovery", "2 hrs one-time", "In effect since May 1, 2026; deadline depends on license date — licensed before May 1, 2026: within 5 years of licensure renewal; licensed on or after: within 5 years of initial licensure; reactivated on or after: within 5 years of reactivation (49 Pa. Code 25.271(c)(6)(i))"),
