@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { consoleFontVars } from "@/lib/fonts";
 import "./globals.css";
 import { AcquisitionAnalytics } from "@/components/seo/AcquisitionAnalytics";
+import { LINK_PREVIEW_IMAGE } from "@/lib/seo";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clearcme.ai"),
@@ -19,11 +20,14 @@ export const metadata: Metadata = {
     title: "ClearCME — Your CME Compliance, Handled",
     description: "Map state CME requirements, track hours of CME, and see exactly what is missing before renewal.",
     type: "website",
+    siteName: "ClearCME",
+    images: [LINK_PREVIEW_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "ClearCME — Your CME Compliance, Handled",
     description: "Track hours of CME and close state-license gaps before renewal.",
+    images: [LINK_PREVIEW_IMAGE],
   },
 };
 

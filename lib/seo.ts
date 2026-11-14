@@ -4,12 +4,24 @@ export const SITE_URL = "https://clearcme.ai";
 export const AUTHOR_PATH = "/about/michael-rushton";
 export const PUBLISHED = "2026-09-18";
 
+// The picture shown when a ClearCME link is shared (Open Graph / Twitter card).
+// Drawn by design/link-preview/generate.mjs. A page that sets its own
+// `openGraph` or `twitter` object replaces the root layout's, so every such
+// object must carry these images itself; pageMetadata() does.
+export const LINK_PREVIEW_IMAGE = {
+  url: "/og/clearcme-link-preview-v1.png",
+  width: 1200,
+  height: 630,
+  type: "image/png",
+  alt: "ClearCME. Know exactly where you stand for your next renewal. State CME requirements for physicians, all in one place.",
+};
+
 export function pageMetadata(title: string, description: string, path: string): Metadata {
   return {
     title, description,
     alternates: { canonical: `${SITE_URL}${path}` },
-    openGraph: { title, description, url: `${SITE_URL}${path}`, type: "website", siteName: "ClearCME" },
-    twitter: { card: "summary", title, description },
+    openGraph: { title, description, url: `${SITE_URL}${path}`, type: "website", siteName: "ClearCME", images: [LINK_PREVIEW_IMAGE] },
+    twitter: { card: "summary_large_image", title, description, images: [LINK_PREVIEW_IMAGE] },
   };
 }
 
