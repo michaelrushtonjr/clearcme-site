@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
+import FreeReadsNote, { freeReadsBlockReason } from "@/components/FreeReadsNote";
+import type { FreeReads } from "@/lib/entitlements";
 import {
   ExtractionFailedCard,
   NeedsReviewCard,
@@ -65,6 +67,8 @@ interface ComplianceImpact {
 interface MobileCameraUploadProps {
   userId: string;
   onUploadComplete?: () => void;
+  /** Free certificate reads left when the page loaded; null or absent when reads are unlimited. */
+  freeReads?: FreeReads | null;
 }
 
 const formatTopicLabel = formatSpecialTopic;
@@ -140,8 +144,10 @@ function summarizeComplianceImpact(
   };
 }
 
-export default function MobileCameraUpload({ onUploadComplete, userId }: MobileCameraUploadProps) {
+export default function MobileCameraUpload({ onUploadComplete, userId, freeReads: initialFreeReads }: MobileCameraUploadProps) {
   const router = useRouter();
+  // Starts from the server's count and follows each upload response.
+  const [reads, setReads] = useState<FreeReads | null | undefined>(initialFreeReads);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
@@ -233,6 +239,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
           // Free extraction limit reached — show an upgrade prompt, not an error
           const err = await res.json().catch(() => ({}));
           setUpgradeRequired(err.reason === "attempts" ? "attempts" : "slots");
+          setReads((current) => (current ? { ...current, left: 0 } : current));
           setUploadState("idle");
           setPreviewSrc(null);
           setCapturedFile(null);
@@ -244,6 +251,8 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
         }
 
         const data = await res.json();
+        // The server sends the count after every read (null = unlimited).
+        if (data.freeReads !== undefined) setReads(data.freeReads);
         const cert = data.certificate;
         const isNeedsReview = cert?.extractionStatus === "NEEDS_REVIEW";
         const hasExtracted = cert?.extractionStatus === "COMPLETED" || isNeedsReview;
@@ -351,6 +360,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
 
     return (
       <div className="space-y-4">
+      <FreeReadsNote reads={reads} />
       <div className={`space-y-4 rounded-2xl border p-4 text-left shadow-sm ${cardTone}`}>
         <div className="flex items-start gap-3">
           <div className={`mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm ${accentText}`}>
@@ -478,15 +488,21 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
     );
   }
 
+  // With no reads left there is nothing to scan: show the limit card, not the camera.
+  const blocked = upgradeRequired || freeReadsBlockReason(reads);
+
   return (
     <div className="space-y-3">
-      {upgradeRequired && <UpgradeNotice feature="extraction" reason={upgradeRequired} />}
+      {blocked ? <UpgradeNotice feature="extraction" reason={blocked} /> : <FreeReadsNote reads={reads} />}
 
       {errorMsg && (
         <div className="p-3 bg-[var(--status-miss-bg)] border border-[rgba(221,107,64,0.28)] rounded-xl text-sm text-[var(--status-miss)]">
           {errorMsg}
         </div>
       )}
+
+      {!blocked && (
+        <>
 
       {/* Primary CTA: Camera */}
       <button
@@ -550,6 +566,8 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
       <p className="text-[10px] text-[var(--ink-3)] text-center pt-1">
         AI reads hours of CME · ~10 seconds · Encrypted in transit
       </p>
+        </>
+      )}
     </div>
   );
 }

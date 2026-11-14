@@ -5,6 +5,7 @@ import UpgradeNotice from "@/components/UpgradeNotice";
 import {
   FREE_EXTRACTION_LIMIT,
   FREE_SCAN_ATTEMPT_LIMIT,
+  freeReads,
   getEntitlements,
 } from "@/lib/entitlements";
 
@@ -45,6 +46,9 @@ export default async function UploadPage() {
     : entitlements.extractionAttempts >= FREE_SCAN_ATTEMPT_LIMIT
     ? "attempts"
     : false;
+  // Shown above the uploader before the first file: "2 of 3 free certificate
+  // reads left". Null for paid and grandfathered accounts — no counter.
+  const readsLeft = freeReads(entitlements);
 
   return (
     <div>
@@ -66,12 +70,12 @@ export default async function UploadPage() {
             <>
               {/* Mobile: camera-first upload */}
               <div className="sm:hidden">
-                <MobileCameraUpload userId={userId} />
+                <MobileCameraUpload userId={userId} freeReads={readsLeft} />
               </div>
 
               {/* Desktop: drag-and-drop + processing queue */}
               <div className="hidden sm:block">
-                <CertificateUpload userId={userId} />
+                <CertificateUpload userId={userId} freeReads={readsLeft} />
               </div>
             </>
           )}

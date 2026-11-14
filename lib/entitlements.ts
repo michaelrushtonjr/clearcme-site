@@ -72,6 +72,36 @@ export async function getEntitlements(userId: string): Promise<Entitlements> {
   };
 }
 
+/** Free certificate reads on an account with a limit. */
+export interface FreeReads {
+  /** Clean reads included: FREE_EXTRACTION_LIMIT. */
+  limit: number;
+  /** Clean reads used so far (lifetime). */
+  used: number;
+  /** Uploads that can still be read: remaining clean reads, capped by the scan backstop. */
+  left: number;
+}
+
+/**
+ * The count the upload screen shows. Null when reads are unlimited (paid or
+ * grandfathered accounts), so those accounts see no counter.
+ */
+export function freeReads(entitlements: Pick<Entitlements, "ungated" | "extractionsUsed" | "extractionAttempts">): FreeReads | null {
+  if (entitlements.ungated) return null;
+  const used = Math.min(Math.max(entitlements.extractionsUsed, 0), FREE_EXTRACTION_LIMIT);
+  const attemptsLeft = Math.max(FREE_SCAN_ATTEMPT_LIMIT - entitlements.extractionAttempts, 0);
+  return { limit: FREE_EXTRACTION_LIMIT, used, left: Math.min(FREE_EXTRACTION_LIMIT - used, attemptsLeft) };
+}
+
+/** Current count for one account; undefined if it cannot be read (the upload itself must not fail over a counter). */
+export async function getFreeReads(userId: string): Promise<FreeReads | null | undefined> {
+  try {
+    return freeReads(await getEntitlements(userId));
+  } catch {
+    return undefined;
+  }
+}
+
 // The row lock serializes the reservation count and conditional increment across
 // both upload routes. Leases recover slots after a killed serverless function.
 export async function reserveExtractionAttempt(userId: string): Promise<{ id: string } | NextResponse> {

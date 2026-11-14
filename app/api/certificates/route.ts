@@ -6,6 +6,7 @@ import { getMobileUserId } from "@/lib/mobile-auth";
 import {
   reserveExtractionAttempt,
   finishExtractionAttempt,
+  getFreeReads,
 } from "@/lib/entitlements";
 import Anthropic from "@anthropic-ai/sdk";
 import { storeCertificateOriginal } from "@/lib/certificate-storage";
@@ -198,7 +199,8 @@ export async function POST(req: NextRequest) {
       await finishExtractionAttempt(userId, reservationId, clean);
       reservationId = null;
       trackEvent(userId, "certificate_added", { method: "upload", result: clean ? "extracted" : "needs_review" });
-      return NextResponse.json({ certificate: updated, ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
+      // freeReads: what the upload screen's counter should now say (null = unlimited).
+      return NextResponse.json({ certificate: updated, freeReads: await getFreeReads(userId), ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
     } else {
       // Full extraction failed — store certificate but mark for manual review.
       // Persist the error so the UI and support can say why it failed.
@@ -216,6 +218,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           certificate: updated,
+          freeReads: await getFreeReads(userId),
           warning: "Certificate uploaded but AI extraction failed. Manual review required.",
           extractionError: extractionResult.error ?? "Unknown error",
         },

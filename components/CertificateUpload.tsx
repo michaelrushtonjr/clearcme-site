@@ -5,6 +5,8 @@ import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
+import FreeReadsNote, { freeReadsBlockReason } from "@/components/FreeReadsNote";
+import type { FreeReads } from "@/lib/entitlements";
 import { TopicHoursFields, useTopicSplit } from "@/components/CertificateTopicHours";
 import { detectedTopics, formatSpecialTopic, reviewPrefill, topicAllocationsFromSplit } from "@/lib/certificate-review";
 import { formatDateUTC } from "@/lib/dates";
@@ -158,7 +160,13 @@ export function uploadedCertFromResponse(cert: UploadResponseCertificate, warnin
 
 const STILL_NEEDS_REVIEW = "Saved, but this certificate still needs review — check the completion date and hours, then confirm again.";
 
-export default function CertificateUpload({ userId }: { userId: string }) {
+export default function CertificateUpload({ userId, freeReads: initialFreeReads }: {
+  userId: string;
+  /** Free certificate reads left when the page loaded; null or absent when reads are unlimited. */
+  freeReads?: FreeReads | null;
+}) {
+  // Starts from the server's count and follows each upload response.
+  const [reads, setReads] = useState<FreeReads | null | undefined>(initialFreeReads);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [progress, setProgress] = useState(0);
   const [uploadedCerts, setUploadedCerts] = useState<UploadedCert[]>([]);
@@ -176,6 +184,7 @@ export default function CertificateUpload({ userId }: { userId: string }) {
     if (res.status === 402) {
       // Free extraction limit reached — render as an upgrade prompt, not an error
       const err = await res.json().catch(() => ({}));
+      setReads((current) => (current ? { ...current, left: 0 } : current));
       return {
         id: crypto.randomUUID(),
         fileName: file.name,
@@ -198,6 +207,8 @@ export default function CertificateUpload({ userId }: { userId: string }) {
     }
 
     const data = await res.json();
+    // The server sends the count after every read (null = unlimited).
+    if (data.freeReads !== undefined) setReads(data.freeReads);
     return uploadedCertFromResponse(data.certificate, data.warning);
   }, [userId]);
 
@@ -263,6 +274,11 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   const blockedCert = uploadedCerts.find((cert) => cert.upgradeRequired);
   const summary = summarizeUploadSession(Object.values(resolved));
   const showSummary = summary.confirmedCount > 0 || summary.pendingCount > 0;
+  // With no reads left there is nothing to drop a file onto: show the limit card instead.
+  const readsBlocked = freeReadsBlockReason(reads);
+  const showLimitInsteadOfDropZone = uploadState === "idle" && readsBlocked !== false;
+  // The limit card already says the reads are used up; don't say it twice.
+  const showReadsNote = !showLimitInsteadOfDropZone && !(uploadState === "done" && blockedCert);
 
   const reset = () => {
     // Moving on without confirming leaves those certificates pending review.
@@ -275,6 +291,8 @@ export default function CertificateUpload({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
+      {showReadsNote && <FreeReadsNote reads={reads} />}
+
       {/* Session summary — only certificates the user has confirmed, or left pending */}
       {showSummary && (
         <div className="product-callout-brand p-5">
@@ -337,8 +355,10 @@ export default function CertificateUpload({ userId }: { userId: string }) {
         </div>
       )}
 
+      {showLimitInsteadOfDropZone && readsBlocked && <UpgradeNotice feature="extraction" reason={readsBlocked} />}
+
       {/* Drop zone */}
-      {uploadState !== "done" && (
+      {uploadState !== "done" && !showLimitInsteadOfDropZone && (
         <div
           {...getRootProps()}
           className={`relative border-2 border-dashed rounded-[var(--radius-lg)] p-10 text-center transition-all cursor-pointer ${

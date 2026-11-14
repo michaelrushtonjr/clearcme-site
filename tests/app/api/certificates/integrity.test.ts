@@ -13,7 +13,7 @@ vi.mock("@vercel/blob", () => blobs);
 vi.mock("@/lib/upload-rate-limit", () => ({ limitCertificateUpload: () => null }));
 vi.mock("@/auth", () => ({ auth: vi.fn(async () => ({ user: { id: "user", name: "Test Physician" } })) }));
 vi.mock("@/lib/mobile-auth", () => ({ getMobileUserId: vi.fn(async () => null) }));
-vi.mock("@/lib/entitlements", () => ({ getEntitlements: vi.fn(async () => ({ ungated: true })), finishExtractionAttempt: vi.fn(), reserveExtractionAttempt: vi.fn(async () => ({ id: "reservation" })), upgradeRequiredResponse: vi.fn() }));
+vi.mock("@/lib/entitlements", () => ({ getEntitlements: vi.fn(async () => ({ ungated: true })), getFreeReads: vi.fn(async () => ({ limit: 3, used: 1, left: 2 })), finishExtractionAttempt: vi.fn(), reserveExtractionAttempt: vi.fn(async () => ({ id: "reservation" })), upgradeRequiredResponse: vi.fn() }));
 import { finishExtractionAttempt, reserveExtractionAttempt } from "@/lib/entitlements";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { POST as upload } from "@/app/api/certificates/route";
@@ -86,8 +86,10 @@ afterEach(() => vi.unstubAllEnvs());
 test("A1 one-hour/max-twenty fixture earns 1.0, preserves maximum 20, and counts only 1", async () => {
   const response = await upload(fileRequest());
   expect(response.status).toBe(201);
-  const { certificate } = await response.json();
+  const { certificate, freeReads } = await response.json();
   expect(certificate).toMatchObject({ hoursEarned: 1, creditHours: 1, activityMaxHours: 20, extractionStatus: "COMPLETED", storageStatus: "STORED", provider: "Test Medical Education" });
+  // The upload screen's counter reads this after every upload.
+  expect(freeReads).toEqual({ limit: 3, used: 1, left: 2 });
   expect(evaluateLicense(licenseInput({ certificates: [...rows.values()] })).generalHours.counted).toBe(1);
   expect(ai.create).not.toHaveBeenCalled();
 });
