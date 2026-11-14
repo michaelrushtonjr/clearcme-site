@@ -14,6 +14,7 @@ import {
   setupStepLabel,
   totalSetupSteps,
 } from "@/lib/setup-steps";
+import { isStateComputed, notComputedNotice, stateOptionLabel } from "@/lib/state-availability";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -182,6 +183,39 @@ async function loadConditionalQuestions(): Promise<ConditionalQuestion[] | null>
     // The caller decides whether to continue or preserve a parked answer draft.
     return null;
   }
+}
+
+/**
+ * Shown as soon as a physician picks a state the account cannot compute yet
+ * (Kansas today), so they know before finishing setup what they will and will
+ * not get. Renders nothing for a computed state.
+ */
+function NotComputedNote({
+  stateName,
+  state,
+  licenseType,
+  compact = false,
+}: {
+  stateName: string;
+  state: string;
+  licenseType?: string;
+  compact?: boolean;
+}) {
+  const notice = notComputedNotice(stateName, state, licenseType);
+  if (!notice) return null;
+  return (
+    <div
+      role="note"
+      className={`rounded-xl border border-slate-200 bg-slate-50 text-slate-600 ${
+        compact ? "px-3 py-2 text-xs" : "mt-4 px-4 py-3 text-sm"
+      }`}
+    >
+      <p className="font-semibold text-slate-800">{notice.title}</p>
+      {notice.reason && <p className="mt-1">{notice.reason}</p>}
+      <p className="mt-1">{notice.included}</p>
+      <p className="mt-1">{notice.notIncluded}</p>
+    </div>
+  );
 }
 
 const LICENSE_TYPES = ["MD", "DO"] as const;
@@ -689,10 +723,11 @@ export default function SetupWizard({
                 </option>
                 {US_STATES.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.name}
+                    {stateOptionLabel(s.name, s.code)}
                   </option>
                 ))}
               </select>
+              {state && <NotComputedNote stateName={selectedStateName} state={state} />}
               <p className="text-xs text-slate-400 mt-3">
                 Primary state only — you&apos;ll add more licenses in a moment.
               </p>
@@ -763,6 +798,11 @@ export default function SetupWizard({
                     </button>
                   ))}
                 </div>
+                {/* Only when one license type is held back but the state as a
+                    whole is not; a wholly held state was already flagged on step 1. */}
+                {state && licenseType && isStateComputed(state) && (
+                  <NotComputedNote stateName={selectedStateName} state={state} licenseType={licenseType} />
+                )}
               </div>
 
               {/* Specialty */}
@@ -1101,9 +1141,17 @@ export default function SetupWizard({
                         >
                           <option value="" disabled>Select state…</option>
                           {US_STATES.filter((s) => s.code !== state).map((s) => (
-                            <option key={s.code} value={s.code}>{s.name}</option>
+                            <option key={s.code} value={s.code}>{stateOptionLabel(s.name, s.code)}</option>
                           ))}
                         </select>
+                        {lic.state && (
+                          <NotComputedNote
+                            stateName={additionalStateName}
+                            state={lic.state}
+                            licenseType={lic.licenseType || undefined}
+                            compact
+                          />
+                        )}
 
                         {/* License Type */}
                         <div className="flex gap-2">
