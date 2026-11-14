@@ -20,8 +20,13 @@ import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability"
 import { dashboardCompliance, licensePractice } from "@/lib/compliance-adapters";
 import { formatTopic, requirementDisplayName } from "@/lib/requirement-display";
 import { formatStateName } from "@/lib/state-names";
+import { scheduleSignupDayEmail } from "@/lib/signup-day-email";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ onboarded?: string | string[] }>;
+} = {}) {
   const session = await auth();
   const userId = session!.user!.id!;
 
@@ -53,6 +58,11 @@ export default async function DashboardPage() {
   if (licenses.length === 0 && certificates.length === 0) {
     redirect("/dashboard/setup");
   }
+
+  // Setup lands here with ?onboarded=1. That first arrival is the signup-day
+  // email's trigger (lib/signup-day-email.ts): off unless its flag is on, sent
+  // after this response, once per account.
+  if (licenses.length > 0 && (await searchParams)?.onboarded === "1") scheduleSignupDayEmail(userId);
 
   const completedCerts = certificates.filter((c) => c.extractionStatus === "COMPLETED");
   const totalHours = completedCerts.reduce((sum, c) => sum + (c.creditHours ?? 0), 0);

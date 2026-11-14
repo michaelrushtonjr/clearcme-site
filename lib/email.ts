@@ -1,5 +1,6 @@
 import type { LicenseSnapshot, UserComplianceSnapshot } from "@/lib/compliance-snapshot";
 import { formatDateUTC } from "@/lib/dates";
+import { formatStateName } from "@/lib/state-names";
 
 /**
  * Email sending (Resend REST API — no SDK dependency) + branded templates.
@@ -29,11 +30,14 @@ export async function sendEmail({
   to,
   subject,
   html,
+  text,
   unsubscribeUrl,
 }: {
   to: string;
   subject: string;
   html: string;
+  /** Optional plain-text part, sent alongside the HTML. */
+  text?: string;
   unsubscribeUrl?: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -50,6 +54,7 @@ export async function sendEmail({
       to: [to],
       subject,
       html,
+      ...(text ? { text } : {}),
       ...(unsubscribeUrl
         ? {
             headers: {
@@ -251,6 +256,212 @@ export function renderRenewalReminderEmail({
   });
 
   return { subject, html };
+}
+
+// ── Signup-day status ─────────────────────────────────────────────────────────
+// Sent once, when a new account finishes setup (lib/signup-day-email.ts; off
+// unless SIGNUP_DAY_EMAIL_ENABLED is "true"). Numbers first: days left, hours
+// still open, each open mandated topic. It states only what the account can
+// compute: a license ClearCME does not calculate gets its renewal date and no
+// hour counts, and requirements waiting on an answer are counted, not guessed.
+
+function daysLeftPhrase(days: number | null): string {
+  if (days === null) return "";
+  if (days < 0) return `renewal date passed ${Math.abs(days)} day${days === -1 ? "" : "s"} ago`;
+  if (days === 0) return "renews today";
+  return `${days} day${days === 1 ? "" : "s"} left`;
+}
+
+function signupDayFacts(license: LicenseSnapshot) {
+  const name = `${formatStateName(license.state)} ${license.licenseType}`;
+  const computed = license.overall !== "NOT_COMPUTED";
+  const days = license.daysUntilRenewal;
+  const stateTopics = computed ? license.outstandingMandatoryTopics : [];
+  const openItems = stateTopics.map((topic) => ({
+    label: topic.label,
+    detail:
+      topic.needed <= 0
+        ? ""
+        : topic.gap >= topic.needed
+          ? `${topic.gap.toFixed(1)} hours`
+          : `${topic.gap.toFixed(1)} of ${topic.needed.toFixed(0)} hours remaining`,
+  }));
+  const openHours = computed
+    ? Math.max(license.generalGapHours, stateTopics.reduce((sum, topic) => sum + topic.gap, 0))
+    : 0;
+  return {
+    name,
+    computed,
+    days,
+    openItems,
+    openHours,
+    complete: computed && license.isCompliant,
+    renewalLabel: license.renewalDate ? formatDateUTC(license.renewalDate) : null,
+    // State requirements only; the federal DEA record is one answer for every license.
+    needsAnswer: computed ? license.mandatoryTopics.filter((topic) => topic.scope !== "FEDERAL" && topic.isUnknown).length : 0,
+    uncertainHours: computed ? license.uncertainHours : 0,
+  };
+}
+
+function needsAnswerLine(count: number): string {
+  return `${count} requirement${count === 1 ? " depends" : "s depend"} on details we don't have yet. Answer the open question${count === 1 ? "" : "s"} on your dashboard and ${count === 1 ? "it" : "they"} will be counted.`;
+}
+
+/** The DEA MATE Act record is federal and held once per account, so it is stated once, not per license. */
+function signupDayFederal(licenses: LicenseSnapshot[]): { state: "open"; hours: number } | { state: "unknown" } | null {
+  const federal = licenses.flatMap((license) => license.mandatoryTopics).find((topic) => topic.scope === "FEDERAL");
+  if (!federal || federal.isMet || federal.isNotApplicable) return null;
+  return federal.isUnknown ? { state: "unknown" } : { state: "open", hours: federal.gap };
+}
+
+function signupDaySubject(licenses: LicenseSnapshot[]): string {
+  const facts = signupDayFacts(licenses[0]);
+  const federal = signupDayFederal(licenses);
+  const questions = facts.needsAnswer + (federal?.state === "unknown" ? 1 : 0);
+  const timing =
+    facts.days === null
+      ? ""
+      : facts.days > 0
+        ? `${facts.days} day${facts.days === 1 ? "" : "s"} to renewal`
+        : daysLeftPhrase(facts.days);
+  const status = facts.complete
+    ? "CME complete"
+    : facts.openHours > 0
+      ? `${facts.openHours.toFixed(1)} hours of CME still open`
+      : facts.openItems.length > 0
+        ? `${facts.openItems.length} item${facts.openItems.length === 1 ? "" : "s"} still open`
+        : federal?.state === "open"
+          ? "DEA MATE Act training still open"
+          : questions > 0
+            ? `${questions} question${questions === 1 ? "" : "s"} to answer`
+            : "";
+  const parts = [timing, status].filter(Boolean).join(", ");
+  const more = licenses.length > 1 ? ` (+${licenses.length - 1} more license${licenses.length === 2 ? "" : "s"})` : "";
+  return parts ? `${facts.name}: ${parts}${more}` : `Your ${facts.name} license in ClearCME${more}`;
+}
+
+export function renderSignupDayEmail({
+  firstName,
+  licenses,
+  unsubscribeUrl,
+}: {
+  firstName: string;
+  /** Soonest renewal first, as getComplianceSnapshot returns them. At least one. */
+  licenses: LicenseSnapshot[];
+  unsubscribeUrl: string;
+}): { subject: string; html: string; text: string } {
+  const base = siteUrl();
+  const all = licenses.map((license) => signupDayFacts(license));
+  const anyOpen = all.some((facts) => facts.computed && !facts.complete);
+  const intro =
+    licenses.length === 1
+      ? `Here is where your ${all[0].name} license stands today.`
+      : `Here is where your ${licenses.length} licenses stand today.`;
+  const nextStep = anyOpen
+    ? "Next step: add the CME certificates you already have. Each one you add comes off this list."
+    : all.every((facts) => facts.complete)
+      ? "Nothing is open today. Your certificates and CME summary are on your dashboard."
+      : "You can still keep your CME certificates in ClearCME, so they are in one place at renewal.";
+
+  const htmlBlocks: string[] = [];
+  const textBlocks: string[] = [];
+  licenses.forEach((license, index) => {
+    const facts = all[index];
+    const accent =
+      facts.days !== null && facts.days <= 30 ? CRIMSON : facts.days !== null && facts.days <= 60 ? AMBER : BRAND_GREEN;
+    const timing = daysLeftPhrase(facts.days);
+    const renewalText = facts.renewalLabel
+      ? `Renews ${facts.renewalLabel}${timing ? ` · ${timing}` : ""}`
+      : "No renewal date on file yet";
+    const renewalHtml = facts.renewalLabel
+      ? `Renews <strong>${facts.renewalLabel}</strong>${timing ? ` &middot; <strong style="color:${accent};">${timing}</strong>` : ""}`
+      : "No renewal date on file yet";
+
+    const hoursText: string[] = [];
+    let hoursHtml = "";
+    if (!facts.computed) {
+      const message = incompleteStatusMessage(license);
+      hoursText.push(message);
+      hoursHtml = `<br/>${message}`;
+    } else if (facts.complete) {
+      const message = "Your saved records show the CME requirements for this license are complete.";
+      hoursText.push(message);
+      hoursHtml = `<br/>${message}`;
+    } else if (license.totalHoursRequired > 0) {
+      const logged = `${license.hoursEarned.toFixed(1)} of ${license.totalHoursRequired.toFixed(0)} hours of CME logged this cycle`;
+      const open = `${facts.openHours.toFixed(1)} hours still open`;
+      hoursText.push(logged, open);
+      hoursHtml = `<br/>${logged}<br/><strong style="color:${accent};">${open}</strong>`;
+    }
+
+    const extraText: string[] = [];
+    let extraHtml = "";
+    if (facts.openItems.length > 0) {
+      const heading = "Mandated topics still open:";
+      extraText.push(heading, ...facts.openItems.map((item) => `- ${item.label}${item.detail ? `: ${item.detail}` : ""}`));
+      extraHtml += `<p style="margin:14px 0 0;font-size:14px;color:${INK};font-weight:600;">${heading}</p>${topicList(facts.openItems, accent)}`;
+    }
+    if (facts.uncertainHours > 0) {
+      const message = `${facts.uncertainHours.toFixed(1)} hours are on certificates that still need your review, so they are not counted yet.`;
+      extraText.push(message);
+      extraHtml += `<p style="margin:12px 0 0;font-size:13px;color:${INK_SOFT};line-height:1.6;">${message}</p>`;
+    }
+    if (facts.needsAnswer > 0) {
+      const message = needsAnswerLine(facts.needsAnswer);
+      extraText.push(message);
+      extraHtml += `<p style="margin:12px 0 0;font-size:13px;color:${INK_SOFT};line-height:1.6;">${message}</p>`;
+    }
+
+    textBlocks.push([facts.name, renewalText, ...hoursText, ...extraText].join("\n"));
+    htmlBlocks.push(`
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${BRAND_GREEN_TINT};border-radius:8px;">
+        <tr><td style="padding:16px 20px;">
+          <p style="margin:0;font-size:14px;color:${INK};line-height:1.7;">
+            <strong style="font-size:15px;">${facts.name}</strong><br/>
+            ${renewalHtml}${hoursHtml}
+          </p>
+        </td></tr>
+      </table>
+      ${extraHtml}
+      <div style="height:20px;line-height:20px;font-size:0;">&nbsp;</div>`);
+  });
+
+  const federal = signupDayFederal(licenses);
+  if (federal?.state === "open") {
+    const heading = "Federal requirement still open:";
+    const item = { label: "DEA MATE Act training (one-time)", detail: `${federal.hours.toFixed(1)} hours` };
+    textBlocks.push(`${heading}\n- ${item.label}: ${item.detail}`);
+    htmlBlocks.push(`<p style="margin:0;font-size:14px;color:${INK};font-weight:600;">${heading}</p>${topicList([item], AMBER)}<div style="height:20px;line-height:20px;font-size:0;">&nbsp;</div>`);
+  } else if (federal?.state === "unknown") {
+    const message = "One federal item is waiting on you: confirm your DEA registration details and whether you've completed the MATE Act training. Your dashboard shows where.";
+    textBlocks.push(message);
+    htmlBlocks.push(`<p style="margin:0 0 20px;font-size:13px;color:${INK_SOFT};line-height:1.6;">${message}</p>`);
+  }
+
+  const html = layout({
+    body: `
+      ${greeting(firstName)}
+      <p style="margin:0 0 16px;font-size:15px;color:${INK};line-height:1.6;">${intro}</p>
+      ${htmlBlocks.join("")}
+      <p style="margin:0;font-size:14px;color:${INK};line-height:1.6;">${nextStep}</p>
+      ${ctaButton(`${base}/dashboard`, "Open your dashboard")}
+    `,
+    unsubscribeUrl,
+  });
+
+  const name = firstName.trim();
+  const text =
+    [
+      `Hi${name ? ` ${name}` : ""},`,
+      intro,
+      ...textBlocks,
+      nextStep,
+      `Open your dashboard: ${base}/dashboard`,
+      "Your progress is based on state board requirements and the information you've saved in ClearCME. Keep your original CME certificates for as long as your board requires.",
+      `Manage email preferences: ${base}/dashboard/settings\nUnsubscribe: ${unsubscribeUrl}`,
+    ].join("\n\n") + "\n";
+
+  return { subject: signupDaySubject(licenses), html, text };
 }
 
 // ── Monthly digest ────────────────────────────────────────────────────────────
