@@ -877,7 +877,7 @@ export default async function CompliancePage() {
                         {HIPPO_TOPICS.has(gap.topic) ? "via Hippo Education" : "ACCME-accredited · Cat 1"}
                       </span>
                     </div>
-                    <GapCourseFeed topic={gap.topic} hoursNeeded={gap.gap} />
+                    <GapCourseFeed topic={gap.topic} hoursNeeded={gap.gap} state={license.state} />
                   </div>
                 )}
 

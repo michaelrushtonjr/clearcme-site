@@ -5,6 +5,7 @@ import { PublicShell } from "@/components/PublicSiteShell";
 import { Breadcrumbs } from "@/components/seo/Editorial";
 import { relatedStatesForTopic } from "@/lib/state-guides";
 import { pageMetadata } from "@/lib/seo";
+import { providerStateClaims } from "@/lib/course-state-claims";
 
 export const dynamicParams = false;
 
@@ -99,6 +100,7 @@ export default async function CourseDiscoveryPage({
           {catalog.courses.map((course, idx) => {
             const enrollUrl = buildEnrollUrl(course, key);
             const exactActivityUrl = hasExactActivityUrl(course);
+            const stateClaims = providerStateClaims(course, key);
             return (
               <article key={idx} className="public-card p-6 transition-all hover:-translate-y-0.5 hover:border-[#bfd1ad]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -125,6 +127,16 @@ export default async function CourseDiscoveryPage({
                 </div>
 
                 <p className="mt-3 text-sm leading-relaxed text-[#3f4a40]">{courseSummary(course)}</p>
+                {stateClaims.length > 0 && (
+                  <ul className="mt-3 space-y-1.5" aria-label="State requirements named by the provider">
+                    {stateClaims.map((claim) => (
+                      <li key={claim.state} className="rounded-lg border border-[#bfd1ad] bg-[#eef3e6] px-3 py-2 text-sm leading-snug text-[#2a4123]">
+                        <span className="font-semibold">{claim.text}</span>{" "}
+                        <span className="text-[#596650]">This is the provider’s statement; confirm with your board.</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <dl className="mt-3 grid gap-3 text-xs leading-relaxed text-[#6b7568] sm:grid-cols-2">
                   <div><dt className="font-semibold text-[#3f4a40]">From</dt><dd>{course.provider}</dd></div>
                   <div><dt className="font-semibold text-[#3f4a40]">Credit</dt><dd>{shortCreditLabel(course.credits)}</dd></div>

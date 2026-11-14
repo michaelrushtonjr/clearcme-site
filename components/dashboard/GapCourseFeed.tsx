@@ -9,12 +9,18 @@
 
 import Link from "next/link";
 import { COURSE_CATALOG, keyToSlug, type Course } from "@/lib/courses";
+import { providerStateClaimFor } from "@/lib/course-state-claims";
 
 interface GapCourseFeedProps {
   topic: string; // COURSE_CATALOG key e.g. "OPIOID_PRESCRIBING"
   hoursNeeded: number;
   /** Courses shown before the "show more" disclosure. Default 3. */
   limit?: number;
+  /**
+   * Two-letter state of the license this gap belongs to. Courses whose
+   * provider names that state's requirement lead the list and say so.
+   */
+  state?: string;
 }
 
 function ExternalLinkIcon() {
@@ -25,9 +31,14 @@ function ExternalLinkIcon() {
   );
 }
 
-/** Free first, then by hours of CME, longest first. */
-export function sortCoursesForGap(courses: Course[]): Course[] {
+/**
+ * Courses whose provider names this state's requirement first (when a state
+ * is given), then free first, then by hours of CME, longest first.
+ */
+export function sortCoursesForGap(courses: Course[], topic = "", state?: string): Course[] {
+  const named = (course: Course) => (state && providerStateClaimFor(course, topic, state) ? 0 : 1);
   return [...courses].sort((a, b) => {
+    if (named(a) !== named(b)) return named(a) - named(b);
     if (a.isFree && !b.isFree) return -1;
     if (!a.isFree && b.isFree) return 1;
     const aHrs = parseFloat(a.credits) || 0;
@@ -36,7 +47,8 @@ export function sortCoursesForGap(courses: Course[]): Course[] {
   });
 }
 
-function CourseRow({ course, divided }: { course: Course; divided: boolean }) {
+function CourseRow({ course, divided, topic, state }: { course: Course; divided: boolean; topic: string; state?: string }) {
+  const claim = providerStateClaimFor(course, topic, state);
   return (
     <a
       href={course.url}
@@ -64,17 +76,22 @@ function CourseRow({ course, divided }: { course: Course; divided: boolean }) {
             {course.price}
           </span>
         </p>
+        {claim && (
+          <p className="mt-1" style={{ fontSize: 12, fontWeight: 600, color: "var(--c1b-green, #2E4A2C)" }}>
+            {claim.text}
+          </p>
+        )}
       </div>
       <ExternalLinkIcon />
     </a>
   );
 }
 
-export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedProps) {
+export function GapCourseFeed({ topic, hoursNeeded, limit = 3, state }: GapCourseFeedProps) {
   const catalog = COURSE_CATALOG[topic];
   if (!catalog || catalog.courses.length === 0) return null;
 
-  const sorted = sortCoursesForGap(catalog.courses);
+  const sorted = sortCoursesForGap(catalog.courses, topic, state);
   const first = sorted.slice(0, limit);
   const rest = sorted.slice(limit);
   const slug = keyToSlug(topic);
@@ -92,7 +109,7 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedPr
       </p>
       <div style={boxStyle}>
         {first.map((course, i) => (
-          <CourseRow key={`${i}:${course.url}`} course={course} divided={i > 0} />
+          <CourseRow key={`${i}:${course.url}`} course={course} divided={i > 0} topic={topic} state={state} />
         ))}
       </div>
 
@@ -106,7 +123,7 @@ export function GapCourseFeed({ topic, hoursNeeded, limit = 3 }: GapCourseFeedPr
           </summary>
           <div className="mt-2" style={boxStyle}>
             {rest.map((course, i) => (
-              <CourseRow key={`${i}:${course.url}`} course={course} divided={i > 0} />
+              <CourseRow key={`${i}:${course.url}`} course={course} divided={i > 0} topic={topic} state={state} />
             ))}
           </div>
         </details>
