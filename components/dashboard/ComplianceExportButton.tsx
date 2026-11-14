@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useAppShell } from "@/lib/app-shell";
+import { openReportPopup, printWhenReady } from "@/lib/compliance-report-window";
 import { formatDateUTC } from "@/lib/dates";
 
 interface LicenseExport {
@@ -225,49 +228,159 @@ export default function ComplianceExportButton({
   /** "c1b" renders the console-1b filled button */
   variant?: "default" | "c1b";
 }) {
-  const [loading, setLoading] = useState(false);
+  const inAppShell = useAppShell();
+  // The report shown on this page, when a separate window is not available.
+  const [inlineReport, setInlineReport] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const closeReport = useCallback(() => setInlineReport(null), []);
 
+  // Everything here is synchronous, so the button has no waiting state to get
+  // stuck in: the report opens in a new window, or on this page, or the
+  // physician is told plainly that it could not be opened.
   const handleExport = () => {
-    setLoading(true);
+    setError(null);
     try {
       const html = buildHtml(exportData);
-      const printWindow = window.open("", "_blank", "width=900,height=700");
-      if (!printWindow) {
-        alert("Please allow pop-ups to download your compliance report.");
-        return;
-      }
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-        setLoading(false);
-      };
-      // Fallback if onload doesn't fire
-      setTimeout(() => setLoading(false), 2000);
+      const popup = openReportPopup(html, window, { inAppShell });
+      if (popup) printWhenReady(popup);
+      else setInlineReport(html);
     } catch {
-      setLoading(false);
+      setError("We couldn't open your compliance report. Please try again.");
     }
   };
 
+  const extras = (
+    <>
+      {error && (
+        <p role="alert" style={{ marginTop: 6, fontSize: 12, color: "#9A3B1F" }}>
+          {error}
+        </p>
+      )}
+      {inlineReport && <InlineReport html={inlineReport} onClose={closeReport} />}
+    </>
+  );
+
   if (variant === "c1b") {
     return (
-      <button onClick={handleExport} disabled={loading} className="btn-filled">
-        {loading ? "Preparing…" : "Compliance report"}
-      </button>
+      <>
+        <button onClick={handleExport} className="btn-filled">
+          Compliance report
+        </button>
+        {extras}
+      </>
     );
   }
 
   return (
-    <button
-      onClick={handleExport}
-      disabled={loading}
-      className="product-btn product-btn-secondary px-4 py-2.5 text-sm disabled:opacity-60"
+    <>
+      <button
+        onClick={handleExport}
+        className="product-btn product-btn-secondary px-4 py-2.5 text-sm"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Download Compliance Report
+      </button>
+      {extras}
+    </>
+  );
+}
+
+const barButton: React.CSSProperties = {
+  border: "1px solid rgba(16,22,19,.25)",
+  borderRadius: 8,
+  padding: "10px 14px",
+  minHeight: 44,
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: "pointer",
+  background: "#FBFAF5",
+  color: "#101613",
+};
+
+/**
+ * The report on the current page, for when a new window is not available (a
+ * blocked pop-up, or the iPhone app's web view). The report sits in a frame
+ * that cannot run scripts; Print asks the browser to print just that frame.
+ */
+function InlineReport({ html, onClose }: { html: string; onClose: () => void }) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const [printError, setPrintError] = useState(false);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const print = () => {
+    setPrintError(false);
+    try {
+      const frameWindow = frameRef.current?.contentWindow;
+      if (!frameWindow) throw new Error("Report frame unavailable");
+      frameWindow.focus();
+      frameWindow.print();
+    } catch {
+      setPrintError(true);
+    }
+  };
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Compliance report"
+      style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", flexDirection: "column", background: "#F4EFE3" }}
     >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-      {loading ? "Preparing…" : "Download Compliance Report"}
-    </button>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          padding: "12px 16px",
+          borderBottom: "1px solid rgba(16,22,19,.13)",
+          background: "#FFFFFF",
+        }}
+      >
+        <strong style={{ fontSize: 15, color: "#101613" }}>Compliance report</strong>
+        <span style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={print} style={{ ...barButton, background: "#22371F", borderColor: "#22371F", color: "#FFFFFF" }}>
+            Print or save as PDF
+          </button>
+          <button type="button" ref={closeRef} onClick={onClose} style={barButton}>
+            Close
+          </button>
+        </span>
+        {printError && (
+          <p role="alert" style={{ flexBasis: "100%", margin: 0, fontSize: 13, color: "#9A3B1F" }}>
+            Printing isn&apos;t available here. Your report is shown below; open clearcme.ai in your browser to print or save it.
+          </p>
+        )}
+        <p className="app-only" style={{ flexBasis: "100%", margin: 0, fontSize: 12, color: "#656C60" }}>
+          If Print does nothing in the app, open clearcme.ai in Safari to print or save this report.
+        </p>
+      </div>
+      <iframe
+        ref={frameRef}
+        title="Compliance report"
+        srcDoc={html}
+        // No allow-scripts: certificate text can never run as code. allow-modals lets Print open.
+        sandbox="allow-same-origin allow-modals"
+        style={{ flex: 1, width: "100%", border: 0, background: "#FFFFFF" }}
+      />
+    </div>,
+    document.body,
   );
 }
