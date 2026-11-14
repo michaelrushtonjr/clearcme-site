@@ -1,6 +1,16 @@
 // Opening the printable compliance report. Browsers and in-app web views can
 // refuse a new window; the caller falls back to showing the report on the page.
 
+/** Escapes text for use inside the report's HTML. */
+export function escapeHtml(value: string | null | undefined): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /** The parts of a window the report uses — narrow so tests can pass a stand-in. */
 export interface ReportPopup {
   closed?: boolean;

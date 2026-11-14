@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAppShell } from "@/lib/app-shell";
-import { openReportPopup, printWhenReady } from "@/lib/compliance-report-window";
+import { escapeHtml, openReportPopup, printWhenReady } from "@/lib/compliance-report-window";
 import { formatDateUTC } from "@/lib/dates";
 
 interface LicenseExport {
@@ -69,7 +69,8 @@ function formatDate(iso: string | null): string {
   return formatDateUTC(iso);
 }
 
-function buildHtml(data: ExportData): string {
+/** The printable report. Text read from certificates is escaped: it is data, never markup. */
+export function buildHtml(data: ExportData): string {
   const now = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   const licenseRows = data.licenses
@@ -77,7 +78,7 @@ function buildHtml(data: ExportData): string {
       (l) => `
       <div class="card">
         <div class="card-header">
-          <strong>${l.state} — ${l.licenseType}</strong>
+          <strong>${escapeHtml(l.state)} — ${escapeHtml(l.licenseType)}</strong>
           <span class="badge ${l.isCompliant ? "badge-green" : "badge-amber"}">${l.overall === "UNKNOWN" ? "Needs your answer" : l.overall === "NOT_COMPUTED" ? "Rules pending" : l.isCompliant ? "Compliant" : "Action needed"}</span>
         </div>
         <table>
@@ -93,7 +94,7 @@ function buildHtml(data: ExportData): string {
               .map(
                 (g) => `
               <div class="topic-row ${g.isMet ? "met" : "gap"}">
-                <span>${g.displayName ?? formatTopic(g.topic)}</span>
+                <span>${escapeHtml(g.displayName ?? formatTopic(g.topic))}</span>
                 <span>${g.earned.toFixed(1)} / ${g.needed.toFixed(0)} hrs${
                   g.isMet
                     ? g.completionStatus === "completed" && g.earned < g.needed
@@ -118,11 +119,11 @@ function buildHtml(data: ExportData): string {
       (c, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${c.title || "—"}</td>
-        <td>${c.provider || "—"}</td>
+        <td>${escapeHtml(c.title || "—")}</td>
+        <td>${escapeHtml(c.provider || "—")}</td>
         <td>${formatDate(c.activityDate)}</td>
         <td>${c.creditHours.toFixed(1)} hrs</td>
-        <td>${c.creditType.replace(/_/g, " ")}</td>
+        <td>${escapeHtml(c.creditType.replace(/_/g, " "))}</td>
       </tr>`
     )
     .join("");
