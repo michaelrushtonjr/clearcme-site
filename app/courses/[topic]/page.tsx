@@ -79,28 +79,29 @@ export default async function CourseDiscoveryPage({
 
   return (
     <PublicShell>
-      <div className="mx-auto max-w-3xl space-y-8 px-6 py-12">
+      {/* Order is deliberate: on a phone the first course must start inside the
+          first screen, so only the title and a one-line caution sit above the
+          list. The full caution, topic context and state links follow it. */}
+      <div className="mx-auto max-w-3xl space-y-5 px-6 pb-12 pt-5 sm:space-y-8 sm:py-12">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "CME requirements", href: "/cme-requirements" }, { label: `${catalog.topicLabel} courses`, href: `/courses/${topic}` }]} />
 
-        <header className="public-card p-6 sm:p-8">
-          <div className="public-kicker mb-5">Course library</div>
-          <h1 className="public-heading text-3xl sm:text-5xl">{catalog.topicLabel} CME courses</h1>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#ddd4bd] bg-[#ece4cf]/55 px-3 py-1.5">
-            <svg className="h-4 w-4 text-[#3f5f33]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-sm font-medium text-[#3f4a40]">Topic context: {catalog.requirement}</span>
-          </div>
+        <header className="public-card p-5 sm:p-8">
+          <div className="mb-5 hidden sm:block"><span className="public-kicker">Course library</span></div>
+          <h1 className="public-heading text-2xl sm:text-5xl">{catalog.topicLabel} CME courses</h1>
+          <p className="mt-3 text-sm leading-6 text-[#596650] sm:mt-5">
+            {catalog.courses.length} {catalog.courses.length === 1 ? "course" : "courses"} listed. A topic match does not establish state approval:{" "}
+            <a href="#before-you-enroll" className="font-semibold text-[#3f4a40] underline underline-offset-4">what to confirm before you enroll</a>.
+          </p>
+          {key === "SUBSTANCE_USE" && <p className="mt-2 text-sm"><Link href="/mate-act" className="font-semibold underline underline-offset-4">Understand the federal DEA MATE Act requirement →</Link></p>}
         </header>
 
-        <p className="text-sm leading-7 text-[#596650]">Use this library to discover activities. A topic match does not establish state approval. Confirm your board’s provider, content, credit category, completion window and reporting rules before enrolling.</p>
-        {relatedStates.length > 0 && <section className="public-card p-6"><h2 className="text-xl font-bold">States where this topic may be relevant</h2><p className="mt-2 text-sm leading-6">Read the guide for your license type and practice before choosing a course.</p><ul className="mt-4 flex flex-wrap gap-4">{relatedStates.map((state) => <li key={state.slug}><Link className="font-semibold underline underline-offset-4" href={`/cme-requirements/${state.slug}`}>{state.name} requirements →</Link></li>)}</ul></section>}
-        {key === "SUBSTANCE_USE" && <Link href="/mate-act" className="inline-block font-semibold underline">Understand the federal DEA MATE Act requirement →</Link>}
-        <div className="space-y-4">
+        <div className="space-y-4" id="courses">
           {catalog.courses.map((course, idx) => {
             const enrollUrl = buildEnrollUrl(course, key);
             const exactActivityUrl = hasExactActivityUrl(course);
             const stateClaims = providerStateClaims(course, key);
+            const pricePill = course.isFree ? "Free" : course.price.length <= 28 ? course.price : "See pricing";
+            const priceNeedsDetail = course.price.trim() !== pricePill;
             return (
               <article key={idx} className="public-card p-6 transition-all hover:-translate-y-0.5 hover:border-[#bfd1ad]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -119,9 +120,9 @@ export default async function CourseDiscoveryPage({
                   </div>
                   <div className="flex-shrink-0 text-left sm:text-right">
                     {course.isFree ? (
-                      <span className="inline-flex items-center rounded-full bg-[#dde8cf] px-3 py-1 text-sm font-bold text-[#3f5f33]">Free</span>
+                      <span className="inline-flex items-center rounded-full bg-[#dde8cf] px-3 py-1 text-sm font-bold text-[#3f5f33]">{pricePill}</span>
                     ) : (
-                      <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[#ece4cf] px-3 py-1 text-sm font-semibold text-[#3f4a40]">{course.price.length <= 28 ? course.price : "See pricing"}</span>
+                      <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[#ece4cf] px-3 py-1 text-sm font-semibold text-[#3f4a40]">{pricePill}</span>
                     )}
                   </div>
                 </div>
@@ -137,20 +138,15 @@ export default async function CourseDiscoveryPage({
                     ))}
                   </ul>
                 )}
-                <dl className="mt-3 grid gap-3 text-xs leading-relaxed text-[#6b7568] sm:grid-cols-2">
-                  <div><dt className="font-semibold text-[#3f4a40]">From</dt><dd>{course.provider}</dd></div>
-                  <div><dt className="font-semibold text-[#3f4a40]">Credit</dt><dd>{shortCreditLabel(course.credits)}</dd></div>
-                  <div className="sm:col-span-2"><dt className="font-semibold text-[#3f4a40]">Price</dt><dd>{course.price}</dd></div>
-                </dl>
-
-                <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-[#6b7568]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
-                    <span className="text-xs font-medium text-[#6b7568]">{shortCreditLabel(course.credits)}</span>
-                  </div>
-                  <div className="flex flex-col gap-1.5 sm:items-end">
+                {/* Each fact once: the provider is named above the title, the credit
+                    line is not repeated beside the button, and the price row
+                    appears only when it says more than the price pill does. */}
+                <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <dl className="grid min-w-0 flex-1 gap-3 text-xs leading-relaxed text-[#6b7568]">
+                    <div><dt className="font-semibold text-[#3f4a40]">Credit</dt><dd>{shortCreditLabel(course.credits)}</dd></div>
+                    {priceNeedsDetail && <div><dt className="font-semibold text-[#3f4a40]">Price</dt><dd>{course.price}</dd></div>}
+                  </dl>
+                  <div className="flex flex-shrink-0 flex-col gap-1.5 sm:items-end">
                     <a href={enrollUrl} target="_blank" rel="noopener noreferrer" className="public-btn-primary w-full gap-1.5 px-4 py-2 sm:w-auto">
                       {exactActivityUrl ? "Enroll" : "Provider catalog"}
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -166,6 +162,14 @@ export default async function CourseDiscoveryPage({
             );
           })}
         </div>
+
+        {/* The page header is sticky (about 173px tall on a phone); keep the heading clear of it. */}
+        <section id="before-you-enroll" className="public-card scroll-mt-48 p-6 md:scroll-mt-32">
+          <h2 className="text-xl font-bold">Before you enroll</h2>
+          <p className="mt-2 text-sm leading-7 text-[#596650]">Use this library to discover activities. A topic match does not establish state approval. Confirm your board’s provider, content, credit category, completion window and reporting rules before enrolling.</p>
+          <p className="mt-3 text-sm leading-6 text-[#3f4a40]"><span className="font-semibold">Topic context:</span> {catalog.requirement}</p>
+        </section>
+        {relatedStates.length > 0 && <section className="public-card p-6"><h2 className="text-xl font-bold">States where this topic may be relevant</h2><p className="mt-2 text-sm leading-6">Read the guide for your license type and practice before choosing a course.</p><ul className="mt-4 flex flex-wrap gap-4">{relatedStates.map((state) => <li key={state.slug}><Link className="font-semibold underline underline-offset-4" href={`/cme-requirements/${state.slug}`}>{state.name} requirements →</Link></li>)}</ul></section>}
 
         <p className="border-t border-[#ddd4bd] pt-6 text-xs leading-relaxed text-[#6b7568]">
           ClearCME may receive a referral commission from paid courses. Use the library to find courses, then confirm with the provider and your board that your chosen activity meets your specific requirement.
