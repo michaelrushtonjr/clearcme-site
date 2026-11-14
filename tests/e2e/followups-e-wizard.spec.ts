@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { Evidence } from './helpers/evidence';
-import { setupToStep4 } from './helpers/setup';
+import { setupToStep4, LICENSES_SUBMIT, STEP_4_LABEL } from './helpers/setup';
 import { localPrisma } from './helpers/fresh-account';
 const before = process.env.WALKTHROUGH_BEFORE === '1';
 const phase = before ? 'before' : 'after';
@@ -10,8 +10,8 @@ test('E6 step five resumes answers without resubmitting licenses and D1 retry wo
   await setupToStep4(page, e, 'NV', 'MD', '', true);
   await page.getByRole('button', { name: 'No', exact: true }).click();
   await page.reload();
-  await expect(page.getByText('Step 4 of 4', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'See my compliance map →' })).toBeEnabled();
+  await expect(page.getByText(STEP_4_LABEL)).toBeVisible();
+  await expect(page.getByRole('button', { name: LICENSES_SUBMIT })).toBeEnabled();
   await e.capture(`E6-${phase}-D4-step4-restored`);
   let licensePosts = 0, gets = 0, saveFails = true, getFails = false;
   let questions = [question];
@@ -22,14 +22,14 @@ test('E6 step five resumes answers without resubmitting licenses and D1 retry wo
     postedAnswers.push(r.request().postDataJSON());
     return r.fulfill({ status: saveFails ? 503 : 200, json: saveFails ? { error: 'Run E simulated save failure' } : { ok: true } });
   });
-  await page.getByRole('button', { name: 'See my compliance map →' }).click();
+  await page.getByRole('button', { name: LICENSES_SUBMIT }).click();
   await expect(page.getByText(question.question, { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Yes', exact: true }).click();
   await e.capture(`E6-${phase}-answered`);
   if (!before) getFails = true;
   await page.reload();
   if (before) {
-    await expect(page.getByText('Step 4 of 4', { exact: true })).toBeVisible();
+    await expect(page.getByText(STEP_4_LABEL)).toBeVisible();
     await e.capture('E6-before-refresh-loses-step5');
   } else {
     await expect(page.getByText("We couldn't load your practice questions. Reload to try again.")).toBeVisible();

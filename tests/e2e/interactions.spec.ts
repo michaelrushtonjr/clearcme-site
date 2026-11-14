@@ -1,7 +1,7 @@
 import {test,expect,type Page} from '@playwright/test';
 import {Evidence} from './helpers/evidence';
 import {createFreshUser,signIn,localPrisma,reviewEmail} from './helpers/fresh-account';
-import {setupToStep4,finishSetup} from './helpers/setup';
+import {setupToStep4,finishSetup,LICENSES_SUBMIT} from './helpers/setup';
 async function tabTo(page:Page,selector:string,text?:string) {
  for(let i=0;i<80;i++) {await page.keyboard.press('Tab');if(await page.evaluate(({selector,text})=>!!document.activeElement?.matches(selector)&&(!text||document.activeElement?.textContent?.trim()===text),{selector,text}))return;}
  throw new Error(`Cannot keyboard-focus ${selector} ${text || ''}`);
@@ -15,7 +15,7 @@ test('keyboard-only wizard and double submit',async({page},info)=>{
  await tabTo(page,'button','Confirm');await page.keyboard.press('Enter');await e.capture('keyboard-renewal-confirmed');
  await tabTo(page,'button','Continue →');await page.keyboard.press('Enter');
  await tabTo(page,'button','No');await page.keyboard.press('Enter');
- await tabTo(page,'button','See my compliance map →');
+ await tabTo(page,'button',((await page.getByRole('button',{name:LICENSES_SUBMIT}).textContent()) ?? '').trim());
  let posts=0;page.on('request',r=>{if(r.url().endsWith('/api/licenses')&&r.method()==='POST')posts++;});
  await page.keyboard.press('Enter');await page.keyboard.press('Enter');await page.waitForTimeout(1300);await e.capture('keyboard-double-submit-result');
  const licenses=await (await localPrisma()).physicianLicense.count({where:{user:{email:reviewEmail}}});
@@ -28,7 +28,7 @@ test('conditional step refresh and failed save UI contract',async({page},info)=>
  await setupToStep4(page,e);
  // Synthetic presentation-only question; never writes a clinical requirement.
  await page.route('**/api/conditional-requirements',r=>r.request().method()==='GET'?r.fulfill({json:{questions:[{key:'run_d_fixture',question:'Run D fictional practice question?',help:'UI test fixture; not a licensing rule.',requirements:[]}]}}):r.fulfill({status:503,json:{error:'Run D simulated save failure'}}));
- await page.getByRole('button',{name:'No',exact:true}).click();await page.getByRole('button',{name:'See my compliance map →'}).click();
+ await page.getByRole('button',{name:'No',exact:true}).click();await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
  await expect(page.getByText('Run D fictional practice question?')).toBeVisible();
  await page.getByRole('button',{name:'Yes',exact:true}).click();await e.capture('conditional-step5-answered');
  await page.reload();await e.capture('conditional-step5-refresh');
@@ -70,7 +70,7 @@ test('attestation and course link interactions',async({page},info)=>{
 test('conditional answer failure can be skipped explicitly',async({page},info)=>{
  test.skip(info.project.name==='app-shell');const e=new Evidence(page,info.project.name);await e.protect();await setupToStep4(page,e);
  await page.route('**/api/conditional-requirements',r=>r.request().method()==='GET'?r.fulfill({json:{questions:[{key:'run_d_fixture',question:'Run D fictional practice question?',help:'UI test fixture; not a licensing rule.',requirements:[]}]}}):r.fulfill({status:503,json:{error:'Run D simulated save failure'}}));
- await page.getByRole('button',{name:'No',exact:true}).click();await page.getByRole('button',{name:'See my compliance map →'}).click();
+ await page.getByRole('button',{name:'No',exact:true}).click();await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
  await page.getByRole('button',{name:'Yes',exact:true}).click();await page.getByRole('button',{name:'See my compliance map →'}).click();
  await expect(page.getByText("We couldn't save your answers. Please try again.",{exact:false})).toBeVisible();
  await e.capture('conditional-save-error-with-skip');

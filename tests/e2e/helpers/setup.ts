@@ -1,6 +1,12 @@
 import { expect, type Page } from '@playwright/test';
 import { createFreshUser, signIn } from './fresh-account';
 import { Evidence } from './evidence';
+// Step 4's main button reads "Continue →" when the practice-questions screen
+// follows the license steps and "See my compliance map →" when it does not.
+// Which one shows depends on the rules loaded in the local sandbox.
+export const LICENSES_SUBMIT = /^(?:Continue|See my compliance map) →$/;
+// Same reason: the wizard counts five screens when practice questions follow.
+export const STEP_4_LABEL = /^Step 4 of [45]$/;
 export async function setupToStep4(page: Page, e: Evidence, state='NV', degree='MD', specialty='', refresh=false, name?:string) {
   await createFreshUser(name ? {name} : {});
   await page.context().clearCookies();
@@ -55,7 +61,7 @@ export async function setupToStep4(page: Page, e: Evidence, state='NV', degree='
 }
 export async function finishSetup(page: Page, e: Evidence, refreshConditional=false) {
   if(await page.getByRole('button',{name:'No',exact:true}).isVisible()) await page.getByRole('button',{name:'No',exact:true}).click();
-  await page.getByRole('button',{name:'See my compliance map →',exact:true}).click();
+  await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
   await page.waitForLoadState('networkidle');
   if(await page.getByRole('heading',{name:'A few questions about your practice'}).isVisible()) {
     await e.capture('step5-conditional-questions');

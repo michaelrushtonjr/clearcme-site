@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { wizardStorageKey } from "@/lib/client-sign-out";
 import { CONTROLLED_SUBSTANCES_KEY } from "@/lib/conditional-requirements";
+import { LICENSE_STEPS, expectsPracticeStep, setupStepLabel, totalSetupSteps } from "@/lib/setup-steps";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -175,7 +176,20 @@ async function loadConditionalQuestions(): Promise<ConditionalQuestion[] | null>
   }
 }
 
-export default function SetupWizard({ userId }: { userId: string }) {
+const LICENSE_TYPES = ["MD", "DO"] as const;
+const ALL_LICENSE_PAIRS = US_STATES.flatMap((s) => LICENSE_TYPES.map((type) => `${s.code}:${type}`));
+
+export default function SetupWizard({
+  userId,
+  practiceQuestionPairs = null,
+  hasOpenPracticeQuestions = false,
+}: {
+  userId: string;
+  /** "NV:MD"-style pairs whose rules raise a practice question; null = not known. */
+  practiceQuestionPairs?: string[] | null;
+  /** Licenses the user already holds raise an unanswered practice question. */
+  hasOpenPracticeQuestions?: boolean;
+}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -530,7 +544,27 @@ export default function SetupWizard({ userId }: { userId: string }) {
     }
   }
 
-  const totalSteps = conditionalQuestions.length > 0 ? 5 : 4;
+  // How many screens this physician will see. The practice-questions screen
+  // (step 5) only follows when a chosen license raises a question, so work that
+  // out from the choices made so far instead of announcing "of 4" and then
+  // showing a fifth screen. null = it still depends on a choice not yet made;
+  // the step label then carries no total rather than a guess.
+  const practiceStepExpected =
+    conditionalQuestions.length > 0 || step === 5
+      ? true
+      : expectsPracticeStep({
+          questionPairs: practiceQuestionPairs,
+          hasOpenQuestions: hasOpenPracticeQuestions,
+          primaryCandidates: !state
+            ? ALL_LICENSE_PAIRS
+            : licenseType
+            ? [`${state}:${licenseType}`]
+            : LICENSE_TYPES.map((type) => `${state}:${type}`),
+          additionalPairs: additionalLicenses
+            .filter((lic) => lic.state && lic.licenseType)
+            .map((lic) => `${lic.state}:${lic.licenseType}`),
+        });
+  const totalSteps = totalSetupSteps(practiceStepExpected);
 
   // Submitted licenses stay locked in this wizard; subsequent license edits
   // use the existing Licenses page. Never flash an earlier submit step.
@@ -550,7 +584,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
       <div className="w-full max-w-md">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((n) => (
+          {Array.from({ length: totalSteps ?? LICENSE_STEPS }, (_, i) => i + 1).map((n) => (
             <div
               key={n}
               className={`rounded-full transition-all ${
@@ -569,7 +603,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 1 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                Step 1 of {totalSteps}
+                {setupStepLabel(1, totalSteps)}
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 What state do you practice in?
@@ -611,7 +645,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 2 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                Step 2 of {totalSteps}
+                {setupStepLabel(2, totalSteps)}
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 What&apos;s your license type and specialty?
@@ -731,7 +765,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 3 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                Step 3 of {totalSteps}
+                {setupStepLabel(3, totalSteps)}
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 When is your next license renewal?
@@ -916,7 +950,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 4 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                Step 4 of {totalSteps}
+                {setupStepLabel(4, totalSteps)}
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 Are you licensed in more than one state?
@@ -1180,7 +1214,8 @@ export default function SetupWizard({ userId }: { userId: string }) {
                   disabled={loading || isMultiState === null}
                   className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 >
-                  {loading ? "Setting up…" : "See my compliance map →"}
+                  {/* The map is not the next screen when practice questions come first. */}
+                  {loading ? "Setting up…" : practiceStepExpected ? "Continue →" : "See my compliance map →"}
                 </button>
               </div>
             </div>
@@ -1190,7 +1225,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           {step === 5 && (
             <div>
               <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-2">
-                One more thing
+                {setupStepLabel(5, totalSteps)}
               </p>
               <h1 className="font-display text-2xl font-semibold text-[var(--ink)] mb-2">
                 A few questions about your practice

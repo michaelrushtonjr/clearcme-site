@@ -5,106 +5,13 @@ import {
   CONDITION_DEFINITIONS,
   actionForAnswer,
   deaRegistrationFromSetup,
-  matchCondition,
-  requirementConditionClause,
   type ConditionAnswer,
 } from "@/lib/conditional-requirements";
+import { collectMatches } from "@/lib/practice-questions";
 import {
   NOT_APPLICABLE_REQUIREMENT_NOTE,
   NOT_COMPLETED_REQUIREMENT_NOTE,
 } from "@/lib/requirement-completions";
-import { formatStateName } from "@/lib/state-names";
-
-interface MatchedRequirement {
-  requirementId: string;
-  licenseId: string;
-  state: string;
-  stateName: string;
-  licenseType: string;
-  name: string;
-  clause: string;
-  hours: number;
-  /** Requirement cadence — decides what an "applies to me" answer may assert */
-  cadence: string;
-}
-
-/**
- * Cadences whose applicability a practice question can settle.
- *
- * CONDITIONAL is the obvious case, but the widest-reaching example is the
- * federal DEA MATE Act row, which sits in all 51 jurisdictions as a ONE_TIME
- * requirement gated on "If DEA-registered". Leaving it out meant every
- * physician without a DEA registration carried a permanent unresolved 8-hour
- * card. NC and NE gate their EVERY_N_YEARS controlled-substance hours the same
- * way.
- */
-const ASKABLE_CADENCES = [
-  "CONDITIONAL",
-  "ONE_TIME",
-  "FIRST_RENEWAL_ONLY",
-  "INITIAL_LICENSE_ONLY",
-  "EVERY_N_YEARS",
-] as const;
-
-/**
- * Collect every conditional requirement across the user's active licenses that
- * maps to a question we can ask, skipping any the user has already answered.
- */
-async function collectMatches(userId: string) {
-  const licenses = await prisma.physicianLicense.findMany({
-    where: { userId, isActive: true },
-    select: { id: true, state: true, licenseType: true },
-  });
-  if (licenses.length === 0) return { licenses, byCondition: new Map<string, MatchedRequirement[]>() };
-
-  const rules = await prisma.complianceRule.findMany({
-    where: {
-      OR: licenses.map((license) => ({
-        state: license.state,
-        licenseType: license.licenseType,
-      })),
-    },
-    include: {
-      mandatoryRequirements: { where: { retiredAt: null, cadence: { in: [...ASKABLE_CADENCES] } } },
-    },
-  });
-
-  const existing = await prisma.userRequirementCompletion.findMany({
-    where: { userId },
-    select: { mandatoryRequirementId: true, physicianLicenseId: true },
-  });
-  const answered = new Set(
-    existing.map((row) => `${row.mandatoryRequirementId}:${row.physicianLicenseId ?? "global"}`)
-  );
-
-  const byCondition = new Map<string, MatchedRequirement[]>();
-  for (const license of licenses) {
-    const rule = rules.find(
-      (r) => r.state === license.state && r.licenseType === license.licenseType
-    );
-    if (!rule) continue;
-    for (const requirement of rule.mandatoryRequirements) {
-      if (answered.has(`${requirement.id}:${license.id}`)) continue;
-      if (answered.has(`${requirement.id}:global`)) continue;
-      const definition = matchCondition(requirement.notes);
-      if (!definition) continue;
-      const list = byCondition.get(definition.key) ?? [];
-      list.push({
-        requirementId: requirement.id,
-        licenseId: license.id,
-        state: license.state,
-        stateName: formatStateName(license.state),
-        licenseType: license.licenseType,
-        name: requirement.description ?? "Mandatory topic",
-        clause: requirementConditionClause(requirement.notes) ?? "",
-        hours: requirement.hoursRequired,
-        cadence: requirement.cadence,
-      });
-      byCondition.set(definition.key, list);
-    }
-  }
-  return { licenses, byCondition };
-}
 
 export async function GET() {
   const session = await auth();

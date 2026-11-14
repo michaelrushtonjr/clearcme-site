@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { Evidence } from './helpers/evidence';
-import { setupToStep4, finishSetup } from './helpers/setup';
+import { setupToStep4, finishSetup, LICENSES_SUBMIT } from './helpers/setup';
 import { localPrisma } from './helpers/fresh-account';
 
 test.afterAll(async()=>{await (await localPrisma()).$disconnect();});
@@ -37,7 +37,7 @@ test('multi-state free limit and refresh',async({page},info)=>{
  await page.getByRole('button',{name:'MD',exact:true}).click();
  await page.locator('input[type=date]').fill('2027-10-31');
  const response=page.waitForResponse(r=>r.url().endsWith('/api/licenses')&&r.status()===402);
- await page.getByRole('button',{name:'See my compliance map →'}).click();
+ await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
  await response; await e.capture('multi-state-free-402');
  await e.visit('/dashboard','dashboard-after-partial-setup');
 });
