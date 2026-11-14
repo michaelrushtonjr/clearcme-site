@@ -1515,7 +1515,7 @@ export default function SetupWizard({
                             {(
                               [
                                 ["yes", "Yes, my own"],
-                                ["no", "No, not my own"],
+                                ["no", "No, not mine"],
                               ] as const
                             ).map(([value, label]) => (
                               <button
@@ -1523,7 +1523,7 @@ export default function SetupWizard({
                                 type="button"
                                 aria-pressed={deaOwnRegistration === value}
                                 onClick={() => setDeaOwnRegistration(value)}
-                                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                                className={`flex-1 rounded-lg border px-2 py-2 text-sm font-semibold transition-colors ${
                                   deaOwnRegistration === value
                                     ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
