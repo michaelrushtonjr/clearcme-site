@@ -23,7 +23,7 @@ import {
 } from "@/lib/state-requirements";
 import { PLAN_ORDER, PLANS, type PlanId } from "@/lib/plan-features";
 import { planLoginHref, type ChosenPlan } from "@/lib/login-callback";
-import { notYetComputedNote, stateOptionLabel } from "@/lib/not-yet-computed";
+import { notComputedNotice, stateOptionLabel } from "@/lib/state-availability";
 
 const tickerItems = [
   ["CA", "renews by issue month"],
@@ -370,8 +370,8 @@ function StatePreview() {
     () => selectedRequirement?.mandatoryTopics.slice(0, 4) ?? [],
     [selectedRequirement],
   );
-  const notComputedNote = selectedRequirement
-    ? notYetComputedNote(selectedRequirement.stateName, stateCode, licenseType)
+  const notComputed = selectedRequirement
+    ? notComputedNotice(selectedRequirement.stateName, stateCode, licenseType)
     : null;
 
   return (
@@ -422,7 +422,7 @@ function StatePreview() {
               <p className="empty">
                 Pick a state to see cycle length, total CME hours, and the mandates physicians most often miss when renewal season closes in.
               </p>
-            ) : notComputedNote ? (
+            ) : notComputed ? (
               // No hours, mandates or cycle here: an account cannot compute them for this state.
               <>
                 <h4>
@@ -431,7 +431,11 @@ function StatePreview() {
                 <div className="sub">
                   <span className="pill due">Not yet computed</span>
                 </div>
-                <p className="not-computed">{notComputedNote}</p>
+                <p className="not-computed">
+                  {notComputed.reason ? `${notComputed.reason} ` : ""}
+                  {notComputed.included}
+                </p>
+                <p className="not-computed">{notComputed.notIncluded}</p>
               </>
             ) : (
               <>

@@ -30,3 +30,9 @@ test("the Kansas notice says plainly what the account does and does not do", () 
   expect(text).not.toMatch(/on track|compliant\b|audit-ready|Essential|Pro\b|\$/i);
   expect(text).not.toMatch(/credits/i);
 });
+test("the home-page picker and setup read the same helper", async () => {
+  const { readFileSync } = await import("node:fs");
+  for (const file of ["components/HomePage.tsx", "app/dashboard/setup/SetupWizard.tsx"]) {
+    expect(readFileSync(file, "utf8")).toContain('from "@/lib/state-availability"');
+  }
+});
