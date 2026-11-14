@@ -2713,17 +2713,13 @@ body {
 }
 
 .landing-v3 .founder .sig .av {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  place-items: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--bg-2), var(--warm));
-  color: var(--ink);
-  font-family: var(--display);
-  font-size: 18px;
-  font-weight: 600;
+  background: var(--bg-2);
+  object-fit: cover;
 }
 
 .landing-v3 .founder .sig .who {

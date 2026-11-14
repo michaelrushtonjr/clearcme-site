@@ -791,7 +791,18 @@ function Founder() {
               chaos. This exists so that never happens again.
             </blockquote>
             <div className="sig">
-              <div className="av">MR</div>
+              {/* Pre-sized files cut by design/founder-photo/generate.mjs. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="av"
+                src="/images/founder/michael-rushton-avatar-128.jpg"
+                srcSet="/images/founder/michael-rushton-avatar-64.jpg 1x, /images/founder/michael-rushton-avatar-128.jpg 2x, /images/founder/michael-rushton-avatar-192.jpg 3x"
+                width={64}
+                height={64}
+                alt="Michael Rushton, DO"
+                loading="lazy"
+                decoding="async"
+              />
               <div className="who">
                 <strong>Michael Rushton, DO</strong>
                 <span>Emergency Medicine · Founder, ClearCME</span>
