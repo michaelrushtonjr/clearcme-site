@@ -104,10 +104,13 @@ export function resolutionFromSave(cert: UploadedCert, data: unknown, fallbackHo
   const hours = typeof saved.creditHours === "number" ? saved.creditHours : fallbackHours;
   // The server's answer is the record: specialTopics are the topics the physician
   // confirmed hours for; suggestedSpecialTopics are matches still unconfirmed.
+  const topics = saved.specialTopics ?? [];
   return {
     id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours,
-    topics: saved.specialTopics ?? [],
-    topicsToConfirm: saved.suggestedSpecialTopics ?? [],
+    topics,
+    // Flag unconfirmed matches only when no topic was confirmed at all. A
+    // physician who gave the hours to one topic and left another at 0 has decided.
+    topicsToConfirm: topics.length > 0 ? [] : saved.suggestedSpecialTopics ?? [],
   };
 }
 
@@ -700,7 +703,7 @@ export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedC
           </div>
         ) : null}
         {saved ? (
-          <div className="flex gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
             <button onClick={onReset} className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm">
               Upload another
             </button>
@@ -723,7 +726,7 @@ export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedC
 
             {saveError && <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
               <button
                 onClick={onReset}
                 className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm"
@@ -826,7 +829,7 @@ export function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: Uplo
               <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
               <button
                 onClick={onReset}
                 className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm"
@@ -1057,7 +1060,7 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
 
             {saveError && <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
               <button
                 onClick={() => setShowAdvanced(false)}
                 className="product-btn product-btn-secondary flex-1 min-h-0 py-2 text-sm"

@@ -56,6 +56,10 @@ test('a save counts as confirmed only when the server says COMPLETED, with the t
   const c = cert({ id: 'c1' });
   expect(resolutionFromSave(c, { certificate: { extractionStatus: 'NEEDS_REVIEW', creditHours: 2 } }, 2)).toBeNull();
   expect(resolutionFromSave(c, null, 2)).toBeNull();
+  // Hours went to one topic and another was left at 0: that is a decision, not something left to confirm.
   expect(resolutionFromSave(c, { certificate: { extractionStatus: 'COMPLETED', creditHours: 6, specialTopics: ['PATIENT_SAFETY'], suggestedSpecialTopics: ['ETHICS'] } }, 0))
-    .toEqual({ id: 'c1', fileName: 'c1.pdf', outcome: 'confirmed', hours: 6, topics: ['PATIENT_SAFETY'], topicsToConfirm: ['ETHICS'] });
+    .toEqual({ id: 'c1', fileName: 'c1.pdf', outcome: 'confirmed', hours: 6, topics: ['PATIENT_SAFETY'], topicsToConfirm: [] });
+  // Saved with no topic hours at all: the match is still to confirm.
+  expect(resolutionFromSave(c, { certificate: { extractionStatus: 'COMPLETED', creditHours: 6, specialTopics: [], suggestedSpecialTopics: ['ETHICS'] } }, 0))
+    .toMatchObject({ topics: [], topicsToConfirm: ['ETHICS'] });
 });
