@@ -91,7 +91,7 @@ export default function MethodologyPage() {
             <p className="text-sm leading-relaxed text-[#3f4a40]">
               Our internal QA system, <strong>Vera</strong>, checks requirements against primary sources on a
               rolling basis. High-population states (CA, TX, FL, NY, PA, IL) are reviewed more frequently.
-              Vera flags any discrepancies for human review before updates go live.
+              Vera flags any discrepancy for a second check against the board&apos;s own sources before an update goes live.
             </p>
           </div>
         </div>

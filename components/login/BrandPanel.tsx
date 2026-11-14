@@ -6,7 +6,7 @@ import { BrandLockup } from "@/components/BrandLockup";
 const BRAND_BULLETS = [
   "All 50 states and DC, plus DEA registration",
   "Reads your certificates and files the hours for you",
-  "Free to start · every requirement verified by a physician",
+  "Free to start · every rule checked against the state board's own sources",
 ];
 
 export function BrandPanel() {

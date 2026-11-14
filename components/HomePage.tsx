@@ -112,7 +112,7 @@ const faqItems = [
     q: "How does the guarantee actually work?",
     a: [
       "30-day money-back. If ClearCME isn't right for you, request a full refund within 30 days of paying. No questions, no email chase.",
-      "Every state requirement is verified twice: once by AI, and once by a human physician validating state-specific rules.",
+      "Every rule is checked against the state board's own sources.",
     ],
   },
   {
@@ -525,8 +525,7 @@ function Guarantee() {
                 Request a full refund within 30 days of paying - no questions, no email chase.
                 <br />
                 <br />
-                Every state requirement is verified twice - once by AI, once by a human physician - before it
-                enters your dashboard.
+                Every rule is checked against the state board&apos;s own sources before it enters your dashboard.
               </p>
             </div>
             <div className="g-stamp" aria-label="30-day money-back guarantee">
