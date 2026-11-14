@@ -5,6 +5,8 @@ import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import Link from "next/link";
 import UpgradeNotice from "@/components/UpgradeNotice";
+import { TopicHoursFields, useTopicSplit } from "@/components/CertificateTopicHours";
+import { detectedTopics, formatSpecialTopic, reviewPrefill, topicAllocationsFromSplit } from "@/lib/certificate-review";
 import { formatDateUTC } from "@/lib/dates";
 
 interface ExtractedCredit {
@@ -15,6 +17,14 @@ interface ExtractedCredit {
   creditType: string;
   topics: string[];
   accreditation: string;
+  /** ISO completion date as the server returned it — pre-fills the review form. */
+  activityDate?: string | null;
+  /** Hours this physician earned, when the certificate states them. */
+  hoursEarned?: number | null;
+  /** The activity's maximum hours — offered as a suggestion when earned hours are missing. */
+  activityMaxHours?: number | null;
+  /** Mandated topics the server detected (SpecialTopic values), not free-text subjects. */
+  mandatedTopics?: string[];
 }
 
 export interface UploadedCert {
@@ -43,7 +53,10 @@ export interface UploadResolution {
   fileName: string;
   outcome: "confirmed" | "pending";
   hours: number;
+  /** Mandated topics the physician confirmed hours for. */
   topics: string[];
+  /** Detected mandated topics saved without confirmed hours. */
+  topicsToConfirm?: string[];
 }
 
 /**
@@ -56,11 +69,14 @@ export interface UploadResolution {
 export function summarizeUploadSession(resolutions: UploadResolution[]) {
   const confirmed = resolutions.filter((r) => r.outcome === "confirmed");
   const pending = resolutions.filter((r) => r.outcome === "pending");
+  const topics = Array.from(new Set(confirmed.flatMap((r) => r.topics)));
   return {
     confirmedCount: confirmed.length,
     pendingCount: pending.length,
     hoursAdded: confirmed.reduce((sum, r) => sum + r.hours, 0),
-    topics: Array.from(new Set(confirmed.flatMap((r) => r.topics))),
+    topics,
+    // A topic confirmed on one certificate is not "still to confirm" because another certificate skipped it.
+    topicsToConfirm: Array.from(new Set(confirmed.flatMap((r) => r.topicsToConfirm ?? []))).filter((t) => !topics.includes(t)),
   };
 }
 
@@ -80,36 +96,67 @@ export function deferUnresolved(
 }
 
 /** Reads a PATCH /api/certificates/:id response into a resolution, or null if still under review. */
-function resolutionFromSave(cert: UploadedCert, data: unknown, fallbackHours: number): UploadResolution | null {
-  const saved = (data as { certificate?: { extractionStatus?: string; creditHours?: number | null } } | null)?.certificate;
+export function resolutionFromSave(cert: UploadedCert, data: unknown, fallbackHours: number): UploadResolution | null {
+  const saved = (data as { certificate?: { extractionStatus?: string; creditHours?: number | null; specialTopics?: string[]; suggestedSpecialTopics?: string[] } } | null)?.certificate;
   if (saved?.extractionStatus !== "COMPLETED") return null;
   const hours = typeof saved.creditHours === "number" ? saved.creditHours : fallbackHours;
-  return { id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours, topics: cert.extracted?.topics ?? [] };
+  // The server's answer is the record: specialTopics are the topics the physician
+  // confirmed hours for; suggestedSpecialTopics are matches still unconfirmed.
+  return {
+    id: cert.id, fileName: cert.fileName, outcome: "confirmed", hours,
+    topics: saved.specialTopics ?? [],
+    topicsToConfirm: saved.suggestedSpecialTopics ?? [],
+  };
+}
+
+/** The certificate fields POST /api/certificates returns that the review cards read. */
+export interface UploadResponseCertificate {
+  id: string;
+  fileName: string;
+  extractionStatus: string;
+  title?: string | null;
+  provider?: string | null;
+  activityDate?: string | null;
+  creditHours?: number | null;
+  hoursEarned?: number | null;
+  activityMaxHours?: number | null;
+  creditType?: string | null;
+  topics?: string[] | null;
+  accreditation?: string | null;
+  specialTopics?: string[] | null;
+  extractedSpecialTopics?: string[] | null;
+  suggestedSpecialTopics?: string[] | null;
+}
+
+/** Keeps everything the server read, so the review form can start from it instead of from blanks. */
+export function uploadedCertFromResponse(cert: UploadResponseCertificate, warning?: string): UploadedCert {
+  const isNeedsReview = cert.extractionStatus === "NEEDS_REVIEW";
+  const hasExtracted = cert.extractionStatus === "COMPLETED" || isNeedsReview;
+  return {
+    id: cert.id,
+    fileName: cert.fileName,
+    extracted: hasExtracted
+      ? {
+          title: cert.title ?? "",
+          provider: cert.provider ?? "",
+          date: cert.activityDate ? formatDateUTC(cert.activityDate) : "Unknown date",
+          creditHours: cert.creditHours ?? 0,
+          creditType: cert.creditType ?? "OTHER",
+          topics: cert.topics ?? [],
+          accreditation: cert.accreditation ?? "",
+          activityDate: cert.activityDate ?? null,
+          hoursEarned: cert.hoursEarned ?? null,
+          activityMaxHours: cert.activityMaxHours ?? null,
+          mandatedTopics: detectedTopics(cert),
+        }
+      : null,
+    extractionFailed: cert.extractionStatus === "FAILED",
+    needsReview: isNeedsReview,
+    warning,
+  };
 }
 
 const STILL_NEEDS_REVIEW = "Saved, but this certificate still needs review — check the completion date and hours, then confirm again.";
-
-const TOPIC_FORMAT: Record<string, string> = {
-  OPIOID_PRESCRIBING: "Opioid Prescribing",
-  PAIN_MANAGEMENT: "Pain Management",
-  IMPLICIT_BIAS: "Implicit Bias",
-  END_OF_LIFE_CARE: "End-of-Life Care",
-  DOMESTIC_VIOLENCE: "Domestic Violence",
-  CHILD_ABUSE: "Child Abuse",
-  ELDER_ABUSE: "Elder Abuse",
-  HUMAN_TRAFFICKING: "Human Trafficking",
-  INFECTION_CONTROL: "Infection Control",
-  PATIENT_SAFETY: "Patient Safety",
-  ETHICS: "Ethics",
-  CULTURAL_COMPETENCY: "Cultural Competency",
-  SUBSTANCE_USE: "Substance Use / MATE Act",
-  SUICIDE_PREVENTION: "Suicide Prevention",
-  OTHER_MANDATORY: "Mandatory Topic",
-};
-
-function formatTopicLabel(topic: string) {
-  return TOPIC_FORMAT[topic] ?? topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 export default function CertificateUpload({ userId }: { userId: string }) {
   const [uploadState, setUploadState] = useState<UploadState>("idle");
@@ -151,31 +198,7 @@ export default function CertificateUpload({ userId }: { userId: string }) {
     }
 
     const data = await res.json();
-    const cert = data.certificate;
-
-    const isNeedsReview = cert.extractionStatus === "NEEDS_REVIEW";
-    const hasExtracted = cert.extractionStatus === "COMPLETED" || isNeedsReview;
-
-    return {
-      id: cert.id,
-      fileName: cert.fileName,
-      extracted: hasExtracted
-        ? {
-            title: cert.title ?? "",
-            provider: cert.provider ?? "",
-            date: cert.activityDate
-              ? formatDateUTC(cert.activityDate)
-              : "Unknown date",
-            creditHours: cert.creditHours ?? 0,
-            creditType: cert.creditType ?? "OTHER",
-            topics: cert.topics ?? [],
-            accreditation: cert.accreditation ?? "",
-          }
-        : null,
-      extractionFailed: cert.extractionStatus === "FAILED",
-      needsReview: isNeedsReview,
-      warning: data.warning,
-    };
+    return uploadedCertFromResponse(data.certificate, data.warning);
   }, [userId]);
 
   const onDrop = useCallback(
@@ -299,7 +322,16 @@ export default function CertificateUpload({ userId }: { userId: string }) {
 
           {summary.topics.length > 0 && (
             <p className="mt-3 text-xs text-[var(--ink-3)]">
-              Mandatory-topic matches detected: {summary.topics.map(formatTopicLabel).join(", ")}. Confirm them on your compliance map.
+              Topic hours confirmed for: {summary.topics.map(formatSpecialTopic).join(", ")}.
+            </p>
+          )}
+          {summary.topicsToConfirm.length > 0 && (
+            <p className="mt-3 text-xs text-[var(--ink-3)]">
+              Possible mandated-topic match saved without topic hours: {summary.topicsToConfirm.map(formatSpecialTopic).join(", ")}.{" "}
+              <Link href="/dashboard/certificates" className="font-medium text-[var(--primary)] underline underline-offset-2">
+                Confirm the hours on your Certificates page
+              </Link>
+              .
             </p>
           )}
         </div>
@@ -425,36 +457,187 @@ export default function CertificateUpload({ userId }: { userId: string }) {
   );
 }
 
+interface ReviewFields {
+  title: string;
+  provider: string;
+  date: string;
+  creditHours: string;
+}
+
+/**
+ * What the review form starts with: the date and hours the server read, and —
+ * when the certificate shows only the activity's maximum — that maximum as a
+ * labelled suggestion. Nothing is saved until the physician presses the button.
+ */
+function initialReviewFields(cert: UploadedCert): ReviewFields {
+  const ex = cert.extracted;
+  const prefill = reviewPrefill({
+    activityDate: ex?.activityDate,
+    hoursEarned: ex?.hoursEarned,
+    creditHours: ex?.creditHours,
+    activityMaxHours: ex?.activityMaxHours,
+  });
+  return { title: ex?.title ?? "", provider: ex?.provider ?? "", date: prefill.date, creditHours: prefill.hours };
+}
+
+function hoursOf(fields: ReviewFields): number | null {
+  const hours = parseFloat(fields.creditHours);
+  return Number.isFinite(hours) ? hours : null;
+}
+
+/** True while the hours field still holds the activity maximum the form suggested. */
+function showsMaximumSuggestion(cert: UploadedCert, fields: ReviewFields): boolean {
+  const ex = cert.extracted;
+  const prefill = reviewPrefill({ hoursEarned: ex?.hoursEarned, creditHours: ex?.creditHours, activityMaxHours: ex?.activityMaxHours });
+  return prefill.hoursSource === "activity_maximum" && fields.creditHours === prefill.hours;
+}
+
+/** The PATCH body for a review form, or the message to show instead of saving. */
+function reviewSaveBody(
+  fields: ReviewFields,
+  topics: string[],
+  split: Record<string, string>,
+): { body: Record<string, unknown>; error: null } | { body: null; error: string } {
+  const hours = hoursOf(fields);
+  const topicHours = topics.length > 0 ? topicAllocationsFromSplit(split, hours) : { allocations: {}, error: null };
+  if (topicHours.error) return { body: null, error: topicHours.error };
+  return {
+    error: null,
+    body: {
+      title: fields.title || undefined,
+      provider: fields.provider || undefined,
+      activityDate: fields.date || undefined,
+      creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
+      ...(Object.keys(topicHours.allocations).length > 0 ? { topicHourAllocations: topicHours.allocations } : {}),
+    },
+  };
+}
+
+/** Title, provider, date, hours and topic hours — the same fields on every review card. */
+function ReviewFormFields({
+  formId,
+  cert,
+  fields,
+  setFields,
+  topics,
+  split,
+  setTopicHours,
+  disabled,
+}: {
+  formId: string;
+  cert: UploadedCert;
+  fields: ReviewFields;
+  setFields: (update: (fields: ReviewFields) => ReviewFields) => void;
+  topics: string[];
+  split: Record<string, string>;
+  setTopicHours: (topic: string, value: string) => void;
+  disabled: boolean;
+}) {
+  const maximum = cert.extracted?.activityMaxHours ?? null;
+  const suggested = showsMaximumSuggestion(cert, fields);
+
+  return (
+    <>
+      <div>
+        <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
+        <input
+          id={`${formId}-title`}
+          type="text"
+          value={fields.title}
+          onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
+          placeholder="e.g. Advanced Cardiac Life Support"
+          className="product-input"
+        />
+      </div>
+      <div>
+        <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
+        <input
+          id={`${formId}-provider`}
+          type="text"
+          value={fields.provider}
+          onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
+          placeholder="e.g. American Heart Association"
+          className="product-input"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
+          <input
+            id={`${formId}-date`}
+            type="date"
+            value={fields.date}
+            onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
+            className="product-input"
+          />
+        </div>
+        <div>
+          <label htmlFor={`${formId}-hours`} className="product-label">Hours Earned</label>
+          <input
+            id={`${formId}-hours`}
+            type="number"
+            min="0"
+            step="0.25"
+            value={fields.creditHours}
+            onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
+            placeholder="e.g. 2.5"
+            aria-describedby={maximum != null ? `${formId}-hours-note` : undefined}
+            className="product-input"
+          />
+        </div>
+      </div>
+      {maximum != null && (
+        <p
+          id={`${formId}-hours-note`}
+          className={
+            suggested
+              ? "rounded-[var(--radius)] border border-[rgba(201,147,60,0.34)] bg-[rgba(201,147,60,0.12)] px-3 py-2 text-xs text-[var(--ink)]"
+              : "text-xs text-[var(--ink-3)]"
+          }
+        >
+          {suggested
+            ? `This certificate shows the activity's maximum (${maximum} hours) but not how many hours you earned. We filled in ${maximum} as a starting point — change it if you claimed fewer. It is saved only when you confirm.`
+            : `Activity maximum on this certificate: ${maximum} hours.`}
+        </p>
+      )}
+      <TopicHoursFields
+        idPrefix={formId}
+        topics={topics}
+        split={split}
+        hours={hoursOf(fields)}
+        onChange={setTopicHours}
+        disabled={disabled}
+      />
+    </>
+  );
+}
+
 export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const formId = useId();
-  const ex = cert.extracted!;
-  const [fields, setFields] = useState({
-    title: ex.title ?? "",
-    provider: ex.provider ?? "",
-    date: "",
-    creditHours: ex.creditHours ? String(ex.creditHours) : "",
-  });
+  const [fields, setFields] = useState<ReviewFields>(() => initialReviewFields(cert));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const topics = cert.extracted?.mandatedTopics ?? [];
+  const { split, setTopicHours } = useTopicSplit(topics, hoursOf(fields));
+  const suggested = showsMaximumSuggestion(cert, fields);
 
   const handleConfirm = async () => {
+    const request = reviewSaveBody(fields, topics, split);
+    if (request.error !== null) {
+      setSaveError(request.error);
+      return;
+    }
     setSaving(true);
     setSaveError("");
     try {
       const res = await fetch(`/api/certificates/${cert.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: fields.title || undefined,
-          provider: fields.provider || undefined,
-          activityDate: fields.date || undefined,
-          creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
-          extractionStatus: "COMPLETED",
-        }),
+        body: JSON.stringify({ ...request.body, extractionStatus: "COMPLETED" }),
       });
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         setSaveError(err.error ?? "Save failed");
       } else {
         // The server keeps NEEDS_REVIEW when the fields don't validate — only
@@ -507,55 +690,18 @@ export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedC
           </div>
         ) : (
           <div className="space-y-3">
-            <div>
-              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
-              <input
-                id={`${formId}-title`}
-                type="text"
-                value={fields.title}
-                onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
-                placeholder="e.g. Advanced Cardiac Life Support"
-                className="product-input"
-              />
-            </div>
-            <div>
-              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
-              <input
-                id={`${formId}-provider`}
-                type="text"
-                value={fields.provider}
-                onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
-                placeholder="e.g. American Heart Association"
-                className="product-input"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
-                <input
-                  id={`${formId}-date`}
-                  type="date"
-                  value={fields.date}
-                  onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
-                  className="product-input"
-                />
-              </div>
-              <div>
-                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
-                <input
-                  id={`${formId}-hours`}
-                  type="number"
-                  min="0"
-                  step="0.25"
-                  value={fields.creditHours}
-                  onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
-                  placeholder="e.g. 2.5"
-                  className="product-input"
-                />
-              </div>
-            </div>
+            <ReviewFormFields
+              formId={formId}
+              cert={cert}
+              fields={fields}
+              setFields={setFields}
+              topics={topics}
+              split={split}
+              setTopicHours={setTopicHours}
+              disabled={saving}
+            />
 
-            {saveError && <p className="text-xs text-[var(--status-miss)]">{saveError}</p>}
+            {saveError && <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>}
 
             <div className="flex gap-2">
               <button
@@ -569,7 +715,7 @@ export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedC
                 disabled={saving}
                 className="product-btn product-btn-urgent flex-1 min-h-0 py-2 text-sm disabled:opacity-50"
               >
-                {saving ? "Saving…" : "Confirm & Save"}
+                {saving ? "Saving…" : suggested ? `Confirm ${fields.creditHours} hours & save` : "Confirm & Save"}
               </button>
             </div>
           </div>
@@ -581,32 +727,30 @@ export function NeedsReviewCard({ cert, onReset, onResolved }: { cert: UploadedC
 
 export function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const formId = useId();
-  const [fields, setFields] = useState({
-    title: "",
-    provider: "",
-    date: "",
-    creditHours: "",
-  });
+  const [fields, setFields] = useState<ReviewFields>(() => initialReviewFields(cert));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  // Nothing was read from a failed extraction, so there are no topics to confirm here.
+  const topics: string[] = [];
+  const { split, setTopicHours } = useTopicSplit(topics, hoursOf(fields));
 
   const handleSave = async () => {
+    const request = reviewSaveBody(fields, topics, split);
+    if (request.error !== null) {
+      setSaveError(request.error);
+      return;
+    }
     setSaving(true);
     setSaveError("");
     try {
       const res = await fetch(`/api/certificates/${cert.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: fields.title || undefined,
-          provider: fields.provider || undefined,
-          activityDate: fields.date || undefined,
-          creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
-        }),
+        body: JSON.stringify(request.body),
       });
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         setSaveError(err.error ?? "Save failed");
       } else {
         const resolution = resolutionFromSave(cert, await res.json().catch(() => null), parseFloat(fields.creditHours) || 0);
@@ -647,56 +791,19 @@ export function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: Uplo
           </div>
         ) : (
           <div className="space-y-3">
-            <div>
-              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
-              <input
-                id={`${formId}-title`}
-                type="text"
-                value={fields.title}
-                onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
-                placeholder="e.g. Advanced Cardiac Life Support"
-                className="product-input"
-              />
-            </div>
-            <div>
-              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
-              <input
-                id={`${formId}-provider`}
-                type="text"
-                value={fields.provider}
-                onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
-                placeholder="e.g. American Heart Association"
-                className="product-input"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
-                <input
-                  id={`${formId}-date`}
-                  type="date"
-                  value={fields.date}
-                  onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
-                  className="product-input"
-                />
-              </div>
-              <div>
-                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
-                <input
-                  id={`${formId}-hours`}
-                  type="number"
-                  min="0"
-                  step="0.25"
-                  value={fields.creditHours}
-                  onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
-                  placeholder="e.g. 2.5"
-                  className="product-input"
-                />
-              </div>
-            </div>
+            <ReviewFormFields
+              formId={formId}
+              cert={cert}
+              fields={fields}
+              setFields={setFields}
+              topics={topics}
+              split={split}
+              setTopicHours={setTopicHours}
+              disabled={saving}
+            />
 
             {saveError && (
-              <p className="text-xs text-[var(--status-miss)]">{saveError}</p>
+              <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>
             )}
 
             <div className="flex gap-2">
@@ -721,97 +828,57 @@ export function ExtractionFailedCard({ cert, onReset, onResolved }: { cert: Uplo
   );
 }
 
+const CREDIT_LABELS: Record<string, string> = {
+  AMA_PRA_1: "AMA PRA Category 1",
+  AMA_PRA_2: "AMA PRA Category 2",
+  AAFP_PRESCRIBED: "AAFP Prescribed",
+  AAFP_ELECTIVE: "AAFP Elective",
+  AOA_1_A: "AOA Category 1-A",
+  OTHER: "Other",
+};
+
 export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: UploadedCert; onReset: () => void; onResolved: (r: UploadResolution) => void }) {
   const formId = useId();
   const ex = cert.extracted!;
+  // showAdvanced stays the first state: tests/app/dashboard/recovery-labels.test.ts opens "Fix something" by position.
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [fields, setFields] = useState({
-    title: ex.title ?? "",
-    provider: ex.provider ?? "",
-    date: "",
-    creditHours: ex.creditHours ? String(ex.creditHours) : "",
-  });
+  const [confirmed, setConfirmed] = useState<UploadResolution | null>(null);
+  const [fields, setFields] = useState<ReviewFields>(() => initialReviewFields(cert));
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-
-  const CREDIT_LABELS: Record<string, string> = {
-    AMA_PRA_1: "AMA PRA Category 1",
-    AMA_PRA_2: "AMA PRA Category 2",
-    AAFP_PRESCRIBED: "AAFP Prescribed",
-    AAFP_ELECTIVE: "AAFP Elective",
-    AOA_1_A: "AOA Category 1-A",
-    OTHER: "Other",
-  };
+  const topics = ex.mandatedTopics ?? [];
+  const { split, setTopicHours } = useTopicSplit(topics, hoursOf(fields));
 
   const creditLabel = CREDIT_LABELS[ex.creditType] ?? ex.creditType;
 
-  const TOPIC_FORMAT: Record<string, string> = {
-    OPIOID_PRESCRIBING: "Opioid Prescribing",
-    PAIN_MANAGEMENT: "Pain Management",
-    IMPLICIT_BIAS: "Implicit Bias",
-    END_OF_LIFE_CARE: "End-of-Life Care",
-    DOMESTIC_VIOLENCE: "Domestic Violence",
-    CHILD_ABUSE: "Child Abuse",
-    ELDER_ABUSE: "Elder Abuse",
-    HUMAN_TRAFFICKING: "Human Trafficking",
-    INFECTION_CONTROL: "Infection Control",
-    PATIENT_SAFETY: "Patient Safety",
-    ETHICS: "Ethics",
-    CULTURAL_COMPETENCY: "Cultural Competency",
-    SUBSTANCE_USE: "Substance Use / MATE Act",
-    SUICIDE_PREVENTION: "Suicide Prevention",
-    OTHER_MANDATORY: "Mandatory Topic",
-  };
-
-  const handleFixSave = async () => {
-    setSaving(true);
-    setSaveError("");
-    try {
-      const res = await fetch(`/api/certificates/${cert.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: fields.title || undefined,
-          provider: fields.provider || undefined,
-          activityDate: fields.date || undefined,
-          creditHours: fields.creditHours ? parseFloat(fields.creditHours) : undefined,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        setSaveError(err.error ?? "Save failed");
-      } else {
-        const resolution = resolutionFromSave(cert, await res.json().catch(() => null), parseFloat(fields.creditHours) || 0);
-        if (resolution) {
-          setShowAdvanced(false);
-          setConfirmed(true);
-          onResolved(resolution);
-        } else {
-          setSaveError(STILL_NEEDS_REVIEW);
-        }
-      }
-    } catch {
-      setSaveError("Network error — please try again");
+  // "Looks good" and "Save Changes" both send the topic hours shown on the card,
+  // so one click confirms the certificate and what it counts toward.
+  const save = async (includeFields: boolean) => {
+    const request = reviewSaveBody(fields, topics, split);
+    if (request.error !== null) {
+      setSaveError(request.error);
+      return;
     }
-    setSaving(false);
-  };
-
-  const handleConfirm = async () => {
+    const body = includeFields
+      ? request.body
+      : "topicHourAllocations" in request.body
+      ? { topicHourAllocations: request.body.topicHourAllocations }
+      : {};
     setSaving(true);
     setSaveError("");
     try {
       const res = await fetch(`/api/certificates/${cert.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) setSaveError(data?.error ?? "Save failed");
       else {
-        const resolution = resolutionFromSave(cert, data, ex.creditHours);
+        const resolution = resolutionFromSave(cert, data, includeFields ? parseFloat(fields.creditHours) || 0 : ex.creditHours);
         if (resolution) {
-          setConfirmed(true);
+          setShowAdvanced(false);
+          setConfirmed(resolution);
           onResolved(resolution);
         } else setSaveError(STILL_NEEDS_REVIEW);
       }
@@ -831,7 +898,7 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
           </svg>
         </div>
         <h2 className="font-display text-2xl font-semibold text-white mb-1">Certificate processed</h2>
-        <p className="text-[rgba(244,239,227,0.82)] text-sm">AI successfully extracted your CME credit</p>
+        <p className="text-[rgba(244,239,227,0.82)] text-sm">AI read your CME hours from this certificate</p>
       </div>
 
       {/* Receipt body */}
@@ -842,43 +909,41 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
             {/* Course title — large and prominent */}
             <div className="text-center border-b border-[var(--line-soft)] pb-5">
               <p className="product-page-eye mb-2">Course</p>
-              <p className="font-display text-xl font-semibold text-[var(--ink)] leading-snug">{ex.title}</p>
-              <p className="text-base text-[var(--ink-2)] mt-1">{ex.provider}</p>
+              <p className="font-display text-xl font-semibold text-[var(--ink)] leading-snug">{confirmed ? fields.title || ex.title : ex.title}</p>
+              <p className="text-base text-[var(--ink-2)] mt-1">{confirmed ? fields.provider || ex.provider : ex.provider}</p>
             </div>
 
             {/* Key stats row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[var(--bg-2)] rounded-2xl p-4 text-center">
                 <p className="text-xs font-semibold text-[var(--ink-3)] uppercase tracking-wide mb-1">Completed</p>
-                <p className="text-base font-semibold text-[var(--ink)]">{ex.date}</p>
+                <p className="text-base font-semibold text-[var(--ink)]">{confirmed && fields.date ? formatDateUTC(fields.date) : ex.date}</p>
               </div>
               <div className="bg-[rgba(63,95,51,0.10)] rounded-2xl p-4 text-center">
-                <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-1">Credits Earned</p>
-                <p className="font-mono text-3xl font-semibold text-[var(--primary)] leading-none">{ex.creditHours.toFixed(1)}</p>
-                <p className="text-xs text-[var(--primary)] mt-1 font-medium">{creditLabel} Credits</p>
+                <p className="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-1">Hours Earned</p>
+                <p className="font-mono text-3xl font-semibold text-[var(--primary)] leading-none">{(confirmed ? confirmed.hours : ex.creditHours).toFixed(1)}</p>
+                <p className="text-xs text-[var(--primary)] mt-1 font-medium">{creditLabel}</p>
               </div>
             </div>
 
-            {/* Mandatory topics */}
-            {ex.topics.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-[var(--ink-3)] uppercase tracking-wide mb-2">Mandatory Topics Detected</p>
-                <div className="flex flex-wrap gap-2">
-                  {ex.topics.map((t) => (
-                    <span
-                      key={t}
-                      className="product-pill product-pill-met"
-                    >
-                      <span className="w-1.5 h-1.5 bg-[var(--status-met)] rounded-full" />
-                      {TOPIC_FORMAT[t] ?? t.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {confirmed ? (
               <>
+                {/* What the confirmed certificate counts toward */}
+                {confirmed.topics.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-[var(--ink-3)] uppercase tracking-wide mb-2">Counts toward</p>
+                    <div className="flex flex-wrap gap-2">
+                      {confirmed.topics.map((t) => (
+                        <span key={t} className="product-pill product-pill-met">
+                          <span className="w-1.5 h-1.5 bg-[var(--status-met)] rounded-full" />
+                          {formatSpecialTopic(t)}
+                          {split[t] && Number(split[t]) > 0 ? ` · ${Number(split[t])} hrs` : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Confirmation message */}
                 <div className="flex items-center gap-3 bg-[var(--status-met-bg)] border border-[rgba(107,142,102,0.34)] rounded-[var(--radius)] px-4 py-3">
                   <svg className="w-4 h-4 text-[var(--status-met)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -907,10 +972,20 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
               </>
             ) : (
               <>
+                {/* Mandated topics: confirm the hours here, on the same screen */}
+                <TopicHoursFields
+                  idPrefix={`${formId}-summary`}
+                  topics={topics}
+                  split={split}
+                  hours={hoursOf(fields)}
+                  onChange={setTopicHours}
+                  disabled={saving}
+                />
+
                 {/* Layer 1 action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-1">
                   <button
-                    onClick={handleConfirm}
+                    onClick={() => save(false)}
                     disabled={saving}
                     className="product-btn product-btn-brand flex-1"
                   >
@@ -949,55 +1024,18 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
               </button>
             </div>
 
-            <div>
-              <label htmlFor={`${formId}-title`} className="product-label">Course Title</label>
-              <input
-                id={`${formId}-title`}
-                type="text"
-                value={fields.title}
-                onChange={(e) => setFields((f) => ({ ...f, title: e.target.value }))}
-                placeholder="e.g. Advanced Cardiac Life Support"
-                className="product-input"
-              />
-            </div>
-            <div>
-              <label htmlFor={`${formId}-provider`} className="product-label">Provider / Accreditor</label>
-              <input
-                id={`${formId}-provider`}
-                type="text"
-                value={fields.provider}
-                onChange={(e) => setFields((f) => ({ ...f, provider: e.target.value }))}
-                placeholder="e.g. American Heart Association"
-                className="product-input"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor={`${formId}-date`} className="product-label">Completion Date</label>
-                <input
-                  id={`${formId}-date`}
-                  type="date"
-                  value={fields.date}
-                  onChange={(e) => setFields((f) => ({ ...f, date: e.target.value }))}
-                  className="product-input"
-                />
-              </div>
-              <div>
-                <label htmlFor={`${formId}-hours`} className="product-label">Credit Hours</label>
-                <input
-                  id={`${formId}-hours`}
-                  type="number"
-                  min="0"
-                  step="0.25"
-                  value={fields.creditHours}
-                  onChange={(e) => setFields((f) => ({ ...f, creditHours: e.target.value }))}
-                  placeholder="e.g. 2.5"
-                  className="product-input"
-                />
-              </div>
-            </div>
+            <ReviewFormFields
+              formId={formId}
+              cert={cert}
+              fields={fields}
+              setFields={setFields}
+              topics={topics}
+              split={split}
+              setTopicHours={setTopicHours}
+              disabled={saving}
+            />
 
-            {saveError && <p className="text-xs text-[var(--status-miss)]">{saveError}</p>}
+            {saveError && <p role="alert" className="text-xs text-[var(--status-miss)]">{saveError}</p>}
 
             <div className="flex gap-2">
               <button
@@ -1007,7 +1045,7 @@ export function ExtractedCreditCard({ cert, onReset, onResolved }: { cert: Uploa
                 Cancel
               </button>
               <button
-                onClick={handleFixSave}
+                onClick={() => save(true)}
                 disabled={saving}
                 className="product-btn product-btn-primary flex-1 min-h-0 py-2 text-sm disabled:opacity-50"
               >

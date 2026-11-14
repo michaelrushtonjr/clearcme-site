@@ -1,22 +1,24 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { defaultTopicSplit, topicAllocationsFromSplit } from "@/lib/certificate-review";
 
 export default function CertificateTopicConfirmation({ certificateId, suggestions, confirmedTopics, hours, allocations }: {
   certificateId: string; suggestions: string[]; confirmedTopics: string[]; hours: number | null; allocations?: unknown;
 }) {
   const router = useRouter();
   const topics = [...new Set([...confirmedTopics, ...suggestions])];
-  const initial = allocations && typeof allocations === "object" && !Array.isArray(allocations) ? allocations as Record<string, number> : {};
-  const [split, setSplit] = useState<Record<string, string>>(() => Object.fromEntries(topics.map((topic) => [topic, String(initial[topic] ?? (confirmedTopics[0] === topic ? hours ?? 0 : 0))])));
+  // Pre-filled: a saved split wins, otherwise the first topic starts with all of the certificate's hours.
+  const [split, setSplit] = useState<Record<string, string>>(() => defaultTopicSplit(topics, hours, allocations));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   if (!suggestions.length && confirmedTopics.length < 2) return null;
   const label = (topic: string) => topic.toLowerCase().replaceAll("_", " ");
   async function confirm() {
+    const { allocations: topicHourAllocations, error: splitError } = topicAllocationsFromSplit(split, hours);
+    if (splitError) { setError(splitError); return; }
     setSaving(true); setError("");
     try {
-      const topicHourAllocations = Object.fromEntries(Object.entries(split).map(([key, value]) => [key, Number(value)]).filter(([, value]) => Number(value) > 0));
       const response = await fetch(`/api/certificates/${certificateId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topicHourAllocations }) });
       if (!response.ok) throw new Error((await response.json()).error ?? "Could not confirm topics");
       router.refresh();
@@ -24,7 +26,7 @@ export default function CertificateTopicConfirmation({ certificateId, suggestion
   }
   return <fieldset className="mt-3 space-y-2 text-sm">
     <legend>Looks like it may count toward {suggestions.map(label).join(", ") || "your confirmed topics"} — confirm?</legend>
-    <p>Assign up to {hours ?? 0} earned hours across the topics you confirm.</p>
+    <p>Assign up to {hours ?? 0} earned hours across the topics you confirm. Lower a number if only part of the activity covered the topic.</p>
     {topics.map((topic) => <label key={topic} className="flex items-center gap-2">
       {label(topic)} <input aria-label={`${label(topic)} hours`} type="number" min="0" max={hours ?? 0} step="0.25" value={split[topic] ?? "0"} onChange={(e) => setSplit({ ...split, [topic]: e.target.value })} className="w-20 border rounded px-2" /> hours
     </label>)}

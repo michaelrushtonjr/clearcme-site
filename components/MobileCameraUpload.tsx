@@ -4,6 +4,15 @@ import { useRef, useState } from "react";
 import { uploadCertificate } from "@/lib/certificate-upload-client";
 import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
+import {
+  ExtractionFailedCard,
+  NeedsReviewCard,
+  uploadedCertFromResponse,
+  type UploadedCert,
+  type UploadResolution,
+} from "@/components/CertificateUpload";
+import { TopicHoursCard } from "@/components/CertificateTopicHours";
+import { formatSpecialTopic } from "@/lib/certificate-review";
 
 type UploadState = "idle" | "uploading" | "done" | "error";
 
@@ -11,9 +20,16 @@ interface MobileUploadResult {
   id: string;
   fileName: string;
   creditHours: number;
+  /** Mandated topics the server detected (SpecialTopic values). */
   topics: string[];
   needsReview: boolean;
   extractionFailed: boolean;
+  /** What the server read, for the review form on this screen. */
+  cert: UploadedCert | null;
+  /** Topic hours were confirmed on this screen. */
+  topicsConfirmed?: boolean;
+  /** The review form on this screen was saved; its card stays up to show that. */
+  reviewedHere?: boolean;
 }
 
 interface ComplianceRequirementGap {
@@ -51,27 +67,7 @@ interface MobileCameraUploadProps {
   onUploadComplete?: () => void;
 }
 
-const TOPIC_FORMAT: Record<string, string> = {
-  OPIOID_PRESCRIBING: "Opioid Prescribing",
-  PAIN_MANAGEMENT: "Pain Management",
-  IMPLICIT_BIAS: "Implicit Bias",
-  END_OF_LIFE_CARE: "End-of-Life Care",
-  DOMESTIC_VIOLENCE: "Domestic Violence",
-  CHILD_ABUSE: "Child Abuse",
-  ELDER_ABUSE: "Elder Abuse",
-  HUMAN_TRAFFICKING: "Human Trafficking",
-  INFECTION_CONTROL: "Infection Control",
-  PATIENT_SAFETY: "Patient Safety",
-  ETHICS: "Ethics",
-  CULTURAL_COMPETENCY: "Cultural Competency",
-  SUBSTANCE_USE: "Substance Use / MATE Act",
-  SUICIDE_PREVENTION: "Suicide Prevention",
-  OTHER_MANDATORY: "Mandatory Topic",
-};
-
-function formatTopicLabel(topic: string) {
-  return TOPIC_FORMAT[topic] ?? topic.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
+const formatTopicLabel = formatSpecialTopic;
 
 function summarizeComplianceSnapshot(compliance: ComplianceLicenseStatus[] | undefined): ComplianceSnapshot | null {
   if (!compliance || compliance.length === 0) return null;
@@ -155,6 +151,35 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
   const [upgradeRequired, setUpgradeRequired] = useState<false | "slots" | "attempts">(false);
   const [uploadResults, setUploadResults] = useState<MobileUploadResult[]>([]);
   const [complianceImpact, setComplianceImpact] = useState<ComplianceImpact | null>(null);
+  // The gaps as they stood before this upload, so the summary can be refreshed
+  // after a certificate is confirmed on this screen.
+  const beforeComplianceRef = useRef<ComplianceSnapshot | null>(null);
+
+  const applyResults = async (next: MobileUploadResult[]) => {
+    setUploadResults(next);
+    const after = await fetchComplianceSnapshot();
+    setComplianceImpact(summarizeComplianceImpact(beforeComplianceRef.current, after, next));
+  };
+
+  /** A certificate reviewed and saved right here now counts like a clean read. */
+  const handleReviewResolved = (resolution: UploadResolution) => {
+    if (resolution.outcome !== "confirmed") return;
+    void applyResults(
+      uploadResults.map((result) =>
+        result.id === resolution.id
+          ? { ...result, needsReview: false, extractionFailed: false, creditHours: resolution.hours, topics: resolution.topics, topicsConfirmed: true, reviewedHere: true }
+          : result,
+      ),
+    );
+  };
+
+  const handleTopicsConfirmed = (id: string, allocations: Record<string, number>) => {
+    void applyResults(
+      uploadResults.map((result) =>
+        result.id === id ? { ...result, topics: Object.keys(allocations), topicsConfirmed: true } : result,
+      ),
+    );
+  };
 
   const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -199,6 +224,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
 
     try {
       const beforeCompliance = await fetchComplianceSnapshot();
+      beforeComplianceRef.current = beforeCompliance;
       const results: MobileUploadResult[] = [];
 
       for (const file of files) {
@@ -221,14 +247,16 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
         const cert = data.certificate;
         const isNeedsReview = cert?.extractionStatus === "NEEDS_REVIEW";
         const hasExtracted = cert?.extractionStatus === "COMPLETED" || isNeedsReview;
+        const uploaded = cert?.id ? uploadedCertFromResponse(cert, data.warning) : null;
 
         results.push({
           id: cert?.id ?? crypto.randomUUID(),
           fileName: cert?.fileName ?? file.name,
           creditHours: hasExtracted ? cert?.creditHours ?? 0 : 0,
-          topics: hasExtracted ? cert?.topics ?? [] : [],
+          topics: uploaded?.extracted?.mandatedTopics ?? [],
           needsReview: isNeedsReview,
           extractionFailed: cert?.extractionStatus === "FAILED",
+          cert: uploaded,
         });
       }
 
@@ -301,13 +329,18 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
     const processedCount = uploadResults.length;
     const totalCreditsAdded = uploadResults.reduce((sum, cert) => sum + cert.creditHours, 0);
     const needsReviewCount = uploadResults.filter((cert) => cert.needsReview || cert.extractionFailed).length;
-    const detectedTopics = Array.from(new Set(uploadResults.flatMap((cert) => cert.topics)));
     const hasReviewNeeded = needsReviewCount > 0;
     const hasFailed = uploadResults.some((cert) => cert.extractionFailed);
-    // Land the physician on the certificate that needs attention, not a generic page.
-    const attentionCert =
-      uploadResults.find((cert) => cert.extractionFailed) ??
-      uploadResults.find((cert) => cert.needsReview);
+    // Certificates to finish on this screen: review forms first, then topic hours.
+    // A card stays mounted after it is saved, so its "Confirmed and saved" line stays on screen.
+    const toReview = uploadResults.filter((result) => (result.needsReview || result.extractionFailed || result.reviewedHere) && result.cert);
+    // A certificate with no readable record (rare) still gets the Certificates-page route.
+    const attentionCert = uploadResults.find((result) => (result.needsReview || result.extractionFailed) && !result.cert);
+    // Clean reads only: a certificate reviewed above already had its topic hours on that form.
+    const topicCards = uploadResults.filter(
+      (result) => !result.needsReview && !result.extractionFailed && !result.reviewedHere && result.cert?.extracted && (result.cert.extracted.mandatedTopics?.length ?? 0) > 0 && result.creditHours > 0,
+    );
+    const topicsToConfirm = Array.from(new Set(topicCards.filter((result) => !result.topicsConfirmed).flatMap((result) => result.cert?.extracted?.mandatedTopics ?? [])));
     const cardTone = hasReviewNeeded
       ? "border-[rgba(201,147,60,0.34)] bg-[var(--status-pending-bg)]"
       : "border-[rgba(63,95,51,0.25)] bg-[rgba(63,95,51,0.10)]";
@@ -317,6 +350,7 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
       : "bg-[var(--primary)] hover:bg-[var(--primary-2)]";
 
     return (
+      <div className="space-y-4">
       <div className={`space-y-4 rounded-2xl border p-4 text-left shadow-sm ${cardTone}`}>
         <div className="flex items-start gap-3">
           <div className={`mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm ${accentText}`}>
@@ -341,12 +375,12 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
             </h3>
             <p className="mt-1 text-sm text-[var(--ink-2)]">
               {hasFailed
-                ? "We couldn't read this certificate automatically. Enter the details manually and the hours still count toward your requirements."
+                ? "We couldn't read this certificate automatically. Enter the details below and the hours still count toward your requirements."
                 : hasReviewNeeded
-                ? "We saved the upload, but one or more fields need review before ClearCME relies on it for compliance."
+                ? "We saved the upload, but one or more fields need review before ClearCME relies on it for compliance. Check them below."
                 : totalCreditsAdded > 0
-                ? `${totalCreditsAdded.toFixed(1)} credit${totalCreditsAdded === 1 ? "" : "s"} added from ${processedCount} upload${processedCount === 1 ? "" : "s"}.`
-                : "No credits were added yet — review the upload on your compliance page to finish classification."}
+                ? `${totalCreditsAdded.toFixed(1)} hour${totalCreditsAdded === 1 ? "" : "s"} added from ${processedCount} upload${processedCount === 1 ? "" : "s"}.`
+                : "No hours were added yet — open your Certificates page to finish this upload."}
             </p>
           </div>
         </div>
@@ -390,25 +424,29 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
           </div>
         )}
 
-        {detectedTopics.length > 0 && (
+        {topicsToConfirm.length > 0 && (
           <p className="rounded-xl bg-white/70 px-3 py-2 text-xs text-[var(--ink-2)]">
-            Mandatory-topic matches detected: {detectedTopics.map(formatTopicLabel).join(", ")}.
+            Possible mandated-topic match: {topicsToConfirm.map(formatTopicLabel).join(", ")}. Confirm the hours below.
           </p>
         )}
 
         <div className="space-y-2">
-          <button
-            onClick={() =>
-              router.push(
-                hasReviewNeeded && attentionCert
-                  ? `/dashboard/certificates#cert-${attentionCert.id}`
-                  : "/dashboard/compliance"
-              )
-            }
-            className={`w-full rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors ${accentButton}`}
-          >
-            {hasFailed ? "Enter details manually →" : hasReviewNeeded ? "Review details →" : "View updated gaps →"}
-          </button>
+          {/* Review happens on this screen (forms below). The Certificates page is the
+              fallback only when there is no readable record to build a form from. */}
+          {(!hasReviewNeeded || attentionCert) && (
+            <button
+              onClick={() =>
+                router.push(
+                  hasReviewNeeded && attentionCert
+                    ? `/dashboard/certificates#cert-${attentionCert.id}`
+                    : "/dashboard/compliance"
+                )
+              }
+              className={`w-full rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors ${accentButton}`}
+            >
+              {hasFailed ? "Enter details manually →" : hasReviewNeeded ? "Review details →" : "View updated gaps →"}
+            </button>
+          )}
           <button
             onClick={resetUpload}
             className="w-full rounded-xl border border-[var(--line)] bg-white/80 px-4 py-3 text-sm font-semibold text-[var(--primary)] transition-colors hover:bg-white"
@@ -416,6 +454,26 @@ export default function MobileCameraUpload({ onUploadComplete, userId }: MobileC
             Upload another certificate
           </button>
         </div>
+      </div>
+
+      {toReview.map((result) =>
+        result.cert?.extractionFailed ? (
+          <ExtractionFailedCard key={result.id} cert={result.cert!} onReset={resetUpload} onResolved={handleReviewResolved} />
+        ) : (
+          <NeedsReviewCard key={result.id} cert={result.cert!} onReset={resetUpload} onResolved={handleReviewResolved} />
+        ),
+      )}
+
+      {topicCards.map((result) => (
+        <TopicHoursCard
+          key={result.id}
+          certificateId={result.id}
+          title={result.cert?.extracted?.title || result.fileName}
+          topics={result.cert?.extracted?.mandatedTopics ?? []}
+          hours={result.creditHours}
+          onConfirmed={(allocations) => handleTopicsConfirmed(result.id, allocations)}
+        />
+      ))}
       </div>
     );
   }

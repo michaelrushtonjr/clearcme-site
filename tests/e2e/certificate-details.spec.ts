@@ -9,7 +9,8 @@ test('certificate topic suggestions and review recovery',async({page},info)=>{
  expect(r.status()).toBe(201);const data=await r.json();const cert=data.certificate || data;
  await e.visit('/dashboard/certificates','topic-suggestion-unconfirmed');
  const box=page.getByRole('group',{name:/Looks like it may count toward ethics/});
- await expect(box).toBeVisible();await expect(box.getByLabel('ethics hours')).toHaveValue('0');
+ // Pre-filled with the certificate's 2 hours; nothing counts until "Confirm topic hours" is pressed.
+ await expect(box).toBeVisible();await expect(box.getByLabel('ethics hours')).toHaveValue('2');
  await e.visit('/dashboard/compliance','topic-map-before-confirmation');
  if(await page.getByRole('button',{name:'Got it',exact:true}).isVisible())await page.getByRole('button',{name:'Got it',exact:true}).click();
  await e.visit('/dashboard/certificates','topic-before-confirm');

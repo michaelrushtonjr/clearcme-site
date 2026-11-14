@@ -8,6 +8,7 @@ import DeleteCertButton from "@/components/DeleteCertButton";
 import VerifiedProviderBadge from "@/components/VerifiedProviderBadge";
 import { formatDateUTC } from "@/lib/dates";
 import { manualCertificateReviewMessage } from "@/lib/manual-certificate-review";
+import { reviewPrefill } from "@/lib/certificate-review";
 
 interface Cert {
   id: string;
@@ -79,23 +80,19 @@ function StatusBadge({ status, creditHours }: { status: string; creditHours: num
   );
 }
 
-/** Format a Date/ISO string as the value an <input type="date"> expects. */
-function toDateInputValue(date: Date | string | null): string {
-  if (!date) return "";
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toISOString().slice(0, 10);
-}
-
 export function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => void }) {
   const formId = useId();
+  // Same starting values as the upload screen: what the server read, and the
+  // activity maximum as a labelled suggestion when earned hours are missing.
+  const prefill = reviewPrefill(cert);
   const [fields, setFields] = useState({
     title: cert.title ?? "",
     provider: cert.provider ?? "",
-    date: toDateInputValue(cert.activityDate),
-    creditHours: cert.creditHours != null ? String(cert.creditHours) : "",
+    date: prefill.date,
+    creditHours: prefill.hours,
     creditType: cert.creditType ?? "AMA_PRA_1",
   });
+  const suggestedFromMaximum = prefill.hoursSource === "activity_maximum" && fields.creditHours === prefill.hours;
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -179,7 +176,11 @@ export function ManualEntryForm({ cert, onSaved }: { cert: Cert; onSaved: () => 
         </div>
       </div>
       {cert.activityMaxHours != null && (
-        <p className="text-xs text-[var(--ink-2)]">Activity maximum: {cert.activityMaxHours} hours. Enter the hours you personally earned.</p>
+        <p className="text-xs text-[var(--ink-2)]">
+          {suggestedFromMaximum
+            ? `This certificate shows the activity's maximum (${cert.activityMaxHours} hours) but not how many hours you earned. We filled in ${cert.activityMaxHours} as a starting point — change it if you claimed fewer. It is saved only when you save.`
+            : `Activity maximum: ${cert.activityMaxHours} hours. Enter the hours you personally earned.`}
+        </p>
       )}
       <div>
         <label htmlFor={`${formId}-type`} className="product-label">Credit Type</label>
