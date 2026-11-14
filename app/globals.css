@@ -1168,7 +1168,7 @@ body {
   font-size: clamp(40px, 5.6vw, 70px);
   /* Desktop overflow fix (2026-07-25): .wave is nowrap and needs ~10.1px of
      column width per 1px of font-size, but .wrap caps the text column at
-     ~547px, so the 70px cap always pushed "or your money back." under the
+     ~547px, so the 70px cap always pushed the line below the h1 under the
      dashboard card. 9.5cqw sizes the h1 to its own grid column so the wave
      always fits; browsers without container-query units keep the line above.
      The ≤640px media query below still overrides both on phones. */
@@ -1215,7 +1215,7 @@ body {
   background-size: 100% 90%;
 }
 
-.landing-v3 .hero-guarantee {
+.landing-v3 .hero-standing {
   max-width: 540px;
   margin: 20px 0 0;
   font-family: var(--display);
@@ -1224,9 +1224,19 @@ body {
   color: var(--ink);
 }
 
-.landing-v3 .hero-guarantee em {
+/* inline-block: when the line has to wrap it breaks before "for your next
+   renewal." as a whole, never mid-phrase with a stray last word. */
+.landing-v3 .hero-standing em {
+  display: inline-block;
   color: var(--primary);
   font-style: italic;
+}
+
+.landing-v3 .hero-refund {
+  margin: 14px 0 0;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.5;
 }
 
 .landing-v3 .hero-sub {

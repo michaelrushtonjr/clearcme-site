@@ -887,11 +887,9 @@ export default function Home() {
               <h1 className="h1">
                 Your CME compliance, <span className="wave">handled.</span>
               </h1>
-              <p className="hero-guarantee">
-                Compliant for your next renewal — <em>or your money back.</em>
+              <p className="hero-standing">
+                Know exactly where you stand <em>for your next renewal.</em>
               </p>
-              {/* TODO(track-b): when verified course mappings ship (Phase 5), flip the closing
-                  clause to "— and the cheapest accredited way to fill it." */}
               <p className="hero-sub">
                 <strong>Under 60 seconds of setup.</strong>{" "}
                 ClearCME maps your state&apos;s requirements, reads your
@@ -905,6 +903,8 @@ export default function Home() {
                   How the guarantee works <ArrowRight size={16} className="arrow" />
                 </Link>
               </div>
+              {/* The refund is a separate promise from the headline: its own line. */}
+              <p className="hero-refund">Free to start. Paid plans come with a 30-day full refund.</p>
               <div className="trust-row">
                 {["All 50 states + DC", "MD & DO", "Built by a physician"].map((item) => (
                   <span className="pip" key={item}>
@@ -921,7 +921,7 @@ export default function Home() {
 
         <StatePreview />
 
-        {/* Below the fold by design: the guarantee subhead is the only urgency moment above it. */}
+        {/* Below the fold by design: the hero carries the promise, this strip carries the cost. */}
         <section aria-label="Cost comparison">
           <div className="wrap">
             <div className="strip reveal">
