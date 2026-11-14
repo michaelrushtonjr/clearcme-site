@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
+import { GROUP_CONTACT, PLAN_ORDER, PLANS, planPriceLabel, type PlanId } from "@/lib/plan-features";
 
 const faqs: { q: string; a: string; mocCta?: boolean; defaultOpen?: boolean }[] = [
   {
@@ -12,7 +13,7 @@ const faqs: { q: string; a: string; mocCta?: boolean; defaultOpen?: boolean }[] 
   },
   {
     q: "I'm licensed in two states. Do I need Pro?",
-    a: "No — Essential covers up to 2 states, which is the most common scenario for physicians with dual licensure (e.g., Nevada + California, or a neighboring-state compact). Pro is designed for physicians tracking 3 or more states, or practices managing compliance across a group. If you're a two-state physician, Essential is all you need.",
+    a: "No — Essential covers up to 2 states, which is the most common scenario for physicians with dual licensure (e.g., Nevada + California, or a neighboring-state compact). Pro is for physicians tracking 3 or more states. If you're a two-state physician, Essential is all you need.",
   },
   {
     q: "What does \"founding member\" mean?",
@@ -117,81 +118,13 @@ export default function PricingPage() {
     void startCheckout(tier);
   }, [startCheckout]);
 
-  const tiers = [
-    {
-      name: "Free",
-      price: "$0",
-      cta: "Get started free",
-      ctaHref: "/login",
-      ctaStyle: "public-btn-secondary",
-      features: [
-        "Single state requirement lookup",
-        "Renewal countdown",
-        "AI extraction on your first 3 certificates",
-        "Manual CME entry",
-        "One best course match per gap/topic",
-        "Basic compliance dashboard",
-      ],
-      popular: false,
-      muted: true,
-    },
-    {
-      name: "Essential",
-      price: "$99/yr",
-      cta: "Start Essential",
-      ctaHref: "/login",
-      checkoutTier: "ESSENTIAL" as const,
-      ctaStyle: "public-btn-primary",
-      features: [
-        "Everything in Free",
-        "Multi-state tracking (up to 2 states)",
-        "AI-supported certificate extraction",
-        "Full course recommendation list",
-        "Sort by price, time, topic, accreditation",
-        "Full gap analysis",
-        "Deadline alerts",
-        "DEA MATE Act tracking",
-        "Audit-ready PDF export",
-      ],
-      popular: true,
-      muted: false,
-    },
-    {
-      name: "Pro",
-      price: "$199/yr",
-      cta: "Start Pro",
-      ctaHref: "/login",
-      checkoutTier: "PRO" as const,
-      ctaStyle: "public-btn-secondary",
-      features: [
-        "Everything in Essential",
-        "Multi-state tracking (unlimited states)",
-        "Side-by-side state comparison",
-        "Priority alerts",
-        "Shareable compliance summary",
-        "Quarterly digest emails",
-      ],
-      popular: false,
-      muted: false,
-    },
-    {
-      name: "Group",
-      price: "Contact us",
-      cta: "Contact sales",
-      ctaHref: "mailto:hello@clearcme.ai",
-      ctaStyle: "public-btn-secondary",
-      features: [
-        "Hospital / group billing",
-        "$149/physician/yr (10+ min.)",
-        "Admin dashboard",
-        "Everything in Pro",
-        "Dedicated onboarding",
-        "Priority support",
-      ],
-      popular: false,
-      muted: true,
-    },
-  ];
+  // What each plan includes comes from lib/plan-features.ts, the same list
+  // the home page renders. Only the buttons are decided here.
+  const buttons: Record<PlanId, { cta: string; ctaStyle: string; checkoutTier: "ESSENTIAL" | "PRO" | null }> = {
+    free: { cta: "Get started free", ctaStyle: "public-btn-secondary", checkoutTier: null },
+    essential: { cta: "Start Essential", ctaStyle: "public-btn-primary", checkoutTier: "ESSENTIAL" },
+    pro: { cta: "Start Pro", ctaStyle: "public-btn-secondary", checkoutTier: "PRO" },
+  };
 
   return (
     <PublicShell links={[{ href: "/mate-act", label: "DEA MATE Act" }, { href: "/methodology", label: "Methodology" }]}>
@@ -203,24 +136,28 @@ export default function PricingPage() {
           <span className="public-accent">without the audit scramble.</span>
         </h1>
         <p className="public-subhead max-w-2xl mx-auto mb-10">
-          Start free with a useful compliance map and one best course match per gap. Upgrade when you want AI extraction, full course choice, reminders, and audit-ready exports. <strong className="text-[#1e2920]">Our first 100 members keep today&apos;s rate for as long as they stay.</strong>
+          Start free with your compliance map and course matches for each gap. Upgrade when you want a second license, unlimited certificate reading, and audit-ready exports. <strong className="text-[#1e2920]">Our first 100 members keep today&apos;s rate for as long as they stay.</strong>
         </p>
 
         {/* Tier cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 text-left">
-          {tiers.map((tier) => {
-            const tierCheckoutTier = tier.name === "Essential" ? "ESSENTIAL" : tier.name === "Pro" ? "PRO" : null;
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
+          {PLAN_ORDER.map((id) => {
+            const plan = PLANS[id];
+            const button = buttons[id];
+            const tier = button.checkoutTier;
+            const popular = id === "essential";
+            const muted = id === "free";
 
             return (
             <div
-              key={tier.name}
+              key={id}
               className={`relative public-card p-6 flex flex-col gap-5 ${
-                tier.popular
+                popular
                   ? "border-[#3f5f33] ring-2 ring-[#3f5f33] ring-offset-2 ring-offset-[#f4efe3] bg-[#fffdf6] shadow-lg"
                   : "border-[#ddd4bd] bg-[#fffdf6]/80"
               }`}
             >
-              {tier.popular && (
+              {popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-[#3f5f33] text-[#fffdf6] text-xs font-bold px-3 py-1 rounded-full tracking-wide whitespace-nowrap">
                     Most Physicians
@@ -230,21 +167,22 @@ export default function PricingPage() {
 
               <div>
                 <p className="text-xs font-semibold text-[#6b7568] uppercase tracking-widest mb-1">
-                  {tier.name}
+                  {plan.name}
                 </p>
-                <p className={`text-3xl font-black tracking-tight ${tier.muted ? "text-[#6b7568]" : "text-[#1e2920]"}`}>
-                  {tier.price}
+                <p className={`text-3xl font-black tracking-tight ${muted ? "text-[#6b7568]" : "text-[#1e2920]"}`}>
+                  {planPriceLabel(id)}
                 </p>
-                {tier.name !== "Free" && tier.name !== "Group" && (
+                {id !== "free" && (
                   <>
                     <p className="text-xs text-[#6b7568] mt-1">billed annually</p>
                     <p className="text-xs italic text-[#3f5f33] mt-1">Founding-member rate — locked while active.</p>
                   </>
                 )}
+                <p className="text-sm text-[#3f4a40] mt-3 leading-relaxed">{plan.summary}</p>
               </div>
 
               <ul className="space-y-2.5 flex-1">
-                {tier.features.map((feat) => (
+                {plan.features.map((feat) => (
                   <li key={feat} className="flex items-start gap-2 text-sm text-[#3f4a40]">
                     <Check />
                     {feat}
@@ -252,27 +190,33 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              {tierCheckoutTier ? (
+              {tier ? (
                 <button
                   type="button"
-                  onClick={() => startCheckout(tierCheckoutTier)}
+                  onClick={() => startCheckout(tier)}
                   disabled={checkoutTier !== null}
-                  className={`block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${tier.ctaStyle}`}
+                  className={`block w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${button.ctaStyle}`}
                 >
-                  {checkoutTier === tierCheckoutTier ? "Opening checkout…" : tier.cta}
+                  {checkoutTier === tier ? "Opening checkout…" : button.cta}
                 </button>
               ) : (
                 <Link
-                  href={tier.ctaHref}
-                  className={`block text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${tier.ctaStyle}`}
+                  href="/login"
+                  className={`block text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${button.ctaStyle}`}
                 >
-                  {tier.cta}
+                  {button.cta}
                 </Link>
               )}
             </div>
             );
           })}
         </div>
+        <p className="mt-6 text-sm leading-relaxed text-[#3f4a40]">
+          {GROUP_CONTACT.line}{" "}
+          <a href={`mailto:${GROUP_CONTACT.email}`} className="font-semibold text-[#3f5f33] underline underline-offset-4 hover:text-[#2a4123]">
+            Email {GROUP_CONTACT.email}
+          </a>
+        </p>
         {checkoutError && (
           <p className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
             {checkoutError}
@@ -340,7 +284,7 @@ export default function PricingPage() {
           >
             Start free →
           </Link>
-          <p className="text-xs text-[#6b7568] mt-4">Free · No credit card · One helpful course match included</p>
+          <p className="text-xs text-[#6b7568] mt-4">Free · No credit card · Course matches for each gap</p>
         </div>
       </section>
 

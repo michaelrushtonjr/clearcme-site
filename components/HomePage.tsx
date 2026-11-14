@@ -21,6 +21,7 @@ import {
   type MandatoryTopic,
   type StateCode,
 } from "@/lib/state-requirements";
+import { PLAN_ORDER, PLANS, type PlanId } from "@/lib/plan-features";
 
 const tickerItems = [
   ["CA", "renews by issue month"],
@@ -663,31 +664,7 @@ function MultiState() {
 }
 
 function Pricing() {
-  const planFeatures = {
-    free: [
-      "One state mapped",
-      "AI extraction on your first 3 certificates",
-      "Manual hour entry",
-      "One best course match per gap",
-      "Basic progress view",
-    ],
-    essential: [
-      "Up to 2 state licenses",
-      "AI-supported certificate extraction",
-      "Full course recommendation list",
-      "Sort by price, time, topic, accreditation",
-      "Audit-ready PDF export",
-      "Renewal and gap reminders",
-      "30-day money-back guarantee",
-    ],
-    pro: [
-      "Everything in Essential",
-      "Unlimited state licenses",
-      "Cross-state hour reuse",
-      "DEA MATE Act tracking",
-      "Priority support",
-    ],
-  };
+  const cta: Record<PlanId, string> = { free: "Start free", essential: "Start Essential", pro: "Start Pro" };
 
   return (
     <section id="pricing">
@@ -695,7 +672,7 @@ function Pricing() {
         <SectionHead
           eyebrow="Pricing"
           title="Less than the cost of one compliance scramble."
-          body="Start free with a genuinely useful gap map and one best course match. Upgrade for AI extraction, full course choice, exports, and reminders - backed by a 30-day money-back guarantee. Founding members keep today's rate for as long as their subscription stays active."
+          body="Start free: your state's requirements, your gaps, and course matches for each one. Upgrade for a second license, unlimited certificate reading, and audit-ready exports - backed by a 30-day money-back guarantee. Founding members keep today's rate for as long as their subscription stays active."
         />
         <div className="founding-strip reveal">
           <strong>Founding pricing.</strong> These are our launch rates. As ClearCME grows, prices will
@@ -703,39 +680,25 @@ function Pricing() {
           first 100 members keep these rates.
         </div>
         <div className="price-grid">
-          <div className="plan reveal">
-            <div className="plan-name">Free</div>
-            <div className="plan-price">
-              <span className="h">$0</span>
-              <span className="per">forever</span>
-            </div>
-            <p className="plan-h">See your gaps and one recommended course per topic. No credit card.</p>
-            <PlanFeatureList items={planFeatures.free} />
-            <CtaLink className="plan-cta">Start free</CtaLink>
-          </div>
-          <div className="plan featured reveal">
-            <span className="ribbon">Most physicians</span>
-            <div className="plan-name">Essential</div>
-            <p className="plan-founding">Founding-member rate — locked while you stay.</p>
-            <div className="plan-price">
-              <span className="h">$99</span>
-              <span className="per">/year</span>
-            </div>
-            <p className="plan-h">AI extraction, full course choice, exports, and reminders for 1-2 state licenses.</p>
-            <PlanFeatureList items={planFeatures.essential} />
-            <CtaLink className="plan-cta">Start Essential</CtaLink>
-          </div>
-          <div className="plan reveal">
-            <div className="plan-name">Pro</div>
-            <p className="plan-founding">Founding-member rate — locked while you stay.</p>
-            <div className="plan-price">
-              <span className="h">$199</span>
-              <span className="per">/year</span>
-            </div>
-            <p className="plan-h">For physicians with 3+ licenses. Every state, one dashboard.</p>
-            <PlanFeatureList items={planFeatures.pro} />
-            <CtaLink className="plan-cta">Start Pro</CtaLink>
-          </div>
+          {PLAN_ORDER.map((id) => {
+            const plan = PLANS[id];
+            const paid = id !== "free";
+
+            return (
+              <div className={`plan${id === "essential" ? " featured" : ""} reveal`} key={id}>
+                {id === "essential" ? <span className="ribbon">Most physicians</span> : null}
+                <div className="plan-name">{plan.name}</div>
+                {paid ? <p className="plan-founding">Founding-member rate — locked while you stay.</p> : null}
+                <div className="plan-price">
+                  <span className="h">{plan.price}</span>
+                  <span className="per">{plan.per}</span>
+                </div>
+                <p className="plan-h">{plan.summary}</p>
+                <PlanFeatureList items={plan.features} />
+                <CtaLink className="plan-cta">{cta[id]}</CtaLink>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
