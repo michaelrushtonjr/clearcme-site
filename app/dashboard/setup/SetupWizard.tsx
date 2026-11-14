@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { wizardStorageKey } from "@/lib/client-sign-out";
+import { CONTROLLED_SUBSTANCES_KEY } from "@/lib/conditional-requirements";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -206,6 +207,10 @@ export default function SetupWizard({ userId }: { userId: string }) {
   // Step 5: practice questions for requirements a license alone can't resolve
   const [conditionalQuestions, setConditionalQuestions] = useState<ConditionalQuestion[]>([]);
   const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, "yes" | "no">>({});
+  // Follow-up to a "yes" on the controlled-substance question: is that the
+  // physician's own DEA registration? This is the answer the federal training
+  // record needs, so it is asked once here and carried there on save.
+  const [deaOwnRegistration, setDeaOwnRegistration] = useState<"yes" | "no" | null>(null);
 
   // ── Survive a page refresh: park wizard progress in sessionStorage ────────
   // Keyed per user so another account signing in on the same tab never
@@ -240,6 +245,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
             typeof lic.licenseType === "string" && typeof lic.renewalDate === "string" &&
             typeof lic.unsureDate === "boolean"
         )) setAdditionalLicenses(saved.additionalLicenses.slice(0, 4));
+        if (saved.deaOwnRegistration === "yes" || saved.deaOwnRegistration === "no") setDeaOwnRegistration(saved.deaOwnRegistration);
         if (saved.licensesSubmitted === true) {
           submittedRef.current = true;
           setLicensesSubmitted(true);
@@ -280,6 +286,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
           step: licensesSubmitted ? 5 : Math.min(step, 4),
           licensesSubmitted,
           conditionalAnswers,
+          deaOwnRegistration,
           state,
           licenseType,
           specialty,
@@ -295,7 +302,7 @@ export default function SetupWizard({ userId }: { userId: string }) {
     } catch {
       // Storage full/blocked — persistence is best-effort.
     }
-  }, [WIZARD_KEY, restored, restoringQuestions, licensesSubmitted, conditionalAnswers, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName, isMultiState, additionalLicenses]);
+  }, [WIZARD_KEY, restored, restoringQuestions, licensesSubmitted, conditionalAnswers, deaOwnRegistration, step, state, licenseType, specialty, practiceArea, birthMonth, renewalDate, renewalChoice, displayName, isMultiState, additionalLicenses]);
 
   const canAdvanceStep1 = !!state;
   const canAdvanceStep2 = !!licenseType;
@@ -502,10 +509,17 @@ export default function SetupWizard({ userId }: { userId: string }) {
     setError("");
     try {
       if (Object.keys(conditionalAnswers).length > 0) {
+        // The follow-up only means something next to a "yes"; a later change
+        // to "no" or "not sure" must not send a stale value along.
+        const ownDea =
+          conditionalAnswers[CONTROLLED_SUBSTANCES_KEY] === "yes" ? deaOwnRegistration : null;
         const response = await fetch("/api/conditional-requirements", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answers: conditionalAnswers }),
+          body: JSON.stringify({
+            answers: conditionalAnswers,
+            ...(ownDea ? { deaRegistration: ownDea } : {}),
+          }),
         });
         if (!response.ok) throw new Error("Practice answers were not saved");
       }
@@ -1233,6 +1247,45 @@ export default function SetupWizard({ userId }: { userId: string }) {
                           Not sure
                         </button>
                       </div>
+
+                      {/* The practice question covers prescribing as well as
+                          registration, so a "yes" alone does not say whether the
+                          physician holds their own DEA registration. Ask that one
+                          thing here; the answer is saved to the federal record. */}
+                      {q.key === CONTROLLED_SUBSTANCES_KEY && answer === "yes" && (
+                        <div className="mt-3 rounded-lg bg-slate-50 px-3 py-3">
+                          <p className="text-sm font-medium text-slate-800">
+                            Is that your own DEA registration?
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            The one-time federal DEA MATE Act training applies to physicians with
+                            their own registration. Your answer is saved to your federal training
+                            record, so we won&apos;t ask again.
+                          </p>
+                          <div className="mt-2 flex gap-2">
+                            {(
+                              [
+                                ["yes", "Yes, my own"],
+                                ["no", "No, not my own"],
+                              ] as const
+                            ).map(([value, label]) => (
+                              <button
+                                key={value}
+                                type="button"
+                                aria-pressed={deaOwnRegistration === value}
+                                onClick={() => setDeaOwnRegistration(value)}
+                                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                                  deaOwnRegistration === value
+                                    ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Say plainly which requirement each answer moves, in the
                           board's own words — this is a compliance decision, not a

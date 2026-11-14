@@ -118,6 +118,35 @@ export const CONDITION_DEFINITIONS: ConditionDefinition[] = [
 
 export type ConditionAnswer = "yes" | "no";
 
+/** The DEA / controlled-substance question. Its answer also feeds the federal record. */
+export const CONTROLLED_SUBSTANCES_KEY = "CONTROLLED_SUBSTANCES";
+
+/**
+ * What the setup practice questions settle about the physician's own DEA
+ * registration (User.hasDeaRegistration, the first answer on the federal
+ * training record), or undefined when setup did not settle it.
+ *
+ * The practice question is deliberately broader than DEA registration ("…or
+ * otherwise prescribe or dispense controlled substances") because several
+ * state rules gate on prescribing rather than on registration. So:
+ *   "no"                                   → holds no DEA registration
+ *   "yes" + the own-registration follow-up → exactly what the follow-up said
+ *   "yes" alone, or not sure               → not settled; the federal record keeps asking
+ *
+ * It never says anything about training completion: setup does not ask that.
+ */
+export function deaRegistrationFromSetup(
+  answers: Record<string, unknown>,
+  ownRegistration: unknown
+): boolean | undefined {
+  const answer = answers[CONTROLLED_SUBSTANCES_KEY];
+  if (answer === "no") return false;
+  if (answer === "yes" && (ownRegistration === "yes" || ownRegistration === "no")) {
+    return ownRegistration === "yes";
+  }
+  return undefined;
+}
+
 /** The gating clause a requirement is matched on. */
 export function requirementConditionClause(notes?: string | null): string | null {
   return parseRequirementNotes(notes).detail;

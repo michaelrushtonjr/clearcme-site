@@ -11,8 +11,16 @@ const STYLE = {
   NOT_APPLICABLE: { chip: "N/A", cls: "chip-muted", dot: "dot-na", fill: null, pct: 0, note: "Not DEA-registered · shared across all licenses" },
 } as const;
 
+// The physician already said they hold a DEA registration (in setup or on the
+// Licenses page); what is still open is the training record, so say that
+// rather than "Needs your answer".
+const TRAINING_RECORD_NOTE = "DEA-registered · add your training record";
+
 export default function FederalTrainingStatus({ requirement }: { requirement: RequirementEvaluation }) {
-  const s = STYLE[requirement.status];
+  const style = STYLE[requirement.status];
+  const s = requirement.status === "UNKNOWN" && requirement.federalNeeds === "TRAINING_RECORD"
+    ? { ...style, note: TRAINING_RECORD_NOTE }
+    : style;
   return (
     <Link href="/dashboard/profile#federal-training" className="req-row" style={{ textDecoration: "none" }} data-requirement="MATE_ACT">
       <span className={`dot ${s.dot}`} aria-hidden="true" />

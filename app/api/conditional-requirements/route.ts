@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   CONDITION_DEFINITIONS,
   actionForAnswer,
+  deaRegistrationFromSetup,
   matchCondition,
   requirementConditionClause,
   type ConditionAnswer,
@@ -132,6 +133,15 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const rawAnswers: Record<string, unknown> =
     body && typeof body.answers === "object" && body.answers !== null ? body.answers : {};
+
+  // The DEA answer given here is the same answer the federal training record
+  // asks for. Store it once so the dashboard and the Licenses page stop asking.
+  // Only the registration answer is carried; training completion is never
+  // inferred from it.
+  const hasDeaRegistration = deaRegistrationFromSetup(rawAnswers, body?.deaRegistration);
+  if (hasDeaRegistration !== undefined) {
+    await prisma.user.update({ where: { id: userId }, data: { hasDeaRegistration } });
+  }
 
   const { byCondition } = await collectMatches(userId);
 

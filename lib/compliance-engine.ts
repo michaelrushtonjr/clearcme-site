@@ -18,9 +18,15 @@ export interface EngineCompletion {
 }
 export function evaluateFederalTraining(input: { record: { kind: string } | null; registered: boolean | null; deadline: Date | null }): RequirementEvaluation {
   const status: RequirementStatus = input.record?.kind === "MATE_ACT" ? "MET" : input.registered === false ? "NOT_APPLICABLE" : input.registered === true && input.deadline ? "NOT_MET" : "UNKNOWN";
+  // UNKNOWN has two different causes. Once the physician has said they hold a
+  // DEA registration, the open item is the training record (or the first
+  // qualifying date), not the registration question they already answered.
+  const federalNeeds = status !== "UNKNOWN" ? undefined : input.registered === true ? "TRAINING_RECORD" as const : "DEA_ANSWER" as const;
   return { requirementId: "federal:MATE_ACT", topic: "MATE_ACT", scope: "FEDERAL", status, earned: 0,
     required: 8, gap: status === "NOT_MET" ? 8 : 0, isAttestable: true, satisfiedUntil: null,
-    prompt: status === "UNKNOWN" ? "Confirm your DEA registration history and federal training record." : null };
+    ...(federalNeeds ? { federalNeeds } : {}),
+    prompt: federalNeeds === "TRAINING_RECORD" ? "You hold a DEA registration. Add your federal training record, or the date of your first DEA registration or renewal on or after June 27, 2023."
+      : status === "UNKNOWN" ? "Confirm your DEA registration history and federal training record." : null };
 }
 
 export interface LicenseInput {
@@ -35,6 +41,8 @@ export interface LicenseInput {
 }
 export interface RequirementEvaluation {
   scope?: "FEDERAL";
+  /** Federal row only, while UNKNOWN: which answer is still missing. */
+  federalNeeds?: "DEA_ANSWER" | "TRAINING_RECORD";
   requirementId: string;
   reason?: string;
   topic: string;
