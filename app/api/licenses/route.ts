@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
     const entitlements = await getEntitlements(userId);
     const licenseCount = await prisma.physicianLicense.count({ where: { userId } });
     if (licenseCount >= entitlements.licenseLimit) {
+      trackEvent(userId, "free_limit_reached", { feature: "licenses", limit: entitlements.licenseLimit, plan: entitlements.tier.toLowerCase() });
       return upgradeRequiredResponse("licenses", {
         existing: licenseCount,
         limit: entitlements.licenseLimit,

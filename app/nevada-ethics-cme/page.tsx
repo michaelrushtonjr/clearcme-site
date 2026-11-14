@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
 import { Breadcrumbs } from "@/components/seo/Editorial";
 import { pageMetadata } from "@/lib/seo";
+import { enrollClickAttrs } from "@/lib/funnel-events";
 
 export const metadata = pageMetadata(
   "Nevada Ethics CME: Free & Low-Cost Course Options | ClearCME",
@@ -111,7 +112,7 @@ export default function NevadaEthicsPage() {
                   <p className="public-heading text-3xl">{course.price}</p>
                   <p className="mt-2 text-lg font-semibold tabular-nums">{course.hours} hours of CME</p>
                   <p className="mt-1 text-sm text-[#656c60]">AMA PRA Category 1™</p>
-                  <a className="public-btn-secondary mt-5" href={course.url} target="_blank" rel="noopener noreferrer" data-seo-course={course.id}>{course.cta} ↗</a>
+                  <a className="public-btn-secondary mt-5" href={course.url} target="_blank" rel="noopener noreferrer" data-seo-course={course.id} {...enrollClickAttrs({ topic: "ETHICS", course: course.title, provider: course.provider, state: "NV", surface: "nevada_ethics_page" })}>{course.cta} ↗</a>
                 </div>
               </section>
             ))}

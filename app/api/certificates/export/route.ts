@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 import { formatDateUTC } from "@/lib/dates";
 
 const PAGE_WIDTH = 612;
@@ -134,6 +135,7 @@ export async function GET(req: NextRequest) {
 
   const entitlements = await getEntitlements(userId);
   if (!entitlements.ungated) {
+    trackEvent(userId, "free_limit_reached", { feature: "export", export: "certificates_pdf" });
     return upgradeRequiredResponse("export");
   }
 

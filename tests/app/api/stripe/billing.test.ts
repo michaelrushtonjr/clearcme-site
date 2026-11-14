@@ -8,6 +8,8 @@ const stripe = vi.hoisted(() => ({
 }));
 vi.mock("stripe", () => ({ default: class { constructor() { return stripe; } } }));
 vi.mock("@/auth", () => ({ auth: vi.fn(async () => ({ user: { id: "user" } })) }));
+const analytics = vi.hoisted(() => ({ trackEvent: vi.fn() }));
+vi.mock("@/lib/analytics", () => analytics);
 import { POST as webhook } from "@/app/api/stripe/webhook/route";
 import { POST as checkout } from "@/app/api/stripe/checkout/route";
 import { configuredStripePrices, getTierForPriceId } from "@/lib/stripe";
@@ -36,6 +38,7 @@ beforeEach(() => {
   prices = [{ priceId: "price_original", tier: "ESSENTIAL", label: "Founding", active: false, createdAt: now }];
   current = { id: "local", userId: "user", stripeSubId: "sub_current", stripeCustomerId: "cus_user", tier: "ESSENTIAL", status: "ACTIVE", stripeCreatedAt: new Date(1789000000000), paymentFailureGraceUntil: null } as Subscription;
   events = new Set();
+  analytics.trackEvent.mockClear();
   db.stripePriceMap.upsert.mockImplementation(async ({ create }) => { if (!prices.some((p) => p.priceId === create.priceId)) prices.push(create); return create; });
   db.stripePriceMap.findMany.mockImplementation(async () => prices);
   db.billingAnomaly.create.mockResolvedValue({});
@@ -164,4 +167,32 @@ test.each([["audit", auditExport], ["certificate", certificateExport], ["broker"
   const response = await handler(new NextRequest("http://localhost/api/export"));
   expect(response.status).toBe(402); expect(await response.json()).toMatchObject({ error: "upgrade_required" });
   expect(db.certificate.findMany).not.toHaveBeenCalled();
+});
+
+// Funnel events (lib/funnel-events.ts): checkout_started and purchase.
+test("starting checkout records checkout_started with the plan", async () => {
+  current = { ...current, stripeSubId: null, tier: "FREE" } as Subscription;
+  const response = await checkout(new Request("http://localhost/api/stripe/checkout", { method: "POST", body: JSON.stringify({ tier: "ESSENTIAL" }) }));
+  expect(response.status).toBe(200);
+  expect(analytics.trackEvent).toHaveBeenCalledWith("user", "checkout_started", { plan: "essential" });
+});
+test("a subscriber sent to the billing portal is not counted as starting checkout", async () => {
+  await checkout(new Request("http://localhost/api/stripe/checkout", { method: "POST", body: JSON.stringify({ tier: "PRO" }) }));
+  expect(analytics.trackEvent).not.toHaveBeenCalled();
+});
+test("a completed checkout records one purchase, even when Stripe delivers the event twice", async () => {
+  const session = { id: "cs_one", customer: "cus_user", subscription: "sub_current", client_reference_id: "user", metadata: { userId: "user", tier: "ESSENTIAL" }, amount_total: 9900, currency: "usd", total_details: { amount_discount: 0 } };
+  expect((await event("checkout.session.completed", session as never, "evt_paid")).status).toBe(200);
+  expect((await event("checkout.session.completed", session as never, "evt_paid")).status).toBe(200);
+  expect(analytics.trackEvent.mock.calls.filter((call) => call[1] === "purchase")).toEqual([
+    ["user", "purchase", { plan: "essential", amount: 99, currency: "usd", discounted: false }],
+  ]);
+});
+test("a 100%-off code is a purchase of 0, flagged as discounted; other billing events are not purchases", async () => {
+  const session = { id: "cs_free", customer: "cus_user", subscription: "sub_current", client_reference_id: "user", metadata: { userId: "user", tier: "PRO" }, amount_total: 0, currency: "usd", total_details: { amount_discount: 19900 } };
+  await event("checkout.session.completed", session as never, "evt_free");
+  await event("customer.subscription.updated", remote(), "evt_update");
+  expect(analytics.trackEvent.mock.calls.filter((call) => call[1] === "purchase")).toEqual([
+    ["user", "purchase", { plan: "pro", amount: 0, currency: "usd", discounted: true }],
+  ]);
 });

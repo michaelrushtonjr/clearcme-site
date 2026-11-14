@@ -13,8 +13,10 @@ vi.mock("@vercel/blob", () => blobs);
 vi.mock("@/lib/upload-rate-limit", () => ({ limitCertificateUpload: () => null }));
 vi.mock("@/auth", () => ({ auth: vi.fn(async () => ({ user: { id: "user", name: "Test Physician" } })) }));
 vi.mock("@/lib/mobile-auth", () => ({ getMobileUserId: vi.fn(async () => null) }));
+const analytics = vi.hoisted(() => ({ trackEvent: vi.fn() }));
+vi.mock("@/lib/analytics", () => analytics);
 vi.mock("@/lib/entitlements", () => ({ getEntitlements: vi.fn(async () => ({ ungated: true })), getFreeReads: vi.fn(async () => ({ limit: 3, used: 1, left: 2 })), finishExtractionAttempt: vi.fn(), reserveExtractionAttempt: vi.fn(async () => ({ id: "reservation" })), upgradeRequiredResponse: vi.fn() }));
-import { finishExtractionAttempt, reserveExtractionAttempt } from "@/lib/entitlements";
+import { finishExtractionAttempt, getEntitlements, reserveExtractionAttempt } from "@/lib/entitlements";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { POST as upload } from "@/app/api/certificates/route";
 import { PATCH, DELETE } from "@/app/api/certificates/[id]/route";
@@ -47,6 +49,7 @@ function addRow(overrides: Partial<Certificate> = {}) {
 }
 beforeEach(() => {
   rows = new Map(); sequence = 0;
+  analytics.trackEvent.mockClear();
   db.federalTrainingRecord.findUnique.mockResolvedValue({ kind: "MATE_ACT" });
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "mock-token"); vi.stubEnv("ANTHROPIC_API_KEY", "mock-key");
   vi.mocked(getMobileUserId).mockResolvedValue(null);
@@ -329,4 +332,36 @@ test("large audit exports stream into a private blob and return an expiring auth
   expect(json.downloadUrl).toMatch(/^\/api\/audit-export\/download\?token=/);
   expect(new Date(json.expiresAt).getTime()).toBeGreaterThan(Date.now());
   expect(blobs.put).toHaveBeenCalledTimes(1);
+});
+
+// Funnel events (lib/funnel-events.ts): certificate_uploaded and free_limit_reached.
+const recorded = (name: string) => analytics.trackEvent.mock.calls.filter((call) => call[1] === name).map((call) => call[2]);
+test("a read certificate records certificate_uploaded once, with how the read went", async () => {
+  expect((await upload(fileRequest())).status).toBe(201);
+  expect(recorded("certificate_uploaded")).toEqual([{ result: "extracted" }]);
+  expect(recorded("free_limit_reached")).toEqual([]);
+});
+test("the upload that hits the free limit records free_limit_reached; a 'still in progress' wait does not", async () => {
+  vi.mocked(reserveExtractionAttempt).mockResolvedValueOnce(new Response("{}", { status: 402 }) as never);
+  expect((await upload(fileRequest())).status).toBe(402);
+  expect(recorded("free_limit_reached")).toEqual([{ feature: "certificate_reads" }]);
+  expect(recorded("certificate_uploaded")).toEqual([]);
+  analytics.trackEvent.mockClear();
+  vi.mocked(reserveExtractionAttempt).mockResolvedValueOnce(new Response("{}", { status: 429 }) as never);
+  expect((await upload(fileRequest(new File(["other bytes"], "second.pdf", { type: "application/pdf" })))).status).toBe(429);
+  expect(recorded("free_limit_reached")).toEqual([]);
+});
+test("each fenced export records free_limit_reached with which export it was", async () => {
+  const fenced = { ungated: false } as never;
+  vi.mocked(getEntitlements).mockResolvedValueOnce(fenced);
+  await audit(new NextRequest("http://localhost/api/audit-export"));
+  vi.mocked(getEntitlements).mockResolvedValueOnce(fenced);
+  await brokerExport(new NextRequest("http://localhost/api/certificates/cebroker-export"));
+  vi.mocked(getEntitlements).mockResolvedValueOnce(fenced);
+  await pdfExport(new NextRequest("http://localhost/api/certificates/export"));
+  expect(recorded("free_limit_reached")).toEqual([
+    { feature: "export", export: "audit_zip" },
+    { feature: "export", export: "ce_broker" },
+    { feature: "export", export: "certificates_pdf" },
+  ]);
 });

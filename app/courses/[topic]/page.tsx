@@ -5,6 +5,7 @@ import { PublicShell } from "@/components/PublicSiteShell";
 import { Breadcrumbs } from "@/components/seo/Editorial";
 import { relatedStatesForTopic } from "@/lib/state-guides";
 import { pageMetadata } from "@/lib/seo";
+import { enrollClickAttrs } from "@/lib/funnel-events";
 import { providerStateClaims } from "@/lib/course-state-claims";
 
 export const dynamicParams = false;
@@ -147,7 +148,7 @@ export default async function CourseDiscoveryPage({
                     {priceNeedsDetail && <div><dt className="font-semibold text-[#3f4a40]">Price</dt><dd>{course.price}</dd></div>}
                   </dl>
                   <div className="flex flex-shrink-0 flex-col gap-1.5 sm:items-end">
-                    <a href={enrollUrl} target="_blank" rel="noopener noreferrer" className="public-btn-primary w-full gap-1.5 px-4 py-2 sm:w-auto">
+                    <a href={enrollUrl} target="_blank" rel="noopener noreferrer" className="public-btn-primary w-full gap-1.5 px-4 py-2 sm:w-auto" {...enrollClickAttrs({ topic: key, course: course.name, provider: course.provider, surface: "course_page" })}>
                       {exactActivityUrl ? "Enroll" : "Provider catalog"}
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />

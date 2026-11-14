@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { getStripe, getTierForPriceId } from "@/lib/stripe";
 import { effectiveSubscriptionTier } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 import type { Prisma, SubscriptionStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -80,6 +81,22 @@ async function syncSubscription(tx: Prisma.TransactionClient, subscription: Stri
   else await tx.subscription.create({ data: { userId, ...data } });
 }
 
+// A finished checkout, recorded once: a repeated delivery of the same Stripe
+// event returns above as a duplicate before reaching this.
+function recordPurchase(event: Stripe.Event) {
+  if (event.type !== "checkout.session.completed") return;
+  const session = event.data.object as Stripe.Checkout.Session;
+  const userId = session.client_reference_id ?? session.metadata?.userId;
+  if (!userId) return;
+  trackEvent(userId, "purchase", {
+    plan: session.metadata?.tier?.toLowerCase() ?? null,
+    // What was charged today, in dollars: 0 for a 100%-off code.
+    amount: session.amount_total == null ? null : session.amount_total / 100,
+    currency: session.currency ?? null,
+    discounted: (session.total_details?.amount_discount ?? 0) > 0,
+  });
+}
+
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET ?? process.env.Stripe_webhook_secret;
   if (!secret) return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
@@ -112,5 +129,6 @@ export async function POST(req: Request) {
     console.error("[billing] Stripe event processing failed", { stripeEventId: event.id });
     return NextResponse.json({ error: "Billing synchronization failed" }, { status: 500 });
   }
+  recordPurchase(event);
   return NextResponse.json({ received: true });
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import posthog from "posthog-js";
+import { markKnownBrowser } from "@/lib/analytics-client";
 
 /**
  * Ties this browser's page views and session recordings to the signed-in
@@ -18,6 +19,7 @@ export function AnalyticsIdentify({
   name?: string | null;
 }) {
   useEffect(() => {
+    markKnownBrowser();
     if (!posthog.__loaded) return;
     posthog.identify(userId, { email: email ?? undefined, name: name ?? undefined });
   }, [userId, email, name]);

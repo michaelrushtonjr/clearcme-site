@@ -10,6 +10,7 @@
 import Link from "next/link";
 import { COURSE_CATALOG, keyToSlug, type Course } from "@/lib/courses";
 import { providerStateClaimFor } from "@/lib/course-state-claims";
+import { enrollClickAttrs } from "@/lib/funnel-events";
 
 interface GapCourseFeedProps {
   topic: string; // COURSE_CATALOG key e.g. "OPIOID_PRESCRIBING"
@@ -56,6 +57,7 @@ function CourseRow({ course, divided, topic, state }: { course: Course; divided:
       rel="noopener noreferrer"
       className="group flex items-start justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--c1b-hover-wash,rgba(46,74,44,0.05))]"
       style={divided ? { borderTop: "1px solid var(--c1b-border-row, rgba(16,22,19,.06))" } : undefined}
+      {...enrollClickAttrs({ topic, course: course.name, provider: course.provider, state, surface: "compliance_map" })}
     >
       <div className="min-w-0 flex-1">
         <p

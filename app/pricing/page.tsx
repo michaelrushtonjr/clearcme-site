@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
+import { usePricingViewed } from "@/components/analytics/FunnelEvents";
 import { GROUP_CONTACT, PLAN_ORDER, PLANS, planPriceLabel, type PlanId } from "@/lib/plan-features";
 import { planLoginHref } from "@/lib/login-callback";
 
@@ -62,6 +63,7 @@ function Check() {
 }
 
 export default function PricingPage() {
+  usePricingViewed("pricing_page");
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(
     () => new Set(faqs.flatMap((faq, index) => (faq.defaultOpen ? [index] : []))),
   );

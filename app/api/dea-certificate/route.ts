@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 import { reserveExtractionAttempt, finishExtractionAttempt } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 import { limitCertificateUpload } from "@/lib/upload-rate-limit";
 import { MAX_MULTIPART_BYTES } from "@/lib/upload-limits";
 import { mateActDeadline } from "@/lib/mate-act";
@@ -68,7 +69,10 @@ export async function POST(req: NextRequest) {
     const license = typeof licenseId === "string" ? await prisma.physicianLicense.findFirst({ where: { id: licenseId, userId } }) : null;
     if (licenseId && !license) return NextResponse.json({ error: "License not found" }, { status: 404 });
     const reservation = await reserveExtractionAttempt(userId);
-    if (reservation instanceof Response) return reservation;
+    if (reservation instanceof Response) {
+      if (reservation.status === 402) trackEvent(userId, "free_limit_reached", { feature: "certificate_reads", surface: "dea_certificate" });
+      return reservation;
+    }
     reservationId = reservation.id;
     const result = await extractDeaCertWithClaude(file);
     if (!result.success || !result.data) return NextResponse.json({ error: "Failed to extract DEA certificate data", details: result.error }, { status: 422 });

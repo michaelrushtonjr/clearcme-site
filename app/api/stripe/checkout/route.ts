@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getPriceIdForTier, getStripe, type PaidTier } from "@/lib/stripe";
 import { isAppShellRequest } from "@/lib/app-shell-server";
+import { trackEvent } from "@/lib/analytics";
 
 function isPaidTier(value: unknown): value is PaidTier {
   return value === "ESSENTIAL" || value === "PRO";
@@ -91,6 +92,8 @@ export async function POST(req: Request) {
   if (!checkout.url) {
     return NextResponse.json({ error: "Stripe did not return a checkout URL" }, { status: 502 });
   }
+
+  trackEvent(user.id, "checkout_started", { plan: tier.toLowerCase() });
 
   return NextResponse.json({ url: checkout.url });
 }

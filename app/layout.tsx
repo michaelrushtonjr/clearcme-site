@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { consoleFontVars } from "@/lib/fonts";
 import "./globals.css";
 import { AcquisitionAnalytics } from "@/components/seo/AcquisitionAnalytics";
+import { FunnelEvents } from "@/components/analytics/FunnelEvents";
 import { LINK_PREVIEW_IMAGE } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -49,7 +50,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={consoleFontVars}>{children}<AcquisitionAnalytics /></body>
+      <body className={consoleFontVars}>{children}<AcquisitionAnalytics /><FunnelEvents /></body>
     </html>
   );
 }

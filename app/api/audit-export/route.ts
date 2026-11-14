@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isComputedComplianceBlocked } from "@/lib/compliance-rule-availability";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 import { prisma } from "@/lib/prisma";
 import { auditCompliance, licensePractice } from "@/lib/compliance-adapters";
 import type { LicenseEvaluation, OverallStatus, RequirementStatus } from "@/lib/compliance-engine";
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest) {
 
   const entitlements = await getEntitlements(userId);
   if (!entitlements.ungated) {
+    trackEvent(userId, "free_limit_reached", { feature: "export", export: "audit_zip" });
     return upgradeRequiredResponse("export");
   }
 

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
+import { usePricingViewed } from "@/components/analytics/FunnelEvents";
+import { rememberState } from "@/lib/analytics-client";
 import {
   ArrowRight,
   Check,
@@ -393,7 +395,11 @@ function StatePreview() {
             <select
               id="state"
               value={stateCode}
-              onChange={(event) => setStateCode(event.target.value as StateCode | "")}
+              onChange={(event) => {
+                setStateCode(event.target.value as StateCode | "");
+                // The state a visitor picks here goes on a later enroll_click.
+                if (event.target.value) rememberState(event.target.value);
+              }}
             >
               <option value="">Select your state...</option>
               {STATE_OPTIONS.map((option) => (
@@ -686,6 +692,7 @@ function MultiState() {
 }
 
 function Pricing() {
+  usePricingViewed("home_section", "pricing");
   const cta: Record<PlanId, string> = { free: "Start free", essential: "Start Essential", pro: "Start Pro" };
 
   return (

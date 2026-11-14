@@ -122,6 +122,8 @@ export async function POST(req: NextRequest) {
       await prisma.certificate.delete({ where: { id: certificate.id } });
       createdCertificateId = null;
       trackEvent(userId, "certificate_upload_failed", { reason: "plan_limit" });
+      // 402 = the free reads are spent; 429 = the last ones are still in progress.
+      if (reservation.status === 402) trackEvent(userId, "free_limit_reached", { feature: "certificate_reads" });
       return reservation;
     }
     reservationId = reservation.id;
@@ -199,6 +201,7 @@ export async function POST(req: NextRequest) {
       await finishExtractionAttempt(userId, reservationId, clean);
       reservationId = null;
       trackEvent(userId, "certificate_added", { method: "upload", result: clean ? "extracted" : "needs_review" });
+      trackEvent(userId, "certificate_uploaded", { result: clean ? "extracted" : "needs_review" });
       // freeReads: what the upload screen's counter should now say (null = unlimited).
       return NextResponse.json({ certificate: updated, freeReads: await getFreeReads(userId), ...(!clean ? { warning: "Some fields could not be extracted with confidence. Please review and confirm." } : {}) }, { status: 201 });
     } else {
@@ -215,6 +218,7 @@ export async function POST(req: NextRequest) {
       });
 
       trackEvent(userId, "certificate_added", { method: "upload", result: "extraction_failed" });
+      trackEvent(userId, "certificate_uploaded", { result: "extraction_failed" });
       return NextResponse.json(
         {
           certificate: updated,

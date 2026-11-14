@@ -70,4 +70,7 @@ export function trackSignup(
       setOnce: { signed_up_at: new Date().toISOString(), signup_method: method, signup_source: source },
     },
   );
+  // The funnel's name for the same moment (see lib/funnel-events.ts).
+  // user_signed_up stays so charts built on it since September keep working.
+  trackEvent(user.id, "signup_completed", { method, source });
 }

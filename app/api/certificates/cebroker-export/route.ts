@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateCEBrokerReport, isCEBrokerState } from "@/lib/cebroker-export";
 import { getEntitlements, upgradeRequiredResponse } from "@/lib/entitlements";
+import { trackEvent } from "@/lib/analytics";
 import { prisma } from "@/lib/prisma";
 
 function formatFileDate(date: Date): string {
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
 
     const entitlements = await getEntitlements(userId);
     if (!entitlements.ungated) {
+      trackEvent(userId, "free_limit_reached", { feature: "export", export: "ce_broker" });
       return upgradeRequiredResponse("export");
     }
 
