@@ -62,8 +62,13 @@ export async function setupToStep4(page: Page, e: Evidence, state='NV', degree='
 export async function finishSetup(page: Page, e: Evidence, refreshConditional=false) {
   if(await page.getByRole('button',{name:'No',exact:true}).isVisible()) await page.getByRole('button',{name:'No',exact:true}).click();
   await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
-  await page.waitForLoadState('networkidle');
-  if(await page.getByRole('heading',{name:'A few questions about your practice'}).isVisible()) {
+  // The practice-questions screen renders only after the license save returns,
+  // and "network idle" can report before the save has even started. Wait for
+  // whichever comes: that screen, or the dashboard.
+  const questions=page.getByRole('heading',{name:'A few questions about your practice'});
+  const dashboard=/\/dashboard(?:\?onboarded=1)?$/;
+  await Promise.race([questions.waitFor(),page.waitForURL(dashboard)]).catch(()=>{});
+  if(await questions.isVisible()) {
     await e.capture('step5-conditional-questions');
     const no=page.getByRole('button',{name:'No',exact:true});
     for(const b of await no.all()) await b.click();
