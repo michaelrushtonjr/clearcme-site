@@ -48,3 +48,16 @@ test("a card states each fact once", async () => {
   const childAbuse = await render("child-abuse");
   expect(childAbuse).toContain("Free (free Pri-Med account required)");
 });
+
+// On 2026-11-14 every listed course links to its own page, so no card shows a
+// caption. The caption exists for a course whose link is only a catalog.
+test("the Enroll button carries no caption unless the link is not the course's own page", async () => {
+  for (const slug of slugs) {
+    const html = await render(slug);
+    expect(html).not.toContain("Exact activity link");
+    expect(html).not.toContain("Exact link pending verification");
+    const catalogButtons = html.match(/>Provider catalog</g)?.length ?? 0;
+    const captions = html.match(/Opens the provider’s catalog, not this course’s page\./g)?.length ?? 0;
+    expect(captions).toBe(catalogButtons);
+  }
+});

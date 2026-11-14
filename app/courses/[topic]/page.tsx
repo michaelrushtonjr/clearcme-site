@@ -153,9 +153,12 @@ export default async function CourseDiscoveryPage({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </a>
-                    <span className="text-xs text-[#6b7568]">
-                      {exactActivityUrl ? "Exact activity link" : "Exact link pending verification"}
-                    </span>
+                    {/* Only the exception gets a caption: the button normally opens the course itself. */}
+                    {!exactActivityUrl && (
+                      <span className="text-xs text-[#6b7568] sm:max-w-[16rem] sm:text-right">
+                        Opens the provider’s catalog, not this course’s page. Search there for the course by name.
+                      </span>
+                    )}
                   </div>
                 </div>
               </article>
