@@ -132,6 +132,7 @@ export function buildHtml(data: ExportData): string {
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ClearCME Compliance Report</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -164,6 +165,15 @@ export function buildHtml(data: ExportData): string {
     .summary-tile .lbl { font-size: 11px; color: #656C60; margin-top: 2px; }
     .footer { margin-top: 32px; color: #656C60; font-size: 11px; text-align: center; border-top: 1px solid #E3E0D3; padding-top: 12px; }
     @media print { body { padding: 20px; } }
+    /* On a phone screen (the on-page report, or a new tab): stack the header and wrap the tiles. Print is unchanged. */
+    @media screen and (max-width: 640px) {
+      body { padding: 16px; }
+      .header { flex-direction: column; gap: 8px; }
+      .meta { text-align: left; }
+      .summary-row { flex-wrap: wrap; gap: 8px; }
+      .summary-tile { flex: 1 1 40%; }
+      .certs-table { display: block; overflow-x: auto; }
+    }
   </style>
 </head>
 <body>
@@ -329,7 +339,7 @@ function InlineReport({ html, onClose }: { html: string; onClose: () => void }) 
     try {
       const frameWindow = frameRef.current?.contentWindow;
       if (!frameWindow) throw new Error("Report frame unavailable");
-      frameWindow.focus();
+      // Focus stays on this toolbar, so Escape still closes the report afterwards.
       frameWindow.print();
     } catch {
       setPrintError(true);
@@ -379,6 +389,16 @@ function InlineReport({ html, onClose }: { html: string; onClose: () => void }) 
         srcDoc={html}
         // No allow-scripts: certificate text can never run as code. allow-modals lets Print open.
         sandbox="allow-same-origin allow-modals"
+        // Escape also closes the report when the physician has clicked into it.
+        onLoad={(event) => {
+          try {
+            event.currentTarget.contentDocument?.addEventListener("keydown", (key) => {
+              if (key.key === "Escape") onClose();
+            });
+          } catch {
+            // The Close button still works.
+          }
+        }}
         style={{ flex: 1, width: "100%", border: 0, background: "#FFFFFF" }}
       />
     </div>,
