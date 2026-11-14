@@ -1862,6 +1862,13 @@ body {
   font-size: 13px;
 }
 
+/* A state the account does not compute yet: a plain line, no numbers. */
+.landing-v3 .state-result .not-computed {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
 .landing-v3 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

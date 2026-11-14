@@ -23,6 +23,7 @@ import {
 } from "@/lib/state-requirements";
 import { PLAN_ORDER, PLANS, type PlanId } from "@/lib/plan-features";
 import { planLoginHref, type ChosenPlan } from "@/lib/login-callback";
+import { notYetComputedNote, stateOptionLabel } from "@/lib/not-yet-computed";
 
 const tickerItems = [
   ["CA", "renews by issue month"],
@@ -369,6 +370,9 @@ function StatePreview() {
     () => selectedRequirement?.mandatoryTopics.slice(0, 4) ?? [],
     [selectedRequirement],
   );
+  const notComputedNote = selectedRequirement
+    ? notYetComputedNote(selectedRequirement.stateName, stateCode, licenseType)
+    : null;
 
   return (
     <section className="state-preview-section">
@@ -394,7 +398,7 @@ function StatePreview() {
               <option value="">Select your state...</option>
               {STATE_OPTIONS.map((option) => (
                 <option key={option.code} value={option.code}>
-                  {option.name}
+                  {stateOptionLabel(option.name, option.code, licenseType)}
                 </option>
               ))}
             </select>
@@ -418,6 +422,17 @@ function StatePreview() {
               <p className="empty">
                 Pick a state to see cycle length, total CME hours, and the mandates physicians most often miss when renewal season closes in.
               </p>
+            ) : notComputedNote ? (
+              // No hours, mandates or cycle here: an account cannot compute them for this state.
+              <>
+                <h4>
+                  {selectedRequirement.stateName} · {licenseType}
+                </h4>
+                <div className="sub">
+                  <span className="pill due">Not yet computed</span>
+                </div>
+                <p className="not-computed">{notComputedNote}</p>
+              </>
             ) : (
               <>
                 <h4>
