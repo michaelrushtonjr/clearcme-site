@@ -141,8 +141,12 @@ This is the easiest way to ship a check that appears to work and doesn't.
 - **There are THREE export surfaces**, and fencing one while missing the others
   is the obvious failure: `app/api/audit-export/`,
   `app/api/certificates/export/`, `app/api/certificates/cebroker-export/`.
-- Existing in-product upsell pattern to reuse rather than reinvent:
-  `components/dashboard/GapCourseFeed.tsx` (`showUpgradePrompt` prop).
+- Course matches are NOT fenced. The in-app course paywall
+  (`GapCourseFeed`'s `showUpgradePrompt` prop, one match on Free) was removed
+  on Michael's 2026-11-13 decision: every plan sees every course match. Paid
+  value sits on exports, unlimited certificate reading and the second
+  license — do not reintroduce a course limit. The in-product upgrade prompt
+  to reuse is `components/UpgradeNotice.tsx`.
 
 ## Cron routes
 

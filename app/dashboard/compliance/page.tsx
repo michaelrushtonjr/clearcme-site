@@ -1,7 +1,6 @@
 import FederalTrainingStatus from "@/components/FederalTrainingStatus";
 import { getFederalTraining } from "@/lib/federal-training";
 import { isStateRequirement } from "@/lib/mate-act";
-import { effectiveSubscriptionTier } from "@/lib/entitlements";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -291,7 +290,7 @@ export default async function CompliancePage() {
   const userId = session!.user!.id!;
 
   // Fetch compliance data + licenses with their rules
-  const [licenses, certificates, requirementCompletions, subscription, userProfile] = await Promise.all([
+  const [licenses, certificates, requirementCompletions, userProfile] = await Promise.all([
     prisma.physicianLicense.findMany({
       where: { userId, isActive: true },
       orderBy: { renewalDate: "asc" },
@@ -303,16 +302,11 @@ export default async function CompliancePage() {
     prisma.userRequirementCompletion.findMany({
       where: { userId },
     }),
-    prisma.subscription.findUnique({
-      where: { userId },
-    }),
     prisma.user.findUnique({
       where: { id: userId },
       select: { specialty: true, practiceArea: true },
     }),
   ]);
-
-  const hasFullCourseChoice = effectiveSubscriptionTier(subscription) !== "FREE";
 
   const completionByRequirementAndLicense = new Map(
     requirementCompletions.map((completion) => [
@@ -883,12 +877,7 @@ export default async function CompliancePage() {
                         {HIPPO_TOPICS.has(gap.topic) ? "via Hippo Education" : "ACCME-accredited · Cat 1"}
                       </span>
                     </div>
-                    <GapCourseFeed
-                      topic={gap.topic}
-                      hoursNeeded={gap.gap}
-                      limit={hasFullCourseChoice ? 3 : 1}
-                      showUpgradePrompt={!hasFullCourseChoice}
-                    />
+                    <GapCourseFeed topic={gap.topic} hoursNeeded={gap.gap} />
                   </div>
                 )}
 
