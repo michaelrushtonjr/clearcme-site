@@ -1,6 +1,6 @@
 import { prismaMock as db } from "../helpers/prisma-mock";
 import { beforeEach, expect, test } from "vitest";
-import { expectsPracticeStep, setupStepLabel, totalSetupSteps } from "@/lib/setup-steps";
+import { continueWithSavedLabel, expectsPracticeStep, keptAfterRefusal, licenseRefusalSummary, setupStepLabel, totalSetupSteps } from "@/lib/setup-steps";
 import { practiceQuestionOutlook } from "@/lib/practice-questions";
 
 const ALL = ["NV:MD", "NV:DO", "KS:MD", "KS:DO"];
@@ -34,6 +34,29 @@ test("the count follows the choices as they are made", () => {
   expect(expectsPracticeStep({ ...base, primaryCandidates: ["KS:MD"], additionalPairs: ["NV:MD"] })).toBe(true);
   // Licenses already on the account do too, whatever is chosen here.
   expect(expectsPracticeStep({ ...base, questionPairs: null, hasOpenQuestions: true })).toBe(true);
+});
+
+test("after a refused second license, setup keeps what was saved and drops the rest", () => {
+  const cards = [
+    { id: "a", state: "TX", licenseType: "MD" },
+    { id: "b", state: "", licenseType: "" },
+    { id: "c", state: "CA", licenseType: "MD" },
+    { id: "d", state: "NY", licenseType: "DO" },
+  ];
+  // Free: the first additional license is refused, so none are kept.
+  expect(keptAfterRefusal(cards, 0)).toEqual([]);
+  // Two-license plan: the first was saved, the blank card never was, CA was refused.
+  expect(keptAfterRefusal(cards, 2).map((card) => card.id)).toEqual(["a"]);
+  expect(keptAfterRefusal(cards, -1)).toEqual([]);
+  expect(continueWithSavedLabel(1)).toBe("Continue with one state →");
+  expect(continueWithSavedLabel(2)).toBe("Continue with 2 states →");
+});
+test("the refusal says what is saved and what was left out, without naming a plan or price", () => {
+  const one = licenseRefusalSummary({ savedLicenses: 1, primaryStateName: "Nevada", droppedStateNames: ["Texas"] });
+  expect(one).toBe("Your Nevada license is saved. Texas was not added. You can continue with Nevada now.");
+  const several = licenseRefusalSummary({ savedLicenses: 2, primaryStateName: "Nevada", droppedStateNames: ["California", "New York", "Ohio"] });
+  expect(several).toBe("Your first 2 licenses are saved. California, New York and Ohio were not added. You can continue with those now.");
+  for (const text of [one, several]) expect(text).not.toMatch(/Essential|Pro\b|Free\b|\$|upgrade|pricing/i);
 });
 
 beforeEach(() => {

@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import UpgradeNotice from "@/components/UpgradeNotice";
 import { wizardStorageKey } from "@/lib/client-sign-out";
 import { CONTROLLED_SUBSTANCES_KEY } from "@/lib/conditional-requirements";
-import { LICENSE_STEPS, expectsPracticeStep, setupStepLabel, totalSetupSteps } from "@/lib/setup-steps";
+import {
+  LICENSE_STEPS,
+  continueWithSavedLabel,
+  expectsPracticeStep,
+  keptAfterRefusal,
+  licenseRefusalSummary,
+  setupStepLabel,
+  totalSetupSteps,
+} from "@/lib/setup-steps";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -195,6 +203,11 @@ export default function SetupWizard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [licenseLimitHit, setLicenseLimitHit] = useState<number | null>(null);
+  // Set when the plan refused an ADDITIONAL license after the primary (and any
+  // earlier ones) had already been saved: which card was refused and how many
+  // licenses are on the account. Lets setup offer "Continue with one state"
+  // instead of a main button that keeps failing.
+  const [licenseRefusal, setLicenseRefusal] = useState<{ index: number; saved: number } | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [restored, setRestored] = useState(false);
   const [licensesSubmitted, setLicensesSubmitted] = useState(false);
@@ -389,8 +402,16 @@ export default function SetupWizard({
     setRenewalChoice(null);
   }
 
+  // Any edit to the license list makes an earlier refusal stale: the main
+  // button goes back to submitting what is on screen.
+  function clearLicenseRefusal() {
+    setLicenseLimitHit(null);
+    setLicenseRefusal(null);
+  }
+
   function addAdditionalLicense() {
     if (additionalLicenses.length >= 4) return; // max 5 total (1 primary + 4 additional)
+    clearLicenseRefusal();
     setAdditionalLicenses((prev) => [
       ...prev,
       {
@@ -404,10 +425,12 @@ export default function SetupWizard({
   }
 
   function removeAdditionalLicense(id: string) {
+    clearLicenseRefusal();
     setAdditionalLicenses((prev) => prev.filter((l) => l.id !== id));
   }
 
   function updateAdditionalLicense(id: string, update: Partial<AdditionalLicense>) {
+    clearLicenseRefusal();
     setAdditionalLicenses((prev) =>
       prev.map((l) => (l.id === id ? { ...l, ...update } : l))
     );
@@ -418,7 +441,7 @@ export default function SetupWizard({
     const finalRenewalDate = effectiveRenewalDate;
     setLoading(true);
     setError("");
-    setLicenseLimitHit(null);
+    clearLicenseRefusal();
     try {
       // POST primary license
       const primaryRes = await fetch("/api/licenses", {
@@ -451,7 +474,8 @@ export default function SetupWizard({
         }).catch(() => {});
       }
       // POST additional licenses in sequence
-      for (const lic of additionalLicenses) {
+      let savedLicenses = 1; // the primary license above
+      for (const [index, lic] of additionalLicenses.entries()) {
         if (!lic.state || !lic.licenseType) continue;
         const licRenewalDate = getFinalRenewalDate(
           lic.state,
@@ -473,45 +497,75 @@ export default function SetupWizard({
         if (res.status === 402) {
           // License limit hit — stop and show the upgrade prompt rather than
           // dropping the blocked license silently. The primary license is
-          // already saved; resubmitting re-upserts it harmlessly.
+          // already saved; resubmitting re-upserts it harmlessly. Remember
+          // which card was refused so the physician can carry on without it.
           const data = await res.json().catch(() => ({}));
           setLicenseLimitHit(typeof data.limit === "number" ? data.limit : 1);
+          setLicenseRefusal({ index, saved: savedLicenses });
           setLoading(false);
           return;
         }
-        if (!res.ok) {
+        if (res.ok) {
+          savedLicenses += 1;
+        } else {
           // Non-fatal: continue even if additional license fails (e.g. duplicate)
           console.warn(`Failed to create license for ${lic.state}`);
         }
       }
 
-      // Submission is complete. Persist the explicit marker before fetching
-      // questions so a refresh during that request cannot expose step 4 again.
-      submittedRef.current = true;
-      try {
-        const draft = JSON.parse(sessionStorage.getItem(WIZARD_KEY) || "{}");
-        sessionStorage.setItem(WIZARD_KEY, JSON.stringify({ ...draft, step: 5, licensesSubmitted: true, conditionalAnswers }));
-      } catch {
-        // Storage full/blocked — same best-effort persistence as other steps.
-      }
-      setLicensesSubmitted(true);
+      await continueAfterLicensesSaved();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setLoading(false);
+    }
+  }
+
+  /** Everything after the license POSTs: mark setup submitted, then questions or the dashboard. */
+  async function continueAfterLicensesSaved() {
+    // Submission is complete. Persist the explicit marker before fetching
+    // questions so a refresh during that request cannot expose step 4 again.
+    submittedRef.current = true;
+    try {
+      const draft = JSON.parse(sessionStorage.getItem(WIZARD_KEY) || "{}");
+      sessionStorage.setItem(WIZARD_KEY, JSON.stringify({ ...draft, step: 5, licensesSubmitted: true, conditionalAnswers }));
+    } catch {
+      // Storage full/blocked — same best-effort persistence as other steps.
+    }
+    setLicensesSubmitted(true);
+    setStep(5);
+
+    // Some mandatory topics only bind physicians who meet a practice
+    // condition (a DEA registration, a >25% elderly panel). Ask now, while
+    // the user is already in setup, rather than leaving those rows sitting
+    // unresolved on the Compliance Map.
+    // Initial submission keeps its existing fail-open behavior; the map
+    // asks these questions too. Restoring parked answers is stricter above.
+    const questions = (await loadConditionalQuestions()) ?? [];
+    if (questions.length > 0) {
+      setConditionalQuestions(questions);
       setStep(5);
+      setLoading(false);
+      return;
+    }
 
-      // Some mandatory topics only bind physicians who meet a practice
-      // condition (a DEA registration, a >25% elderly panel). Ask now, while
-      // the user is already in setup, rather than leaving those rows sitting
-      // unresolved on the Compliance Map.
-      // Initial submission keeps its existing fail-open behavior; the map
-      // asks these questions too. Restoring parked answers is stricter above.
-      const questions = (await loadConditionalQuestions()) ?? [];
-      if (questions.length > 0) {
-        setConditionalQuestions(questions);
-        setStep(5);
-        setLoading(false);
-        return;
-      }
+    completeSetup();
+  }
 
-      completeSetup();
+  /**
+   * After the plan refused an additional license: keep what was saved, drop
+   * the refused license and anything after it, and carry on with setup. No
+   * license is posted again, so this cannot fail on the plan limit.
+   */
+  async function continueWithSavedLicenses() {
+    if (submittedRef.current || loading || !licenseRefusal) return;
+    setLoading(true);
+    setError("");
+    const kept = keptAfterRefusal(additionalLicenses, licenseRefusal.index);
+    setAdditionalLicenses(kept);
+    if (kept.length === 0) setIsMultiState(false);
+    clearLicenseRefusal();
+    try {
+      await continueAfterLicensesSaved();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -565,6 +619,17 @@ export default function SetupWizard({
             .map((lic) => `${lic.state}:${lic.licenseType}`),
         });
   const totalSteps = totalSetupSteps(practiceStepExpected);
+
+  const refusalSummary = licenseRefusal
+    ? licenseRefusalSummary({
+        savedLicenses: licenseRefusal.saved,
+        primaryStateName: selectedStateName,
+        droppedStateNames: additionalLicenses
+          .slice(licenseRefusal.index)
+          .filter((lic) => lic.state && lic.licenseType)
+          .map((lic) => US_STATES.find((s) => s.code === lic.state)?.name ?? lic.state),
+      })
+    : "";
 
   // Submitted licenses stay locked in this wizard; subsequent license edits
   // use the existing Licenses page. Never flash an earlier submit step.
@@ -1193,6 +1258,14 @@ export default function SetupWizard({
               {licenseLimitHit !== null && (
                 <div className="mt-4">
                   <UpgradeNotice feature="licenses" limit={licenseLimitHit} />
+                  {/* The refusal came after the primary license was saved, so
+                      there is a way forward that does not need the refused one.
+                      No plan names or prices here: this also shows in the app. */}
+                  {licenseRefusal && (
+                    <p className="mt-3 text-sm text-[var(--ink-2)]" role="status">
+                      {refusalSummary}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1204,19 +1277,32 @@ export default function SetupWizard({
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => { setStep(3); setIsMultiState(null); setAdditionalLicenses([]); }}
+                  onClick={() => { clearLicenseRefusal(); setStep(3); setIsMultiState(null); setAdditionalLicenses([]); }}
                   className="px-5 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   ← Back
                 </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading || isMultiState === null}
-                  className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                >
-                  {/* The map is not the next screen when practice questions come first. */}
-                  {loading ? "Setting up…" : practiceStepExpected ? "Continue →" : "See my compliance map →"}
-                </button>
+                {licenseRefusal ? (
+                  // Submitting again would be refused again. Offer the step
+                  // that works; editing the licenses above brings the normal
+                  // button back.
+                  <button
+                    onClick={continueWithSavedLicenses}
+                    disabled={loading}
+                    className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  >
+                    {loading ? "Setting up…" : continueWithSavedLabel(licenseRefusal.saved)}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || isMultiState === null}
+                    className="flex-1 py-3 bg-[var(--primary)] text-white font-semibold rounded-xl hover:bg-[var(--primary-2)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  >
+                    {/* The map is not the next screen when practice questions come first. */}
+                    {loading ? "Setting up…" : practiceStepExpected ? "Continue →" : "See my compliance map →"}
+                  </button>
+                )}
               </div>
             </div>
           )}

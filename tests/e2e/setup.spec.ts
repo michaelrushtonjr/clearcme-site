@@ -38,7 +38,10 @@ test('multi-state free limit and refresh',async({page},info)=>{
  await page.locator('input[type=date]').fill('2027-10-31');
  const response=page.waitForResponse(r=>r.url().endsWith('/api/licenses')&&r.status()===402);
  await page.getByRole('button',{name:LICENSES_SUBMIT}).click();
- await response; await e.capture('multi-state-free-402');
+ await response;
+ // The refused second license must not strand setup: a way forward is offered.
+ await expect(page.getByRole('button',{name:'Continue with one state →',exact:true})).toBeVisible();
+ await e.capture('multi-state-free-402');
  await e.visit('/dashboard','dashboard-after-partial-setup');
 });
 
