@@ -15,6 +15,7 @@ import {
   totalSetupSteps,
 } from "@/lib/setup-steps";
 import { isStateComputed, notComputedNotice, stateOptionLabel } from "@/lib/state-availability";
+import { assignedRenewalDateOptions } from "@/lib/renewal-date-options";
 import {
   getRenewalRuleConfig,
   getSuggestedRenewalDate,
@@ -392,6 +393,10 @@ export default function SetupWizard({
       ? primarySuggestedRenewal.date
       : renewalDate;
   const canSubmitStep3 = !!effectiveRenewalDate;
+  // Boards that assign one of a known set of dates (Florida MD: January 31 of
+  // an odd or an even year). Offered as buttons; typing a date still works.
+  const primaryDateOptions =
+    state && licenseType ? assignedRenewalDateOptions(state, licenseType) : [];
 
   function getSmartRenewalSuggestion(selectedState: string, selectedLicenseType: string) {
     if (!selectedState || !selectedLicenseType) {
@@ -940,6 +945,39 @@ export default function SetupWizard({
                 </div>
               )}
 
+              {primaryDateOptions.length > 0 && (
+                <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-sm font-medium text-slate-900">Which is your renewal date?</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    {selectedStateName} {licenseType} licenses renew on one of these dates,
+                    depending on the group the board assigned you. Pick yours, or type the date below.
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    {primaryDateOptions.map((option) => (
+                      <button
+                        key={option.date}
+                        type="button"
+                        onClick={() => {
+                          setRenewalDate(option.date);
+                          setRenewalChoice("manual");
+                        }}
+                        aria-pressed={effectiveRenewalDate === option.date}
+                        className={`flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                          effectiveRenewalDate === option.date
+                            ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[var(--primary-3)]"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Not sure which? The date is on your license and in your board profile.
+                  </p>
+                </div>
+              )}
+
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Next renewal date
@@ -962,7 +1000,8 @@ export default function SetupWizard({
                 <p className="text-xs text-slate-500 mb-4 px-1">{primarySuggestedRenewal.note}</p>
               )}
 
-              {isPrimaryVariableRenewal && primaryRenewalRule && (
+              {/* Skipped when the two possible dates are offered above. */}
+              {isPrimaryVariableRenewal && primaryRenewalRule && primaryDateOptions.length === 0 && (
                 <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
                   <p className="font-semibold text-slate-700">Why can&apos;t we estimate this one?</p>
                   <p className="mt-1">
@@ -973,6 +1012,9 @@ export default function SetupWizard({
                 </div>
               )}
 
+              {/* With two known dates to pick from there is nothing to estimate,
+                  so the (disabled) estimate button would only be noise. */}
+              {primaryDateOptions.length === 0 && (
               <button
                 type="button"
                 onClick={() => {
@@ -1009,6 +1051,7 @@ export default function SetupWizard({
                 </span>
                 I&apos;m not sure — estimate based on {selectedStateName || "my state"}
               </button>
+              )}
 
               {!canUsePrimarySmartEstimate && primaryRenewalRule?.renewalType === "birth-based" && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
@@ -1016,7 +1059,7 @@ export default function SetupWizard({
                 </p>
               )}
 
-              {!canUsePrimarySmartEstimate && isPrimaryVariableRenewal && (
+              {!canUsePrimarySmartEstimate && isPrimaryVariableRenewal && primaryDateOptions.length === 0 && (
                 <p className="text-xs text-slate-400 mt-2 px-1">
                   Smart estimates are not available when renewal timing varies by board record.
                 </p>
@@ -1108,6 +1151,10 @@ export default function SetupWizard({
                         : null;
                     const additionalStateName =
                       US_STATES.find((s) => s.code === lic.state)?.name ?? lic.state;
+                    const additionalDateOptions =
+                      lic.state && lic.licenseType
+                        ? assignedRenewalDateOptions(lic.state, lic.licenseType)
+                        : [];
 
                     return (
                       <div key={lic.id} className="border border-slate-200 rounded-xl p-4 space-y-3 relative">
@@ -1185,6 +1232,37 @@ export default function SetupWizard({
                           </p>
                         )}
 
+                        {/* One of a known set of dates (Florida MD): pick, or type below */}
+                        {additionalDateOptions.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-slate-600 mb-1">
+                              Which is your renewal date?
+                            </p>
+                            <div className="flex gap-2">
+                              {additionalDateOptions.map((option) => (
+                                <button
+                                  key={option.date}
+                                  type="button"
+                                  onClick={() =>
+                                    updateAdditionalLicense(lic.id, {
+                                      renewalDate: option.date,
+                                      unsureDate: false,
+                                    })
+                                  }
+                                  aria-pressed={lic.renewalDate === option.date}
+                                  className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors ${
+                                    lic.renewalDate === option.date
+                                      ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                                      : "border-slate-200 text-slate-700 hover:border-[var(--primary-3)]"
+                                  }`}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Renewal date */}
                         {!lic.unsureDate && (
                           <div>
@@ -1200,6 +1278,7 @@ export default function SetupWizard({
                           </div>
                         )}
 
+                        {additionalDateOptions.length === 0 && (
                         <button
                           type="button"
                           onClick={() => {
@@ -1233,9 +1312,10 @@ export default function SetupWizard({
                           </span>
                           Estimate renewal date
                         </button>
+                        )}
 
                         {/* Why estimates aren't available for some states */}
-                        {!!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate && (
+                        {!!lic.state && !!lic.licenseType && !canUseAdditionalSmartEstimate && additionalDateOptions.length === 0 && (
                           <p className="text-xs text-slate-500">
                             {additionalRenewalRule?.renewalType === "variable" ? (
                               <>
