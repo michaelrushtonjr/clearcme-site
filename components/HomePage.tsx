@@ -22,6 +22,7 @@ import {
   type StateCode,
 } from "@/lib/state-requirements";
 import { PLAN_ORDER, PLANS, type PlanId } from "@/lib/plan-features";
+import { planLoginHref, type ChosenPlan } from "@/lib/login-callback";
 
 const tickerItems = [
   ["CA", "renews by issue month"],
@@ -218,12 +219,15 @@ function BrandMark() {
 function CtaLink({
   children,
   className = "btn btn-primary",
+  plan,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** A paid plan to carry through sign-in to checkout, as /pricing does. */
+  plan?: ChosenPlan;
 }) {
   return (
-    <Link href="/login" className={className}>
+    <Link href={plan ? planLoginHref(plan) : "/login"} className={className}>
       {children}
     </Link>
   );
@@ -694,7 +698,9 @@ function Pricing() {
                 </div>
                 <p className="plan-h">{plan.summary}</p>
                 <PlanFeatureList items={plan.features} />
-                <CtaLink className="plan-cta">{cta[id]}</CtaLink>
+                <CtaLink className="plan-cta" plan={id === "free" ? undefined : id}>
+                  {cta[id]}
+                </CtaLink>
               </div>
             );
           })}

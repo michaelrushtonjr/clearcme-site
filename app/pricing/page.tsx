@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PublicShell } from "@/components/PublicSiteShell";
 import { GROUP_CONTACT, PLAN_ORDER, PLANS, planPriceLabel, type PlanId } from "@/lib/plan-features";
+import { planLoginHref } from "@/lib/login-callback";
 
 const faqs: { q: string; a: string; mocCta?: boolean; defaultOpen?: boolean }[] = [
   {
@@ -89,7 +90,7 @@ export default function PricingPage() {
       });
 
       if (res.status === 401) {
-        window.location.href = `/login?callbackUrl=${encodeURIComponent(`/pricing?checkout=${tier.toLowerCase()}`)}`;
+        window.location.href = planLoginHref(tier === "ESSENTIAL" ? "essential" : "pro");
         return;
       }
 

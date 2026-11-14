@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLockup } from "@/components/BrandLockup";
 import { BrandPanel } from "@/components/login/BrandPanel";
+import { RememberedPlanNote } from "@/components/login/ChosenPlanNote";
 
 // NextAuth's pages.verifyRequest points here (auth.ts) — users land on this
 // page right after requesting a magic link. The address is deliberately NOT
@@ -39,8 +40,10 @@ export default function CheckEmailPage() {
               </div>
               <p className="form-sub" style={{ marginBottom: 0 }}>
                 We sent a sign-in link to the address you entered. The link expires
-                in 24 hours and can be used once.
+                in 24 hours and can be used once. If this is your first time, it
+                also creates your account.
               </p>
+              <RememberedPlanNote />
             </div>
 
             <p className="form-foot">

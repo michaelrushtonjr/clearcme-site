@@ -6,8 +6,9 @@ import { getProviders, signIn } from "next-auth/react";
 import { signOutAndClear } from "@/lib/client-sign-out";
 import { BrandLockup } from "@/components/BrandLockup";
 import { BrandPanel } from "@/components/login/BrandPanel";
+import { ChosenPlanNote, rememberChosenPlan } from "@/components/login/ChosenPlanNote";
 import { authErrorMessage } from "@/lib/auth-error-message";
-import { loginCallbackUrl } from "@/lib/login-callback";
+import { chosenPlan, loginCallbackUrl } from "@/lib/login-callback";
 
 // Demo mode (Phase 4): read-only sample persona at /demo, no sign-up.
 const DEMO_ENTRY_ENABLED = true;
@@ -50,6 +51,25 @@ function LoginPageInner() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const callbackUrl = loginCallbackUrl(searchParams.get("callbackUrl"));
+  // Set when the visitor came from a "Start Essential" / "Start Pro" button.
+  const plan = chosenPlan(callbackUrl);
+  // Someone already signed in has nothing to do here. With a plan chosen they
+  // go straight on to checkout; otherwise the page offers the way back in.
+  // (With an error, AuthErrorNotice explains the signed-in state instead.)
+  const [signedIn, setSignedIn] = useState<{ email: string | null } | null>(null);
+  useEffect(() => {
+    if (error) return;
+    let active = true;
+    fetch("/api/auth/session")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (!active || !s?.user) return;
+        if (plan) window.location.replace(callbackUrl);
+        else setSignedIn({ email: s.user.email ?? null });
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [error, plan, callbackUrl]);
   const [providers, setProviders] = useState<Awaited<ReturnType<typeof getProviders>>>(null);
   const [providersLoaded, setProvidersLoaded] = useState(false);
   useEffect(() => {
@@ -68,6 +88,7 @@ function LoginPageInner() {
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    rememberChosenPlan(plan);
     await signIn("resend", { email, callbackUrl });
     setEmailSent(true);
     setLoading(false);
@@ -84,10 +105,27 @@ function LoginPageInner() {
               <BrandLockup href="/" size="md" />
             </div>
 
-            <h2 className="form-title">Welcome back</h2>
-            <p className="form-sub">Sign in to see where every license stands.</p>
+            <h2 className="form-title">Sign in or create your account</h2>
+            <p className="form-sub">
+              {plan
+                ? "First time here? The same step creates your account."
+                : "First time here? The same step creates your free account. No credit card."}
+            </p>
 
             {error && <AuthErrorNotice error={error} />}
+
+            {plan && !emailSent && (
+              <ChosenPlanNote plan={plan} next="Checkout opens right after you sign in. 30-day full refund." />
+            )}
+
+            {signedIn && (
+              <div className="login-note" role="status">
+                <span>
+                  You&apos;re already signed in{signedIn.email ? <> as <strong style={{ fontSize: "inherit" }}>{signedIn.email}</strong></> : null}.
+                </span>
+                <a href={callbackUrl}>Go to your account →</a>
+              </div>
+            )}
 
             <div className="form-card">
               {emailSent ? (
@@ -106,8 +144,14 @@ function LoginPageInner() {
                     Check your email
                   </h3>
                   <p className="form-sub">
-                    We sent a sign-in link to <strong>{email}</strong>. Click the link to sign in.
+                    We sent a sign-in link to <strong>{email}</strong>. Click the link to sign in. If this is
+                    your first time, the link also creates your account.
                   </p>
+                  {plan && (
+                    <div style={{ marginTop: 14 }}>
+                      <ChosenPlanNote plan={plan} next="Checkout opens after you click the link in your email. 30-day full refund." />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -173,7 +217,9 @@ function LoginPageInner() {
                         </button>
                       </form>
 
-                      <p className="form-helper">No passwords — we send a link that signs you in.</p>
+                      <p className="form-helper">
+                        No password. The link signs you in, and creates your account the first time.
+                      </p>
                     </>
                   )}
                 </>
@@ -183,7 +229,7 @@ function LoginPageInner() {
             {DEMO_ENTRY_ENABLED && !emailSent && (
               <button className="demo-card" onClick={() => (window.location.href = "/demo")}>
                 <span>
-                  <span className="t">New here? See it with sample data first</span>
+                  <span className="t">Not ready yet? See it with sample data first</span>
                   <br />
                   <span className="s">Pick a state, see the requirements — no sign-up.</span>
                 </span>
@@ -194,7 +240,7 @@ function LoginPageInner() {
             )}
 
             <p className="form-foot">
-              By signing in you agree to our <a href="/terms">Terms</a> and{" "}
+              By continuing you agree to our <a href="/terms">Terms</a> and{" "}
               <a href="/privacy">Privacy Policy</a>.
               <br />
               Your certificates are encrypted in transit and at rest.

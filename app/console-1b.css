@@ -237,6 +237,8 @@
 .c1b-login .form-title {
   font-family: var(--serif);
   font-size: 30px;
+  /* The title wraps to two lines on a phone. */
+  line-height: 1.2;
   font-weight: 500;
   color: var(--c1b-ink);
 }
@@ -437,6 +439,45 @@
 
 .c1b-login .error-note button:hover {
   background: #632e19;
+}
+
+/* Plan carried from a price card, or "you're already signed in". */
+.c1b-login .login-note {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid rgba(46, 74, 44, 0.28);
+  border-radius: 10px;
+  background: var(--c1b-green-chip-bg);
+  padding: 13px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--c1b-ink);
+}
+
+.c1b-login .login-note .mono-label {
+  color: var(--c1b-green);
+}
+
+.c1b-login .login-note strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.c1b-login .login-note a {
+  align-self: flex-start;
+  margin-top: 4px;
+  color: var(--c1b-green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* A note inside the white card sits flush with the card's own spacing. */
+.c1b-login .form-card .login-note {
+  margin-top: 0;
+  text-align: left;
 }
 
 .c1b-login .sent-check {
