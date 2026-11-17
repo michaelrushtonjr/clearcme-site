@@ -1091,6 +1091,22 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
+        name: "2026 Prevention of Medical Errors: To Err is Human",
+        provider: "AdventHealth Orlando CME",
+        providerUrl: "https://adventhealth.cloud-cme.com",
+        credits: "2.0 hours AMA PRA Category 1",
+        creditType: "AMA_PRA_1",
+        price: "Free",
+        isFree: true,
+        isHippo: false,
+        description: "Online enduring material. Covers medical errors scope in the US, why errors happen, root cause analysis, and patient safety improvement strategies. Original release Nov 2023; reviewed March 4, 2026; expires December 31, 2026. All specialties included. CE Broker integration: enter FL license number in profile to auto-upload FL CME credit. FMA accreditation is ACCME-recognized — accepted nationally. Faculty: AdventHealth CPD Department.",
+        url: "https://adventhealth.cloud-cme.com/default.aspx?P=0&EID=24076",
+        accreditation: "Florida Medical Association (FMA) — ACCME-recognized state medical society",
+        deaMateCompliant: false,
+        stateAcceptance: "Florida — explicitly FL Board of Medicine approved; CE Broker upload available (enter FL license number in profile). All states accepting AMA PRA Category 1.",
+        verified: "2026-04-20 (removed 2026-11-15 during host-wide 503 outage; restored 2026-11-17 — COO re-read live page: title, 2.00 AMA PRA Category 1 verbatim, window through Dec 31 2026, no fee stated)",
+      },
+      {
         name: "IHI Open School: Patient Safety Courses (subscription)",
         provider: "Institute for Healthcare Improvement (IHI)",
         providerUrl: "https://education.ihi.org",
