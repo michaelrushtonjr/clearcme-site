@@ -736,6 +736,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     mandatoryTopics: [
       topic("Alzheimer's disease / cognitive impairment", "1 hr one-time (minimum)", "Required by statute, not the Board CME rule: a one-time course of at least 1 hour on the diagnosis, treatment, and care of patients with cognitive impairments including Alzheimer's disease and related disorders, due no later than Oct. 1, 2023 (R.I. Gen. Laws § 23-1.7-5; the CME rule 216-RICR-40-05-1 §1.5.5 itself sets no topic hours). The statute is silent on physicians first licensed after Oct. 1, 2023 — applicability for newer licensees follows RIDOH implementation rules"),
       topic("Opioid prescribing best practices", "8 hrs one-time (Category 1)", "RI-specific rule for prescribers of Schedule II opioids, due before controlled-substance registration renewal or within 2 years, whichever is longer (216-RICR-20-20-4 §4.4(P)); largely overlaps the federal MATE 8 hrs; exempt with completed DATA 2000 waiver training and an active DEA 'X' designation"),
+      { ...topic("Nutrition", "At least 1 hr every 2 years", "Counts within the required 40 hours, not additional (R.I. Gen. Laws § 5-37-2.1, P.L. 2026 ch. 84, art. 12, § 5, effective June 12, 2026)"), cadence: "EVERY_RENEWAL" },
       mateTopic(),
     ],
   },
