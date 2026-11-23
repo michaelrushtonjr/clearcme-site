@@ -60,20 +60,20 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "Addiction Treatment and Care CME for Family Physicians",
+        name: "Substance Use Disorder Care: What Family Physicians Need to Know",
         provider: "American Academy of Family Physicians (AAFP)",
         providerUrl: "https://www.aafp.org",
-        credits: "Up to 3.75 hours AMA PRA Category 1 / AAFP Prescribed / AOA Category 2 equivalent",
+        credits: "Up to 4.75 hours AMA PRA Category 1 / AAFP Prescribed / AOA Category 2 equivalent",
         creditType: "AMA_PRA_1",
         price: "Free",
         isFree: true,
         isHippo: false,
-        description: "Free on-demand CME for family physicians covering stigma, trauma-informed care, harm reduction, addiction neurobiology, and urine drug screen interpretation. Full module list confirmed 2026-04-27: Stigma/Language/Trauma-Informed Care, Defining Addiction: Brain Science to Clinical Application, Harm Reduction in Primary Care, Urine Drug Screens (Who/When/How to Interpret). Supported by a SAMHSA educational grant. Approval term: 10/14/2025–10/14/2027.",
+        description: "Free on-demand CME for family physicians (renewed edition of 'Addiction Treatment and Care') covering stigma and trauma-informed care, addiction neurobiology, urine drug screen interpretation, emerging substance use trends, and buprenorphine prescribing. Full module list confirmed 2026-11-23: Stigma, Language, and Trauma-Informed Care; Defining Addiction: From Brain Science to Clinical Application; Urine Drug Screens: Who, When, How to Interpret; What's New in Substance Use: Emerging Substance Use Trends; Buprenorphine: Easy to Prescribe & Saving Lives. Supported by a SAMHSA educational grant. Approval term: 11/16/2026–11/16/2028.",
         url: "https://www.aafp.org/cme/all/addiction-treatment-and-care.html",
         accreditation: "ACCME (AAFP)",
         deaMateCompliant: false,
         stateAcceptance: "All states accepting AMA PRA Category 1; AAFP Prescribed credit accepted by AMA as equivalent to AMA PRA Category 1",
-        verified: "2026-04-27 (URL confirmed live; credit statement and modules re-verified)",
+        verified: "2026-11-23 (Scout + COO independently read live page: renamed/renewed edition, 'maximum of 4.75 AMA PRA Category 1 credit(s)' verbatim, free, approval term 11/16/2026–11/16/2028)",
       },
       {
         name: "SUD 101: Best Clinical Practices for Treating Opioid Use Disorder in Pregnancy and the Postpartum Period",
