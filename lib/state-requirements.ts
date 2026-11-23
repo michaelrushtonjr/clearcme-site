@@ -673,7 +673,7 @@ const mdRequirements: Record<StateCode, RequirementSeed> = {
     cycleYears: 2,
     cycleLabel: "2-year registration cycle",
     mandatoryTopics: [
-      topic("Child abuse identification and reporting", "2 hrs one-time", "Updated curriculum deadline runs through Nov. 17, 2026"),
+      topic("Child abuse identification and reporting", "2 hrs one-time", "Curriculum updated to add identifying abuse in children with intellectual/developmental disabilities (Ch. 25, Laws of 2024); completing the updated curriculum has been mandatory — including for previously trained licensees — since Nov. 17, 2026"),
       { ...topic("Infection control and barrier precautions", "Initial + every 4 years"), cadence: "EVERY_N_YEARS", intervalYears: 4 },
       topic("Pain management, palliative care, and addiction", "3 hrs every 3 years", "PHL 3309-a; if DEA-registered prescriber. One combined requirement (covers opioid prescribing/overdose prevention); NYSDOH attestation each cycle"),
       mateTopic(),
