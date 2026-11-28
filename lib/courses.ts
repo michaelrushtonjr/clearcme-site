@@ -892,22 +892,6 @@ export const COURSE_CATALOG: Record<string, TopicCatalog> = {
     courses: [
     // Auto-synced from Scout catalog — 2026-05-20T18:41:19.366Z
       {
-        name: "5 Minute Moment for Racial Justice in Healthcare Series",
-        provider: "Stanford Center for Continuing Medical Education",
-        providerUrl: "https://stanford.cloud-cme.com",
-        credits: "1.5 hours AMA PRA Category 1 / Non-Physician Participation Credit",
-        creditType: "AMA_PRA_1",
-        price: "Free",
-        isFree: true,
-        isHippo: false,
-        description: "On-demand case-based multimedia curriculum teaching how racism and implicit bias affect routine care and how clinicians can discuss racism in medicine with learners. Stanford page explicitly lists registration fee as FREE, estimated completion time 1hr 30min, 1.50 AMA PRA Category 1 credits, physician audience, and expiration Nov 27 2026. Series topics include racial disparities in maternal health, medication prescribing and scientific studies, child maltreatment reporting, pulse oximetry, medical mistrust, pain management, kidney disease diagnosis/treatment, dermatologic diagnosis in darker skin, pediatric UTI race correction, and limited-English-proficiency disparities.",
-        url: "https://stanford.cloud-cme.com/course/courseoverview?P=3000&EID=48965",
-        accreditation: "ACCME / ACPE / ANCC (Stanford Medicine jointly accredited)",
-        deaMateCompliant: false,
-        stateAcceptance: "All states accepting AMA PRA Category 1. Covers implicit bias, racial health disparities, structural racism, health equity, and racially just care; pairs well with other free implicit-bias courses for NJ's 2hr requirement.",
-        verified: "2026-05-06 (Stanford CloudCME page confirms free registration, 1.5 AMA PRA Cat 1, joint accreditation, physician audience, and Nov 2026 expiry)",
-      },
-      {
         name: "The Explicit Need for Implicit Bias and Cultural Competence Training in the Health Professions",
         provider: "ScientiaCME",
         providerUrl: "https://www.scientiacme.org",
